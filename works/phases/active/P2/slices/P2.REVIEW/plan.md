@@ -18,3 +18,12 @@ Ten work slices: S1 (package/schema/client), S2 (①③ collector), S3 (bodydoc 
 ## Out of scope
 
 No source changes, no re-extraction, no new features. No commits, no state transitions (the orchestrator records the verdict via `review-phase`). The one workflow-command carve-out you have is `doc-new-version` / `rebuild-docs` on a pass.
+
+## Re-review (2026-08-20, after fix slices F2–F4)
+
+The first pass returned `changes_requested` on finding 1 (blocking) with findings 2–3 recommended; F2 (docstrings), F3 (judged_by provenance), and F4 (matcher + recall re-freeze, 85.31% → 88.70%) have landed — read their result.md files. Re-review scope:
+
+1. Verify the three fixes against the original findings (grep for the forbidden phrasing incl. --help output; labels.json carries judged_by and the report prints it; recheck/refresh-recall idempotent and figures consistent everywhere the number appears).
+2. Re-run the phase validation set (pytest, gates run ×2, estimate report ×2, evalset report, scheduler once --offline, workflow validate).
+3. Confirm carry-forwards 4–8 are recorded where the first pass put them (D2 trigger, D4, N-notes) — no new work.
+4. On pass: consolidate the full Doc impact list into doc versions per the original plan step 5 (quote N97's pinned figures, the 88.70% recall from N100, and never "hand-labelled"). Return the verdict + doc_versions created.

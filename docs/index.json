@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -11,6 +11,14 @@
           "source": "bootstrap",
           "summary": "Initial product doc",
           "previous": null
+        },
+        {
+          "id": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate",
+          "path": "docs/versions/product/v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate.md",
+          "created_at": "2026-08-20T05:10:14+09:00",
+          "source": "P2.REVIEW",
+          "summary": "미주알 product truth after P2: the lapsed-warrant headline, the live rights board and the measured price of the trust gate",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -29,7 +37,7 @@
       ]
     },
     "architecture": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -39,6 +47,14 @@
           "source": "bootstrap",
           "summary": "Initial architecture doc",
           "previous": null
+        },
+        {
+          "id": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary",
+          "path": "docs/versions/architecture/v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary.md",
+          "created_at": "2026-08-20T05:05:25+09:00",
+          "source": "P2.REVIEW",
+          "summary": "Data backbone landed: package, Postgres schema, Celery beat topology and the P2 to P3 exposure boundary",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -71,7 +87,7 @@
       ]
     },
     "data": {
-      "latest": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints",
+      "latest": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract",
       "current_path": "docs/current/data.md",
       "versions": [
         {
@@ -89,6 +105,14 @@
           "source": "P1.REVIEW",
           "summary": "DART as the MVP data source: rights-type field matrix, extraction targets, version and 정정 constraints",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract",
+          "path": "docs/versions/data/v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract.md",
+          "created_at": "2026-08-20T05:06:14+09:00",
+          "source": "P2.REVIEW",
+          "summary": "P2 pipeline data model: document families, measured field tiers, 정정 pairing, event states and the exposure contract",
+          "previous": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints"
         }
       ]
     },
@@ -107,7 +131,7 @@
       ]
     },
     "operations": {
-      "latest": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints",
+      "latest": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -125,6 +149,14 @@
           "source": "P1.REVIEW",
           "summary": "Challenge submission deliverables, deadlines and the 결격-grade deploy constraints",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend",
+          "path": "docs/versions/operations/v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend.md",
+          "created_at": "2026-08-20T05:07:46+09:00",
+          "source": "P2.REVIEW",
+          "summary": "Pipeline operations: quota and request ceilings, beat schedule and budgets, the pipeline lock, and how to regenerate every artifact at zero spend",
+          "previous": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints"
         }
       ]
     },
@@ -143,7 +175,7 @@
       ]
     },
     "qa": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -153,11 +185,19 @@
           "source": "bootstrap",
           "summary": "Initial qa doc",
           "previous": null
+        },
+        {
+          "id": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers",
+          "path": "docs/versions/qa/v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers.md",
+          "created_at": "2026-08-20T05:11:01+09:00",
+          "source": "P2.REVIEW",
+          "summary": "Extraction-accuracy measurement: method, the frozen evalset, cross-model provenance and the first measured numbers",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
     "decisions": {
-      "latest": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm",
+      "latest": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -175,9 +215,17 @@
           "source": "P1.REVIEW",
           "summary": "MVP rights scope confirmed, domain fact sheet and deferred purchase, application LLM",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair",
+          "path": "docs/versions/decisions/v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair.md",
+          "created_at": "2026-08-20T05:09:01+09:00",
+          "source": "P2.REVIEW",
+          "summary": "P2 decisions: data-backbone stack, per-task thinking level, cross-model evalset judging, and the conservative-default pair",
+          "previous": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-19T21:01:23+09:00"
+  "last_rebuilt_at": "2026-08-20T05:11:55+09:00"
 }

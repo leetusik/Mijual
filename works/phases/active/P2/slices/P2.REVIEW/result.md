@@ -202,3 +202,98 @@ only files this slice wrote are `phase.md` (findings N94–N98 + the Doc impact 
 
 `not written — run /explain for this phase.` Explaining is a separate, operator-invoked operation; the
 review never runs it.
+
+---
+---
+
+# Re-review — cycle 2 (2026-08-20, after `P2.F2`/`F3`/`F4`)
+
+**Verdict: `pass`.** The blocking finding is closed at the surface it was found on, both recommended
+fixes landed, the phase re-validates as a whole, and the Doc impact list is now **consolidated into
+six doc versions**. Cycle 1's history above is unchanged — this section is the second cycle only.
+
+Spend for this cycle: **0 OpenDART requests, 0 LLM calls, 0 source edits, 0 commits, 0 state
+transitions.** The docker Postgres corpus was read and deterministically re-derived (`gates run`),
+never reset.
+
+## 8. The three fixes, verified against the original findings
+
+| finding (cycle 1) | fix | verification run today | result |
+|---|---|---|---|
+| **1 (blocking)** — `--help` calls the evalset "hand-labelled" | `P2.F2` | `.venv/bin/python -m mijual.evalset --help` | **CLOSED** — prints `CLI for the labelled evalset (judge recorded per round) — 0 OpenDART requests, 0 LLM calls.` |
+| | | `grep -rniE "hand.?labell?ed\|labels? by hand\|operator labels"` over `src tests docs works evalset scripts` | **no description of this evalset as hand-made survives**; every hit is the rule being restated (N89/N95, F2/F3 results, `intent.md`'s original verbatim, and `decisions` v0003's line *forbidding* the phrase) |
+| **2** — `labels.json` carries no provenance | `P2.F3` | `labels.json` keys = `{corrections, judged_by, labelled, source}`; 344 labels, 339 `correct` / 5 `partial` / 0 `wrong` | **CLOSED** — `judged_by = {judge: "Claude (Opus 5) … cross-model vs gemini-3.7-flash 추출", basis: "운영자 지시 2026-08-20 … 사람의 정답(ground truth) 아님; 사람이 검증한 라벨 0건", imported_at: "2026-08-20T04:37:31+09:00"}` |
+| | | `evalset report` header | prints `- 판정 출처: **Claude (Opus 5) …** · 근거: … · 기록 …` — read off the artifact, not hardcoded (`report.py::_provenance`) |
+| | | `import` with no flag → **exit 2**, nothing written; `--judged-by '   '` → `REFUSED / provenance: --judged-by is empty`, **exit 1**, no file created | the guarantee is structural, not advisory |
+| **3** — `check_against_items` understates recall | `P2.F4` | `.venv/bin/python -m mijual.extract --dry-run recheck` | **CLOSED** — 48 stored / 45 with parsed rows, **177 rows, uncovered 20 → 20, recall 88.70 % → 88.70 %, unsupported 0 → 0, `rewritten: 0`** (idempotent; the corpus already carries the fixed score) |
+| | | `.venv/bin/python -m mijual.evalset refresh-recall` | `unchanged — nothing written`; `git status evalset/` clean |
+| | | `evalset report` recall line | `결정론적 정정사항 177행 중 모델이 언급하지 않은 행 20 → 재현율 88.7% (45 건)` — consistent with the stored records and with N100 |
+
+**The number is consistent everywhere it appears**: stored records (`recheck`), the frozen sample
+(`refresh-recall`), the rendered report, `phase.md` N100, and now `qa` v0002 / `data` v0003. Nothing
+still quotes 85.31 %.
+
+## 9. Phase validation, re-run whole
+
+| command | outcome |
+|---|---|
+| `.venv/bin/python -m pytest` | **PASS — 59 passed** (56 at cycle 1 + F3's 1 + F4's 2), 0.73 s |
+| `python3 scripts/workflow.py validate` | **PASS — `Workflow validation passed.`** |
+| `.venv/bin/python -m mijual.gates run` ×2 | **PASS — byte-identical**; **649 field rows — 566 passed / 4 tbd / 14 failed / 65 not_evaluable** (N97 to the row) |
+| `.venv/bin/python -m mijual.gates summary` | **PASS — 488 exposable events (① 50, ② 422, ③ 16)**; renderable fields sum to **409** |
+| `.venv/bin/python -m mijual.estimate report --today 20260820` ×2 | **PASS — byte-identical**; ▷ **718.1억원** (band lower ▷ 548.7억), 32 offerings, 51,253,956 / 365,527,824 = **14.02 %**, **23 still open / 15 청약 예정**, ▷ upper bound 767.3억 → gate cost ▷ **49.2억 = 6.4 %** |
+| `.venv/bin/python -m mijual.evalset report` | **PASS — 98.6 % strict (213/216, 95 % CI [96–100 %])**, lenient 100 %, over-block **100 % (19/19** random; 48/48 pooled**)**, recall 88.7 %, 판정 출처 line present |
+| `.venv/bin/python -m mijual.scheduler once --offline` | **PASS** — four stages green, `passed 566 tbd 4 failed 14 n/a 65`, 488 exposable / 409 renderable, **0 requests / 0 calls / ▷ $0.0000**, 33.8 s |
+| SQL re-derivation for the docs (read-only) | 633 distinct `(rcept_no, field_key)` rows, **77 blocked = 12.2 %**; 1,345 events / 3,990 versions / 7,076 snapshots / 69 실적보고서; `extraction_call` **213 calls, 2,025,260 tokens, ▷ $2.79, 0 failures**, newest 2026-08-19 17:52 UTC |
+| secret scan (both `.env` values × `src tests evalset docs works scripts`, incl. the new doc versions) | **PASS — 0 hits** |
+| 금지선 grep (`fine-tun`, `pytorch`, `huggingface`, `파인튜닝`) | **PASS** — the only hit in the doc set is `architecture` restating the rule |
+| request-path check (`grep -rn DartClient src/mijual`) | **PASS** — no DART import under `gates/`, `calc.py`, `db/models.py` |
+
+`extraction_call`'s newest row predates both review cycles, which is the machine-checkable form of
+"the review spent nothing".
+
+## 10. Carry-forwards 4–8, confirmed in place
+
+| # | item | where it lives now |
+|---|---|---|
+| 4 | 2 `rcept_no` on two exposable events each | **`D2` brief**, "Additional trigger (P2.REVIEW carry-forward, 2026-08-20)" naming 코이즈 `20260122000058` and 사토시홀딩스 `20251219000402` — verified present |
+| 5 | multi-addend citation defect (3 of 344 strict misses) | **`D4`** — `works/deferred/open/D4/`, trigger "when P3 renders 실적보고서 figures with citations" — verified present, and now also in `qa`'s fragile-areas table |
+| 6 | 정정 재추출 backlog drained by the beat at the inherited thinking level | **N98(c)**, and now **`operations`** ("Open operational decision before a worker runs unattended") + **`decisions` D-4** |
+| 7 | ③'s 44 % block rate is version scoping | **N98(b)**, and now **`qa`** with the 8/1/1/1 split stated as mandatory whenever the 44 % is quoted |
+| 8 | mid-phase figures superseded | **N97**, honoured by every doc version written below |
+
+No new work was done on any of them, as the re-review plan requires.
+
+## 11. Docs — consolidated (six versions)
+
+`rebuild-docs` ran; `docs/current/*.md` regenerated from the new latest versions; `validate` clean
+afterwards. **No `docs/current/*.md` file was hand-edited and no existing version was patched.**
+
+| doc | new version | what it carries |
+|---|---|---|
+| `architecture` | **v0002** `data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary` | the stack (package → Postgres/SQLAlchemy, Celery beat + Redis, FastAPI deferred to P3), the module map, the `corp → event → filing_version → snapshot` schema + `extraction*` / `performance_report`, no-Alembic + `ensure_columns`, the `collect → bodydoc → extract → gates` topology, and the P2→P3 exposure boundary |
+| `data` | **v0003** `p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract` | the three-tier model as *measured* (94/94 labels, 23,493/23,493 spans), the 유상증자결정 **form family**, `pifricDecsn` + 증권발행실적보고서, the two-arm 정정 pairing and the non-injective key, 철회 / `추후결정` as first-class states, the ten gates as implemented (#2 ordering, #5 window, #8 derived), the exposure contract, the 소멸가치 method, and the 88.70 % recall |
+| `operations` | **v0003** `pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend` | the 20,000/day quota + request ceilings, the beat schedule and per-stage budgets, the single `mijual:lock:pipeline`, the broker-free `once` fallback, "a corpus is not a census" + the free gap check, the zero-spend regeneration commands — with P1's submission/결격/timeline truth kept intact below it |
+| `decisions` | **v0003** `p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair` | D-1…D-5 preserved, **D-4 amended** (per-task thinking level, with the mechanism and the −21 % measurement), **D-6** stack, **D-7** cross-model judging (the operator's verbatim directive), **D-8** the conservative-default pair, and O-1/O-2/O-4/O-5/O-8/O-9 recorded closed |
+| `product` | **v0002** `product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate` | ▷ 718.1억원 and its band, 14.02 %, the largest single loss, the live board (488 / 409, ②'s 33-within-30-days), 철회 / 추후결정 / 소규모합병 as product states, and the gate's measured price ▷ 49.2억원 = 6.4 % |
+| `qa` | **v0002** `extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers` | the provenance statement **first**, the method (both error directions, frozen sample, random-only rates, Wilson), the measured numbers, the 44 % split, the 88.70 % recall, the regression checklist (incl. the exposure-invariant re-derivation) and the fragile areas mapped to D1/D2/D4 |
+
+`backend` was folded into `architecture` rather than versioned separately: today the backend *is* this
+package, and a second doc would duplicate it. It can be split when P3's HTTP layer exists.
+
+Honesty checks on the written docs: every cost, the 소멸 headline, the band and every generalisation
+carry `▷`; measured counts do not. The accuracy numbers carry the cross-model qualifier in `qa`
+(first section), `decisions` D-7 and `product`. The string "hand-labelled" appears in the whole doc
+set exactly **once** — in `decisions`, as the sentence forbidding it.
+
+## 12. Deviations from `plan.md` (cycle 2)
+
+None. Step 5 ran because step 6's verdict is a pass; `backend` was folded into `architecture`, which
+the plan explicitly permits. Budget: **0 of ≤ 30 OpenDART requests, 0 LLM calls.** Files written by
+this cycle: the six doc versions, `docs/index.json` + the regenerated `docs/current/*.md`, `phase.md`
+(N101–N103 + the Doc impact header), and this `result.md` section. No source file was touched, no
+commit and no state transition was made.
+
+## 13. Explain (cycle 2)
+
+`not written — run /explain for this phase.`

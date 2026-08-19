@@ -1193,6 +1193,45 @@ write nothing) reported `rewritten: 3` then `rewritten: 0`, and `refresh-recall`
 **88.7 % measured** (not "≥ 88.7 %"), with N92's content-level reading — ≈ 99 % of
 investor-meaningful items — still standing beside it as the qualitative figure.
 
+### Appended by `P2.REVIEW` — cycle 2, verdict `pass` (2026-08-20)
+
+**N101 — the blocking finding is closed at the surface it was found on, and the two recommended
+fixes landed with it.** `python -m mijual.evalset --help` now prints *"CLI for the labelled evalset
+(judge recorded per round)"*; `grep -rniE "hand.?labell?ed"` over `src tests docs works evalset
+scripts` returns **no** description of this evalset as hand-made (the surviving hits are the rule
+being restated — N89/N95, F2/F3's own results, `intent.md`'s original wording, and one line in
+`decisions` v0003 that *forbids* the phrase). `evalset/labels.json` carries `judged_by`
+(`judge`/`basis`/`imported_at` KST) and the report prints it verbatim; `import` without `--judged-by`
+exits **2** and `--judged-by '   '` is REFUSED at exit 1, neither writing a file. F4's re-score is
+stable: `extract --dry-run recheck` reads **20 uncovered / 177 rows → 88.70 %** with `rewritten: 0`,
+and `evalset refresh-recall` prints `unchanged — nothing written`. **Rule that generalises: a fix to a
+printed claim is verified by running the thing that prints it, not by reading the diff.**
+
+**N102 — the phase re-validated as a whole, at zero spend, with every pinned figure reproducing.**
+`pytest` **59 passed** (56 + F3's 1 + F4's 2); `workflow validate` clean; `gates run` ×2
+**byte-identical** → **649 field rows, 566 passed / 4 tbd / 14 failed / 65 n/a**, `gates summary`
+**488 exposable (① 50, ② 422, ③ 16) / 409 renderable**; `estimate report --today 20260820` ×2
+byte-identical → ▷ **718.1억원**, 32 offerings, 51,253,956/365,527,824 = **14.02 %**, 23 open, 15 청약
+ahead, ▷ upper bound 767.3억 (gate cost ▷ **49.2억 = 6.4 %**); `scheduler once --offline` four stages
+green at **0 requests / 0 calls**; `evalset report` **98.6 % strict (213/216, [96–100 %])**, over-block
+**19/19** random (48/48 pooled), recall **88.7 %**. Re-derived from Postgres for the docs: **633
+distinct `(rcept_no, field_key)` rows, 77 blocked = 12.2 %**; corpus **1,345 events / 3,990 versions /
+7,076 snapshots / 69 실적보고서**; **`extraction_call` = 213 calls, 2,025,260 tokens, ▷ $2.79, 0
+failures**, newest row 2026-08-19 17:52 UTC — i.e. **both review cycles spent 0 LLM calls and 0
+OpenDART requests**. Secret scan (both `.env` values × `src tests evalset docs works scripts`) **0
+hits**; 금지선 grep **0** framings; no DART import under `gates/`, `calc.py`, `db/models.py`.
+
+**N103 — the docs are frozen; what a later phase must not re-derive, and what it must re-run.** Six
+versions carry P2 (see the Doc impact header). P3 reads the **exposure contract** out of `data`
+(`architecture` states its columns) and re-implements none of it. Three things stay live rather than
+settled and are recorded in `qa`'s *Known Fragile Areas*: **D1** (② 정정 paired to the wrong 사채),
+**D2** (+ the 2 duplicate-exposable rows), **D4** (multi-addend citations) — plus the unattended
+**thinking-level** decision for the 정정 해석 task, which is now stated in both `operations` and
+`decisions` D-4 because it is the one operational choice a beat run would otherwise make for a human.
+**O-7 (증권사 MTS 권리 메뉴 coverage matrix, carried from P1) is still homeless** — it is 기획서
+evidence, not pipeline code; the review recommends a `defer-job` or a P4 (ship) slice, and it is
+listed as an open question in `product` so it cannot quietly disappear.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1231,12 +1270,15 @@ Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
 
 _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a pass._
 
-> **Cycle 1 of `P2.REVIEW` returned `changes_requested`, so NOTHING below has been consolidated yet
-> and no doc version exists for P2.** The list itself was checked and is complete — every durable-truth
-> change P2 made has a note here, grouped `architecture` (the S1→S6 running stack note) · `data` ·
-> `operations` · `decisions` · `product` · `qa`. Two instructions for whoever consolidates: quote
-> **N97's figures**, not the mid-phase ones the S5/S7/S8 notes carry; and state the accuracy numbers'
-> **cross-model provenance** (N89) in the `qa` and `decisions` versions, never "hand-labelled".
+> **CONSOLIDATED.** Cycle 1 of `P2.REVIEW` returned `changes_requested` and consolidated nothing;
+> **cycle 2 passed (2026-08-20) and wrote six doc versions** from the list below — `architecture`
+> v0002, `data` v0003, `operations` v0003, `decisions` v0003, `product` v0002, `qa` v0002 (all
+> `source: P2.REVIEW`, `docs/current/*.md` regenerated). The list was audited complete both times.
+> The two consolidation instructions were honoured: **N97's figures** are what the versions quote (not
+> the mid-phase S5/S7/S8 ones), N100's **88.70 %** replaced the 85.3 %/88.7 % floor clause, and the
+> accuracy numbers carry their **cross-model provenance** (N89) in `qa`, `decisions` D-7 and `product`
+> — the phrase "hand-labelled" appears in the doc set exactly once, in `decisions`, as the rule
+> forbidding it. Entries below are kept as the audit trail; **do not re-consolidate them.**
 
 - **`architecture`** (new doc) / **`decisions`** — **stack decision for the data backbone:** P2 builds a
   plain Python package (collector / parser / extractor / gates / estimation) persisting to **Postgres

@@ -74,3 +74,12 @@
 {"ts": "2026-08-20T04:40:58+09:00", "type": "slice_status_changed", "slice": "P2.F3", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-20T04:40:58+09:00", "type": "slice_status_changed", "slice": "P2.F4", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-20T04:58:10+09:00", "type": "slice_status_changed", "slice": "P2.F4", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-20T04:58:11+09:00", "type": "slice_status_changed", "slice": "P2.REVIEW", "old_status": "changes_requested", "new_status": "in_progress"}
+{"ts": "2026-08-20T05:05:25+09:00", "type": "doc_version_created", "doc": "architecture", "version": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:06:14+09:00", "type": "doc_version_created", "doc": "data", "version": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:07:46+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:09:01+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:10:14+09:00", "type": "doc_version_created", "doc": "product", "version": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:11:01+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers", "source": "P2.REVIEW"}
+{"ts": "2026-08-20T05:14:45+09:00", "type": "slice_status_changed", "slice": "P2.REVIEW", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-20T05:14:45+09:00", "type": "phase_reviewed", "phase": "P2", "verdict": "pass", "reviewer": "slice-executor-high"}

@@ -5,19 +5,19 @@
 
 ## Pointer
 
-- Current phase: `P2`
-- Current slice: `P2.REVIEW`
-- Next slice: `none`
+- Current phase: `P3`
+- Current slice: `P3.DECOMP`
+- Next slice: `P3.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-20T04:58:10+09:00`
+- Rebuilt at: `2026-08-20T05:14:45+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
-| [ ] `P2` | `in_progress` | `changes_requested` | Data & Extraction Pipeline | `P2.REVIEW` | `works/phases/active/P2` |
+| [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design + build) | `P3.DECOMP` | `works/phases/active/P3` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -49,7 +49,7 @@
 | [x] `P2.F2` | `done` | Reword evalset docstrings judge-neutrally (provenance honesty) | `fix` | `works/phases/active/P2/slices/P2.F2` |
 | [x] `P2.F3` | `done` | Stamp judged_by provenance into labels.json + report | `fix` | `works/phases/active/P2/slices/P2.F3` |
 | [x] `P2.F4` | `done` | Fix check_against_items matcher and re-freeze the 정정 recall proxy | `fix` | `works/phases/active/P2/slices/P2.F4` |
-| [ ] `P2.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
+| [x] `P2.REVIEW` | `done` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
 
 ## Phase P3: Mijual Web Service (design + build)
 
