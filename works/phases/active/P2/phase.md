@@ -1001,6 +1001,95 @@ everything above it (① alone is ▷ ~36 min); and a smaller sheet is one comma
 holds labels**, and the refusal happens before `sample.json` is rewritten, so the frozen
 sample and the labels can never drift apart.
 
+### Appended by `P2.S9` — Phase B (2026-08-20)
+
+**N89 — the accuracy numbers are CLAUDE-JUDGED (cross-model), not human ground truth, and
+the provenance is part of the number.** The operator amended the slice on 2026-08-20 —
+verbatim: _"you self evaluate and self validate. since the extraction done by gemini and you
+are a claude fable. try by yourself."_ — so all 344 labels were judged by the slice executor
+(Claude, Opus 5) against each row's quote and, where ±120 chars was not enough, the **full
+stored 본문 read out of Postgres**. The §7 prose fields were extracted by **Gemini**, so no
+model graded itself; the 69 실적 rows were read by no model at all (a parser audit). But this
+is **inter-model agreement, not adjudication**: no human has verified a single label, a
+shared misreading of a Korean disclosure convention would be invisible to both models, and
+nothing in this phase may be described as "hand-labelled". The human override is free and
+unchanged (overwrite column A of `evalset/sheet.csv`, re-run `import` + `report`; the sample
+is frozen so only re-judged rows move). Provenance is now carried in three places —
+`LABELING.md`'s footer, `P2.S9` result, this note — because **`labels.json` has no field for
+it**, which is itself a small fix-slice item (`judged_by`). Spend: **0 LLM calls, 0 OpenDART
+requests.**
+
+**N90 — first measured extraction accuracy: 98.6 % strict on what the product would show,
+0 `wrong` in 344 rows, and the whole strict-error surface is ONE defect class.** Random picks
+(the only pick a rate is computed from): **213/216 = 98.6 %, 95 % Wilson [96–100 %]**, 100 %
+with `partial` counted; pooled across picks, 291 `correct` + 5 `partial` of 296 shown rows;
+344/344 judged with **0 `skip`**. All three strict misses are 실적보고서 figures where the value
+is a **correct sum of two table rows but the citation points at one addend** — SKC
+`20260522000297` (예탁결제원 청약 11,307,456 **+ 직접청약 239** = 11,307,695; and 초과청약
+1,889,818 **+ 41**) and 에스에너지 `20260312000380` (12,001,809 **+ 866**). The summing is
+right — not summing would under-report 청약 and over-report 실권주 — so the defect is the
+**citation contract**: §3.6 promises a tappable number that lands on the text saying it, and
+these land on a different number. ▷ **multi-span citation (or "sum of N cited rows")**, ~10 %
+of 실적 filings carry the split-row form. The two remaining `partial`s are `correction_
+interpretation` completeness, not falsehood (알파AI `20250930000580` omits 이자지급방법;
+아시아나항공 `20260713000482` lists the footnote *references* as its changes while its 요약 is
+accurate). **Read 100 % cells as "no error in n ≈ 10–22", not as solved** — and note the
+inflation sources honestly: this is the post-S7/S8 pipeline, 26 of 275 model rows (9.5 %) are
+`absent`/null readings, and the gate had already removed 48 rows from the shown set.
+
+**N91 — over-blocking, measured: the gate blocked 48 rows in this sample and EVERY ONE was a
+correct reading (19/19 random, 48/48 pooled).** In this sample the gate bought **zero**
+precision: it removed no error. That is not "the gate is broken" — 30 of the 48 are blocks
+the product wants (`field_absent` 26, `superseded_api_reference` 4). The other **18 are a
+price list with three fixable causes**: (a) **API-vs-본문 정정 lag, 5 rows** — the model read
+the corrected 본문 and the gate compared it against a stale API row (엑시큐어 `20260630000509`
+납입일 2026-12-30 vs API `[2025-09-18, 2028-09-18]`; 알파AI `20250930000580` 2025-12-19 vs
+2025-09-22; 제이에스링크 `20251204000439` 2025-01-15 vs 2026-10-02; 모다이노칩 `20260730000170`
+통지 09-17~10-16 vs 03-09~03-23) — **the gate's reference data was wrong, not the reading**;
+(b) **`span_unresolved`, 5 rows** — correct readings whose quote concatenates two
+non-contiguous document lines (N76's ▷ 49.2억 pattern, now confirmed on LB세미콘, 진양폴리우레탄,
+캠시스, 에이럭스, 엑시큐어); (c) **`lockup_not_quantified`, 4 rows** — a correctly read "12개월"
+withheld for lacking a derived 해제일. Also confirmed as over-blocks: `method_not_enumerated`
+×2 (이렘 — full-text search shows the filings contain no 일반공모/인수/미발행 clause, so
+`method: 기타` was faithful) and `no_correction_rows` ×2 (풍전약품, 현대바이오 — the model read
+real changes out of tables the deterministic 정정표 parser cannot reach).
+
+**N92 — the 정정-해석 recall proxy is a FLOOR, not a measurement: a matcher bug understates
+it (85.3 % → 88.7 %), and content-level coverage is ≈ 99 %.** In
+`src/mijual/extract/runner.py:464-475` (`check_against_items`) the value-fallback arm
+(`new_key in item["after"]`) is evaluated per item **inside the same loop as the item-name
+match**, and nothing stops several changes from claiming the same item — so when a filing
+corrects many rows **to the identical string** (에이전트AI `20260619000455` moves five schedule
+rows to `-(추후 확정)`) every change binds to item 0 and four covered rows are counted
+`uncovered`. A read-only re-match with a one-to-one, name-first matcher gives **20 uncovered
+of 177 → 88.7 %** (3 records affected: `20260619000455` 5→1, `20250925000611` 1→0,
+`20251204000439` 1→0; still 0 unsupported of 157). Judging the content of the 19 uncovered
+items in the 32 sampled rows: **1** costs a reader information (알파AI's 이자지급방법); the other
+18 are duplicate restatements of an already-listed change or bare `(주N)` footnote references
+→ **≈ 99 % of investor-meaningful items covered**. **Not fixed here on purpose**:
+`deterministic_check` is stored evidence written by S4 across the corpus, and correcting the
+matcher without re-running S4 would leave code and database disagreeing. ▷ fix slice = fix
+the matcher + re-run the check + re-freeze the number.
+
+**N93 — three findings that are not accuracy numbers.** (a) **N68's five `lapse_mismatch`
+filings are ISSUER table errors, not parser errors, and must be surfaced as such.** LB세미콘
+`20260811000597` prints, under the headers `신주인수권증서 청약 실권주 | 구주주 배정단수주 |
+실권주 및 단수주 총계`, the row `2,109,436 | 1,776,014 | 333,422` — a "총계" smaller than its own
+first column, because the issuer filled the row with `[실권주+단수주 총계, 초과청약 배정분,
+일반공모 잔여분]`; 인베니아 `20260206000357` (`563,178 | 2,821 | 560,357`) and 피엠티
+`20260629000392` (`416,831 | 416,276 | 555`) have the same shape, while 대한광통신 and 라온피플
+are internally consistent and simply define 실권주 to include the 단수주. The extraction reads
+the header-named cell and records the gap in `facts.notes` — right behaviour; the product
+must show **"발행사 기재 불일치"** rather than silently reconcile. (b) **#7 `option_schedule`
+carries two date conventions**: `start_date`/`end_date` are sometimes the 조기상환**기일** range
+(엑시큐어 `20260630000509`-class filings) and sometimes the 청구**기간** range — both
+document-grounded, each filing self-consistent, so no row is `wrong`, but a UI that puts them
+on one timeline compares a claim window against an exercise date. ▷ wants a per-option
+`date_basis` marker, not a prompt change. (c) **`rcept_no 20250930000508` is stored under DART
+`corp_name` 풍전약품 (corp_code `01110474`) while its own 본문 header reads 에스씨엠생명과학** — a
+DART master/rename artifact: every extracted value is correct against the body, only the
+display name would be wrong.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1332,7 +1421,8 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   (P2.S9 Phase A; the measured numbers follow at Phase B).** `mijual.evalset` +
   `evalset/{sample.json,sheet.csv,LABELING.md}`: a **deterministic** (seed 20260907,
   per-stratum seeded shuffle over a sorted pool) stratified sample of **344 (filing, field)
-  rows over 99 filings**, hand-labelled by the operator, scored at **0 OpenDART requests and
+  rows over 99 filings**, labelled through one sheet (**this round: Claude-judged, not
+  hand-labelled — see the Phase B note below**), scored at **0 OpenDART requests and
   0 LLM calls** with no database in the read-back path (the sample is frozen to JSON, so a
   label stays meaningful after the corpus moves — N55/N83). The method itself is the durable
   part: **both error directions are measured** — precision of gate-passed/`tbd` fields *and*
@@ -1344,6 +1434,30 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   **0 %** (증권발행실적보고서 figures — no model reads them) through **4–8 %** (① prose) to
   **44 %** (③, mostly N46's superseded-API scoping, not misreading). Source: `P2.S9` result,
   findings N84–N88.
+
+- **`qa`** / **`data`** / **`decisions`** — **first measured extraction accuracy, and the
+  provenance that qualifies it (P2.S9 Phase B).** **`decisions`:** the operator amended
+  P2.S9 on **2026-08-20** to replace the human labelling pass with **Claude self-evaluation**
+  ("you self evaluate and self validate. since the extraction done by gemini and you are a
+  claude fable. try by yourself."), so the durable statement of accuracy in this repo rests on
+  **cross-model judgement — Claude (Opus 5) judging Gemini extractions — and explicitly not on
+  human ground truth**; every doc that quotes a number must carry that qualifier, and no doc
+  may say "hand-labelled". **`qa`:** on the frozen 344-row sample, **precision of what the
+  product would show = 98.6 % strict (213/216 random picks, 95 % Wilson [96–100 %]), 100 %
+  with `partial`; 0 `wrong` and 0 `skip` in 344 rows**; the whole strict-error surface is one
+  defect class — a 실적보고서 value correctly summed from two table rows but cited by one addend
+  (SKC, 에스에너지). The gate's **over-blocking price is 48/48**: every gate-blocked row in the
+  sample was a correct reading (30 of them blocks the product wants — `field_absent`,
+  `superseded_api_reference`; 18 actionable — stale API reference data, single-span citation
+  for multi-line quotes, quantified 개월 withheld for a underived 해제일). The 정정-해석 recall
+  proxy is a **floor**: 85.3 % as stored, **88.7 %** re-matched (a matcher bug in
+  `check_against_items` understates it), ≈ **99 %** of investor-meaningful items.
+  **`data`:** N68's five `lapse_mismatch` filings are **issuer table errors** (a 총계 smaller
+  than its own first column), so the exposed contract is "발행사 기재 불일치", never a silent
+  reconciliation; `option_schedule` dates carry two conventions (조기상환기일 range vs 청구기간
+  range) and need a `date_basis` marker; `rcept_no 20250930000508`'s stored `corp_name`
+  (풍전약품) disagrees with its 본문 header (에스씨엠생명과학) — a DART master artifact affecting
+  display only. Source: `P2.S9` result (Phase B, 2026-08-20), findings N89–N93.
 
 ## Open Questions
 

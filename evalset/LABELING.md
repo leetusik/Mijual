@@ -43,3 +43,20 @@ gives a complete measurement for the rights types above it. Check progress any t
 
 Save the file as **CSV, UTF-8**. Only `row_id`, `label` and `corrected_value` are ever read
 back, so a spreadsheet reformatting the other columns costs nothing.
+
+---
+
+## 이 저장소에 현재 들어 있는 라벨의 출처 (2026-08-20)
+
+`evalset/sheet.csv`의 344개 라벨과 `evalset/labels.json`은 **사람이 매긴 것이 아닙니다.**
+운영자 지시(2026-08-20, "you self evaluate and self validate. since the extraction done by
+gemini and you are a claude fable. try by yourself.")에 따라 **P2.S9 슬라이스 실행자인 Claude
+(Opus 5)가 직접 판정**했습니다. §7의 10개 항목은 **Gemini**가 추출했고 판정자는 다른 계열의
+모델이므로 자기 채점은 아니지만(cross-model), **사람의 정답(ground truth)은 아니며 사람이
+검증한 적도 없습니다.** 판정 근거는 각 행의 인용문과 Postgres에 저장된 본문 전문이며, 외부
+호출은 0건입니다.
+
+**사람이 다시 판정하려면** 이 문서의 원래 절차 그대로입니다: 확인하고 싶은 행의 A열을 덮어쓰고
+`import` → `report`를 다시 실행하면 됩니다. 표본(`sample.json`)은 고정되어 있으므로 바뀐 라벨의
+행만 수치에 반영됩니다. 측정 결과와 그 한계는
+`works/phases/active/P2/slices/P2.S9/result.md`의 Phase B 절에 있습니다.

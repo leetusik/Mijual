@@ -166,7 +166,7 @@ class EvalReport:
             f"partial 포함 시 {_pct(shown.lenient)}"
         )
         lines.append(
-            f"- 게이트가 차단한 행 중 사람이 '맞다'고 본 비율(과차단): "
+            f"- 게이트가 차단한 행 중 판정자가 '맞다'고 본 비율(과차단): "
             f"**{_pct(_rate(blocked.correct, blocked.judged))}** "
             f"({blocked.correct}/{blocked.judged})"
         )

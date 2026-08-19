@@ -32,3 +32,13 @@ Fixing whatever accuracy issues the labels reveal (that's review/fix-slice mater
 ## Verification (Phase A)
 
 - `pytest` green; sampler ×2 → identical sample; sheet + instructions exist and open cleanly; `import` on a hand-made 3-row test CSV works and the sample report math checks; `workflow.py validate` passes.
+
+## Amendment — operator directive (2026-08-20): Claude self-evaluation replaces the human labeling pass
+
+The operator's verbatim direction: "you self evaluate and self validate. since the extraction done by gemini and you are a claude fable. try by yourself."
+
+Phase B therefore proceeds now with **Claude (the slice executor) as the labeler** instead of the operator:
+1. Judge every row of `evalset/sheet.csv` yourself: compare the extracted value against the verbatim quote and context; for any row where ±120 chars is not enough to judge confidently, pull the fuller 본문 from the stored snapshot (bodydoc) before deciding. Use `correct` / `wrong` / `partial` honestly; use `skip` only where even the full document leaves the judgment genuinely undecidable — never to save effort.
+2. **0 Gemini calls** — the graded model must not grade itself. The judge is you (Claude). OpenDART ≤ 20 requests only if a sampled snapshot is missing.
+3. Fill the sheet, run `python -m mijual.evalset import`, then `report`, and write the Phase B accuracy report into result.md: per-field precision with Wilson CIs (random picks only), the forced hard cases case-by-case, gate-block-rate, and both error directions.
+4. **Provenance is load-bearing**: everywhere the numbers appear (result.md, Doc impact, any stored metadata the machinery has for it), the labels are "Claude-judged (cross-model: Claude Fable-orchestrated executor judging Gemini extractions), operator-directed 2026-08-20 — not human ground truth; human spot-check possible via the same sheet". No inflation, no "hand-labeled" phrasing anywhere. Record the intent amendment as an N-note and reflect it in the Doc impact line (`qa`/`decisions`).
