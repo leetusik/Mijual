@@ -3,7 +3,7 @@
   "phase_id": "P2",
   "name": "LLM extraction (layer 1): Gemini schema extraction for the 10 fields + 정정 re-extraction",
   "kind": "feature",
-  "status": "todo",
+  "status": "pending",
   "order": 4,
   "depends_on": [
     "P2.S3"
