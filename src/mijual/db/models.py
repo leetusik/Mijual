@@ -212,10 +212,25 @@ class Event(Base):
     #: Comma-separated collector flags that need a human or a later slice to
     #: look — currently ``event_key_collision`` (two distinct filings share this
     #: event key: same corp, same subtype, same 접수일 — measured on 한솔테크닉스
-    #: ``20260410003732`` / ``…3738``) and ``detail_conflict`` (the detail rows
-    #: collapsed onto this key disagree about whether a right exists). Not a
-    #: suppression: a flagged event is still exposed unless a reason is set.
+    #: ``20260410003732`` / ``…3738``), ``detail_conflict`` (the detail rows
+    #: collapsed onto this key disagree about whether a right exists) and
+    #: ``withdrawn`` (``P2.S5``: a 정정사항 row retracted the decision). Not a
+    #: suppression: the event keeps every snapshot and every extraction.
     review_flags: Mapped[str | None] = mapped_column(String(200))
+
+    # -- P2.S5's exposure contract (re-derived on every gate run) ----------
+    #: ``exposable`` | ``withdrawn`` | ``flagged`` | ``suppressed`` |
+    #: ``no_document`` — the single verdict P3 reads. Never hand-written: it is
+    #: re-derived from suppression + flags + the 철회 detector on every run, so a
+    #: stale verdict cannot outlive the evidence that produced it.
+    exposure_state: Mapped[str | None] = mapped_column(String(30))
+    #: Why, when the state is not ``exposable`` (a flag name, a suppression
+    #: reason, or ``withdrawn``). Plain VARCHAR — a new code costs no migration.
+    exposure_reason: Mapped[str | None] = mapped_column(String(60))
+    #: The evidence line behind the state — for ``withdrawn``, the 정정사항 row
+    #: (``rcept_no``, 항목, 정정 전 → 정정 후, span) that says so.
+    exposure_note: Mapped[str | None] = mapped_column(Text)
+    exposure_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen_at: Mapped[datetime] = mapped_column(
@@ -232,6 +247,11 @@ class Event(Base):
     @property
     def is_suppressed(self) -> bool:
         return self.suppressed_reason is not None
+
+    @property
+    def is_exposable(self) -> bool:
+        """The one-liner P3 filters on. Derived by :mod:`mijual.gates.exposure`."""
+        return self.exposure_state == "exposable"
 
     @property
     def latest_version(self) -> "FilingVersion | None":
@@ -457,9 +477,10 @@ class Extraction(Base):
     leaves them ``NULL`` with ``span_status='unresolved'`` — recorded, never
     silently promoted.
 
-    The ``gate_*`` columns are ``P2.S5``'s and are nullable and unset here, so
-    the gate layer can attach a verdict + reason code without a redesign (and a
-    richer per-gate history, if it needs one, can still be a separate table).
+    The ``gate_*`` columns are ``P2.S5``'s §3.6 layer-2 verdict: ``passed`` /
+    ``failed`` / ``tbd`` / ``not_evaluable`` with a reason code, re-derived from
+    scratch on every gate run. Only ``passed`` and ``tbd`` are ever shown — a
+    failed field is **recorded with its reason and never exposed**.
     """
 
     __tablename__ = "extraction"
@@ -516,10 +537,15 @@ class Extraction(Base):
     prompt_version: Mapped[str | None] = mapped_column(String(20))
     extracted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
-    # -- P2.S5's room (declared, unused here) ------------------------------
-    #: ``pass`` | ``block`` — set by the gate layer, never by the extractor.
+    # -- P2.S5, the deterministic gate (§3.6 layer 2) -----------------------
+    #: ``passed`` | ``failed`` | ``tbd`` | ``not_evaluable`` — set by
+    #: :mod:`mijual.gates`, never by the extractor.
     gate_status: Mapped[str | None] = mapped_column(String(20))
+    #: The named reason a field is not shown (``span_unresolved``,
+    #: ``method_not_enumerated``, …). :data:`mijual.gates.outcome.REASON_LABELS_KO`
+    #: holds its Korean rendering.
     gate_reason_code: Mapped[str | None] = mapped_column(String(60))
+    #: One audit line: every check the gate ran, in order, with its outcome.
     gate_note: Mapped[str | None] = mapped_column(Text)
     gate_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -533,6 +559,11 @@ class Extraction(Base):
     def is_citable(self) -> bool:
         """Has a value **and** a span that re-slices to the quote (N33)."""
         return self.status == "extracted" and self.span_status == "resolved"
+
+    @property
+    def is_exposable(self) -> bool:
+        """Passed its §7 gate, or is an honest ``추후결정``. Nothing else shows."""
+        return self.gate_status in ("passed", "tbd")
 
     def __repr__(self) -> str:
         return (

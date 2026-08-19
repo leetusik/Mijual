@@ -492,6 +492,90 @@ remaining source, and collecting it is collector-side work (a 증권신고서 is
 a version of these events), so `mijual.extract.inputs` implements and tests the §5 section-slicing
 path but no run needed it.
 
+### Appended by `P2.S5` (2026-08-20)
+
+**N44 — the gate verdict has FOUR states, and the fourth is what keeps the trust claim honest.**
+`passed` / `failed(reason)` / `tbd` / `not_evaluable(reason)`, written to
+`Extraction.gate_status` / `gate_reason_code` / `gate_note` / `gate_checked_at`; only `passed` and
+`tbd` are ever shown. The mechanism matters as much as the vocabulary: a gate is a **list of named
+`Check`s** and the verdict is *derived* — a check whose reference value does not exist is
+**skipped, never passed**, and a gate all of whose checks were skipped is `not_evaluable`, because
+a gate that compared nothing has not vouched for anything. `gate_note` carries the whole list
+(`citation=ok(verified) date_order=ok(…) after_record_date=ok(> 2026-07-28) …`), so every verdict
+is auditable without re-running it. Conservative default everywhere: `not_evaluable` is **not
+exposed**.
+
+**N45 — §7's gate column is a specification written before the corpus was measured, and three of
+the ten rows needed the data to settle them.** Do not re-litigate these; the measurements are in
+`P2.S5`'s result.
+(a) **#2 청약 취급처** — 55 우리사주조합/구주주 entries match 본문 `11.` **exactly, 0 mismatches**, but
+**23 일반공모 entries have no `11.` row at all**: the 실권주 일반공모 청약 is a *later, separate*
+window (계양전기 구주주 09-03~09-04 vs 일반공모 09-08~09-09). Equality would have failed 23 correct
+fields, so those are gated on **ordering** (must start after the 구주주 청약 closes).
+(b) **#5 발행가 산식** — 본문 `6. 확정예정일` is the day the price is **결정**되고, the prose names the
+day it is **공시**된다: over 19 comparable ① filings **16 agree and 3 differ by exactly +1 day**
+(계양전기, HLB제약, SG). The gate is therefore a **window** `[본문 6. 확정예정일, 첫 청약일]`, not an
+equality. The MAX(…) operands §7 names are 가중산술평균주가 — market data this repo does not hold —
+so what is checked is the *shape* (확정 산식 present, 할인율 a fraction) plus that schedule window.
+(c) **#4 초과청약** — a filing states a **ratio**, never a holder's 배정주식수, so §7's
+*배정주식수 × ratio* arithmetic cannot be a document check. It lives in
+`mijual.calc.excess_subscription_cap` (unit-tested, P3's calculator) and the gate checks the
+normalized ratio against the ratio the **cited text** states (`1주당 0.2주` / `20%`) — 27/27 agree,
+and it catches the real failure mode of a normalized number, a unit slip.
+
+**N46 — the stored API detail row is a reference value for the CURRENT version and for no other.**
+N2 said the detail endpoints return one row per event, newest only; the consequence for layer 2 is
+that comparing a **superseded** 본문 against today's API row measures the *correction*, not the
+reading. The first gate run failed 3 ③ rows exactly that way (로젠, 알에프텍, 모다이노칩 —
+all previous versions). `VersionContext.api_value()` is now version-scoped and those rows read
+`not_evaluable(superseded_api_reference)`. Any later API-backed check (gates 6–8, ②) inherits it.
+With the scoping in place: **9/9 current-version ③ rows equal `mgsc_mgop_rcpd_bgd/_edd` exactly.**
+
+**N47 — the 철회 detector is a ROW-SHAPE test, and the corpus says there are FOUR withdrawals, not
+two.** Over **1,282 정정사항 rows in 328 distinct 본문 documents**, `철회` appears in the 정정 후 cell
+of **14 rows and only 4 are withdrawals** — a 71 % false-positive rate for the obvious keyword test
+(N39's warning, now quantified). The rules: 정정 후 ≤ 30 squashed chars, the cell **ends** with 철회,
+the 항목 carries **no form number**, and the subject either restates 정정 전 or names a filing-level
+decision. On this corpus the length bound alone is exact. Findings: 썸에이지 `20260805000454` and
+제이알글로벌리츠 `20260205000605` (both were exposable — now `withdrawn`), plus **디모아
+`20260625000227`** and **코퍼스코리아 `20260130000680`**, which sit on already-suppressed
+`unpaired_correction` placeholders and change no exposure. **코퍼스코리아 is the reason the subject
+rule is not just "restates 정정 전"**: its 항목 is the bare `전 항목` and its 정정 전 is `-`, so the
+first draft missed it silently. ③/② generalise on shape (`회사합병 결정 → 회사합병 철회` passes,
+unit-tested) but **no ③/② case exists in this corpus** — untested against real data, say so.
+
+**N48 — the exposure contract is one derivation and P3 must never re-implement it.**
+`mijual.gates.exposure`: an **event** is exposable iff not suppressed, not withdrawn, and carrying
+no identity/rights conflict flag (`warrant_conflict`, `detail_conflict`, `event_key_collision`,
+`hint_split_evidence`); a **field** iff its gate said `passed` (show the value) or `tbd` (show
+`추후결정` — `FieldView.value` is `None` there **by design**, so a superseded date cannot leak). The
+two are independent; `EventExposure.renderable_fields` is the only thing that combines them.
+Persisted on `Event.exposure_state/_reason/_note/_checked_at` (four additive nullable columns via
+`ensure_columns`, N27) so P3 can filter in SQL and make **no OpenDART call in the request path**.
+Side effect worth keeping: blocking 이렘's flagged twin makes the board show that `rcept_no` **once**
+instead of twice (N21's residue).
+
+**N49 — what the product may actually show today** (0 requests, 0 calls, regenerated from the DB):
+**35 of 44 events exposable — ① 25/29** (2 철회, 2 flagged) **and ③ 10/15** (1 flagged, 4 with no
+본문) — carrying **157 renderable field instances**. Per field on an exposable event:
+매매기간 25 (**23 live + 2 추후결정**), 청약 취급처 25 (2 추후결정), 초과청약 25, 정정 해석 26,
+실권주 24, 발행가 산식 24, 반대의사 8. Blocked: `detail_conflict` 3, `withdrawn` 2, `no_document` 4.
+Field-level: **275 passed / 4 tbd / 5 failed / 20 not_evaluable** over 304 rows.
+
+**N50 — every displayed number now comes from one deterministic module (`mijual.calc`), and S8
+inherits it.** `d_day` (KST, `D-3`/`D-DAY`/`D+2`, `None` in → `None` out), `window_state`
+(**inclusive at both ends** — the last 청약일 is still a 청약일), `allotted_shares` /
+`excess_subscription_cap` (Decimal × floored 단수주 절사), and
+`lapsed_warrant_value(주수, 배정비율, 증서가치)` → Decimal 원, rounded **once** at the end. §3.6's
+*계산은 결정론* clause in code; no LLM, no clock unless one is passed.
+
+**N51 — three exposable-quality ① / ③ events are blocked on IDENTITY, not on their content**, and
+unblocking them is collector-side work: 한솔테크닉스 (a real 주주배정 유증), 이렘, 모다이노칩's 로젠
+chain, all `detail_conflict` + `event_key_collision`. S3 already stored the 본문 `최초제출일` hints
+that would split those keys (`hint_split_evidence`); minting the missing events is a *collector*
+decision (N32), so it is handed forward — a good `defer-job` candidate worth ~1 event of
+judging-window value per collided key.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -635,6 +719,45 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   separate 0-call pass**, so improving the locator never re-pays for extraction. Source: `P2.S4`
   result (2026-08-19/20).
 
+- **`architecture`** (same note as the S1/S2/S3/S4 entries) / **`data`** — **§3.6 layer 2 landed
+  (P2.S5), and it is where the product's trust claim becomes enforceable:** `mijual.gates`
+  implements **one named gate per field-matrix §7 row plus a citation gate on every field**, judged
+  against evidence the model never saw (본문 labels + the stored API detail row — N38 read from the
+  other side), and writes a **four-state verdict** to `Extraction.gate_*`: `passed` / `failed(code)`
+  / `tbd` / `not_evaluable(code)`, of which **only `passed` and `tbd` are ever shown**. A skipped
+  check is never a pass, and a gate that compared nothing is `not_evaluable` — conservative by
+  construction. The run is **LLM-free and request-free**, re-derives every verdict from scratch
+  (drop-and-re-derive, S3's pattern) and is idempotent (two runs byte-identical). Also record the
+  three places §7's gate column needed the corpus to settle it: **#2** 일반공모 청약 entries have no
+  본문 `11.` reference (they are a *later* window → gated on ordering), **#5** 본문 `6. 확정예정일` is
+  the 결정일 and the prose names the 공시일 (16 agree / 3 differ by exactly +1 day → the gate is a
+  **window**, not an equality), **#4** §7's *배정주식수 × ratio* arithmetic needs a holder's 주수 and
+  therefore lives in `mijual.calc`, not in a document check. And the version rule that follows from
+  N2: **a stored API detail row is a reference value for the current version only** — a superseded
+  reading is `not_evaluable(superseded_api_reference)`, never a failure. Source: `P2.S5` result
+  (2026-08-20), findings N44–N46.
+- **`data`** / **`product`** — **two document states enter the documented field model as
+  first-class, and the field model gains an exposure boundary:** **철회** is now detected
+  deterministically from one `3. 정정사항` row (shape rules, not the keyword — over **1,282 정정사항
+  rows in 328 documents** the word `철회` appears in 14 정정 후 cells and only **4** are withdrawals,
+  a 71 % false-positive rate), and a withdrawn event renders **"이 유상증자는 철회되었습니다"** instead
+  of a cancelled countdown; **`추후결정`** is a verified citation with null dates and is shown as
+  추후결정, with the superseded date structurally unable to leak (the exposed value is `None`).
+  The **exposure contract** is the durable P2 → P3 boundary and P3 never re-implements it: an event
+  is exposable iff not suppressed, not withdrawn and carrying no identity/rights conflict flag
+  (`warrant_conflict`, `detail_conflict`, `event_key_collision`, `hint_split_evidence`); a field iff
+  its gate passed or is `tbd`. Persisted on `Event.exposure_state/_reason/_note/_checked_at` so the
+  board filters in SQL and makes **no OpenDART call in the request path**. Measured today:
+  **35 of 44 events exposable (① 25/29, ③ 10/15), 157 renderable field instances, 275/304 field rows
+  passed.** Source: `P2.S5` result (2026-08-20), findings N47–N49.
+- **`decisions`** — **O-8 and O-9 CLOSED (see below), and the conservative default is now stated as
+  a pair:** conflicting evidence is **not** a reason to delete an event (S2/S3's rule — never
+  suppress on a conflict) and **not** a reason to publish it (S5's rule — never expose on a
+  conflict). Also: **all displayed arithmetic is one deterministic module** (`mijual.calc` —
+  D-day in KST, inclusive windows, floored 단수주, Decimal 원 rounded once), which is handoff §3.6's
+  *계산은 결정론* clause in code and the arithmetic `P2.S8` inherits. Source: `P2.S5` result
+  (2026-08-20), findings N44/N48/N50.
+
 ## Open Questions
 
 - ~~**O-1:**~~ **CLOSED by the operator (2026-08-19), recorded at `P2.S4`.** The **daily OpenDART
@@ -648,12 +771,18 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   present on the credential (`models.get` → `3.7-flash-08-2026`); and the **thinking level is a
   project-side preset** — a no-config probe returned 423 thought tokens — so no thinking config is
   hardcoded anywhere. ▷ Cost basis recorded: $0.75 / $3.75 per 1M in/out tokens.
-- **O-9 (new, `P2.S5`, countdown-critical):** **what does a 철회 (withdrawn) 유상증자 do to exposure,
-  and who detects it?** Two currently-exposable ① events are already withdrawn and the deterministic
-  ① filter cannot see it (N39). The signal is one 정정사항 row (`유상증자 결정` → `유상증자 철회`) and
-  the detector belongs in the gate layer. The companion question — how `추후결정` (schedule suspended,
-  N40) is shown — is the same decision in a softer form: neither may fall back to the superseded
-  schedule. Must not reach `P2.S8`/`P2.S9` unresolved.
+- ~~**O-9:**~~ **CLOSED by `P2.S5` (N47, N48).** A **철회 event is not exposable, and it is not
+  deleted**: `Event.exposure_state='withdrawn'` (+ a `withdrawn` review flag and an `exposure_note`
+  carrying the 정정사항 row with its span), and the board renders
+  **"이 유상증자는 철회되었습니다"** in place of the countdown — a demo asset like the 소규모합병
+  suppression. The detector is deterministic, in the gate layer, and keys on the **row shape**, not
+  the word `철회` (measured 71 % false positives for the keyword). It found **4** withdrawals, not
+  the 2 N39 knew about: 썸에이지 `20260805000454` + 제이알글로벌리츠 `20260205000605` (both were
+  exposable) and 디모아 `20260625000227` + 코퍼스코리아 `20260130000680` (already suppressed
+  placeholders). **`추후결정` is `tbd`** — exposable, rendered as `추후결정`, and the exposed value is
+  structurally `None` so the superseded schedule cannot leak (경남제약 `20260623000409`, 에이전트AI
+  `20260619000455`). ▷ The ③/② generalisation of the detector has **no case in this corpus**: it is
+  unit-tested on a constructed `회사합병 결정 → 회사합병 철회` row and untested against real data.
 - **O-3 (`P2.S9`):** the ~100-filing hand-labelling is **operator co-work** — expect a real `pending`
   gate. Decide the labelling format and the per-field precision definition before asking for the
   operator's time.
@@ -666,14 +795,17 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   The value was removed from `WARRANT_BEARING_IC_MTHN` and the event is suppressed
   `no_warrant_bodymun`. ▷ Evidence is one filing; the generalisation rests on the form template,
   and the per-document 본문 check would surface a counter-example as a `warrant_conflict`.
-- **O-8 (new, `P2.S5`):** the one **`warrant_conflict`** event — 제이알글로벌리츠 `01415892`,
-  `ic_mthn = 주주배정후 실권주 일반공모` vs 본문 `18. 신주인수권양도여부 = 아니오` — is **kept live and
-  flagged** because the phase rule forbids suppressing on conflicting evidence. The gate layer (or
-  the operator) must decide whether `warrant_conflict` blocks exposure; the honest reading of the
-  본문 is that no tradeable 증서 exists. See N30 — do not let it reach `P2.S8`/`P2.S9` unresolved.
-  **Update (`P2.S4`, N39): that same filing is a 철회** — its 정정사항 table reads `유상증자 결정` →
-  `유상증자 철회` and the extractor found all five prose fields absent — so in practice the conflict is
-  moot and O-9's 철회 rule decides it; the formal `warrant_conflict` policy is still S5's to state.
+- ~~**O-8:**~~ **CLOSED by `P2.S5` (N48).** **`warrant_conflict` blocks exposure.** The rule is
+  stated as a pair, and both halves are the same conservative default: conflicting evidence is
+  **not** a reason to delete an event (S2/S3 — never suppress on a conflict) and **not** a reason to
+  publish it (S5 — never expose on a conflict). The blocking-flag set is `warrant_conflict`,
+  `detail_conflict`, `event_key_collision`, `hint_split_evidence`; a blocked event keeps every
+  snapshot, extraction and gate verdict and is simply not rendered. In practice the only
+  `warrant_conflict` case (제이알글로벌리츠 `01415892`) is **also 철회**, and 철회 outranks it as the
+  more specific truth — so the policy is asserted by test rather than by the corpus
+  (`tests/test_gates.py::test_the_exposure_contract_blocks_a_flagged_event_and_shows_only_gated_fields`).
+  Cost measured: 3 events blocked on `detail_conflict` (한솔테크닉스, 이렘, 모다이노칩), all of which
+  are unblockable by a **collector-side** key split, not by relaxing this rule — see N51.
 - **O-6:** ▷ meaning of `estkRs.일반사항.exstk/exprc/expd` (2/35 filled) — not needed by any MVP field;
   answer only if it falls out for free.
 - **O-7 (carried from P1 as Q7, deferred to P2/P3):** 증권사 MTS 권리 메뉴 coverage matrix (handoff §4,
