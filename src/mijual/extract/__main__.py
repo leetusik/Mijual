@@ -15,6 +15,11 @@
     # 4. read back what was stored, spans included (0 calls)
     .venv/bin/python -m mijual.extract show 20260724000546
 
+    # 5. re-derive what is deterministic in what is already stored (0 calls):
+    #    spans from the stored quotes, 정정 해석 scores from the stored 정정사항 rows
+    .venv/bin/python -m mijual.extract relocate
+    .venv/bin/python -m mijual.extract --dry-run recheck   # measure, write nothing
+
 ``--max-calls`` is **on by default** (50): this is the slice that spends real
 money, so an unbounded run has to be asked for explicitly. Nothing here prints,
 writes or accepts a secret — ``mijual.config`` reads the key in-process and it
@@ -37,7 +42,12 @@ from mijual.db.schema_sync import ensure_columns
 from mijual.db.session import create_all, make_engine, make_session_factory, session_scope
 from mijual.extract.client import DEFAULT_MODEL, GeminiClient
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION
-from mijual.extract.runner import relocate_spans, run_corrections, run_extraction
+from mijual.extract.runner import (
+    recheck_corrections,
+    relocate_spans,
+    run_corrections,
+    run_extraction,
+)
 
 RIGHTS = {
     "R1": RightsType.SUBSCRIPTION_WARRANT,
@@ -59,6 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("probe", help="one minimal call; prints usage metadata")
     sub.add_parser("fields", help="print the §7 registry (0 calls)")
     sub.add_parser("relocate", help="re-resolve every stored quote's span (0 calls)")
+    sub.add_parser(
+        "recheck",
+        help="re-score every stored 정정 해석 against its 정정사항 rows (0 calls; "
+        "the global --dry-run, before the subcommand, measures without writing)",
+    )
     sub.add_parser("summary", help="what is stored and what it cost (0 calls)")
 
     run = sub.add_parser("run", help="extract the prose fields of one rights type")
@@ -270,6 +285,11 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_summary(args)
     if args.command == "relocate":
         report = relocate_spans(_factory(args), log=log)
+        print("\n" + report.render())
+        _dump(report, args.report)
+        return 0
+    if args.command == "recheck":
+        report = recheck_corrections(_factory(args), write=not args.dry_run, log=log)
         print("\n" + report.render())
         _dump(report, args.report)
         return 0

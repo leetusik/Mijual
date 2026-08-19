@@ -66,6 +66,7 @@ __all__ = [
     "SAMPLE_PATH",
     "build_sample",
     "collect_rows",
+    "correction_recall",
     "hard_case",
     "load_sample",
     "select_sample",
@@ -569,7 +570,7 @@ def _field_stats(all_rows: Iterable[Row]) -> dict:
     return stats
 
 
-def _correction_recall(session: Session) -> dict:
+def correction_recall(session: Session) -> dict:
     """§7 #10's recall proxy, stored free by S4 (N41): rows the model left uncovered.
 
     Records whose deterministic 정정사항 table did not parse (``items == 0``) are
@@ -578,6 +579,11 @@ def _correction_recall(session: Session) -> dict:
     as a model regression — the corpus's 3 such records account for all 5 of its
     raw unsupported changes, and the gate already blocks each of them
     (``no_correction_rows``).
+
+    Public because it is the one number on the sheet that no label feeds — it is
+    a pure function of the stored records. That is what lets ``refresh-recall``
+    re-freeze it after :func:`mijual.extract.runner.recheck_corrections` re-derives
+    those records, without redrawing the sample the labels were made on.
     """
     totals = Counter()
     records = without_rows = 0
@@ -651,7 +657,7 @@ def build_sample(
         },
         strata=strata,
         field_stats=_field_stats(all_rows),
-        correction_recall=_correction_recall(session),
+        correction_recall=correction_recall(session),
         duplicates_collapsed=collapsed,
         rows=chosen,
     )

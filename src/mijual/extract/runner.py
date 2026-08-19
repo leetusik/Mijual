@@ -28,6 +28,7 @@ of quota).
 
 from __future__ import annotations
 
+import copy
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -57,6 +58,8 @@ from mijual.extract.store import existing_fields, record_call, upsert_extraction
 
 __all__ = [
     "ExtractionReport",
+    "RecheckReport",
+    "recheck_corrections",
     "relocate_spans",
     "run_corrections",
     "run_extraction",
@@ -448,6 +451,83 @@ def _norm(text: Any) -> str:
     return re.sub(r"\s+", "", str(text or ""))
 
 
+def _candidate_items(
+    changes: list[dict[str, Any]], items: list[dict[str, Any]]
+) -> list[tuple[list[int], list[int]]]:
+    """Rows each change could be talking about, split by arm: name, then value.
+
+    The two arms are **exactly** the ones the first implementation used (item
+    name substring either way; else the change's new value inside the row's
+    ``after`` cell, ≥ 4 normalized chars), and they are still evaluated per row
+    in the same order. So a change has a candidate here iff the old matcher
+    would have found it a row — which is what makes ``unsupported`` invariant
+    under this fix (N92: the defect only ever moved ``uncovered``).
+    """
+    candidates: list[tuple[list[int], list[int]]] = []
+    for change in changes:
+        item_key = _norm(change.get("item"))
+        new_key = _norm(change.get("new"))
+        by_name: list[int] = []
+        by_value: list[int] = []
+        for index, item in enumerate(items):
+            row_item = _norm(item.get("item"))
+            if item_key and row_item and (item_key in row_item or row_item in item_key):
+                by_name.append(index)
+            elif new_key and len(new_key) >= 4 and new_key in _norm(item.get("after")):
+                by_value.append(index)
+        candidates.append((by_name, by_value))
+    return candidates
+
+
+def _assign_one_to_one(
+    by_name: list[list[int]], by_value: list[list[int]]
+) -> dict[int, int]:
+    """Claim each 정정사항 row at most once, name arm first.
+
+    The first implementation took each change's *first* candidate row and never
+    checked whether another change already held it, so a filing that corrects
+    many rows **to the identical string** (에이전트AI ``20260619000455`` moves
+    five schedule rows to ``-(추후 확정)``) had all five changes bind to row 0 and
+    four genuinely covered rows counted ``uncovered`` (N92). Recall counts rows,
+    so a row may be covered once.
+
+    Two properties are worth the augmenting-path search: the **item name is the
+    primary key** — name matches are settled first, among themselves, and a value
+    fallback can never displace one, so ``deterministic_item`` still points at
+    the row the change actually names — and within each arm the assignment is
+    maximum, so an unlucky order cannot leave a matchable row unclaimed. Sizes
+    are tiny (≤ ~20 changes × ≤ ~13 rows).
+    """
+    owner: dict[int, int] = {}  # row index -> change index holding it
+
+    def claim(
+        edges: list[list[int]], change_index: int, seen: set[int], movable: set[int]
+    ) -> bool:
+        for item_index in edges[change_index]:
+            if item_index in seen:
+                continue
+            seen.add(item_index)
+            holder = owner.get(item_index)
+            if holder is None or (
+                holder in movable and claim(edges, holder, seen, movable)
+            ):
+                owner[item_index] = change_index
+                return True
+        return False
+
+    named: set[int] = set()
+    for change_index in range(len(by_name)):
+        if claim(by_name, change_index, set(), named):
+            named.add(change_index)
+    valued: set[int] = set()
+    for change_index in range(len(by_value)):
+        if change_index in named:
+            continue
+        if claim(by_value, change_index, set(), valued):
+            valued.add(change_index)
+    return {change_index: item for item, change_index in owner.items()}
+
+
 def check_against_items(
     changes: list[dict[str, Any]], items: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -458,33 +538,36 @@ def check_against_items(
     ``P2.S5``/``P2.S9``, not a crash), and a row the model ignored is recorded as
     ``uncovered``. Neither is corrected here — the extractor does not rewrite the
     model, it measures it.
+
+    Matching is **one-to-one**: a row a change already claimed cannot be claimed
+    again, because the count this feeds is a *recall* measurement and a row can
+    only be covered once. A change whose rows are all held by other changes is
+    still ``supported`` (the table does back it) and carries the row it is about
+    in ``deterministic_item`` — it just adds no coverage.
     """
-    covered: set[int] = set()
+    candidates = _candidate_items(changes, items)
+    assigned = _assign_one_to_one(
+        [names for names, _ in candidates], [values for _, values in candidates]
+    )
     unsupported = 0
-    for change in changes:
-        item_key = _norm(change.get("item"))
-        new_key = _norm(change.get("new"))
-        matched = None
-        for index, item in enumerate(items):
-            row_item = _norm(item.get("item"))
-            if item_key and row_item and (item_key in row_item or row_item in item_key):
-                matched = index
-                break
-            if new_key and len(new_key) >= 4 and new_key in _norm(item.get("after")):
-                matched = index
-                break
+    for index, change in enumerate(changes):
+        matched = assigned.get(index)
+        if matched is None:
+            # Supported (the table does back it), but every row it names or
+            # values is another change's — so it adds no coverage.
+            fallback = candidates[index][0] or candidates[index][1]
+            matched = fallback[0] if fallback else None
         if matched is None:
             unsupported += 1
             change["supported"] = False
         else:
-            covered.add(matched)
             change["supported"] = True
             change["deterministic_item"] = matched
     return {
         "items": len(items),
         "changes": len(changes),
         "unsupported": unsupported,
-        "uncovered": len(items) - len(covered),
+        "uncovered": len(items) - len(assigned),
     }
 
 
@@ -681,4 +764,128 @@ def run_corrections(
                     f"unsupported={checked['unsupported']}"
                 )
 
+    return report
+
+
+# ---------------------------------------------------------------------------
+# deterministic re-check of what is already stored (§7 #10, zero calls)
+# ---------------------------------------------------------------------------
+def _recall_of(totals: Counter) -> float | None:
+    rows = totals["items"]
+    return (rows - totals["uncovered"]) / rows if rows else None
+
+
+def _pct(value: float | None) -> str:
+    return "—" if value is None else f"{value * 100:.2f}%"
+
+
+@dataclass
+class RecheckReport:
+    """What the re-check moved, old vs new. Zero calls, zero OpenDART requests."""
+
+    records: int = 0
+    records_without_rows: int = 0
+    rewritten: int = 0
+    written: bool = True
+    old: Counter = field(default_factory=Counter)
+    new: Counter = field(default_factory=Counter)
+    old_raw: Counter = field(default_factory=Counter)
+    new_raw: Counter = field(default_factory=Counter)
+    moved: list[str] = field(default_factory=list)
+
+    def render(self) -> str:
+        lines = [
+            "task       : recheck (deterministic re-match of stored 정정 해석)",
+            f"records    : {self.records + self.records_without_rows} stored, {self.records} with "
+            f"parsed 정정사항 rows ({self.records_without_rows} without — excluded, N86)",
+            f"rows       : {self.old['items']} deterministic 정정사항 row(s), "
+            f"{self.old['changes']} model change(s)",
+            f"uncovered  : {self.old['uncovered']} -> {self.new['uncovered']}  |  recall "
+            f"{_pct(_recall_of(self.old))} -> {_pct(_recall_of(self.new))}",
+            f"unsupported: {self.old['unsupported']} -> {self.new['unsupported']}",
+            f"rewritten  : {self.rewritten} record(s)"
+            + ("" if self.written else "  — DRY RUN, nothing written"),
+        ]
+        lines.extend(f"  {line}" for line in self.moved)
+        lines.append(
+            f"raw        : all records including unparsed tables — uncovered "
+            f"{self.old_raw['uncovered']} -> {self.new_raw['uncovered']}, unsupported "
+            f"{self.old_raw['unsupported']} -> {self.new_raw['unsupported']} "
+            "(an items==0 record makes every change trivially unsupported — N86)"
+        )
+        return "\n".join(lines)
+
+
+def recheck_corrections(session_factory, *, write: bool = True, log=None) -> RecheckReport:
+    """Re-derive every stored ``deterministic_check`` from what is already stored.
+
+    ``deterministic_check`` is **derived** data — a pure function of the stored
+    ``3. 정정사항`` rows and the model changes stored beside them — so fixing the
+    matcher (N92) must not mean re-running the extraction: this re-scores the
+    corpus at **0 LLM calls and 0 OpenDART requests**, exactly as
+    :func:`relocate_spans` re-derives spans without paying for the quote again.
+
+    Nothing the model produced is touched: values, quotes, notes and spans are
+    left byte-identical, and only ``deterministic_check`` plus each change's
+    derived ``supported`` / ``deterministic_item`` flags are rewritten. Running
+    it twice is a no-op (``rewritten: 0``), and ``write=False`` measures without
+    writing at all.
+    """
+    report = RecheckReport(written=write)
+    with session_scope(session_factory) as session:
+        rows = session.scalars(
+            select(Extraction)
+            .where(Extraction.field_key == "correction_interpretation")
+            .order_by(Extraction.id)
+        ).all()
+        for row in rows:
+            value = row.value if isinstance(row.value, dict) else None
+            stored = (value or {}).get("deterministic_check")
+            if value is None or not isinstance(stored, dict):
+                continue
+
+            items = list(value.get("deterministic_items") or [])
+            interpretation = value.get("interpretation")
+            interpretation = interpretation if isinstance(interpretation, dict) else None
+            before = list((interpretation or {}).get("changes") or [])
+            changes = copy.deepcopy(before)
+            checked = check_against_items(changes, items)
+
+            for totals, source in ((report.old_raw, stored), (report.new_raw, checked)):
+                for key in ("items", "changes", "unsupported", "uncovered"):
+                    totals[key] += int(source.get(key) or 0)
+            if not int(stored.get("items") or 0):
+                report.records_without_rows += 1  # N86: excluded from the quoted recall
+            else:
+                report.records += 1
+                for totals, source in ((report.old, stored), (report.new, checked)):
+                    for key in ("items", "changes", "unsupported", "uncovered"):
+                        totals[key] += int(source.get(key) or 0)
+
+            if stored == checked and before == changes:
+                continue
+            report.rewritten += 1
+            note = (
+                f"{row.rcept_no} uncovered {stored.get('uncovered')} -> {checked['uncovered']}"
+                + (
+                    ""
+                    if stored.get("uncovered") != checked["uncovered"]
+                    else " (row assignment only)"
+                )
+            )
+            report.moved.append(note)
+            if log:
+                log(f"  {note}")
+            if not write:
+                continue
+            # JSON columns are replaced, not mutated in place.
+            new_value = dict(value)
+            if interpretation is not None:
+                new_interpretation = dict(interpretation)
+                new_interpretation["changes"] = changes
+                new_value["interpretation"] = new_interpretation
+            new_value["deterministic_check"] = checked
+            row.value = new_value
+        if write:
+            session.flush()
     return report

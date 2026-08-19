@@ -14,7 +14,11 @@
     # 4. the accuracy report (per-field precision, gate-block rate, over-blocking)
     .venv/bin/python -m mijual.evalset report
 
-Only ``sample`` touches the database. ``import`` and ``report`` read
+    # 5. re-freeze only the label-free 정정 recall proxy after the stored records
+    #    were re-scored deterministically (`python -m mijual.extract recheck`)
+    .venv/bin/python -m mijual.evalset refresh-recall
+
+Only ``sample`` and ``refresh-recall`` touch the database. ``import`` and ``report`` read
 ``evalset/sample.json`` + the sheet, so the report is regenerable long after the
 corpus has moved on — which is the point: a label is only true about the reading
 it was made on.
@@ -47,6 +51,7 @@ from mijual.evalset.sample import (
     DEFAULT_SEED,
     SAMPLE_PATH,
     build_sample,
+    correction_recall,
     load_sample,
 )
 from mijual.evalset.sheet import SHEET_PATH, SheetHasLabels, existing_label_count, write_sheet
@@ -90,6 +95,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     rep = sub.add_parser("report", help="per-field precision + gate-block rate")
     rep.add_argument("--out", default=None, help="also write the markdown here")
+
+    fresh = sub.add_parser(
+        "refresh-recall",
+        help="re-freeze only the label-free 정정 recall proxy in the frozen sample",
+    )
+    fresh.add_argument("--database-url", default=None)
     return p
 
 
@@ -183,6 +194,48 @@ def _cmd_report(args) -> int:
     return 0
 
 
+def _cmd_refresh_recall(args) -> int:
+    """Re-freeze the one figure in the sample that no label feeds.
+
+    The 정정 recall proxy is **derived** from the stored records, not from the
+    draw and not from a label (the report even prints it under *라벨 불필요*), so
+    when those records are re-scored — ``python -m mijual.extract recheck``, after
+    the N92 matcher fix — the frozen copy is simply stale arithmetic and the
+    report goes on printing a number the repo knows is wrong.
+
+    This rewrites **that block and nothing else**: the drawn ``rows``, the seed,
+    the strata, the per-field corpus stats and ``generated_at`` are untouched, so
+    every ``row_id`` a label was made against still means the same reading and
+    ``labels.json`` is never opened. Redrawing the sample (``sample``) is the
+    thing that would break that, which is why this is a separate command.
+    """
+    path = Path(args.sample)
+    sample = load_sample(path)
+    before = dict(sample.correction_recall)
+    with session_scope(_factory(args)) as session:
+        after = correction_recall(session)
+
+    def line(block: dict) -> str:
+        recall = block.get("recall")
+        return (
+            f"{block.get('deterministic_rows')} row(s), uncovered {block.get('uncovered')}, "
+            f"unsupported {block.get('unsupported')}/{block.get('model_changes')} → 재현율 "
+            + ("—" if recall is None else f"{recall * 100:.2f}%")
+            + f" ({block.get('records')} 건)"
+        )
+
+    print(f"stored     : {line(before)}")
+    print(f"corpus     : {line(after)}")
+    if before == after:
+        print("sample     : unchanged — nothing written")
+        return 0
+    sample.correction_recall = after
+    sample.write(path)
+    print(f"sample     : {path} — correction_recall re-frozen "
+          f"({len(sample.rows)} row(s) and every label key untouched)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     return {
@@ -191,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         "status": _cmd_status,
         "import": _cmd_import,
         "report": _cmd_report,
+        "refresh-recall": _cmd_refresh_recall,
     }[args.command](args)
 
 

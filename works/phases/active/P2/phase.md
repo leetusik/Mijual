@@ -1154,6 +1154,45 @@ rows must not keep a machine's stamp), and the report prints the block instead o
 sentence — re-stamped over the existing 344 labels with the label map verified byte-identical
 (339 correct / 5 partial / 0 wrong, all rates unchanged), 0 calls / 0 requests.**
 
+### Appended by `P2.F4` (2026-08-20)
+
+**N100 — N92 is closed: the 정정-해석 recall proxy is a measurement again, 88.70 %, and the whole
+defect was on the scoring side of the pipeline.** `check_against_items` now matches **one-to-one**
+— the item name is the primary key (settled first, among themselves, by augmenting path), the
+value fallback fills what is left and can never displace a name match, and a row is claimed at most
+once because recall counts *rows*. Corpus after the re-score: **177 deterministic 정정사항 rows, 20
+uncovered → 88.70 % (was 26 → 85.31 %), 0 unsupported of 157 model changes, 45 records** (+3 with an
+unparsed table, still excluded — N86). Exactly the three records N92 predicted moved
+(`20260619000455` 5→1, `20251204000439` 1→0, `20250925000611` 1→0) and no others.
+
+**The property that made re-scoring stored evidence safe, and that the next such fix should
+reproduce: `unsupported` is invariant by construction.** The per-row predicate is byte-for-byte the
+old one (name substring either way; else the new value inside `after`, ≥ 4 normalized chars) — only
+the *assignment* changed — so a change is supported now iff it was supported before. Audited on all
+48 stored records against a pre-slice dump: quotes, spans, values, model notes, `deterministic_items`
+and every `supported` flag **identical**; only `deterministic_check` (3 records) and
+`deterministic_item` (6 changes) moved. Nothing the model produced was touched and nothing was
+re-extracted — **0 LLM calls, 0 OpenDART requests**.
+
+**Two places a re-derived number hides, both found the hard way here.** (a) **The gate note embeds
+it**: `gate_correction_interpretation` prints `미언급 N행` into `gate_note`, so three notes disagreed
+with their own record until `python -m mijual.gates run` was re-run — the verdict itself keys only on
+`unsupported`, which is why nothing moved (**566 passed / 4 tbd / 14 failed / 65 not_evaluable over
+649 rows, 488 exposable events — N97 unchanged**, two runs byte-identical). (b) **The frozen evalset
+sample carries a copy**: `evalset/sample.json`'s `correction_recall` block is what
+`python -m mijual.evalset report` prints (the report reads two JSON files and never the database), so
+it was re-frozen with the new `refresh-recall` command — a **2-line diff**, `rows`/seed/strata/field
+stats/`labels.json` untouched, every accuracy figure unchanged (98.6 % strict, 213/216, over-block
+19/19). **Rule: after re-deriving stored evidence, chase the number into every frozen or rendered
+copy — a recheck that stops at the database leaves the artifacts lying.**
+
+**Both re-derivations are now commands, and both are idempotent** (the `relocate` pattern, N37):
+`python -m mijual.extract recheck` (add the global `--dry-run` before the subcommand to measure and
+write nothing) reported `rewritten: 3` then `rewritten: 0`, and `refresh-recall` printed
+`unchanged — nothing written` on its second run. The honest statement for any doc is now
+**88.7 % measured** (not "≥ 88.7 %"), with N92's content-level reading — ≈ 99 % of
+investor-meaningful items — still standing beside it as the qualitative figure.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1536,6 +1575,18 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   prints the block verbatim — so the `qa` version should state *where* the qualifier lives, not a new
   number (all P2.S9 figures unchanged: 339 correct / 5 partial / 0 wrong of 344). Source: `P2.F3`
   result, finding N99.
+
+- **`qa`** / **`data`** — **the 정정-해석 recall proxy is a measurement, not a floor: 88.70 %
+  (P2.F4), and the defect was matcher-side, never a model regression.** **Supersedes the "85.3 % as
+  stored, 88.7 % re-matched" clause in the P2.S9 Phase B entry above** — the `qa` version must quote
+  **177 deterministic 정정사항 rows, 20 uncovered → 88.70 %, 0 unsupported of 157 model changes, 45
+  records** (3 unparsed-table records excluded, N86), beside N92's content-level ≈ 99 % of
+  investor-meaningful items. `qa`/`data` also gain the method fact: `deterministic_check` is
+  **derived** data and is re-scored from stored records at **0 LLM calls / 0 OpenDART requests**
+  (`python -m mijual.extract recheck`, idempotent), so a scoring fix never means re-paying for an
+  extraction — and no accuracy, gate or exposure figure moves with it (N97's 566/4/14/65 over 649
+  rows and 488 exposable events unchanged, 98.6 % strict precision unchanged). Source: `P2.F4`
+  result, finding N100.
 
 ## Open Questions
 

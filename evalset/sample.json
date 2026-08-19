@@ -248,8 +248,8 @@
   "deterministic_rows": 177,
   "model_changes": 157,
   "unsupported": 0,
-  "uncovered": 26,
-  "recall": 0.8531
+  "uncovered": 20,
+  "recall": 0.887
  },
  "duplicates_collapsed": 16,
  "rows": [

@@ -21,7 +21,7 @@ from mijual.db.repository import ensure_corp, ensure_event, ensure_version
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION, TASKS, response_schema
 from mijual.extract.inputs import build_input
 from mijual.extract.locate import QuoteLocator
-from mijual.extract.runner import check_against_items
+from mijual.extract.runner import check_against_items, recheck_corrections
 from mijual.extract.store import upsert_extraction
 
 
@@ -154,3 +154,96 @@ def test_the_deterministic_correction_rows_are_ground_truth_not_the_model():
     assert checked == {"items": 2, "changes": 2, "unsupported": 1, "uncovered": 1}
     assert changes[0]["supported"] is True and changes[0]["deterministic_item"] == 0
     assert changes[1]["supported"] is False
+
+
+def test_changes_corrected_to_the_same_string_consume_different_rows():
+    """N92's trap: 에이전트AI moves several schedule rows to one identical string.
+
+    The first matcher took each change's first candidate row without checking
+    whether another change already held it, so all three bound to row 0 and two
+    genuinely covered rows were counted ``uncovered`` — the recall proxy read
+    85.3 % where the corpus deserved 88.7 %. Recall counts *rows*, so a row may
+    be claimed once.
+    """
+    items = [
+        {"item": "11. 청약예정일", "before": "2026년 07월 21일", "after": "-(추후 확정)"},
+        {"item": "12. 납입일", "before": "2026년 07월 28일", "after": "-(추후 확정)"},
+        {"item": "13. 상장예정일", "before": "2026년 08월 11일", "after": "-(추후 확정)"},
+    ]
+    changes = [
+        {"item": "11. 청약예정일", "new": "-(추후 확정)"},  # names its row
+        {"item": "일정 전반", "new": "-(추후 확정)"},  # value arm only
+        {"item": "일정 전반", "new": "-(추후 확정)"},  # value arm only
+    ]
+    checked = check_against_items(changes, items)
+    assert checked == {"items": 3, "changes": 3, "unsupported": 0, "uncovered": 0}
+    assert sorted(c["deterministic_item"] for c in changes) == [0, 1, 2]
+    assert changes[0]["deterministic_item"] == 0  # a name match still wins its row
+
+
+def test_recheck_rescores_stored_records_and_a_second_run_is_a_no_op():
+    """The re-check is derived-only: 0 calls, model output untouched, idempotent."""
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(bind=engine)
+    items = [
+        {"item": "11. 청약예정일", "before": "2026년 07월 21일", "after": "-(추후 확정)"},
+        {"item": "12. 납입일", "before": "2026년 07월 28일", "after": "-(추후 확정)"},
+    ]
+    with factory() as session:
+        ensure_corp(session, "00812766", corp_name="에이전트AI")
+        event = ensure_event(
+            session,
+            corp_code="00812766",
+            report_subtype="piicDecsn",
+            original_rcept_dt="20260317",
+            rights_type=RightsType.SUBSCRIPTION_WARRANT,
+        )
+        version = ensure_version(session, event, rcept_no="20260619000455")
+        upsert_extraction(
+            session,
+            version,
+            field_key="correction_interpretation",
+            schema_version=SCHEMA_VERSION,
+            status="extracted",
+            value={
+                "deterministic_items": items,
+                "interpretation": {
+                    "summary": "일정이 전면 보류되었습니다",
+                    # as the old matcher stored them: both bound to row 0
+                    "changes": [
+                        {"item": "일정", "new": "-(추후 확정)", "quote": "청약예정일 : -(추후 확정)",
+                         "supported": True, "deterministic_item": 0},
+                        {"item": "일정", "new": "-(추후 확정)", "quote": "납입일 : -(추후 확정)",
+                         "supported": True, "deterministic_item": 0},
+                    ],
+                },
+                "deterministic_check": {
+                    "items": 2, "changes": 2, "unsupported": 0, "uncovered": 1
+                },
+            },
+            quote="청약예정일 : -(추후 확정)",
+        )
+        session.commit()
+
+    report = recheck_corrections(factory)
+    assert (report.rewritten, report.records) == (1, 1)
+    assert (report.old["uncovered"], report.new["uncovered"]) == (1, 0)
+    assert report.old["unsupported"] == report.new["unsupported"] == 0
+
+    assert recheck_corrections(factory).rewritten == 0  # idempotent
+
+    with factory() as session:
+        row = session.query(Extraction).one()
+        assert row.value["deterministic_check"] == {
+            "items": 2, "changes": 2, "unsupported": 0, "uncovered": 0
+        }
+        stored = row.value["interpretation"]
+        assert sorted(c["deterministic_item"] for c in stored["changes"]) == [0, 1]
+        # nothing the model produced moved
+        assert row.quote == "청약예정일 : -(추후 확정)"
+        assert stored["summary"] == "일정이 전면 보류되었습니다"
+        assert [c["quote"] for c in stored["changes"]] == [
+            "청약예정일 : -(추후 확정)", "납입일 : -(추후 확정)"
+        ]
+        assert row.value["deterministic_items"] == items
