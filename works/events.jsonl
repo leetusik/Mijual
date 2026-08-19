@@ -1,0 +1,10 @@
+{"ts": "2026-08-19T16:19:45+09:00", "type": "bootstrap", "project": "New Project"}
+{"ts": "2026-08-19T17:41:20+09:00", "type": "phase_created", "phase": "P1"}
+{"ts": "2026-08-19T17:41:27+09:00", "type": "phase_created", "phase": "P2"}
+{"ts": "2026-08-19T17:41:27+09:00", "type": "phase_created", "phase": "P3"}
+{"ts": "2026-08-19T17:41:27+09:00", "type": "phase_created", "phase": "P4"}
+{"ts": "2026-08-19T18:08:50+09:00", "type": "slice_status_changed", "slice": "P1.DECOMP", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-19T18:13:35+09:00", "type": "slice_created", "phase": "P1", "slice": "P1.S1"}
+{"ts": "2026-08-19T18:13:35+09:00", "type": "slice_created", "phase": "P1", "slice": "P1.S3"}
+{"ts": "2026-08-19T18:13:35+09:00", "type": "slice_created", "phase": "P1", "slice": "P1.S2"}
+{"ts": "2026-08-19T18:16:27+09:00", "type": "slice_status_changed", "slice": "P1.DECOMP", "old_status": "in_progress", "new_status": "done"}

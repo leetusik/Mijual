@@ -1,0 +1,39 @@
+# Executor-tier configuration for the slice-executor subagents.
+# Uncomment/edit what you want to change, then apply:
+#
+#   python3 scripts/workflow.py sync-agents
+#
+# With no active mode or overrides, the engine uses economy. This repo selects
+# flex below, and the commented per-tier values match that active preset. Two
+# knobs, lowest precedence first:
+#
+#   1. mode — a named preset for both tiers (top level, before any table):
+#        economy (default)  sonnet@high / opus@high
+#        flex               sonnet@xhigh / opus@xhigh
+#   2. Per-tier [claude.<tier>] tables — override the active preset field by
+#      field.
+#
+# There are two tiers. `mid` takes a one-line (or few-line) code edit or docs;
+# `high` takes decomposition, the phase review, and essentially all code writing
+# — every cross-file change included. A slice's `risk` picks between them
+# (`low` -> mid, anything else -> high), so `high` is where the cost sits.
+#
+# Values are written verbatim into the agent files, so model aliases
+# (opus/sonnet/haiku), full model IDs, or "inherit" all work without code
+# changes. Set effort = "" to omit the effort line entirely — required for
+# models that reject the effort parameter (e.g. haiku). Models may not be empty.
+# This file is yours: the installer seeds it once and updates never overwrite
+# it; deleting it is also fine (defaults live in the engine). It holds no
+# secrets, so committing it is fine when the whole team should share the tier
+# config. After /update-workspace, re-run sync-agents (updates reset the
+# agent files to upstream defaults; `validate` warns while they drift).
+
+mode = "flex"
+
+# Claude Code (.claude/agents/slice-executor-{mid,high}.md) — flex values shown
+#[claude.mid]
+#model = "sonnet"
+#effort = "xhigh"
+#[claude.high]
+#model = "opus"    # e.g. "fable", or "claude-mythos-5" once available
+#effort = "xhigh"

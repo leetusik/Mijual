@@ -1,0 +1,8 @@
+{
+  "current_phase": "P1",
+  "current_slice": "P1.S1",
+  "next_slice": "P1.S3",
+  "waiting_on_operator": null,
+  "mode": "phase",
+  "updated_at": "2026-08-19T18:16:27+09:00"
+}

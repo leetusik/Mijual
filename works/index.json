@@ -1,0 +1,56 @@
+{
+  "active_phases": [
+    {
+      "id": "P1",
+      "name": "Foundation Spike & Confirmations",
+      "objective": "Validate DART OpenAPI coverage for the 3 MVP rights types — produce the event-type × field × {structured API / LLM extraction needed} matrix (incl. ≥5 정정공시 samples for diff targets), finalize MVP rights scope with the operator, and recon daker.ai submission requirements + mijual domain availability.",
+      "status": "planned",
+      "order": 1,
+      "path": "works/phases/active/P1",
+      "review_status": "pending",
+      "current_slice": "P1.S1",
+      "slice_count": 5,
+      "done_slice_count": 1
+    },
+    {
+      "id": "P2",
+      "name": "Data & Extraction Pipeline",
+      "objective": "Build the collection (DART OpenAPI + scheduled jobs) and schema-based LLM extraction pipeline with deterministic validation gates (arithmetic/date/citation-span checks, reason codes); produce the '2026 소멸 신주인수권 가치 총액' estimation and the ~100-filing labeled evalset + extraction-accuracy report.",
+      "status": "planned",
+      "order": 2,
+      "path": "works/phases/active/P2",
+      "review_status": "pending",
+      "current_slice": "P2.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
+      "id": "P3",
+      "name": "Mijual Web Service (design + build)",
+      "objective": "Design (Claude Design co-work, operator-gated) and build the Korean-only web service: 비로그인 landing 관제 현황판, 종목 검색 + 보유량 슬라이더, 놓친 돈 조회기, portfolio/D-day 2층, grounded 해설 panel. Mixed phase — two-pass decomposition per design-cowork; build slices cut only after the signed design.",
+      "status": "planned",
+      "order": 3,
+      "path": "works/phases/active/P3",
+      "review_status": "pending",
+      "current_slice": "P3.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
+      "id": "P4",
+      "name": "Ship & Submit",
+      "objective": "Notifications (email first), production deploy to ssh h, smoke tests, presentation deck (주최사별 효용 매핑, AI-role architecture, 소멸 총액 opening number), demo video, and daker.ai submission before 2026-09-07 10:00.",
+      "status": "planned",
+      "order": 4,
+      "path": "works/phases/active/P4",
+      "review_status": "pending",
+      "current_slice": "P4.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    }
+  ],
+  "deferred_open_count": 0,
+  "deferred_promoted_count": 0,
+  "deferred_dropped_count": 0,
+  "last_rebuilt_at": "2026-08-19T18:16:27+09:00"
+}
