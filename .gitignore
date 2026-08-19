@@ -9,6 +9,11 @@ __pycache__/
 venv/
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
+
+# P2 pipeline: on-disk OpenDART response cache (regenerable; byte-compatible
+# with the P1 spike cache below).
+var/
 
 # Node
 node_modules/

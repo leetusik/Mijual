@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mijual"
+version = "0.1.0"
+description = "Mijual — 상장사 권리(신주인수권/오버행/매수청구권) 수집·추출·검증 파이프라인"
+requires-python = ">=3.13"
+dependencies = [
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mijual"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

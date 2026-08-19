@@ -210,6 +210,61 @@ saved a phase-halting gate; the orchestrator should surface both at `P2.S1`/`P2.
 stalls the run later. (`P2.S9`'s hand-labelling co-work is a third, and is expected to be a real
 `pending` gate.)
 
+### Appended by `P2.S1` (2026-08-19)
+
+**N11 — The package exists; import it, do not re-scaffold.** `pyproject.toml` (hatchling, `src/`
+layout) + `.venv` with `sqlalchemy` 2.0.52 / `psycopg[binary]` 3.3.4 / `pytest`. Public surface:
+`mijual.config` (`load_settings`, `Settings`, `SPIKE_CACHE_DIR`), `mijual.dart`
+(`DartClient`, `rows`, `groups`, `decode_document`, `CacheMiss`, `NotAZipError`), `mijual.db`
+(`Corp`, `Event`, `FilingVersion`, `Snapshot`, `RightsType`, `CorrectionKind`, `make_engine`,
+`session_scope`, `create_all`, `reset_schema`), `mijual.db.repository` (`ensure_corp` /
+`ensure_event` / `ensure_version` / `ensure_snapshot` — idempotent upserts), `mijual.smoke`.
+Local infra: `docker compose up -d postgres` (host **5433**, `DATABASE_URL` default matches);
+Redis sits behind the `scheduling` profile on host **6380** for S6
+(`docker compose --profile scheduling up -d redis`). Celery/Redis/FastAPI are **not** dependencies yet.
+
+**N12 — The P1 cache is now a first-class offline fixture path, and a test guards it.**
+`DartClient(cache_dir=SPIKE_CACHE_DIR, offline=True)` resolves the 1,002 P1 responses with **no key and
+no network**; a cache miss raises `CacheMiss` instead of silently going to the network. The cache
+filename scheme is byte-identical to the spike's and is pinned by a golden filename in
+`tests/test_dart_client.py`. **Develop and test S3/S4/S5 against this path**; use a live
+`DartClient()` (cache → gitignored `var/dart-cache`) only when new data is actually needed.
+
+**N13 — N2 re-measured live by the S1 smoke, on 계양전기 (`00102618`).** `list.json` shows three
+versions of one 유증 event (`20260508000928` original → `20260611000483` → `20260724000546`, both
+`[기재정정]`); `piicDecsn` over the whole 2026-01-01~08-18 window returns **exactly one row**, carrying
+only `20260724000546`. The event row keys on `(00102618, piicDecsn, 2026-05-08)` and all three versions
+hang off it. The persisted 본문 reproduces field-matrix §5 exactly (31,376 XML chars, 신주인수권증서
+×17, `<CORRECTION>` present) — an independent check that the ported ZIP/decode path is faithful.
+
+**N14 — Collection is idempotent by upsert, not by failure.** `ensure_*` are get-or-create on the
+unique keys; a snapshot whose `sha1` is unchanged is a no-op, a changed body always becomes a new row.
+Re-running the whole smoke (same process and a fresh process) leaves counts at 1 corp / 1 event /
+3 versions / 5 snapshots. S6's scheduler can therefore re-run a window safely; it still needs its own
+lock against *concurrent* runs, but not against repetition.
+
+**N15 — S2's correctness filter has a schema home already: `Event.suppressed_reason` (plain VARCHAR,
+deliberately not an enum) + `suppressed_note` + `suppressed_at`, with `Event.suppress()`.** Record
+제3자배정/일반공모 유증 and 소규모합병 as *collected and excluded, with a reason* — never drop them
+silently. Adding a new reason code costs no migration; adding a `RightsType`/`CorrectionKind` member
+does (they are native PG enums, and P2 has **no Alembic** — see N16).
+
+**N16 — No Alembic in P2 (deliberate decision).** Schema evolves via `create_all` /
+`reset_schema` (drop + recreate) because every row is re-collectable from the cache or the API. Any
+slice needing a schema change just edits `models.py` and re-runs; do not add a migration tool inside
+P2. Revisit only if P3 needs migrations against data that cannot be rebuilt.
+
+**N17 — Gotcha, already paid for once: SQLAlchemy JSON columns need `none_as_null=True`.** Without it a
+Python `None` is stored as the JSON scalar `'null'`, not SQL `NULL` — which silently defeated
+`Snapshot`'s "exactly one body" CHECK on Postgres and SQLite alike. Any new JSON/JSONB column in this
+schema must carry the same flag.
+
+**N18 — Client hardening beyond the spike (keep it).** A non-ZIP `document.xml` body now raises
+`NotAZipError` and is **never cached**, so a transient error body cannot poison a fixture permanently
+(all 63 currently cached document files were verified `PK`). Key safety stayed structural: the key
+touches only the live request URL — never a filename, never the recorded `_url`, never an exception
+message. A grep for the key value across every new file and the new cache returned 0 hits.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -256,6 +311,15 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   Source: operator decision folded into `P2.DECOMP`'s plan (2026-08-19). _The review decides whether
   this lands as a new `architecture`/`backend` doc or as a decision entry — the phase's later slices
   will add the concrete schema and job topology to the same note._
+- **`architecture`** (same note as above) / **`data`** — **collection schema landed (P2.S1):**
+  `corp → event → filing_version → snapshot`, event key `(corp_code, report_subtype,
+  original_rcept_dt)`, every observed `rcept_no` a version (`original`/`기재정정`/`첨부정정`), every
+  version snapshotted with its raw body (JSONB for API responses, BYTEA for 본문 ZIPs) and a
+  `content_sha1` that makes re-collection idempotent; excluded events are retained with a
+  `suppressed_reason` rather than dropped. Package is `src/mijual` (SQLAlchemy 2 + psycopg3, Postgres
+  in docker on host 5433; Redis reserved for S6 on 6380). **P2 runs without Alembic on purpose** —
+  `create_all`/drop-and-recreate, since all data is re-collectable. Source: `P2.S1` result
+  (2026-08-19).
 
 ## Open Questions
 

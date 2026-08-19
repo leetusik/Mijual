@@ -1,0 +1,42 @@
+# Local development infrastructure for the Mijual pipeline.
+#
+#   docker compose up -d postgres          # the P2 dev path
+#   docker compose --profile scheduling up -d redis   # P2.S6 (Celery broker)
+#
+# Host port 5433 keeps a system/other-project Postgres on 5432 out of the way.
+# These credentials are local-dev only and are NOT secrets: real secrets
+# (DART_API_KEY, GEMINI_API_KEY) live in the gitignored repo-root .env.
+# `psql` is not on PATH on the dev machine — verify through SQLAlchemy.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: mijual-postgres
+    environment:
+      POSTGRES_USER: mijual
+      POSTGRES_PASSWORD: mijual
+      POSTGRES_DB: mijual
+    ports:
+      - "5433:5432"
+    volumes:
+      - mijual-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mijual -d mijual"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Celery broker for P2.S6. Behind a profile so `up -d postgres` (and a plain
+  # `up`) never starts it before the scheduler exists.
+  redis:
+    image: redis:7
+    container_name: mijual-redis
+    profiles: ["scheduling"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - mijual-redisdata:/data
+
+volumes:
+  mijual-pgdata:
+  mijual-redisdata:
