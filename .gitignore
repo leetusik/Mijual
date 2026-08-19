@@ -17,3 +17,8 @@ dist/
 
 # OS / editor
 .DS_Store
+
+# P1.S1 spike: raw DART response cache (~9MB, regenerable by re-running the scripts).
+# The small machine-readable summaries under _summary/ are kept as evidence.
+scripts/spike/samples/*
+!scripts/spike/samples/_summary/

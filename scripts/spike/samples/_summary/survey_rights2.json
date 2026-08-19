@@ -1,0 +1,832 @@
+{
+ "rights2": {
+  "cvbdIsDecsn": {
+   "sections": {
+    "list": {
+     "bddd": {
+      "n": 47,
+      "filled": 47,
+      "example": "2026년 05월 21일",
+      "evidence": "20260521000775"
+     },
+     "od_a_at_t": {
+      "n": 47,
+      "filled": 43,
+      "example": "1",
+      "evidence": "20260731000310"
+     },
+     "od_a_at_b": {
+      "n": 47,
+      "filled": 29,
+      "example": "1",
+      "evidence": "20260521000775"
+     },
+     "adt_a_atn": {
+      "n": 47,
+      "filled": 46,
+      "example": "불참",
+      "evidence": "20260521000775"
+     },
+     "fdpp_fclt": {
+      "n": 47,
+      "filled": 3,
+      "example": "15,000,000,000",
+      "evidence": "20260601001500"
+     },
+     "fdpp_bsninh": {
+      "n": 47,
+      "filled": 1,
+      "example": "500,000,000",
+      "evidence": "20260313000742"
+     },
+     "fdpp_op": {
+      "n": 47,
+      "filled": 28,
+      "example": "7,000,000,000",
+      "evidence": "20260731000310"
+     },
+     "fdpp_dtrp": {
+      "n": 47,
+      "filled": 8,
+      "example": "50,800,000,000",
+      "evidence": "20260629000396"
+     },
+     "fdpp_ocsa": {
+      "n": 47,
+      "filled": 18,
+      "example": "10,000,000,000",
+      "evidence": "20260521000775"
+     },
+     "fdpp_etc": {
+      "n": 47,
+      "filled": 1,
+      "example": "10,000,000,000",
+      "evidence": "20260403003449"
+     },
+     "ftc_stt_atn": {
+      "n": 47,
+      "filled": 47,
+      "example": "미해당",
+      "evidence": "20260521000775"
+     },
+     "bd_tm": {
+      "n": 47,
+      "filled": 47,
+      "example": "19",
+      "evidence": "20260521000775"
+     },
+     "bd_knd": {
+      "n": 47,
+      "filled": 47,
+      "example": "무기명식 이권부 무보증 사모 전환사채",
+      "evidence": "20260521000775"
+     },
+     "bd_fta": {
+      "n": 47,
+      "filled": 47,
+      "example": "10,000,000,000",
+      "evidence": "20260521000775"
+     },
+     "atcsc_rmislmt": {
+      "n": 47,
+      "filled": 47,
+      "example": "4,751,710,000,000",
+      "evidence": "20260521000775"
+     },
+     "ovis_fta": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ovis_fta_crn": {
+      "n": 47,
+      "filled": 2,
+      "example": "KRW",
+      "evidence": "20260714000457"
+     },
+     "ovis_ster": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ovis_isar": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ovis_mktnm": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "bd_intr_ex": {
+      "n": 47,
+      "filled": 46,
+      "example": "2",
+      "evidence": "20260521000775"
+     },
+     "bd_intr_sf": {
+      "n": 47,
+      "filled": 47,
+      "example": "4",
+      "evidence": "20260521000775"
+     },
+     "bd_mtd": {
+      "n": 47,
+      "filled": 47,
+      "example": "2031년 05월 29일",
+      "evidence": "20260521000775"
+     },
+     "bdis_mthn": {
+      "n": 47,
+      "filled": 47,
+      "example": "사모",
+      "evidence": "20260521000775"
+     },
+     "cv_rt": {
+      "n": 47,
+      "filled": 47,
+      "example": "100",
+      "evidence": "20260521000775"
+     },
+     "cv_prc": {
+      "n": 47,
+      "filled": 47,
+      "example": "4,433",
+      "evidence": "20260521000775"
+     },
+     "cvisstk_knd": {
+      "n": 47,
+      "filled": 47,
+      "example": "(주)에이프로젠바이오로직스 기명식 보통주식",
+      "evidence": "20260521000775"
+     },
+     "cvisstk_cnt": {
+      "n": 47,
+      "filled": 47,
+      "example": "2,255,808",
+      "evidence": "20260521000775"
+     },
+     "cvisstk_tisstk_vs": {
+      "n": 47,
+      "filled": 47,
+      "example": "15.65",
+      "evidence": "20260521000775"
+     },
+     "cvrqpd_bgd": {
+      "n": 47,
+      "filled": 47,
+      "example": "2027년 05월 29일",
+      "evidence": "20260521000775"
+     },
+     "cvrqpd_edd": {
+      "n": 47,
+      "filled": 47,
+      "example": "2031년 04월 29일",
+      "evidence": "20260521000775"
+     },
+     "act_mktprcfl_cvprc_lwtrsprc": {
+      "n": 47,
+      "filled": 36,
+      "example": "3,103",
+      "evidence": "20260521000775"
+     },
+     "act_mktprcfl_cvprc_lwtrsprc_bs": {
+      "n": 47,
+      "filled": 36,
+      "example": "발행당시 전환가액의 70% 이상, 액면가 이상",
+      "evidence": "20260521000775"
+     },
+     "rmislmt_lt70p": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "abmg": {
+      "n": 47,
+      "filled": 6,
+      "example": "해당사항 없음",
+      "evidence": "20260129000697"
+     },
+     "sbd": {
+      "n": 47,
+      "filled": 46,
+      "example": "2026년 05월 28일",
+      "evidence": "20260521000775"
+     },
+     "pymd": {
+      "n": 47,
+      "filled": 47,
+      "example": "2026년 05월 29일",
+      "evidence": "20260521000775"
+     },
+     "rpmcmp": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "grint": {
+      "n": 47,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "rs_sm_atn": {
+      "n": 47,
+      "filled": 47,
+      "example": "아니오",
+      "evidence": "20260521000775"
+     },
+     "ex_sm_r": {
+      "n": 47,
+      "filled": 47,
+      "example": "사모 전환사채 발행으로 인한 증권신고서 제출 면제 ⏎ (사모발행에 의한 1년간 거래단위의 분할 및 병합금지)",
+      "evidence": "20260521000775"
+     },
+     "ovis_ltdtl": {
+      "n": 47,
+      "filled": 12,
+      "example": "해당사항 없음",
+      "evidence": "20260731000310"
+     }
+    }
+   },
+   "corps_queried": 35,
+   "filings": 47
+  },
+  "exbdIsDecsn": {
+   "sections": {
+    "list": {
+     "bddd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2026년 06월 08일",
+      "evidence": "20260608000384"
+     },
+     "od_a_at_t": {
+      "n": 20,
+      "filled": 19,
+      "example": "1",
+      "evidence": "20260608000384"
+     },
+     "od_a_at_b": {
+      "n": 20,
+      "filled": 7,
+      "example": "0",
+      "evidence": "20260608000384"
+     },
+     "adt_a_atn": {
+      "n": 20,
+      "filled": 16,
+      "example": "참석",
+      "evidence": "20260608000384"
+     },
+     "fdpp_fclt": {
+      "n": 20,
+      "filled": 2,
+      "example": "5,000,000,000",
+      "evidence": "20260119000282"
+     },
+     "fdpp_bsninh": {
+      "n": 20,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "fdpp_op": {
+      "n": 20,
+      "filled": 14,
+      "example": "6,258,000,000",
+      "evidence": "20260608000384"
+     },
+     "fdpp_dtrp": {
+      "n": 20,
+      "filled": 5,
+      "example": "66,000,000,000",
+      "evidence": "20260514001117"
+     },
+     "fdpp_ocsa": {
+      "n": 20,
+      "filled": 5,
+      "example": "60,000,000,000",
+      "evidence": "20260306000988"
+     },
+     "fdpp_etc": {
+      "n": 20,
+      "filled": 2,
+      "example": "1,600,000,000",
+      "evidence": "20260128000412"
+     },
+     "ftc_stt_atn": {
+      "n": 20,
+      "filled": 20,
+      "example": "미해당",
+      "evidence": "20260608000384"
+     },
+     "bd_tm": {
+      "n": 20,
+      "filled": 19,
+      "example": "40",
+      "evidence": "20260608000384"
+     },
+     "bd_knd": {
+      "n": 20,
+      "filled": 19,
+      "example": "무기명식 무이권부 무보증 사모 교환사채",
+      "evidence": "20260608000384"
+     },
+     "bd_fta": {
+      "n": 20,
+      "filled": 19,
+      "example": "6,258,000,000",
+      "evidence": "20260608000384"
+     },
+     "ovis_fta": {
+      "n": 20,
+      "filled": 1,
+      "example": "1,550,000,000",
+      "evidence": "20260401002847"
+     },
+     "ovis_fta_crn": {
+      "n": 20,
+      "filled": 1,
+      "example": "USD",
+      "evidence": "20260401002847"
+     },
+     "ovis_ster": {
+      "n": 20,
+      "filled": 1,
+      "example": "1530.5",
+      "evidence": "20260401002847"
+     },
+     "ovis_isar": {
+      "n": 20,
+      "filled": 1,
+      "example": "유럽 및 아시아 등 해외금융시장",
+      "evidence": "20260401002847"
+     },
+     "ovis_mktnm": {
+      "n": 20,
+      "filled": 1,
+      "example": "싱가포르 증권거래소",
+      "evidence": "20260401002847"
+     },
+     "bd_intr_ex": {
+      "n": 20,
+      "filled": 19,
+      "example": "0.0",
+      "evidence": "20260608000384"
+     },
+     "bd_intr_sf": {
+      "n": 20,
+      "filled": 19,
+      "example": "0.0",
+      "evidence": "20260608000384"
+     },
+     "bd_mtd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2029년 06월 16일",
+      "evidence": "20260608000384"
+     },
+     "bdis_mthn": {
+      "n": 20,
+      "filled": 20,
+      "example": "사모",
+      "evidence": "20260608000384"
+     },
+     "sbd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2026년 06월 16일",
+      "evidence": "20260608000384"
+     },
+     "pymd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2026년 06월 16일",
+      "evidence": "20260608000384"
+     },
+     "rpmcmp": {
+      "n": 20,
+      "filled": 1,
+      "example": "HSBC, J.P. Morgan, UBS",
+      "evidence": "20260401002847"
+     },
+     "grint": {
+      "n": 20,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "rs_sm_atn": {
+      "n": 20,
+      "filled": 20,
+      "example": "아니오",
+      "evidence": "20260608000384"
+     },
+     "ex_sm_r": {
+      "n": 20,
+      "filled": 19,
+      "example": "사모발행으로 인한 증권신고서 제출 면제 ⏎ (사채발행일로부터 1년 이내에 50인 이상의 자에게 전매될 수 없으며, ⏎ 거래단위",
+      "evidence": "20260608000384"
+     },
+     "ovis_ltdtl": {
+      "n": 20,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ex_rt": {
+      "n": 20,
+      "filled": 19,
+      "example": "100",
+      "evidence": "20260608000384"
+     },
+     "ex_prc": {
+      "n": 20,
+      "filled": 19,
+      "example": "21,000",
+      "evidence": "20260608000384"
+     },
+     "ex_prc_dmth": {
+      "n": 20,
+      "filled": 19,
+      "example": "본 사채 발행을 결의한 이사회결의일 전일을 기산일로 하여 다음 각목의 가액 중 높은 가액을 기준주가로 하여, 기준주가의 123",
+      "evidence": "20260608000384"
+     },
+     "extg": {
+      "n": 20,
+      "filled": 19,
+      "example": "주식회사 아이스크림미디어 기명식 보통주",
+      "evidence": "20260608000384"
+     },
+     "extg_stkcnt": {
+      "n": 20,
+      "filled": 19,
+      "example": "298,000",
+      "evidence": "20260608000384"
+     },
+     "extg_tisstk_vs": {
+      "n": 20,
+      "filled": 16,
+      "example": "2.24",
+      "evidence": "20260608000384"
+     },
+     "exrqpd_bgd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2026년 07월 16일",
+      "evidence": "20260608000384"
+     },
+     "exrqpd_edd": {
+      "n": 20,
+      "filled": 19,
+      "example": "2029년 05월 16일",
+      "evidence": "20260608000384"
+     }
+    }
+   },
+   "corps_queried": 20,
+   "filings": 20
+  },
+  "bdRs": {
+   "sections": {
+    "일반사항": {
+     "sbd": {
+      "n": 77,
+      "filled": 77,
+      "example": "2026년 03월 31일",
+      "evidence": "20260319001244"
+     },
+     "pymd": {
+      "n": 77,
+      "filled": 77,
+      "example": "2026년 03월 31일",
+      "evidence": "20260319001244"
+     },
+     "sband": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "asand": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "asstd": {
+      "n": 77,
+      "filled": 1,
+      "example": "2026년 06월 05일",
+      "evidence": "20260529000588"
+     },
+     "rpt_rcpn": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "slta": {
+      "n": 77,
+      "filled": 77,
+      "example": "100,000,000,000",
+      "evidence": "20260319001244"
+     },
+     "tm": {
+      "n": 77,
+      "filled": 77,
+      "example": "23",
+      "evidence": "20260319001244"
+     },
+     "bdnmn": {
+      "n": 77,
+      "filled": 77,
+      "example": "무보증후순위사채",
+      "evidence": "20260319001244"
+     },
+     "slmth": {
+      "n": 77,
+      "filled": 77,
+      "example": "공모",
+      "evidence": "20260319001244"
+     },
+     "fta": {
+      "n": 77,
+      "filled": 77,
+      "example": "100,000,000,000",
+      "evidence": "20260319001244"
+     },
+     "isprc": {
+      "n": 77,
+      "filled": 77,
+      "example": "100,000,000,000",
+      "evidence": "20260319001244"
+     },
+     "intr": {
+      "n": 77,
+      "filled": 9,
+      "example": "5.50",
+      "evidence": "20260319001244"
+     },
+     "isrr": {
+      "n": 77,
+      "filled": 9,
+      "example": "5.50",
+      "evidence": "20260319001244"
+     },
+     "rpd": {
+      "n": 77,
+      "filled": 77,
+      "example": "2036년 03월 31일",
+      "evidence": "20260319001244"
+     },
+     "print_pymint": {
+      "n": 77,
+      "filled": 77,
+      "example": "(주)신한은행 ⏎ FI영업1부",
+      "evidence": "20260319001244"
+     },
+     "mngt_cmp": {
+      "n": 77,
+      "filled": 49,
+      "example": "한국증권금융(주)",
+      "evidence": "20260319001244"
+     },
+     "cdrt_int": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "dpcrn": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "dpcr_amt": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "usarn": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "usntn": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "wnexpl_at": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "udtintnm": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "grt_int": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "grt_amt": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "icmg_mgknd": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "icmg_mgamt": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "estk_exstk": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "estk_exrt": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "estk_exprc": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "estk_expd": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "drcb_at": {
+      "n": 77,
+      "filled": 77,
+      "example": "N",
+      "evidence": "20260319001244"
+     },
+     "drcb_uast": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "drcb_optknd": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "drcb_mtd": {
+      "n": 77,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     }
+    },
+    "인수인정보": {
+     "stksen": {
+      "n": 270,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "actsen": {
+      "n": 270,
+      "filled": 267,
+      "example": "대표",
+      "evidence": "20260319001244"
+     },
+     "actnmn": {
+      "n": 270,
+      "filled": 267,
+      "example": "교보증권",
+      "evidence": "20260319001244"
+     },
+     "udtcnt": {
+      "n": 270,
+      "filled": 267,
+      "example": "10,000,000",
+      "evidence": "20260319001244"
+     },
+     "udtamt": {
+      "n": 270,
+      "filled": 267,
+      "example": "100,000,000,000",
+      "evidence": "20260319001244"
+     },
+     "udtprc": {
+      "n": 270,
+      "filled": 267,
+      "example": "인수금액의 0.25%",
+      "evidence": "20260319001244"
+     },
+     "udtmth": {
+      "n": 270,
+      "filled": 267,
+      "example": "총액인수",
+      "evidence": "20260319001244"
+     },
+     "tm": {
+      "n": 270,
+      "filled": 270,
+      "example": "23",
+      "evidence": "20260319001244"
+     }
+    },
+    "자금의사용목적": {
+     "se": {
+      "n": 162,
+      "filled": 162,
+      "example": "운영자금",
+      "evidence": "20260319001244"
+     },
+     "amt": {
+      "n": 162,
+      "filled": 162,
+      "example": "100,000,000,000",
+      "evidence": "20260319001244"
+     },
+     "tm": {
+      "n": 162,
+      "filled": 162,
+      "example": "23",
+      "evidence": "20260319001244"
+     }
+    },
+    "매출인에관한사항": {
+     "hdr": {
+      "n": 88,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "rl_cmp": {
+      "n": 88,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "bfsl_hdstk": {
+      "n": 88,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "slstk": {
+      "n": 88,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "atsl_hdstk": {
+      "n": 88,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "tm": {
+      "n": 88,
+      "filled": 88,
+      "example": "23",
+      "evidence": "20260319001244"
+     }
+    }
+   },
+   "corps_queried": 25,
+   "filings": 38
+  }
+ }
+}

@@ -1,0 +1,878 @@
+{
+ "rights3": {
+  "cmpMgDecsn": {
+   "sections": {
+    "list": {
+     "bddd": {
+      "n": 41,
+      "filled": 40,
+      "example": "2026년 08월 10일",
+      "evidence": "20260810000482"
+     },
+     "od_a_at_t": {
+      "n": 41,
+      "filled": 41,
+      "example": "8",
+      "evidence": "20260810000482"
+     },
+     "od_a_at_b": {
+      "n": 41,
+      "filled": 23,
+      "example": "0",
+      "evidence": "20260810000482"
+     },
+     "adt_a_atn": {
+      "n": 41,
+      "filled": 29,
+      "example": "참석",
+      "evidence": "20260408002781"
+     },
+     "rs_sm_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "아니오",
+      "evidence": "20260810000482"
+     },
+     "ex_sm_r": {
+      "n": 41,
+      "filled": 35,
+      "example": "본건 합병은 합병신주를 발행하지 않는 무증자합병 방식으로 진행하므로, 본건 합병의 과정에서는 증권신고서 제출이 필요한 증권의 ",
+      "evidence": "20260810000482"
+     },
+     "exevl_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "미해당",
+      "evidence": "20260810000482"
+     },
+     "exevl_bs_rs": {
+      "n": 41,
+      "filled": 41,
+      "example": "자본시장과 금융투자업에 관한 법률 제165조의4 및 동법 시행령 제176조의5 제8항 제2호 나목 단서는 다른 회사의 발행주식",
+      "evidence": "20260810000482"
+     },
+     "exevl_intn": {
+      "n": 41,
+      "filled": 2,
+      "example": "회계법인 현",
+      "evidence": "20260713000345"
+     },
+     "exevl_pd": {
+      "n": 41,
+      "filled": 2,
+      "example": "2026년 03월 17일 ~ 2026년 05월 20일",
+      "evidence": "20260713000345"
+     },
+     "aprskh_plnprc": {
+      "n": 41,
+      "filled": 7,
+      "example": "5,649",
+      "evidence": "20260713000345"
+     },
+     "aprskh_pym_plpd_mth": {
+      "n": 41,
+      "filled": 7,
+      "example": "가. 주식매수대금의 지급시기 ⏎ 주식매수청구권 행사에 따른 주식매수대금 지급 예정일은 다음과 같습니다. ⏎  ⏎  - 세기상사",
+      "evidence": "20260713000345"
+     },
+     "aprskh_ctref": {
+      "n": 41,
+      "filled": 7,
+      "example": "존속회사 또는 소멸회사의 주주 중 본건 합병에 반대하는 주주의 주식매수청구권행사로 인하여, 존속회사 및 소멸회사가 그 주주들에",
+      "evidence": "20260713000345"
+     },
+     "bdlst_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "해당사항없음",
+      "evidence": "20260810000482"
+     },
+     "otcpr_bdlst_sf_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "해당사항없음",
+      "evidence": "20260810000482"
+     },
+     "popt_ctr_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "아니오",
+      "evidence": "20260810000482"
+     },
+     "popt_ctr_cn": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "mg_mth": {
+      "n": 41,
+      "filled": 41,
+      "example": "금호석유화학(주)가 케이앤에이치특수가스(주)를 흡수합병 ⏎ - 합병(존속)회사 : 금호석유화학(주) ⏎ - 피합병(소멸)회사 ",
+      "evidence": "20260810000482"
+     },
+     "mg_stn": {
+      "n": 41,
+      "filled": 41,
+      "example": "소규모합병",
+      "evidence": "20260810000482"
+     },
+     "mg_pp": {
+      "n": 41,
+      "filled": 41,
+      "example": "경영효율성 증대 및 사업 경쟁력 강화",
+      "evidence": "20260810000482"
+     },
+     "mg_rt": {
+      "n": 41,
+      "filled": 41,
+      "example": "금호석유화학(주) : 케이앤에이치특수가스(주)  ⏎  = 1.0000000 : 0.0000000",
+      "evidence": "20260810000482"
+     },
+     "mg_rt_bs": {
+      "n": 41,
+      "filled": 41,
+      "example": "합병회사인 금호석유화학(주)는 피합병법인인 케이앤에이치특수가스(주)의 주식을 100% 소유하고 있으며, 합병 시 피합병법인의 ",
+      "evidence": "20260810000482"
+     },
+     "mgnstk_ostk_cnt": {
+      "n": 41,
+      "filled": 8,
+      "example": "20,337,721",
+      "evidence": "20260626000005"
+     },
+     "mgnstk_cstk_cnt": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "mgptncmp_cmpnm": {
+      "n": 41,
+      "filled": 41,
+      "example": "케이앤에이치특수가스(주) ⏎ (K&H Special Gas Co., LTD.)",
+      "evidence": "20260810000482"
+     },
+     "mgptncmp_mbsn": {
+      "n": 41,
+      "filled": 41,
+      "example": "산업용 가스 제조업",
+      "evidence": "20260810000482"
+     },
+     "mgptncmp_rl_cmpn": {
+      "n": 41,
+      "filled": 41,
+      "example": "자회사",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_tast": {
+      "n": 41,
+      "filled": 41,
+      "example": "18,652,247,351",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_tdbt": {
+      "n": 41,
+      "filled": 41,
+      "example": "12,409,346,929",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_teqt": {
+      "n": 41,
+      "filled": 41,
+      "example": "6,242,900,422",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_cpt": {
+      "n": 41,
+      "filled": 41,
+      "example": "1,045,160,000",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_sl": {
+      "n": 41,
+      "filled": 40,
+      "example": "3,204,734,370",
+      "evidence": "20260810000482"
+     },
+     "rbsnfdtl_nic": {
+      "n": 41,
+      "filled": 41,
+      "example": "-75,023,148",
+      "evidence": "20260810000482"
+     },
+     "eadtat_intn": {
+      "n": 41,
+      "filled": 28,
+      "example": "동서회계법인",
+      "evidence": "20260810000482"
+     },
+     "eadtat_op": {
+      "n": 41,
+      "filled": 28,
+      "example": "적정",
+      "evidence": "20260810000482"
+     },
+     "nmgcmp_cmpnm": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ffdtl_tast": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ffdtl_tdbt": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ffdtl_teqt": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ffdtl_cpt": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "ffdtl_std": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "nmgcmp_nbsn_rsl": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "nmgcmp_mbsn": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "nmgcmp_rlst_atn": {
+      "n": 41,
+      "filled": 41,
+      "example": "해당사항없음",
+      "evidence": "20260810000482"
+     },
+     "mgsc_mgctrd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 08월 12일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_shddstd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 08월 25일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_shclspd_bgd": {
+      "n": 41,
+      "filled": 1,
+      "example": "2026년 03월 07일",
+      "evidence": "20260414002030"
+     },
+     "mgsc_shclspd_edd": {
+      "n": 41,
+      "filled": 1,
+      "example": "2026년 03월 13일",
+      "evidence": "20260414002030"
+     },
+     "mgsc_mgop_rcpd_bgd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 08월 26일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_mgop_rcpd_edd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 09월 09일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_gmtsck_prd": {
+      "n": 41,
+      "filled": 7,
+      "example": "2026년 07월 07일",
+      "evidence": "20260713000345"
+     },
+     "mgsc_aprskh_expd_bgd": {
+      "n": 41,
+      "filled": 8,
+      "example": "2026년 07월 07일",
+      "evidence": "20260713000345"
+     },
+     "mgsc_aprskh_expd_edd": {
+      "n": 41,
+      "filled": 8,
+      "example": "2026년 07월 27일",
+      "evidence": "20260713000345"
+     },
+     "mgsc_osprpd_bgd": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "mgsc_osprpd_edd": {
+      "n": 41,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "mgsc_trspprpd_bgd": {
+      "n": 41,
+      "filled": 4,
+      "example": "2026년 12월 14일",
+      "evidence": "20260713000482"
+     },
+     "mgsc_trspprpd_edd": {
+      "n": 41,
+      "filled": 4,
+      "example": "2027년 01월 03일",
+      "evidence": "20260713000482"
+     },
+     "mgsc_cdobprpd_bgd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 09월 21일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_cdobprpd_edd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 10월 21일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_mgdt": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 11월 01일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_ergmd": {
+      "n": 41,
+      "filled": 38,
+      "example": "2026년 11월 10일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_mgrgsprd": {
+      "n": 41,
+      "filled": 41,
+      "example": "2026년 11월 10일",
+      "evidence": "20260810000482"
+     },
+     "mgsc_nstkdlprd": {
+      "n": 41,
+      "filled": 1,
+      "example": "2026년 12월 07일",
+      "evidence": "20260730000215"
+     },
+     "mgsc_nstklstprd": {
+      "n": 41,
+      "filled": 8,
+      "example": "2027년 01월 04일",
+      "evidence": "20260626000005"
+     },
+     "exevl_op": {
+      "n": 3,
+      "filled": 3,
+      "example": "본 평가인은 주권상장법인인 세기상사 주식회사(이하 \"합병법인\")와 주권비상장법인인 우양수산 주식회사(이하 \"피합병법인\")간에 ",
+      "evidence": "20260713000345"
+     }
+    }
+   },
+   "corps_queried": 35,
+   "filings": 41
+  },
+  "mgRs": {
+   "sections": {
+    "일반사항": {
+     "rpt_rcpn": {
+      "n": 7,
+      "filled": 7,
+      "example": "20260513000797",
+      "evidence": "20260713000459"
+     },
+     "stn": {
+      "n": 7,
+      "filled": 7,
+      "example": "흡수합병",
+      "evidence": "20260713000459"
+     },
+     "bddd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 05월 13일",
+      "evidence": "20260713000459"
+     },
+     "ctrd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 05월 14일",
+      "evidence": "20260713000459"
+     },
+     "gmtsck_shddstd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 05월 28일",
+      "evidence": "20260713000459"
+     },
+     "ap_gmtsck": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 08월 12일",
+      "evidence": "20260713000459"
+     },
+     "aprskh_pd_bgd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 08월 12일",
+      "evidence": "20260713000459"
+     },
+     "aprskh_pd_edd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 09월 01일",
+      "evidence": "20260713000459"
+     },
+     "aprskh_prc": {
+      "n": 7,
+      "filled": 7,
+      "example": "아시아나항공(주) 기명식 보통주 : 7,030원",
+      "evidence": "20260713000459"
+     },
+     "mgdt_etc": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 05월 13일 ⏎ 2026년 05월 28일 ⏎ 2026년 05월 28일 ~ 2026년 06월 11일 ⏎ 2026년 ",
+      "evidence": "20260713000459"
+     },
+     "rt_vl": {
+      "n": 7,
+      "filled": 7,
+      "example": "(주)대한항공 : 아시아나항공(주) = 1 :  0.2736432",
+      "evidence": "20260713000459"
+     },
+     "exevl_int": {
+      "n": 7,
+      "filled": 4,
+      "example": "해당사항 없음",
+      "evidence": "20260713000459"
+     },
+     "grtmn_etc": {
+      "n": 7,
+      "filled": 7,
+      "example": "합병주식의 교부와 단주 매각 대금 지급 외 별도의 합병 교부금 지급은 없습니다.",
+      "evidence": "20260713000459"
+     }
+    },
+    "발행증권": {
+     "fv": {
+      "n": 9,
+      "filled": 7,
+      "example": "5,000",
+      "evidence": "20260713000459"
+     },
+     "slprc": {
+      "n": 9,
+      "filled": 7,
+      "example": "25,409",
+      "evidence": "20260713000459"
+     },
+     "slta": {
+      "n": 9,
+      "filled": 7,
+      "example": "516,761,152,889",
+      "evidence": "20260713000459"
+     },
+     "kndn": {
+      "n": 9,
+      "filled": 9,
+      "example": "기명식보통주",
+      "evidence": "20260713000459"
+     },
+     "cnt": {
+      "n": 9,
+      "filled": 7,
+      "example": "20,337,721",
+      "evidence": "20260713000459"
+     }
+    },
+    "당사회사에관한사항": {
+     "cmpnm": {
+      "n": 28,
+      "filled": 28,
+      "example": "(주)대한항공",
+      "evidence": "20260713000459"
+     },
+     "sen": {
+      "n": 28,
+      "filled": 28,
+      "example": "존속회사",
+      "evidence": "20260713000459"
+     },
+     "tast": {
+      "n": 28,
+      "filled": 28,
+      "example": "53,310,246,316,345",
+      "evidence": "20260713000459"
+     },
+     "cpt": {
+      "n": 28,
+      "filled": 28,
+      "example": "1,846,657,275,000",
+      "evidence": "20260713000459"
+     },
+     "isstk_knd": {
+      "n": 28,
+      "filled": 28,
+      "example": "보통주",
+      "evidence": "20260713000459"
+     },
+     "isstk_cnt": {
+      "n": 28,
+      "filled": 15,
+      "example": "368,220,661",
+      "evidence": "20260713000459"
+     }
+    }
+   },
+   "corps_queried": 10,
+   "filings": 7
+  },
+  "stkExtrDecsn": {
+   "sections": {
+    "list": {
+     "bddd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 02월 11일",
+      "evidence": "20260522000296"
+     },
+     "od_a_at_t": {
+      "n": 7,
+      "filled": 7,
+      "example": "3",
+      "evidence": "20260522000296"
+     },
+     "od_a_at_b": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "adt_a_atn": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "rs_sm_atn": {
+      "n": 7,
+      "filled": 7,
+      "example": "예",
+      "evidence": "20260522000296"
+     },
+     "ex_sm_r": {
+      "n": 7,
+      "filled": 3,
+      "example": "완전모회사가 될 예정인 (주)우리금융지주가 증권신고서를 제출할 예정입니다.(2026년5월14일)",
+      "evidence": "20260703000555"
+     },
+     "exevl_atn": {
+      "n": 7,
+      "filled": 7,
+      "example": "미해당",
+      "evidence": "20260522000296"
+     },
+     "exevl_bs_rs": {
+      "n": 7,
+      "filled": 7,
+      "example": "본건 주식교환은 주권상장법인 간의 주식교환으로 자본시장과 금융투자업에 관한 법률 제165조의4, 동법 시행령 제176조의5 및",
+      "evidence": "20260522000296"
+     },
+     "exevl_intn": {
+      "n": 7,
+      "filled": 3,
+      "example": "안진회계법인",
+      "evidence": "20260326000880"
+     },
+     "exevl_pd": {
+      "n": 7,
+      "filled": 3,
+      "example": "2026년 03월 03일 ~ 2026년 03월 26일",
+      "evidence": "20260326000880"
+     },
+     "exevl_op": {
+      "n": 7,
+      "filled": 3,
+      "example": "적정",
+      "evidence": "20260326000880"
+     },
+     "aprskh_plnprc": {
+      "n": 7,
+      "filled": 2,
+      "example": "9,383",
+      "evidence": "20260522000296"
+     },
+     "aprskh_pym_plpd_mth": {
+      "n": 7,
+      "filled": 2,
+      "example": "(1) 지급예정시기 ⏎ 주식매수 청구기간이 종료하는 날로부터 1개월 이내(2026년 05월 14일 예정)에 지급할 예정입니다.",
+      "evidence": "20260522000296"
+     },
+     "aprskh_lmt": {
+      "n": 7,
+      "filled": 2,
+      "example": "주식매수청구권이 부여된 주주가 주식매수청구권 행사 이전에 해당 주식을 매각하는 경우 주식매수청구권이 상실되며 해당 주식을 재취",
+      "evidence": "20260522000296"
+     },
+     "aprskh_ctref": {
+      "n": 7,
+      "filled": 2,
+      "example": "제 14 조  (본 계약의 변경 및 해제) ⏎ (1) 본 계약 체결 후 본 주식교환일까지 다음 각 호의 1에 해당하는 사유가 ",
+      "evidence": "20260522000296"
+     },
+     "bdlst_atn": {
+      "n": 7,
+      "filled": 7,
+      "example": "해당사항없음",
+      "evidence": "20260522000296"
+     },
+     "otcpr_bdlst_sf_atn": {
+      "n": 7,
+      "filled": 7,
+      "example": "해당사항없음",
+      "evidence": "20260522000296"
+     },
+     "popt_ctr_atn": {
+      "n": 7,
+      "filled": 7,
+      "example": "아니오",
+      "evidence": "20260522000296"
+     },
+     "popt_ctr_cn": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "rbsnfdtl_tast": {
+      "n": 7,
+      "filled": 7,
+      "example": "5,175,067,326,608",
+      "evidence": "20260522000296"
+     },
+     "rbsnfdtl_tdbt": {
+      "n": 7,
+      "filled": 7,
+      "example": "1,339,607,886,775",
+      "evidence": "20260522000296"
+     },
+     "rbsnfdtl_teqt": {
+      "n": 7,
+      "filled": 7,
+      "example": "3,835,459,439,833",
+      "evidence": "20260522000296"
+     },
+     "rbsnfdtl_cpt": {
+      "n": 7,
+      "filled": 7,
+      "example": "60,000,000,000",
+      "evidence": "20260522000296"
+     },
+     "extr_sen": {
+      "n": 7,
+      "filled": 7,
+      "example": "주식교환",
+      "evidence": "20260522000296"
+     },
+     "extr_stn": {
+      "n": 7,
+      "filled": 7,
+      "example": "해당사항 없음",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_cmpnm": {
+      "n": 7,
+      "filled": 7,
+      "example": "주식회사 현대홈쇼핑(HYUNDAI HOMESHOPPING NETWORK CORPORATION)",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_rp": {
+      "n": 7,
+      "filled": 7,
+      "example": "정교선, 한광영",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_mbsn": {
+      "n": 7,
+      "filled": 7,
+      "example": "기타 통신 판매업",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_rl_cmpn": {
+      "n": 7,
+      "filled": 7,
+      "example": "자회사",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_tisstk_ostk": {
+      "n": 7,
+      "filled": 7,
+      "example": "12,000,000",
+      "evidence": "20260522000296"
+     },
+     "extr_tgcmp_tisstk_cstk": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extr_rt": {
+      "n": 7,
+      "filled": 7,
+      "example": "(주)현대지에프홀딩스 : (주)현대홈쇼핑 = 1 : 6.3571040 ⏎  ⏎ 주식교환일 현재 (주)현대홈쇼핑의 주주((주)현",
+      "evidence": "20260522000296"
+     },
+     "extr_rt_bs": {
+      "n": 7,
+      "filled": 7,
+      "example": "(주)현대지에프홀딩스와 (주)현대홈쇼핑은 모두 주권상장법인으로 자본시장과 금융투자업에 관한 법률 제165조의4, 동법 시행령 ",
+      "evidence": "20260522000296"
+     },
+     "extr_pp": {
+      "n": 7,
+      "filled": 7,
+      "example": "(주)현대지에프홀딩스는 자회사인 (주)현대홈쇼핑과의 중복상장에 따른 구조적 디스카운트를 해소하고, 홈쇼핑 사업 본연의 경쟁력 ",
+      "evidence": "20260522000296"
+     },
+     "extrsc_extrctrd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 02월 11일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_shddstd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 02월 26일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_shclspd_bgd": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extrsc_shclspd_edd": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extrsc_extrop_rcpd_bgd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 04월 03일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_extrop_rcpd_edd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 04월 17일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_gmtsck_prd": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 04월 20일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_aprskh_expd_bgd": {
+      "n": 7,
+      "filled": 2,
+      "example": "2026년 04월 20일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_aprskh_expd_edd": {
+      "n": 7,
+      "filled": 2,
+      "example": "2026년 05월 11일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_osprpd_bgd": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extrsc_osprpd_edd": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extrsc_trspprpd": {
+      "n": 7,
+      "filled": 0,
+      "example": null,
+      "evidence": null
+     },
+     "extrsc_trspprpd_bgd": {
+      "n": 7,
+      "filled": 1,
+      "example": "2026년 08월 07일",
+      "evidence": "20260703000555"
+     },
+     "extrsc_trspprpd_edd": {
+      "n": 7,
+      "filled": 1,
+      "example": "2026년 08월 28일",
+      "evidence": "20260703000555"
+     },
+     "extrsc_extrdt": {
+      "n": 7,
+      "filled": 7,
+      "example": "2026년 06월 30일",
+      "evidence": "20260522000296"
+     },
+     "extrsc_nstkdlprd": {
+      "n": 7,
+      "filled": 1,
+      "example": "2026년 08월 31일",
+      "evidence": "20260514001192"
+     },
+     "extrsc_nstklstprd": {
+      "n": 7,
+      "filled": 3,
+      "example": "2026년 07월 20일",
+      "evidence": "20260522000296"
+     },
+     "atextr_cpcmpnm": {
+      "n": 7,
+      "filled": 7,
+      "example": "주식회사 현대지에프홀딩스(HYUNDAI G.F. HOLDINGS CO., LTD.)",
+      "evidence": "20260522000296"
+     }
+    }
+   },
+   "corps_queried": 8,
+   "filings": 7
+  }
+ }
+}

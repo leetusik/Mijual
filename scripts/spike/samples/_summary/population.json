@@ -1,0 +1,32 @@
+{
+ "piicDecsn": {
+  "reports": 299,
+  "corps": 260,
+  "ic_mthn": {
+   "제3자배정증자": 252,
+   "주주배정후 실권주 일반공모": 29,
+   "일반공모증자": 14,
+   "주주배정증자": 3,
+   "주주우선공모증자": 1
+  },
+  "주주배정": 32
+ },
+ "cmpMgDecsn": {
+  "reports": 83,
+  "corps": 84,
+  "mg_stn": {
+   "소규모합병": 65,
+   "해당사항없음": 18
+  },
+  "with_aprskh_price": 15,
+  "with_aprskh_period": 17
+ },
+ "cvbdIsDecsn": {
+  "reports": 263,
+  "corps": 236
+ },
+ "exbdIsDecsn": {
+  "reports": 20,
+  "corps": 20
+ }
+}

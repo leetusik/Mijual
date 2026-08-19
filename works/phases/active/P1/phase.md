@@ -54,6 +54,36 @@ Recorded by `P1.DECOMP` on 2026-08-19 from a **light live probe** of OpenDART (e
 
 **F7 — Prior art / non-goal reminder.** Nothing here changes the §7 rule that calculation stays deterministic; a richer structured field set is *good news* for that rule, not a reason to widen the LLM's job.
 
+### Findings from `P1.S1` (DART OpenAPI spike, 2026-08-19)
+
+Systematic, not a probe: **1,002 distinct cached OpenDART requests** over 2026-01-01~08-18, KOSPI+KOSDAQ. Durable artifact: **`docs/reference/dart/field-matrix.md`** — read that for the per-field detail; the notes below are the cross-slice consequences.
+
+**F8 — Q1 ANSWERED: `estkRs.asstd` populates 28/28 for 주주배정 filings; 신주인수권증서 매매기간 has no structured field anywhere.** Also 100% populated for 주주배정: `sbd` 청약기일, `pymd` 납입일, `slprc` 발행가, `stkcnt`, `slmthn`, `인수인정보.actnmn` 주관사. Evidence `20260814004100` (계양전기), `20260318001009`, `20260427000469`. F3's hypothesis is confirmed — the matrix had to span 주요사항보고서 **and** 증권신고서.
+
+**F9 — The biggest finding, and it *reduces* P2's cost: the 유증 주요사항보고서 본문 carries nearly everything `piicDecsn` drops, as numbered labelled table rows, in a ~6,000-character document.** `8. 신주배정기준일`, `9. 1주당 신주배정주식수`, `11. 청약예정일`, `12. 납입일`, `16. 신주의 상장예정일`, `17. 대표주관회사`, `18. 신주인수권양도여부 / 증서 상장여부 / 증서 매매 중개 금융투자업자`. A label scan over 9 real 주주배정 filings found **10/10 labels present in 9/9**. So ① is **not** uniformly LLM-heavy: deterministic skeleton + ~5 prose fields (증서 상장·매매기간, 청약취급처, 실권주 처리, 초과청약 조건, 발행가 산정방법), all inside `24. 기타 투자판단에 참고할 사항`. Prose phrasing genuinely drifts (`상장예정기간` vs `매매기간`, `(5영업일)` vs `(5거래일)`, one filing with two ranges) — that drift, not the field's absence, is what justifies schema-based LLM extraction + a date-order gate.
+
+**F10 — Q2 ANSWERED: the 정정 filing carries its own machine-readable what-changed block.** The 본문 `<CORRECTION>` element holds `정정대상 공시서류`, `정정대상 공시서류의 최초제출일`, and a `3. 정정사항` table (항목 / 정정사유 / 정정 전 / 정정 후) — parsed **40/40**. Pairing: **30/40** (16 by exact `최초제출일`, 14 nearest-earlier same-corp same-subtype); the 10 misses have pre-2026 originals. `최초제출일` is filer-entered and sometimes wrong (one declares 2022-08-01) — hint, not key. A single event can carry a chain (디모아: 6 corrections on one 유증).
+
+**F11 — HARD CONSTRAINT ON P2's COLLECTOR (new, load-bearing).** Three measured behaviours of the 주요사항보고서 detail endpoints: (a) they return **one row per event, newest version only** — SKC's 3 filings collapse to `20260512000196`, 디모아's 6 to `20260625000227`; (b) the `bgn_de/end_de` window filters on the **original** 접수일, so the correction-date single-day probe returned `[]` in **every** one of 40 samples → *a daily "yesterday's filings" poll driven by the detail endpoints silently misses every 정정*; (c) `rcept_no` is **not a stable key** — it mutates to the newest version (only 7/39 `estkRs.rpt_rcpn` values match today's `piicDecsn` rcept_no). **→ P2 must poll `list.json` for `[기재정정]`, key events by `(corp_code, subtype, original_rcept_dt)`, and snapshot every version; superseded structured values are otherwise unrecoverable.**
+
+**F12 — Q3 ANSWERED: `document` is comfortably parseable; no HTML-viewer fallback needed.** 5/5 ZIPs → one UTF-8 XML with `TABLE/TR/TD` markup plus `<SECTION-1>` / `<TITLE ATOC>` section markers. **Two size regimes:** 주요사항보고서 **2.6k–10k** text chars (one-shot LLM input) vs 증권신고서 **616k–1.87M** (needs `<TITLE>`-section slicing). Since the 주요사항보고서 already carries every service-critical field, ▷ the 증권신고서 is best treated as a confirmation/citation-span source, not the primary extraction target. Character-addressable XML also satisfies §3.6 layer 2's 인용 스팬 gate.
+
+**F13 — Per-rights-type feasibility, for `P1.S2`'s decision (2026-01-01~08-18, KOSPI+KOSDAQ, measured).**
+
+| | 2026 event universe | structured coverage | LLM load |
+|---|---|---|---|
+| ① 유증 신주인수권 | 299 유상증자 reports but only **32 주주배정 계열 (11%)** → ▷ ~4–5/month | thin API; rich 본문-label | ~5 prose fields — the heaviest of the three, but bounded |
+| ② CB·EB 오버행 | **263 CB reports / 236 corps** + 20 EB — by far the largest | **excellent**: 전환가액, 전환청구기간, 오버행 % (`cvisstk_tisstk_vs` 47/47), 리픽싱 floor 36/47 | only 콜·풋 / 리픽싱 세부 / 보호예수 narrative |
+| ③ 매수청구권 | 83 합병 reports but **65 are 소규모합병** (no 매수청구권) → only **15–17 real events** → ▷ ~2/month | **near-total**; 반대의사 통지 **접수기간 41/41 structured** (better than §3.6 assumed) | only 반대의사 통지 방법·절차 |
+
+**F14 — Two negative results worth not re-discovering.** (a) `bdRs` (증권신고서 채무증권) is **not** a CB source — 사모 CB is 신고서-면제 (`ex_sm_r`), and across 77 `bdRs` rows the 지분 관련 사채 fields were 0/77 filled; for ② the 주요사항보고서 is the only source. (b) 소규모합병's empty `aprskh_*` is **semantically correct**, not a data gap — publishing those as if a 매수청구권 existed would be a correctness bug; filter on `mg_stn` / `aprskh_*` presence.
+
+**F15 — API gotchas that cost time (beyond F6).** 증권신고서 endpoints (`estkRs`/`bdRs`/`mgRs`/…) return **`group[]` of `{title, list}`**, not a flat `list` — a 주요사항보고서-shaped client silently reads 0 rows. `None` query params must be **dropped**, not serialized (`corp_code=None` → `status 100`). Transient **HTTP 503** occurs under sustained calling → retry with backoff (6 concurrent threads sustained ~1,000 requests without a ban). ▷ Daily quota unmeasured — confirm before P2's backfill.
+
+**F16 — Repo hygiene decision.** The raw response cache is ~9.4 MB / 1,002 files and is fully regenerable, so `.gitignore` now excludes `scripts/spike/samples/*` while keeping `scripts/spike/samples/_summary/` (7 small machine-readable summaries) as committed evidence. Confirmed by scan: no file in the repo contains the key value.
+
+**Q7 addendum (for P2/P3):** ▷ 분할합병 (`cmpDvmgDecsn`) and 주식교환·이전 (`stkExtrDecsn`, evidence `20260522000296`) carry the same 매수청구 field shape as 합병 — if ③ ships, treat them as the same rights type on a different endpoint rather than a new type; roughly doubles ③'s universe at low marginal cost.
+
 ## Constraints
 
 Binding on every P1 slice (handoff §7 + the intent):
@@ -72,6 +102,7 @@ Binding on every P1 slice (handoff §7 + the intent):
 _Running list; the `P1.REVIEW` slice consolidates these into doc versions on a pass._
 
 - (none from `P1.DECOMP` — the probe findings above are provisional decomposition intel. The first durable note is expected from `P1.S1` against `data` (extraction-target field matrix + DART source constraints), then `P1.S2` against `decisions` (confirmed MVP rights scope).)
+- **`data`** — DART as the sole MVP source is characterised: per-rights-type structured/`본문-label`/`본문-prose` field matrix for the 3 MVP types (durable artifact `docs/reference/dart/field-matrix.md`), the 10-field §3.6 layer-1 extraction-target list with its 결정론 게이트, the 정정공시 pairing method + diff-target fields, and the version/collection constraints that shape P2's entity keys (detail endpoints return newest-version-only, `rcept_no` is version-mutable, event key must be `(corp_code, subtype, original_rcept_dt)` with per-version snapshots). Source: `P1.S1`.
 
 ## Open Questions
 
