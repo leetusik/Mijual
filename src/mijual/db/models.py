@@ -442,6 +442,13 @@ class ExtractionCall(Base):
     model_version: Mapped[str | None] = mapped_column(String(60))
     schema_version: Mapped[str | None] = mapped_column(String(20))
     prompt_version: Mapped[str | None] = mapped_column(String(20))
+    #: Thinking level this call asked for (``LOW`` … ``HIGH``); ``NULL`` means the
+    #: credential's project preset was inherited. Recorded because the same prompt
+    #: costs different money at different levels, so a ▷ cost figure is only
+    #: comparable across runs if the level it was measured at is known
+    #: (operator directive 2026-08-20, D-4 amendment). Additive nullable column —
+    #: lands through ``schema_sync.ensure_columns`` (N27), no reset.
+    thinking_level: Mapped[str | None] = mapped_column(String(20))
     #: ``document`` | ``window:<anchor>`` | ``section:<title>`` — the input regime
     #: (field-matrix §5: a 증권신고서 is never fed whole).
     input_scope: Mapped[str | None] = mapped_column(String(120))

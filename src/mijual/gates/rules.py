@@ -32,9 +32,24 @@ model output.
 
 **Conservative on absence.** A check whose reference value does not exist is
 *skipped*, not passed; a gate all of whose checks were skipped is
-``not_evaluable`` and the field is not shown. Gates 6–8 are written from §7 and
-are **unexercised** — ``P2.S7`` owns ②'s corpus — so they are covered by unit
-cases, not by a corpus run.
+``not_evaluable`` and the field is not shown.
+
+**Gates 6–8 were exercised for the first time by ``P2.S7``** (62 rows each, over
+the ② urgency set) and two of the three needed the corpus, exactly as §7's ①
+rows did (N45):
+
+* **#6 리픽싱** held as written — the 본문's 최저 조정가액 equals the API's
+  ``act_mktprcfl_cvprc_lwtrsprc`` in **29 of 29** comparable rows, 0 mismatches;
+  the other 13 skip because the API field itself is blank (180/267 filled).
+* **#7 콜·풋** held, and its one failure is a real catch (see #8's).
+* **#8 보호예수 moved**: a CB states the 전매제한 as a *duration*, not a date
+  (``사모발행에 의한 1년간 …``) in 31 of 62 rows, and the rows that did carry a date
+  carried one the **model** computed. So the date is now derived deterministically
+  from the API 납입일 (:func:`mijual.calc.lockup_release_date`) and any stated date
+  is checked against it. Its 3 failures — and #7's one — all land on the same
+  finding: a 정정 whose 본문 ``최초제출일`` names an event this workspace never
+  collected got attached to a *different* CB of the same corp, and the
+  API-derived cross-check is the only layer that noticed.
 """
 
 from __future__ import annotations
@@ -42,6 +57,7 @@ from __future__ import annotations
 import re
 from typing import Callable
 
+from mijual.calc import lockup_release_date
 from mijual.db.models import Extraction
 from mijual.gates.context import VersionContext, iso_date, korean_date, squash
 from mijual.gates.outcome import (
@@ -63,6 +79,11 @@ FORFEIT_METHODS = {"일반공모", "대표주관회사인수", "미발행"}
 _PUBLIC_OFFER = ("일반공모", "일반투자자", "잔여주", "실권주", "고위험고수익")
 _RATIO_PER_SHARE = re.compile(r"1\s*주\s*당\s*([\d.]+)\s*주")
 _RATIO_PERCENT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%")
+#: How far a filing's own 전매제한 해제일 may sit from ``납입일 + N개월`` before the
+#: gate calls it a different claim. A CB states 발행일 and 납입일 within a day or
+#: two of each other and the prose picks either; 3 days covers that and nothing
+#: like a mis-derived year.
+LOCKUP_DERIVATION_TOLERANCE_DAYS = 3
 
 
 # ---------------------------------------------------------------------------
@@ -354,7 +375,12 @@ def gate_issue_price_formula(row: Extraction, ctx: VersionContext) -> Outcome:
 # ② 6·7·8 — written from §7, unexercised until P2.S7's corpus exists
 # ---------------------------------------------------------------------------
 def gate_refixing_terms(row: Extraction, ctx: VersionContext) -> Outcome:
-    """Floor must equal API ``act_mktprcfl_cvprc_lwtrsprc`` (§7 #6). **Unexercised.**"""
+    """Floor must equal API ``act_mktprcfl_cvprc_lwtrsprc`` (§7 #6).
+
+    Exercised by ``P2.S7``: **29 of 29** comparable rows agree with the API floor
+    and none disagree, so §7's row needed no adjustment. The 13 skips are the API
+    field's own gaps, not the reading's — and a skip is never a pass.
+    """
     checks = [citation_check(row, ctx)]
     if not checks[0].ok:
         return verdict(checks)
@@ -380,7 +406,13 @@ def gate_refixing_terms(row: Extraction, ctx: VersionContext) -> Outcome:
 
 
 def gate_option_schedule(row: Extraction, ctx: VersionContext) -> Outcome:
-    """Call/put dates within 사채 발행일 ~ 만기일 (§7 #7). **Unexercised.**"""
+    """Call/put dates within 사채 발행일 ~ 만기일 (§7 #7).
+
+    Exercised by ``P2.S7``: 37 rows checked and 1 failed — 엑시큐어하이트론
+    ``20260630000509``, whose 조기상환 schedule runs past the 만기일 of the CB it is
+    attached to **because the 정정 belongs to a different CB** (see the module
+    docstring). §7's rule held; what it caught was an identity error.
+    """
     checks = [citation_check(row, ctx)]
     if not checks[0].ok:
         return verdict(checks)
@@ -420,17 +452,60 @@ def gate_option_schedule(row: Extraction, ctx: VersionContext) -> Outcome:
 
 
 def gate_lockup_release(row: Extraction, ctx: VersionContext) -> Outcome:
-    """전매제한 해제일 ≥ 발행일 (§7 #8). **Unexercised.**"""
+    """전매제한 해제일 ≥ 발행일, and the date is **derived, not trusted** (§7 #8).
+
+    ``P2.S7`` measured what a CB filing actually says here, and §7's gate had to
+    move: **31 of 62 extracted rows state a duration and no date at all**
+    (``사모발행에 의한 1년간 행사 및 분할금지``), and every row that *does* carry a
+    date carries one the model computed by adding 12 months to the 발행일. Failing
+    the first group and passing the second would have rewarded the model for doing
+    arithmetic §3.6 assigns to the code.
+
+    So the gate derives the 해제일 itself — :func:`mijual.calc.lockup_release_date`
+    over the **API** 납입일 (``pymd``, evidence the model never saw) and the stated
+    개월수 — and then:
+
+    * a model-stated date is checked **against** that derivation (±3 days for the
+      발행일/납입일 wobble a filing shows), which is a real independent check where
+      the old rule had none;
+    * a duration with no date passes on the derivation, with the derived date in
+      the note so the board can count down to it;
+    * neither date nor duration is ``not_evaluable`` — a 전매제한 the filing does
+      not quantify is nothing to judge, not a failure.
+    """
     checks = [citation_check(row, ctx)]
     if not checks[0].ok:
         return verdict(checks)
     value = row.value if isinstance(row.value, dict) else {}
-    release = iso_date(value.get("release_date"))
-    issued = korean_date(ctx.api_value("bd_isu_dt", "pymd"))
-    if release is None:
-        checks.append(check_failed("release_date", "release_date_missing"))
-    elif issued is None:
-        checks.append(check_skipped("release_after_issue", "API 발행일 없음"))
+    stated = iso_date(value.get("release_date"))
+    months = value.get("months")
+    issued = korean_date(ctx.api_value("pymd", "bd_isu_dt"))
+    derived = lockup_release_date(issued, months if isinstance(months, int) else None)
+
+    if stated is None and derived is None:
+        return not_evaluable(
+            "lockup_not_quantified", checks, "해제일도 예치기간도 기재되지 않음"
+        )
+    if stated is not None and derived is not None:
+        if abs((stated - derived).days) <= LOCKUP_DERIVATION_TOLERANCE_DAYS:
+            checks.append(check_passed("release_vs_derived", f"{stated} ≈ {derived} (API 납입일 {issued} + {months}M)"))
+        else:
+            checks.append(
+                check_failed(
+                    "release_vs_derived",
+                    "release_date_not_derived",
+                    f"본문 {stated} != API 납입일 기준 {derived}",
+                )
+            )
+            return verdict(checks)
+    elif stated is None:
+        checks.append(
+            check_passed("release_derived", f"{derived} = API 납입일 {issued} + {months}개월")
+        )
+
+    release = stated or derived
+    if issued is None:
+        checks.append(check_skipped("release_after_issue", "API 납입일 없음"))
     elif release >= issued:
         checks.append(check_passed("release_after_issue", f"{release} >= {issued}"))
     else:

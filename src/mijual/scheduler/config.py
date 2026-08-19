@@ -46,8 +46,11 @@ RESYNC_WINDOW_DAYS = 90
 STAGES = ("collect", "bodydoc", "extract", "gates")
 
 #: Rights types whose prose fields are read by the scheduled extraction. ② is
-#: structured-only (N6) and needs no LLM, so it is not listed here — ``P2.S7``
-#: registers its own collection task instead.
+#: **deliberately absent**: it is collected by the same ``collect`` stage as
+#: ①/③ (``DEFAULT_ENDPOINTS`` carries ``cvbdIsDecsn`` since ``P2.S7``), but its
+#: countdown is entirely ``API`` tier (N6), so a scheduled LLM pass over it would
+#: buy narrative colour with money. Fields 6–8 are run by hand, capped, over the
+#: urgency set only — ``python -m mijual.cb extract``.
 DEFAULT_EXTRACT_RIGHTS = (RightsType.SUBSCRIPTION_WARRANT, RightsType.APPRAISAL_RIGHT)
 
 

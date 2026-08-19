@@ -31,14 +31,47 @@ them are withdrawals** (a 71 % false-positive rate). The other 10 are the ③
    first draft required the 정정 전 restatement and silently missed it.
 
 That shape is rights-type agnostic: ``회사합병 결정 → 회사합병 철회`` and
-``전환사채권 발행결정 → … 철회`` satisfy it unchanged. ③ and ② have **no case in
-today's corpus**, so the generalisation is implemented and unit-tested on a
-constructed row but **not corpus-exercised** — stated plainly rather than claimed.
+``전환사채권 발행결정 → … 철회`` satisfy it unchanged. **② is now corpus-exercised
+and the four rules held with no change at all** (``P2.S7``): over **4,627 정정사항
+rows in 808 ② 본문 documents**, ``철회`` appears in the 정정 후 cell of **10 rows**;
+the shape accepts **9**, and all 9 are genuine withdrawals — **precision 9/9**,
+against the keyword test's 71 % false-positive rate on ①/③, because a CB's 정정 후
+cells carry none of the 매수청구 boilerplate. ③ still has no real case.
 
-Corpus result (0 requests, 0 calls): **4 withdrawals**. Two are exposable ①
-events — 썸에이지 and 제이알글로벌리츠 — and two more sit on already-suppressed
-``unpaired_correction`` placeholders (디모아 ``20260625000227``, 코퍼스코리아
-``20260130000680``), where the finding changes no exposure but is still recorded.
+**The tenth row is a false NEGATIVE, and it is left uncaught on purpose.**
+비트플래닛 ``20260616000274`` withdraws its CB in a 143-character *paragraph* under
+``23. 기타 투자판단에 참고할 사항`` — ``발행대상자 … 의 투자 진행 철회 통보에 따라
+부득이하게 철회하게 됨`` — which fails three of the four rules (too long, does not
+*end* with 철회, numbered 항목). Relaxing any of them to admit it would re-admit the
+①/③ boilerplate the rules exist to reject. It is safe to miss because the second
+line of defence holds: its API detail row is blank in all 46 fields, so
+:mod:`mijual.gates.exposure` refuses to render it anyway (``incomplete_api_row``).
+Recorded, not rendered — but the *reason* shown is weaker than the truth.
+
+**②'s withdrawals are invisible to every other layer, and worse than ①'s were.**
+When a CB issuance is withdrawn OpenDART keeps the detail row and **blanks every
+field to** ``-`` (46 keys, all empty — 베노티앤알 ``20260211001003``, 핀텔
+``20260417000537``, 센서뷰 ``20260227007913`` …). So the API-completeness test in
+:mod:`mijual.gates.exposure` already refuses to render them — but it refuses for
+the wrong reason, saying *"we do not have the numbers"* about an event whose truth
+is *"this was cancelled"*. Only this detector, reading the one 정정사항 row, turns
+that silence into a citable sentence with a span behind it.
+
+Corpus result (0 requests, 0 calls): ①'s 6 filings (N47/N55) plus **② 8 events /
+9 filings** — 드래곤플라이 ``20250915000168``, 캔버스엔 ``20250806000321``, 아이톡시
+``20251231000642``, 베노티앤알 ``20260211001003``, 코퍼스코리아 ``20260130000634`` +
+``…642`` (one event, two filings), 센서뷰 ``20260227007913``, 핀텔
+``20260417000537``, 대진첨단소재 ``20260714000506``. **None of the 8 would have been
+rendered even without this detector** — their blanked API rows fail the
+completeness test — so the value here is not the block, it is the *sentence*: they
+move from ``no_detail``/``incomplete_api_row`` (a silence) to
+``이 사채 발행은 철회되었습니다`` with a 정정사항 row and a span behind it. Two corps
+(베노티앤알, 코퍼스코리아) withdrew a 유상증자 **and** a CB on the same day.
+
+N55's rule stands and was demonstrated again: **the count is a floor at the
+document coverage it was measured at.** 대진첨단소재 was found only after one more
+본문 was fetched for an event the contract had blocked as ``incomplete_api_row`` —
+which is why ``python -m mijual.cb documents --blocked`` exists.
 
 Nothing here deletes anything. A withdrawal is recorded on the event and the
 extractions stay exactly as they were: the evidence of what the filing once said

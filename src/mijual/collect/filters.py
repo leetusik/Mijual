@@ -75,6 +75,8 @@ def evaluate(endpoint: str, detail_row: dict | None) -> Suppression | None:
         return _evaluate_rights_offering(detail_row)
     if endpoint == "cmpMgDecsn":
         return _evaluate_merger(detail_row)
+    if endpoint == "cvbdIsDecsn":
+        return _evaluate_convertible(detail_row)
     return None
 
 
@@ -94,6 +96,27 @@ def _evaluate_rights_offering(row: dict | None) -> Suppression | None:
         f"ic_mthn={ic_mthn} — 신주인수권증서 미발행 증자방식 "
         "(최종 확인은 본문 18. 신주인수권양도여부, P2.S3/S5)",
     )
+
+
+def _evaluate_convertible(row: dict | None) -> Suppression | None:
+    """② has **no** "grants no right" filter, and that is a finding, not an omission.
+
+    ① and ③ each have a semantic class that issues nothing (제3자배정 유증 → no
+    증서; 소규모·간이합병 → no 매수청구권), which is why suppression exists at all.
+    Every 전환사채권 발행결정 creates conversion overhang by construction — there is
+    no ② analogue to exclude, so this arm keeps everything.
+
+    What ② *does* need is the opposite test — **is the countdown renderable?** —
+    and that is not a collection-time property: it depends on the API fields of
+    the event's current version, which a later 정정 can change. So it lives in the
+    exposure contract (:mod:`mijual.gates.exposure`, ``R2_REQUIRED_API_FIELDS``)
+    where it is re-derived on every gate run, rather than being frozen into a
+    ``suppressed_reason`` here.
+
+    A time-based rule ("the 전환청구기간 already closed") is deliberately **not**
+    added: suppression is persisted evidence and must not depend on the clock.
+    """
+    return None
 
 
 def _evaluate_merger(row: dict | None) -> Suppression | None:

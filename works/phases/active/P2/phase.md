@@ -635,6 +635,124 @@ the *client* decide, so a cached-but-unpersisted document is adopted rather than
 Ops footnote paid for once: start beat with `-s var/celerybeat-schedule`, or it drops its shelve DB in
 the repo root (now gitignored).
 
+### Appended by `P2.S7` (2026-08-20)
+
+**N57 — the backfill's whole justification, measured: ②'s urgency comes from the 2025-H2 vintage
+and from nothing else.** Before it, **1** of 267 cached 2026-filed CB events opened 전환청구
+within 30 days of the judging week. After it (2025-06-01 → 2026-08-20, 584 live requests):
+**33 events open within 30 days of 2026-09-07, 82 within 90, 152 within 180**, 67 are already
+inside their 전환청구기간, and the largest overhang in the 90-day window is **67.8 %** (효성화학
+`20251031000547`, opens 2026-12-04; 49.14 % 지엔코 `20250908000230` inside 30 days). The cause is
+**not** a filing-rate effect — 530 CB originals over 14.7 months is ▷ ~36/month against P1's
+▷ ~35/month for 2026 — it is the **~12-month 전환청구 lockup**: a CB filed in 2025-H2 opens in
+2026-H2. Any later slice re-deriving ② urgency must keep the ≥ 2025-06 window; a 2026-only
+corpus is structurally empty of near-term openings.
+
+**N58 — ②'s exposure test is API completeness, not a 본문, and it needed two new states.** ② is
+the only rights type whose countdown is entirely `API` (N6), so requiring a stored 본문 would
+have blocked 422 renderable events for prose they do not need. `mijual.gates.exposure`'s R2 arm
+keeps suppression / 철회 / blocking flags unchanged and replaces the document requirement with
+`mijual.cb.R2_REQUIRED_API_FIELDS` — 전환가액 `cv_prc`, 전환청구기간 `cvrqpd_bgd`/`_edd`, 오버행
+`cvisstk_cnt`/`cvisstk_tisstk_vs` — all present **and parseable** on the current version's detail
+row. New states, both conservative and both real: `no_detail` (68 events — no stored row) and
+`incomplete_api_row` (1 — 파이온엑스 `20260722000285` states a **38.45 % dilution with no
+전환청구기간 at all**). **해외/USD decided:** exposable **iff the KRW fields parse**, never on
+`ovis_*`; the corpus's one 해외 case (헝셩그룹 `20260213002703`, 16,000,000 HKD) states 전환가액
+174원 / 17,110,804주 in KRW and passes on its own merits. Parsing lives in one place —
+`mijual.cb.ConvertibleFacts` (Decimal 원, `korean_date`) — and `P2.S8`/P3 must call it rather
+than re-parse `cv_prc` strings.
+
+**N59 — a withdrawn CB keeps its detail row and OpenDART blanks all 46 fields to `-`.** Verified
+on all 8 ② withdrawals (베노티앤알 `20260211001003`, 핀텔 `20260417000537`, 센서뷰
+`20260227007913`, …) and re-probed live: the row is still returned, it is just empty. Two
+consequences. (a) The N58 completeness rule already refuses to render them, so the 철회 detector
+does not change *whether* they show — it changes *what is said*: `no_detail`/`incomplete_api_row`
+(a silence) becomes `이 사채 발행은 철회되었습니다` with a 정정사항 row and a span. (b) **A blank
+② row is not proof of a withdrawal** — 비트플래닛 `20260616000274` is blank and is not one — so
+neither signal may be inferred from the other.
+
+**N60 — N47's four shape rules generalise to ② unchanged, and ② is the clean case.** Over **808
+② 본문 documents / 4,627 정정사항 rows**, `철회` appears in the 정정 후 cell of **10 rows, the
+shape accepts 9, and all 9 are withdrawals — precision 9/9** (vs 71 % false positives for the
+keyword test on ①/③: a CB's 정정 후 cells carry no 매수청구 boilerplate). **8 ② events / 9
+filings**; 베노티앤알 and 코퍼스코리아 each withdrew a 유상증자 **and** a CB on the same day. The
+tenth row is a **false negative left uncaught on purpose**: 비트플래닛 `20260616000274` withdraws
+in a 143-char paragraph under `23. 기타 투자판단에 참고할 사항`, and relaxing any rule to admit
+it re-admits the ①/③ boilerplate. N55's rule held again — 대진첨단소재 `20260714000506` surfaced
+only after one more 본문 was fetched, which is why `python -m mijual.cb documents --blocked`
+exists: **quote a 철회 count with the document coverage it was measured at.**
+
+**N61 — gates 6–8 are exercised, #6 held exactly as written, #8 had to move.** 62 rows each.
+**#6 리픽싱:** the 본문's 최저 조정가액 equals API `act_mktprcfl_cvprc_lwtrsprc` in **29/29**
+comparable rows, **0 mismatches** (13 skipped — the API field itself is blank in 87/267 rows);
+§7's row needed no change and this is its first corpus confirmation. **#7 콜·풋:** 37 checked,
+1 failure, 16 skipped. **#8 보호예수 moved, N45-style:** a CB states 전매제한 as a **duration,
+not a date** (`사모발행에 의한 1년간 …`) in **31 of 62 rows**, and every row that did carry a date
+carried one the *model* computed by adding 12 months to the 발행일 — the arithmetic §3.6 assigns
+to code. The gate now derives it (`mijual.calc.lockup_release_date` = API `pymd` + 개월수),
+checks a model-stated date **against** the derivation (±3 days for 발행일/납입일 wobble), and
+records an unquantified 전매제한 as `not_evaluable(lockup_not_quantified)`. 31 failures → 3.
+
+**N62 — the API-derived cross-check caught a class of error no other layer sees: a 정정 attached
+to the wrong 사채.** All 4 remaining ② gate failures are one finding — 엑시큐어하이트론
+`20260630000509`, 알파AI `20250930000580`, 제이에스링크 `20251204000439` are corrections whose
+본문 `최초제출일` names an event never collected (2024-09-06 / 2025-05-07 / 2024-12-17), so
+nearest-earlier pairing attached each to a **different CB of the same corp**; their 조기상환
+schedule and 보호예수 date belong to another bond. Nothing else notices, because no other check
+compares a 본문 reading against a machine value scoped to one 사채. **Gate 7/8's API reference is
+therefore also an identity check** — worth remembering wherever an API-backed gate exists.
+
+**N63 — DEFER-JOB CANDIDATE (not taken here): `hint_mismatch` does not block exposure, and for ②
+it probably should.** 30 of the 422 exposable ② events carry it; N62 shows at least 3 are real
+mis-attachments whose *prose* describes another 사채 (the API countdown itself stays correct, so
+the harm is bounded). Not fixed in this slice because the same rule would also block **42 passing
+① rows + 2 tbd** and reopen S5/N48's settled decision that `hint_mismatch` is evidence, not a
+blocker (N31: ~half of ① mismatches are ±7-day 접수일 skew). The right shape is probably
+field-level (`not_evaluable(foreign_document)` for a version whose hint names a non-existent
+event) rather than event-level, and it needs its own measurement pass. Sits beside N51 as
+collector/identity work.
+
+**N64 — ② rides the existing beat; it got no task and no entry of its own.** `DEFAULT_ENDPOINTS`
+derives from `TARGETS` and `PipelineConfig.endpoints` defaults to it, so registering
+`cvbdIsDecsn` put ② inside the existing `collect` stage — same window, same lock, same ceilings —
+rather than adding a second schedule that could interleave (N53's lock argument applies to
+schedules too). `extract_rights` stays `(R1, R3)`: ② needs zero LLM. Costs to expect on the daily
+run: +~20 detail requests per 14-day window, and a much longer bodydoc queue (1,181 ② 기재정정
+versions exist, 1,021 본문 now held) which drains at `bodydoc_max_documents` per run. The
+backfill stays a one-off CLI — a scheduled job's window rolls forward, so a fixed historical
+window has no business in one. **Subtype matching is exact string equality and must stay so:**
+the same `pblntf_ty=B` stream carries 자기전환사채매도결정, 자기전환사채만기전취득결정,
+전환사채매수선택권행사자지정, 제3자의전환사채매수선택권행사, 신주인수권부사채권발행결정 and
+교환사채권발행결정 (EB, out by D-1) — a substring match on `전환사채` collects all of them.
+
+**N65 — operator directive (2026-08-20), D-4 amended: the thinking level is per task and routine
+reading is explicitly cheap.** The "changple5" preset applies **HIGH** to every call (N35 saw its
+thought tokens but read it as untouchable); the operator has now reserved it for genuinely hard
+work. Mechanism, verified against `google-genai` 2.18.1: gemini-3.7-flash is a 3.x model, so the
+knob is `types.ThinkingConfig(thinking_level=…)` with `MINIMAL|LOW|MEDIUM|HIGH` — **not**
+`thinking_budget` — and *omitting the field entirely* is what inherits the preset (an empty
+`ThinkingConfig()` is still an instruction). Measured on one real `r2_prose` prompt (11,491
+prompt tokens): preset **866** thinking tokens / ▷ $0.0160 → explicit `LOW` **0** / ▷ $0.0126,
+**−21 % cost**, and a value-level diff against the stored preset-level extraction found **every
+gated value identical** (floor 3,962, ratio 0.7, 해제일 2026-09-12, 12개월, put
+2026-08-24~2028-08-07) with only free-text `detail` wording differing. `THINKING_BY_TASK` in
+`mijual.extract.client`: prose tasks `LOW`, unlisted tasks `LOW`, **`correction` keeps the
+preset** — it is the only task that *reasons* and N41's 121-changes/0-unsupported measurement was
+taken at the preset level, so re-measuring it belongs with `P2.S9`. The level used is recorded
+per call (`extraction_call.thinking_level`, additive nullable via `ensure_columns`), because a ▷
+cost is only comparable across runs if the level behind it is known. **The 80 calls already spent
+by this slice were not re-run** (operator instruction); they read `NULL`.
+
+**N66 — what ② costs to read, and what the triage left undone.** 80 calls / 797,099 tokens /
+▷ $1.0677 / 0 failures bought fields 6–8 on the **45 soonest-opening** exposable events (44
+`r2_prose` + 36 correction; 112 of 114 quotes located, 111 byte-verified). The urgency set is
+**171** events, so **126 keep the structured-only floor D-1 allows** — full API countdown, no
+리픽싱/콜풋/보호예수 narrative. Extraction yield per document: lockup_release 42/44,
+option_schedule 39/44, refixing_terms 33/44. Whole-slice request spend **1,398 of a 2,500
+ceiling** (584 collection + 700 정정 본문 + 90 urgency 본문 + 13 blocked + 11 probes); nothing was
+dropped for budget. Board today: **457 exposable events (① 25, ③ 10, ② 422) / 280 renderable
+field instances**, up from 35 / 157.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -836,6 +954,57 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   broker-free fallback `python -m mijual.scheduler once [--offline]` — the same code path, 0
   requests / 0 calls offline, and the tool `P2.S7`/`P2.S8` reuse. Source: `P2.S6` result (2026-08-20),
   findings N52–N56.
+
+- **`data`** / **`product`** — **② CB 오버행 landed (P2.S7), and it is the first rights type
+  whose exposure test is not a 본문 reading.** Collection: `cvbdIsDecsn` → `전환사채권발행결정` is
+  a normal collector target (so the **scheduled** daily pipeline picks ② up with no new task and
+  no new beat entry), matched by **exact** parenthetical equality — the same `pblntf_ty=B` stream
+  carries 자기전환사채매도결정 / 만기전취득결정 / 매수선택권행사자지정 / 신주인수권부사채권발행결정
+  / 교환사채권발행결정 (EB, out by D-1), all of which a substring match would collect. Corpus:
+  **2025-06-01 → 2026-08-20, 530 CB originals + 1,181 기재정정, 673 events, 584 live requests**
+  (▷ ~36 originals/month, consistent with P1's ▷ ~35/month for 2026). **Exposure semantics for
+  ②:** exposable iff not suppressed / not withdrawn / no blocking flag **and** the countdown API
+  fields all parse on the current version (전환가액 `cv_prc`, 전환청구기간 `cvrqpd_bgd`/`_edd`,
+  오버행 `cvisstk_cnt`/`cvisstk_tisstk_vs`) — **no 본문 required**, because ②'s countdown is
+  entirely `API` tier (N6). Two new event states join the documented set: `no_detail` and
+  `incomplete_api_row` (파이온엑스 `20260722000285` states a 38.45 % dilution with no
+  전환청구기간). **해외/USD rule recorded: exposable iff the KRW fields parse, never on `ovis_*`**
+  (one case, 헝셩그룹 `20260213002703`, HKD, passes on its KRW values). The D-1 backfill condition
+  is met and measured: **33 ② events open 전환청구 within 30 days of 2026-09-07, 82 within 90,
+  152 within 180, max 오버행 67.8 %** — against **1** before the backfill, because a CB filed in
+  2025-H2 opens ~12 months later. Board total **457 exposable events (① 25, ③ 10, ② 422) / 280
+  renderable fields**, up from 35 / 157. Source: `P2.S7` result (2026-08-20), findings N57–N59,
+  N64, N66.
+- **`data`** — **철회 and gates 6–8 are now corpus-measured for ②, and §7 #8 changed.** The N47
+  row-shape detector generalises to ② **unchanged**: over **808 ② 본문 / 4,627 정정사항 rows** the
+  word `철회` appears in 10 정정 후 cells, the shape accepts **9**, and **all 9 are withdrawals**
+  (precision 9/9, against 71 % keyword false positives on ①/③) — **8 ② events withdrawn**. Record
+  the mechanism, because it is a documented API behaviour: **a withdrawn CB keeps its detail row
+  and OpenDART blanks all 46 fields to `-`**, so the completeness rule blocks it as a *silence*
+  and only the 정정사항 row turns that into `이 사채 발행은 철회되었습니다` with a span — and a
+  blank row is **not** proof of a withdrawal (비트플래닛 `20260616000274` is blank and is not
+  one). Gates: **#6 리픽싱 held exactly as §7 wrote it — 본문 floor == API
+  `act_mktprcfl_cvprc_lwtrsprc` in 29/29 comparable rows, 0 mismatches**; **#8 보호예수 had to
+  move** — a CB states 전매제한 as a **duration, not a date** in 31 of 62 rows, and the rows that
+  did carry a date carried one the *model* computed, so the 해제일 is now **derived
+  deterministically** (`mijual.calc.lockup_release_date` = API 납입일 + 개월수) and a stated date
+  is checked against that derivation (31 failures → 3). The 4 remaining ② failures are one
+  finding worth documenting: an API-backed gate is also an **identity** check — it caught 3 정정
+  filings paired to the wrong 사채 that no other layer sees. Source: `P2.S7` result (2026-08-20),
+  findings N60–N63.
+- **`decisions`** / **`operations`** — **D-4 amended by operator directive (2026-08-20): the
+  Gemini thinking level is per task, `LOW` for routine schema extraction, the project preset
+  (HIGH) reserved for reasoning.** N35 recorded the preset as untouchable; it is now a knob the
+  code sets deliberately. Mechanism to document: gemini-3.7-flash takes
+  `ThinkingConfig(thinking_level=MINIMAL|LOW|MEDIUM|HIGH)` (not the older `thinking_budget`), and
+  **omitting the field entirely** is what inherits the preset. Measured on one real extraction
+  prompt: preset **866** thinking tokens → explicit `LOW` **0**, **−21 % ▷ cost**, with **every
+  gated value identical** (only free-text prose wording differs). Policy as implemented: the three
+  prose tasks and any unlisted task run `LOW`; the **정정 해석** task keeps the preset because it
+  is the only task that reasons and its quality measurement (N41) was taken there. Every call now
+  records the level it ran at (`extraction_call.thinking_level`), because a ▷ cost figure is only
+  comparable across runs if the level behind it is known. Source: `P2.S7` result (2026-08-20),
+  finding N65.
 
 ## Open Questions
 

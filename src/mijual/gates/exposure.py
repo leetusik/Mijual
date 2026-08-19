@@ -22,6 +22,15 @@ A **field** is exposable iff its gate said ``passed`` (render the value) or
 ``tbd`` (render ``추후결정`` — never the superseded date it replaced, N40).
 Everything else stays recorded with its reason code and is never shown.
 
+**② is the one rights type whose countdown is not a 본문 reading** (N6): 전환가액,
+전환청구기간 and the 오버행 수량·비율 are all `API` tier, so requiring a stored 본문
+would block a perfectly renderable event for the sake of prose it does not need.
+Its arm therefore replaces the *document* requirement with an *API completeness*
+requirement — every field of :data:`mijual.cb.R2_REQUIRED_API_FIELDS` present and
+parseable on the current version's detail row — and is otherwise identical
+(suppression, 철회 and the blocking flags all apply unchanged). ``P2.S7``'s
+prose fields 6–8 are additive colour on top: an event renders with none of them.
+
 The two are independent on purpose: a blocked event can still hold perfectly
 gated fields (they are simply not rendered), and an exposable event can hold
 blocked fields (the rest of the card still renders). Both counts are reported.
@@ -209,14 +218,19 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
             rcept_no=row.rcept_no,
         )
 
-    state, reason, note = _event_state(event, version)
+    state, reason, note = _event_state(event, version, session)
     return EventExposure(
         event_id=event.id,
         corp_code=event.corp_code,
         corp_name=event.corp.corp_name if event.corp else None,
         rights_type=event.rights_type.value if event.rights_type else "?",
         original_rcept_dt=event.original_rcept_dt,
-        rcept_no=version.rcept_no if version else None,
+        # The readable version's ``rcept_no``, falling back to the newest one:
+        # ② renders with no 본문 at all, and a card with no filing number on it
+        # would be unciteable.
+        rcept_no=(version or event.latest_version).rcept_no
+        if (version or event.latest_version)
+        else None,
         state=state,
         reason_code=reason,
         note=note,
@@ -224,7 +238,9 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
     )
 
 
-def _event_state(event: Event, version: FilingVersion | None) -> tuple[str, str | None, str | None]:
+def _event_state(
+    event: Event, version: FilingVersion | None, session: Session | None = None
+) -> tuple[str, str | None, str | None]:
     if event.suppressed_reason:
         return ("suppressed", event.suppressed_reason, event.suppressed_note)
     if "withdrawn" in event.flags:
@@ -232,9 +248,41 @@ def _event_state(event: Event, version: FilingVersion | None) -> tuple[str, str 
     flag = _blocking_flag(event)
     if flag:
         return ("flagged", flag, BLOCKING_FLAGS[flag])
+    if event.rights_type is RightsType.CONVERTIBLE_OVERHANG:
+        return _convertible_state(event, session)
     if version is None:
         return ("no_document", "no_document", "본문 스냅샷이 없습니다")
     return ("exposable", None, None)
+
+
+def _convertible_state(event: Event, session: Session | None) -> tuple[str, str | None, str | None]:
+    """②'s arm: the countdown is `API` tier, so the detail row is the requirement.
+
+    Conservative in both directions, like every other rule here: an event with no
+    stored detail row is *not* exposed (nothing to render) and *not* suppressed
+    (the row may simply not have been fetched yet), and a row missing any
+    countdown field names exactly which one in the note rather than rendering a
+    card with a blank price or a blank window.
+    """
+    # Local import: ``mijual.cb`` imports this package, so the dependency is
+    # resolved at call time — the same pattern ``current_version`` already uses.
+    from mijual.cb import event_facts
+
+    if session is None:  # pragma: no cover - every caller has a session
+        return ("no_detail", "no_detail", "상세 API 스냅샷을 읽을 수 없습니다")
+    facts = event_facts(session, event)
+    if facts.complete:
+        return ("exposable", None, None)
+    if facts.rcept_no is None:
+        # No stored detail snapshot at all — not the same thing as a row that
+        # says nothing, and it is usually just an uncollected event.
+        return ("no_detail", "no_detail", "cvbdIsDecsn 상세 스냅샷이 없습니다")
+    # A row exists and is blank or partial. Both are real and both block:
+    # 비트플래닛 ``20260616000274`` files a CB row whose 전환 fields are **all** ``-``,
+    # and 파이온엑스 ``20260722000285`` states a 38.45 % 오버행 with **no**
+    # 전환청구기간 — a dilution whose date the filing does not give.
+    names = ", ".join(f"{name}({key})" for key, name in facts.missing)
+    return ("incomplete_api_row", "incomplete_api_row", f"필수 API 값 누락: {names}")
 
 
 def exposure_of_all(

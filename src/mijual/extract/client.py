@@ -17,11 +17,20 @@ card below is an estimate; the token counts are measurements.
 resolved on first *use*, and never printed, logged, or written to a report — the
 same structural rule the DART client follows (N18).
 
-The **thinking level is not configured here on purpose**. The credential's
-project preset already applies one: a probe call with no thinking config came
-back with ``thoughts_token_count=423`` on a trivial prompt (and 565 on a small
-extraction), so the preset is present and passing an explicit level would
-silently override an operator-side decision (D-4, plan §Operator inputs).
+**The thinking level is per task, and routine reading is explicitly cheap**
+(operator directive, 2026-08-20 — an amendment to D-4). The credential's project
+preset applies **HIGH** thinking to every call, which is right for reasoning and
+wasteful for the schema extraction that makes up most of this package's spend:
+the model is copying a value and a verbatim quote out of a 7,000-character
+document, not deciding anything. So :data:`THINKING_BY_TASK` sets an explicit
+level per task — ``LOW`` for the three prose tasks — while a task left at ``None``
+**inherits the operator's preset**, which is how the harder 정정 interpretation
+still gets the reasoning it is measured against (N41).
+
+Two properties keep that honest: the level actually used is recorded on every
+:class:`CallResult` (and stored per call), and it is a *keyword* on
+:meth:`GeminiClient.generate_json`, so a caller that needs more thinking asks for
+it explicitly rather than by editing a default.
 """
 
 from __future__ import annotations
@@ -38,10 +47,13 @@ __all__ = [
     "CallBudgetExceeded",
     "CallResult",
     "DEFAULT_MODEL",
+    "DEFAULT_THINKING_LEVEL",
     "GeminiClient",
     "GeminiError",
+    "INHERIT_PRESET",
     "PRICING",
     "Pricing",
+    "THINKING_BY_TASK",
     "Usage",
     "UsageLedger",
 ]
@@ -49,6 +61,38 @@ __all__ = [
 #: Confirmed by the operator (O-2) and present in the credential's model list as
 #: ``models/gemini-3.7-flash`` (version ``3.7-flash-08-2026``).
 DEFAULT_MODEL = "gemini-3.7-flash"
+
+#: What a task asks for when it wants the credential's project-side preset —
+#: i.e. *do not send a thinking config at all*. Spelled out because ``None`` in a
+#: mapping is ambiguous between "no opinion" and "no thinking".
+INHERIT_PRESET = None
+
+#: Per-task thinking level (``google.genai.types.ThinkingLevel``: ``MINIMAL`` /
+#: ``LOW`` / ``MEDIUM`` / ``HIGH``), operator directive 2026-08-20.
+#:
+#: * the three **prose** tasks are routine schema extraction — find a value, copy
+#:   the sentence it came from — and the deterministic layer re-checks every one
+#:   of them afterwards, so they run at ``LOW``;
+#: * **correction** is the one task that *reasons*: it diffs two versions, works
+#:   out which changes moved a D-day, and is scored against the deterministic
+#:   정정사항 rows (N41: 121 changes, 0 unsupported). It keeps the operator's
+#:   preset, because that measurement was taken at the preset level;
+#: * **probe** keeps the preset too — its whole job is to observe what the preset
+#:   does.
+#:
+#: gemini-3.7-flash is a 3.x model, so the knob is ``thinking_level``; the older
+#: ``thinking_budget`` (token count) is not used here.
+THINKING_BY_TASK: dict[str, str | None] = {
+    "r1_prose": "LOW",
+    "r2_prose": "LOW",
+    "r3_prose": "LOW",
+    "correction": INHERIT_PRESET,
+    "probe": INHERIT_PRESET,
+}
+
+#: What a task not named above gets. Cheap by default is the point of the
+#: directive: a new routine reader should not silently inherit HIGH.
+DEFAULT_THINKING_LEVEL: str | None = "LOW"
 
 
 @dataclass(frozen=True)
@@ -155,6 +199,10 @@ class CallResult:
     latency_ms: int = 0
     attempts: int = 0
     error: str | None = None
+    #: The thinking level this call asked for; ``None`` = the project preset.
+    #: Recorded rather than assumed, because the same prompt costs different
+    #: money at different levels and the ledger has to be able to say why.
+    thinking_level: str | None = None
 
     @property
     def ok(self) -> bool:
@@ -193,6 +241,7 @@ class GeminiClient:
         timeout_s: int = 180,
         api_key: str | None = None,
         dry_run: bool = False,
+        thinking_by_task: dict[str, str | None] | None = None,
         log=None,
     ) -> None:
         self.settings = settings if settings is not None else load_settings()
@@ -201,6 +250,9 @@ class GeminiClient:
         self.tries = tries
         self.timeout_s = timeout_s
         self.dry_run = dry_run
+        self.thinking_by_task = (
+            THINKING_BY_TASK if thinking_by_task is None else thinking_by_task
+        )
         self.log = log
         self._api_key_override = api_key
         self._client = None
@@ -224,8 +276,18 @@ class GeminiClient:
         return self._client
 
     # -- calls ------------------------------------------------------------
+    def thinking_for(self, task: str) -> str | None:
+        """The level this task runs at — ``None`` means "inherit the preset"."""
+        return self.thinking_by_task.get(task, DEFAULT_THINKING_LEVEL)
+
     def generate_json(
-        self, *, prompt: str, schema: dict[str, Any], task: str, temperature: float = 0.0
+        self,
+        *,
+        prompt: str,
+        schema: dict[str, Any],
+        task: str,
+        temperature: float = 0.0,
+        thinking_level: str | None = "auto",
     ) -> CallResult:
         """One schema-constrained call. Never raises on a model/API failure.
 
@@ -233,17 +295,30 @@ class GeminiClient:
         corpus run records the failure against the filing and keeps going. The
         one exception that *is* raised is :class:`CallBudgetExceeded` — spending
         past the ceiling must stop the run, not be logged and continued.
+
+        ``thinking_level`` defaults to the sentinel ``"auto"``, meaning *look the
+        task up in* :data:`THINKING_BY_TASK`. Passing ``None`` explicitly asks for
+        the credential's project preset; passing a level name overrides both.
         """
         from google.genai import types  # local import (see :meth:`_sdk`)
 
+        level = self.thinking_for(task) if thinking_level == "auto" else thinking_level
         if self.dry_run:
-            return CallResult(task=task, status="dry_run", model=self.model)
+            return CallResult(
+                task=task, status="dry_run", model=self.model, thinking_level=level
+            )
 
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
             response_json_schema=schema,
             temperature=temperature,
             http_options=types.HttpOptions(timeout=self.timeout_s * 1000),
+            # No config at all when the task inherits the preset: sending
+            # ``ThinkingConfig()`` would still be an instruction, and the point of
+            # inheriting is to leave an operator-side decision untouched.
+            thinking_config=(
+                types.ThinkingConfig(thinking_level=level) if level is not None else None
+            ),
         )
         started = time.monotonic()
         attempts = 0
@@ -283,6 +358,7 @@ class GeminiClient:
                     latency_ms=latency,
                     attempts=attempts,
                     error=f"JSONDecodeError: {exc.msg}",
+                    thinking_level=level,
                 )
             self.ledger.add(task, usage, ok=True)
             return CallResult(
@@ -295,6 +371,7 @@ class GeminiClient:
                 model_version=getattr(response, "model_version", None),
                 latency_ms=latency,
                 attempts=attempts,
+                thinking_level=level,
             )
 
         self.ledger.add(task, Usage(), ok=False)
@@ -305,6 +382,7 @@ class GeminiClient:
             latency_ms=int((time.monotonic() - started) * 1000),
             attempts=attempts,
             error=last_error,
+            thinking_level=level,
         )
 
     def probe(self) -> CallResult:

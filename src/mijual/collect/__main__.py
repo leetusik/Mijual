@@ -94,8 +94,12 @@ def main(argv: list[str] | None = None) -> int:
     print("\n" + report.render())
 
     if args.report:
+        # ``rows_by_kind`` is a Counter keyed by :class:`CorrectionKind`, and JSON
+        # object keys must be strings — ``default=str`` only rescues *values*, so
+        # the keys are stringified here. (Found by P2.S7's backfill: the run
+        # itself had already persisted everything when the dump raised.)
         payload = {
-            k: (dict(v) if hasattr(v, "most_common") else v)
+            k: ({str(kk): vv for kk, vv in v.items()} if hasattr(v, "most_common") else v)
             for k, v in vars(report).items()
         }
         Path(args.report).write_text(

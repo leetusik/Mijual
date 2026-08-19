@@ -1,0 +1,11 @@
+{
+  "id": "D2",
+  "title": "De-duplication pass for hint_duplicate versions and hint_split_evidence collided event keys",
+  "status": "deferred",
+  "source": "P2.S3",
+  "reason": "22 duplicate versions and 9 proven multi-event keys are flagged, not merged/split (S3 left creation decisions to the collector)",
+  "trigger": "if P2.S8 corpus work or P3 event pages trip over them",
+  "created_at": "2026-08-20T01:52:33+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

@@ -53,6 +53,7 @@ def record_call(
         model_version=result.model_version,
         schema_version=schema_version,
         prompt_version=prompt_version,
+        thinking_level=result.thinking_level,
         input_scope=input_scope,
         input_chars=input_chars,
         prompt_tokens=result.usage.prompt_tokens,

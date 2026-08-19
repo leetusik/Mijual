@@ -25,9 +25,17 @@ entry that says 07:30 must mean 07:30 KST on a worker running anywhere.
 FastAPI layer reads the rows these tasks persist; a dead worker leaves the board
 stale, never dark (the 결격 rule). No task returns anything a page renders.
 
-``P2.S7`` registers its ② collection task the same way: add a task with
-``@app.task(name="mijual.collect_cb")`` and one :data:`BEAT_SCHEDULE` entry
-beside these — the schedule is a plain dict on purpose.
+**② rides these entries; it did not get its own** (``P2.S7``). The collector's
+target registry drives ``PipelineConfig.endpoints``
+(``mijual.collect.targets.DEFAULT_ENDPOINTS``), so registering ``cvbdIsDecsn``
+there put ② inside the existing ``collect`` stage — same window, same lock, same
+ceilings — instead of adding a second schedule that could interleave with this
+one. ``extract_rights`` is deliberately left at ``(R1, R3)``: ②'s countdown is
+``API`` tier and needs **zero** LLM (N6), and its optional prose fields are run
+by hand under their own cap (``python -m mijual.cb extract``). The 2025-H2
+backfill is likewise a one-off CLI (``python -m mijual.collect --bgn 20250601
+… --endpoints cvbdIsDecsn``) and never a beat entry — a scheduled job's window
+rolls forward, so a fixed historical window has no business in one.
 """
 
 from __future__ import annotations

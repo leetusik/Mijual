@@ -87,7 +87,8 @@ REASON_LABELS_KO: dict[str, str] = {
     "option_date_out_of_term": "옵션 행사기간이 사채 발행일~만기일을 벗어납니다",
     "no_options": "옵션 항목이 비어 있습니다",
     "release_before_issue": "전매제한 해제일이 발행일보다 앞섭니다",
-    "release_date_missing": "전매제한 해제일이 없습니다",
+    "release_date_not_derived": "전매제한 해제일이 납입일+예치기간과 맞지 않습니다",
+    "lockup_not_quantified": "전매제한 기간이 기재되어 있지 않습니다",
     # --- ③ 9 반대의사 ----------------------------------------------------
     "dissent_period_mismatch": "반대의사 접수기간이 API 값과 다릅니다",
     "api_deadline_absent": "API에 반대의사 접수기간이 없어 대조할 수 없습니다",
@@ -99,6 +100,11 @@ REASON_LABELS_KO: dict[str, str] = {
     # --- event level ------------------------------------------------------
     "withdrawn": "철회된 공시입니다",
     "no_gate": "이 필드에 정의된 게이트가 없습니다",
+    "no_document": "공시 본문 스냅샷이 없습니다",
+    # ②'s countdown is API tier, so its event-level blockers are about that row
+    # rather than about a 본문 (P2.S7).
+    "no_detail": "전환사채 상세 API 스냅샷이 없습니다",
+    "incomplete_api_row": "전환가액·전환청구기간·오버행 값 중 일부가 공시에 없습니다",
 }
 
 

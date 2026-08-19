@@ -34,10 +34,12 @@ from math import floor
 __all__ = [
     "DDay",
     "KST",
+    "add_months",
     "allotted_shares",
     "d_day",
     "excess_subscription_cap",
     "lapsed_warrant_value",
+    "lockup_release_date",
     "today_kst",
     "window_state",
 ]
@@ -130,6 +132,36 @@ def excess_subscription_cap(allotted: int, excess_ratio: float | Decimal) -> int
     if allotted <= 0:
         return 0
     return int(floor(Decimal(allotted) * Decimal(str(excess_ratio))))
+
+
+def add_months(day: date, months: int) -> date:
+    """``day`` + ``months`` calendar months, clamped to the target month's end.
+
+    2025-01-31 + 1개월 is 2025-02-28, not an error and not March: Korean filings
+    count 전매제한 in whole months from the 발행일, and the anniversary of the 31st
+    in a 30-day month is that month's last day.
+    """
+    year, month = divmod(day.month - 1 + months, 12)
+    year, month = day.year + year, month + 1
+    last = [31, 29 if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0 else 28,
+            31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]
+    return date(year, month, min(day.day, last))
+
+
+def lockup_release_date(issued: date | None, months: int | None) -> date | None:
+    """전매제한 해제일 = 사채 발행일 + N개월 (§7 #8). ``None`` in → ``None`` out.
+
+    This exists because the corpus said so. **A CB filing states the 전매제한 as a
+    duration, not as a date** — ``사모발행에 의한 1년간 행사 및 분할금지`` — in 31 of
+    the 62 rows ``P2.S7`` extracted; the other rows carry a date only because the
+    model added 12 months to the 발행일 itself. Doing that arithmetic in the model
+    is exactly what §3.6 forbids (*계산은 결정론*), so the date is derived here from
+    the **API** 납입일 and the stated 개월수, and the gate compares any date the
+    model did state against this one instead of trusting it.
+    """
+    if issued is None or months is None or months <= 0:
+        return None
+    return add_months(issued, int(months))
 
 
 def lapsed_warrant_value(

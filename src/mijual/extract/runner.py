@@ -7,9 +7,11 @@ Scope, straight from the slice plan and D-1's drop order:
   when asked for, **flagged and never exposed**: ``P2.S5`` owns that decision.
 * **③ field 9** for the exposable 매수청구권 events.
 * **정정 재추출 + diff (field 10)** on top of both.
-* **② (fields 6–8) is not run here** — ``P2.S7`` owns that corpus, and its
-  countdown fields are ``API`` anyway (N6), so the LLM would be spending money on
-  something already deterministic.
+* **② (fields 6–8) is never run over the whole ② corpus.** Its countdown fields
+  are ``API`` (N6), so the model is only ever asked for the narrative colour —
+  리픽싱 세부, 콜·풋 스케줄, 보호예수 — and ``P2.S7`` runs it against an explicit
+  ``event_ids`` list (the urgency set, soonest 전환청구 개시일 first) under a call
+  cap, never as a corpus sweep.
 
 Two invariants hold everywhere in this module:
 
@@ -129,7 +131,11 @@ class ExtractionReport:
 # target selection
 # ---------------------------------------------------------------------------
 def select_targets(
-    session: Session, rights: RightsType, *, include_conflict: bool = False
+    session: Session,
+    rights: RightsType,
+    *,
+    include_conflict: bool = False,
+    event_ids: list[int] | None = None,
 ) -> list[Event]:
     """Exposable events of one rights type, in a stable order.
 
@@ -137,6 +143,11 @@ def select_targets(
     신주인수권증서 (``warrant_confirmed``, ``P2.S3``): ``ic_mthn`` alone never
     confirms a right (N26/N30). ``warrant_conflict`` joins only on request, and
     the caller must keep it flagged and unexposed.
+
+    ``event_ids`` narrows the list to an explicitly chosen set **and keeps the
+    caller's order**, which is how ``P2.S7`` spends its ② call cap on the events
+    whose 전환청구 opens soonest (``mijual.cb.urgency_events``) instead of on
+    whichever corp code sorts first.
     """
     events = session.scalars(
         select(Event).where(Event.rights_type == rights, Event.suppressed_reason.is_(None))
@@ -144,6 +155,9 @@ def select_targets(
     if rights is RightsType.SUBSCRIPTION_WARRANT:
         wanted = {"warrant_confirmed"} | ({"warrant_conflict"} if include_conflict else set())
         events = [e for e in events if wanted & set(e.flags)]
+    if event_ids is not None:
+        by_id = {e.id: e for e in events}
+        return [by_id[i] for i in event_ids if i in by_id]
     return sorted(events, key=lambda e: (e.corp_code, e.original_rcept_dt))
 
 
@@ -278,6 +292,7 @@ def run_extraction(
     include_conflict: bool = False,
     limit: int | None = None,
     refresh: bool = False,
+    event_ids: list[int] | None = None,
     log=None,
 ) -> ExtractionReport:
     """Extract one rights type's prose fields across the exposable corpus."""
@@ -285,7 +300,9 @@ def run_extraction(
     report = ExtractionReport(task=task_key)
 
     with session_scope(session_factory) as session:
-        events = select_targets(session, rights, include_conflict=include_conflict)
+        events = select_targets(
+            session, rights, include_conflict=include_conflict, event_ids=event_ids
+        )
         if limit is not None:
             events = events[:limit]
         report.events = len(events)
@@ -498,6 +515,7 @@ def run_corrections(
     limit: int | None = None,
     refresh: bool = False,
     extract_previous: bool = True,
+    event_ids: list[int] | None = None,
     log=None,
 ) -> ExtractionReport:
     """Re-extract prose on the newest 정정 and interpret what moved (§7 #10)."""
@@ -506,7 +524,9 @@ def run_corrections(
     report = ExtractionReport(task="correction")
 
     with session_scope(session_factory) as session:
-        events = select_targets(session, rights, include_conflict=include_conflict)
+        events = select_targets(
+            session, rights, include_conflict=include_conflict, event_ids=event_ids
+        )
         pairs: list[tuple[Event, FilingVersion, FilingVersion]] = []
         for event in events:
             with_doc = [

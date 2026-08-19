@@ -1,0 +1,11 @@
+{
+  "id": "D1",
+  "title": "Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채/이벤트",
+  "status": "deferred",
+  "source": "P2.S7",
+  "reason": "4 remaining ② gate failures are corrections paired to the wrong bond; fixing inside P2.S7 would have blocked 42 passing ① rows and reopened S5/N48",
+  "trigger": "before P3 renders ② event detail pages, or if S9 accuracy shows pairing-driven errors",
+  "created_at": "2026-08-20T01:52:33+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}
