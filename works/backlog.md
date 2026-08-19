@@ -8,9 +8,9 @@
 - Current phase: `P1`
 - Current slice: `P1.S2`
 - Next slice: `P1.REVIEW`
-- Waiting on operator: `none`
+- Waiting on operator: `P1.S2`
 - Open deferred jobs: `0`
-- Rebuilt at: `2026-08-19T18:58:00+09:00`
+- Rebuilt at: `2026-08-19T19:11:02+09:00`
 
 ## Active Phases
 
@@ -28,7 +28,7 @@
 | [x] `P1.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P1/slices/P1.DECOMP` |
 | [x] `P1.S1` | `done` | DART OpenAPI spike & field matrix (event-type x field x structured/LLM) | `spike` | `works/phases/active/P1/slices/P1.S1` |
 | [x] `P1.S3` | `done` | Recon: daker.ai submission requirements + mijual domain availability | `research` | `works/phases/active/P1/slices/P1.S3` |
-| [ ] `P1.S2` | `todo` | MVP rights-scope recommendation & operator confirmation | `decision` | `works/phases/active/P1/slices/P1.S2` |
+| [~] `P1.S2` | `pending` | MVP rights-scope recommendation & operator confirmation | `decision` | `works/phases/active/P1/slices/P1.S2` |
 | [ ] `P1.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P1/slices/P1.REVIEW` |
 
 ## Phase P2: Data & Extraction Pipeline

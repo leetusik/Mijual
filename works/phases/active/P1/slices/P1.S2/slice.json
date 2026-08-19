@@ -3,14 +3,14 @@
   "phase_id": "P1",
   "name": "MVP rights-scope recommendation & operator confirmation",
   "kind": "decision",
-  "status": "todo",
+  "status": "pending",
   "order": 3,
   "depends_on": [
     "P1.S1",
     "P1.S3"
   ],
   "created_at": "2026-08-19T18:13:35+09:00",
-  "started_at": null,
+  "started_at": "2026-08-19T18:58:33+09:00",
   "completed_at": null,
   "risk": "high",
   "source": {
