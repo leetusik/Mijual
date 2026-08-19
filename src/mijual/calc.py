@@ -38,9 +38,13 @@ __all__ = [
     "allotted_shares",
     "d_day",
     "excess_subscription_cap",
+    "implied_reference_price",
     "lapsed_warrant_value",
+    "lapsed_warrants",
     "lockup_release_date",
     "today_kst",
+    "warrant_intrinsic_value",
+    "warrant_intrinsic_value_floor",
     "window_state",
 ]
 
@@ -182,3 +186,98 @@ def lapsed_warrant_value(
         Decimal(shares) * Decimal(str(allotment_ratio)) * Decimal(str(certificate_price))
     )
     return total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+
+def lapsed_warrants(issued: int | None, exercised: int | None) -> int | None:
+    """소멸한 신주인수권증서 수 = 발행된 증서 − 청약에 쓰인 증서. ``None`` in → ``None`` out.
+
+    Deliberately **not** ``최초배정주식수 − 청약주식수``. A 주주배정 유증 rounds
+    each holder's entitlement down, and the resulting 단수주 is never issued as a
+    증서 at all — so counting it as a lapsed right would inflate the number with
+    warrants that never existed. ``P2.S8`` measured the difference: LB세미콘
+    ``20260811000597`` states 2,109,436 실권주 in its 실적보고서 while its own
+    Ⅶ tables give 11,970,900 − 9,890,564 = **2,080,336**, the 29,100-share gap
+    being exactly the 단수주.
+
+    Clamped at zero: 초과청약 can make 청약 exceed 발행 in a filer's arithmetic,
+    and a negative count of lapsed rights is not a thing.
+    """
+    if issued is None or exercised is None:
+        return None
+    return max(int(issued) - int(exercised), 0)
+
+
+def implied_reference_price(
+    confirmed_price: float | Decimal | None, discount_rate: float | Decimal | None
+) -> Decimal | None:
+    """기준주가 the filing's own 산식 implies: ``확정발행가 / (1 − 할인율)``.
+
+    Handoff/`data.md` fix DART as the only source, so there is **no price feed
+    in this repo**. The filing supplies the missing price itself: every 주주배정
+    유증 states 발행가액 = 기준주가 × (1 − 할인율), so the 기준주가 the issuer used
+    is recoverable by inverting the same equation. ``None`` in → ``None`` out; a
+    discount outside ``[0, 1)`` is refused rather than divided by.
+    """
+    if confirmed_price is None or discount_rate is None:
+        return None
+    price, rate = Decimal(str(confirmed_price)), Decimal(str(discount_rate))
+    if price <= 0 or not (0 <= rate < 1):
+        return None
+    return price / (1 - rate)
+
+
+def warrant_intrinsic_value(
+    confirmed_price: float | Decimal | None, discount_rate: float | Decimal | None
+) -> Decimal | None:
+    """▷ 신주인수권증서 1주의 이론가치 = ``확정발행가 × 할인율 / (1 − 할인율)``, in 원.
+
+    A 증서 is the right to buy one new share at 확정발행가 while the stock trades
+    ex-rights, so its intrinsic value is *ex-rights 주가 − 확정발행가*. The filings
+    price on two formulas and the identity holds for both — which is why this is
+    one function and not two:
+
+    * **2차 발행가액 = 기준주가 × (1 − 할인율)**, measured at 구주주 청약일 전
+      제3거래일, i.e. already after 권리락. Inverting gives the ex-rights price
+      directly, so the value is ``기준주가 − 확정발행가 = 확정발행가·d/(1−d)``.
+    * **1차 발행가액 = 기준주가 × (1 − d) / (1 + r·d)** with a cum-rights 기준주가
+      and 증자비율 ``r``. Then 이론권리락주가 = ``(기준주가 + r·확정)/(1+r)`` and
+      the value is ``(기준주가 − 확정)/(1+r) = 확정·d(1+r)/((1−d)(1+r))`` — the
+      same expression. The 증자비율 term in the 1차 산식 *is* the 권리락 adjustment.
+
+    Two honest limits, both **conservative** (they understate, never inflate):
+    the ``MAX(…, 기준주가의 60%)`` floor branch means an issue priced at the floor
+    carries an effective 40% discount rather than the stated ``d``; and the real
+    ex-rights price on the 매매기간 can be anywhere, so this is the value the
+    *filing's own arithmetic* implies, marked ▷, not an observed 증서 시세.
+    """
+    reference = implied_reference_price(confirmed_price, discount_rate)
+    if reference is None:
+        return None
+    return reference - Decimal(str(confirmed_price))
+
+
+def warrant_intrinsic_value_floor(
+    confirmed_price: float | Decimal | None,
+    discount_rate: float | Decimal | None,
+    allotment_ratio: float | Decimal | None,
+) -> Decimal | None:
+    """The **lower** edge of the 증서 value band: ``확정 · d / ((1−d)(1+배정비율))``.
+
+    :func:`warrant_intrinsic_value` assumes the 확정발행가 was set from a price
+    that is already ex-rights (the 2차 산식) *or* from the 1차 산식 in its usual
+    form ``[기준주가 × (1−d)] / [1 + (증자비율 × d)]``, whose 증자비율 term is
+    exactly the 권리락 adjustment — both give the same answer.
+
+    Some filers write the 1차 산식 **without** that term (형지I&C
+    ``20260707000087``: ``예정발행가액 = [기준주가 x (1-할인율)]``). If such a price
+    was set from a *cum-rights* 기준주가, the ex-rights value is smaller by the
+    dilution factor ``1 + 배정비율``. Reported as a band rather than resolved,
+    because resolving it would need the market price this repo does not hold.
+    """
+    upper = warrant_intrinsic_value(confirmed_price, discount_rate)
+    if upper is None:
+        return None
+    if allotment_ratio is None:
+        return upper
+    ratio = Decimal(str(allotment_ratio))
+    return upper / (1 + ratio) if ratio > 0 else upper

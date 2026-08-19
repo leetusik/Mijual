@@ -61,6 +61,7 @@ __all__ = [
     "Extraction",
     "ExtractionCall",
     "FilingVersion",
+    "PerformanceReport",
     "RightsType",
     "Snapshot",
     "SnapshotSource",
@@ -577,3 +578,66 @@ class Extraction(Base):
             f"<Extraction {self.field_key} {self.status} span={self.span} "
             f"{self.rcept_no}>"
         )
+
+
+# ---------------------------------------------------------------------------
+# P2.S8 — 증권발행실적보고서 (the 청약 결과, i.e. what actually lapsed)
+# ---------------------------------------------------------------------------
+class PerformanceReport(Base):
+    """One 증권발행실적보고서, attached to the ① event whose 청약 it reports.
+
+    Deliberately **not** a :class:`FilingVersion` of that event. A 실적보고서 is a
+    different filing about the same offering: it is filed on the 납입일, weeks
+    after the last 정정, and it carries no 유상증자결정 form. Adding it as a
+    version would make it the event's ``latest_version`` — the row the gates, the
+    exposure contract and the ② calendar all read as "today's reading" — and the
+    countdown would then be derived from a document that has no schedule in it.
+    So it is a sibling table keyed by its own ``rcept_no``, with the same
+    evidence contract as :class:`Snapshot`: **the raw ZIP is retained** and
+    ``content_sha1`` makes re-collection idempotent.
+
+    ``facts`` holds every parsed number as ``{value, raw, span:[start, end]}``
+    into the decoded XML of *this* report, so each figure the estimate quotes can
+    be re-sliced from the stored bytes (the N33 discipline, applied to a second
+    document family).
+    """
+
+    __tablename__ = "performance_report"
+    __table_args__ = (
+        UniqueConstraint("rcept_no", name="uq_performance_report_rcept_no"),
+        Index("ix_performance_report_event", "event_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    #: ``NULL`` when the offering's 유상증자결정 is not in the corpus — the report
+    #: is still evidence and is still counted, it just names its own corp.
+    event_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("event.id", ondelete="SET NULL")
+    )
+    corp_code: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    corp_name: Mapped[str | None] = mapped_column(String(200))
+    rcept_no: Mapped[str] = mapped_column(String(14), nullable=False)
+    rcept_dt: Mapped[date | None] = mapped_column(Date)
+    report_nm: Mapped[str | None] = mapped_column(String(300))
+
+    #: ``standard`` (Ⅶ/Ⅷ form) | ``reit`` (집합투자증권 form) | ``none`` (no 증서
+    #: table at all — an IPO, a 스팩 or a 제3자배정, kept with its reason).
+    form: Mapped[str | None] = mapped_column(String(20))
+    #: How the report was bound to its event: ``schedule_match`` (its own
+    #: 청약개시/종료일 equal the event's 본문 ``11. 청약예정일``), ``corp_only``,
+    #: ``unlinked``.
+    link_status: Mapped[str | None] = mapped_column(String(30))
+    link_note: Mapped[str | None] = mapped_column(Text)
+    #: ``parsed`` | ``no_warrant_table`` | ``unparsed``.
+    parse_status: Mapped[str | None] = mapped_column(String(30))
+    parse_note: Mapped[str | None] = mapped_column(Text)
+    #: Every parsed figure with its raw text and citation span.
+    facts: Mapped[dict | list | None] = mapped_column(JSONBody)
+
+    payload_bytes: Mapped[bytes | None] = mapped_column(LargeBinary)
+    content_sha1: Mapped[str | None] = mapped_column(String(40))
+    byte_size: Mapped[int | None] = mapped_column(Integer)
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    def __repr__(self) -> str:
+        return f"<PerformanceReport {self.rcept_no} {self.corp_name} {self.parse_status}>"

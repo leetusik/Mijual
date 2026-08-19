@@ -464,7 +464,10 @@ def _ic_mthn(session: Session, event: Event) -> str | None:
                 snapshot.payload_json, dict
             ):
                 continue
-            value = snapshot.payload_json.get("ic_mthn")
+            # ``pifricDecsn`` (유무상증자결정) names the same field ``piic_ic_mthn``.
+            value = snapshot.payload_json.get("ic_mthn") or snapshot.payload_json.get(
+                "piic_ic_mthn"
+            )
             if value and (newest is None or version.rcept_no > newest[0]):
                 newest = (version.rcept_no, str(value).strip())
     return newest[1] if newest else None

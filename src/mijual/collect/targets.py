@@ -68,6 +68,21 @@ TARGETS: dict[str, Target] = {
         rights_type=RightsType.CONVERTIBLE_OVERHANG,
         label="② CB 전환 오버행",
     ),
+    # Registered by ``P2.S8``. A 유무상증자 (유상 + 무상 in one board resolution)
+    # files 주요사항보고서(**유무상**증자결정) — a *different* subtype string and a
+    # different endpoint — and the exact-equality match in this module therefore
+    # never collected one. It is unambiguously ① : form 11308 carries the same
+    # numbered 유상 section (``6. 확정발행가``, ``9. 배정주식수``, ``11. 청약예정일``,
+    # ``18. 신주인수권양도여부``, 10/10 target labels) plus a trailing 무상 section,
+    # and its 실적보고서 carries the same ``Ⅶ/Ⅷ 신주인수권증서`` tables. ``P2.S8``
+    # found **6 of the 2026 offerings that lapsed** filed this way, invisible to
+    # every earlier run — see the phase note.
+    "pifricDecsn": Target(
+        endpoint="pifricDecsn",
+        subtype_nm="유무상증자결정",
+        rights_type=RightsType.SUBSCRIPTION_WARRANT,
+        label="① 유무상증자 신주인수권",
+    ),
 }
 
 BY_SUBTYPE_NM: dict[str, Target] = {t.subtype_nm: t for t in TARGETS.values()}

@@ -753,6 +753,137 @@ ceiling** (584 collection + 700 정정 본문 + 90 urgency 본문 + 13 blocked +
 dropped for budget. Board today: **457 exposable events (① 25, ③ 10, ② 422) / 280 renderable
 field instances**, up from 35 / 157.
 
+### Appended by `P2.S8` (2026-08-20)
+
+**N67 — the 청약 결과 is a deterministic table read, and the 증권발행실적보고서 is the
+document family P1 never surveyed.** Filed on the 납입일 (pblntf_ty=**C**, 발행공시), it
+carries `Ⅶ. 신주인수권증서 발행내역` (발행 증서 수, and the 증서 청약 / 초과청약 split),
+`Ⅷ. 실권주 처리내역`, `3. 청약 및 배정현황` and `1. 청약 및 납입일정` — all labelled tables,
+**so the whole 청약 결과 costs 0 LLM calls**. Two forms exist and both are read
+(`mijual.estimate.perf`): the standard 주식 form and the 집합투자증권 (REIT) form, which carries
+the same 실권주 table inside `4. 청약, 배정 및 인수에 관한 사항` and has **no Ⅶ section at all**
+(KB스타리츠 `20260423000439`). Three parsing rules were paid for once and must not be relaxed:
+(a) match the 실권주 column by its **header**, never by position — it appears in column 0, 1 and
+2 across the corpus; (b) the discriminating word is **청약**: 대동기어 `20260728000264` labels
+its 단수주 column `신주인수권증서 배정 실권주` beside the real `신주인수권증서 청약 실권주`, so a
+match on 실권주 alone reads 9,397 instead of 1,437,309; (c) the `3. 청약 및 배정현황` `계` row is
+ten numeric columns wide and the 확정발행가 is `최종 금액 ÷ 최종 수량` (index −2 ÷ −3), refused
+with a note at any other width.
+
+**N68 — 소멸 증서 = 발행 증서 − 증서 청약, NOT 최초배정 − 청약, and the filer's own cell is
+wrong 5 times in 31.** 단수주 is never issued as a 증서, so counting it inflates the number
+with rights that never existed. LB세미콘 `20260811000597` states 2,109,436 실권주 where its own
+Ⅶ tables give 11,970,900 − 9,890,564 = **2,080,336** (the 29,100 gap is exactly the 단수주);
+라온피플 `20260225003924`, 대한광통신 `20260306000600`, 인베니아 `20260206000357` and 피엠티
+`20260629000392` differ the same way. Rule in code: `mijual.calc.lapsed_warrants`, and every
+mismatch is stored on the report as a note rather than silently resolved.
+
+**N69 — the 확정발행가 has two independent witnesses and they agree 31/31.** 본문
+`6. 확정발행가` (a printed price) equals the 실적보고서's 최종 배정 금액 ÷ 최종 배정 수량 (an
+arithmetic on a different filing) on every offering that states both — 형지엘리트
+`20260130000043` prints a 9-column `계` row and is 본문-only. This is what lets the price be
+treated as a **fact** rather than as a reading, and it means an out-of-corpus offering can be
+priced from its 실적보고서 alone.
+
+**N70 — the value proxy, and the algebraic reason it needs no formula branch.** ▷ 증서 이론가치
+= `확정발행가 × 할인율 / (1 − 할인율)`. There is no price feed (DART-only), but the filing states
+발행가액 = 기준주가 × (1 − 할인율), so the issuer's own 기준주가 inverts out of it. The identity
+holds for **both** pricing formulas: the 2차 산식 measures 기준주가 at 구주주 청약일 전 제3거래일
+(already ex-rights), and the 1차 산식's `/[1 + (증자비율 × 할인율)]` term **is** the 권리락
+adjustment, so `(기준주가₁ − 확정)/(1+r)` reduces to the same expression (unit-tested). Band, not
+point: a minority of filers write the 1차 산식 *without* the 증자비율 term (형지I&C
+`20260707000087`), which if cum-rights lowers the value by `1 + 배정비율` — that is the reported
+lower edge. The `MAX(…, 기준주가의 60%)` floor branch makes the proxy conservative, never
+inflated. All of it lives in `mijual.calc` (`implied_reference_price`,
+`warrant_intrinsic_value`, `warrant_intrinsic_value_floor`).
+
+**N71 — `주요사항보고서(유무상증자결정)` is a fourth ① source and every run before this one was
+blind to it.** Endpoint **`pifricDecsn`**, form code **11308**, subtype string `유무상증자결정` —
+which `collect.targets`'s exact-equality match (correctly, N64) never accepted. It is
+unambiguously ①: the form carries the *same* numbered 유상 section (10/10 target labels,
+`6. 확정발행가`, `9. 1주당 신주배정주식수`, `11. 청약예정일`, `18. 신주인수권양도여부 = 예`) plus a
+trailing 무상 section, and its 실적보고서 carries the same Ⅶ/Ⅷ tables. **7 of the 32 offerings
+that lapsed in 2026 were filed this way** (루닛, 티엘비, 대동기어, 뉴로메카, 아모텍, 라온피플,
+한국첨단소재). Registered in `TARGETS` now, so the scheduled daily pipeline picks it up with no
+new task (N64's argument). Its detail row prefixes every 유상 field with `piic_`, so
+`collect.filters` and `bodydoc.backfill._ic_mthn` now read `ic_mthn or piic_ic_mthn`. **The
+first-wins rule in `LabelSet.get` is load-bearing here**: the 유상 section comes first, so
+`shares_per_share`/`new_shares`/`allotment_record_date` resolve to the 유상 values.
+
+**N72 — a lapse number cannot be framed on the 주요사항보고서 window; frame it on the
+증권발행실적보고서.** The 청약 lands 2–6 months after the 결정, so 2026's lapses were mostly
+decided in 2025. Measured: of the **32** completed ① offerings of 2026, only **10** were
+reachable from the pre-S8 corpus. The census (`list.json pblntf_ty=C`, 2026, KOSPI+KOSDAQ,
+8,841 rows → 2,533 증권발행실적보고서 → 68 on an equity offering, 91 pages ≈ 85 requests) is the
+honest population. The equity filter matters: 2,465 of those 2,533 are ELS/DLS 실적보고서 filed
+by 증권사, and filtering to corps that also registered an equity offering in the window cuts it
+to 68 with no false negative found.
+
+**N73 — three blind spots, each now measured, and only one of them was a code bug.**
+(a) **14** offerings were decided before 2026-01-01 — outside `P2.S2`'s window (a frame
+problem, fixed by adoption). (b) **7** were `유무상증자결정` (N71 — a real code gap, fixed).
+(c) **3 were 2026 KOSDAQ `유상증자결정` originals that `P2.S2`'s *run* simply missed** —
+레이저옵텍 `20260109000634`, RF머트리얼즈 `20260408002647`, 피엠티 `20260409002139`. Discovery
+finds all three **today** (verified: a 1-day `discover` over 2026-01-09 returns
+`20260109000634`), so the code is right and the corpus is **not a census**. (d) **1 was
+invisible to the census itself**: KB스타리츠 `20260423000439` is 증권발행실적보고서(집합투자증권)
+and appears on **no page** of 발행공시 — caught only by the per-event backstop (one corp-scoped,
+unfiltered `list.json` per closed-청약 event). Practical rule: **a census and a per-event sweep
+are two different completeness claims; run both.**
+
+**N74 — adoption is cheap, targeted, and it HEALS N21 residue.** `mijual.estimate.adopt`
+reaches one named corp with corp-scoped `list.json` (no 3-month cap) + the corp-scoped detail
+endpoint + 2 본문 — **3–4 requests per offering**, against ~300 detail requests for a
+market-wide 2025-H2 re-run. 22 offerings adopted for ~90 requests. Side effect worth keeping:
+the corpus already held `unpaired_correction` placeholders for 코이즈, 캠시스, 진양폴리우레탄,
+트리니티항공, 레이저옵텍, RF머트리얼즈 and 피엠티 **precisely because** their original was outside
+the window or of the unknown subtype; adopting the real original let `P2.S2`'s own
+`retire_superseded_unpaired` retire them as `superseded_by_pairing`. Also: when no original is
+visible at all (코이즈 — six 기재정정 and no original over 2+ years), the earliest visible 정정
+becomes the chain head (`pairing_method='unpaired_correction_head'`), because the 정정's 본문
+carries the whole form — it is the *identity* that stays provisional, not the values.
+
+**N75 — the 실적보고서 is bound to its event by SCHEDULE, not by corp.** Its own
+`1. 청약 및 납입일정` must equal the 주요사항보고서's `11. 청약예정일`: **32/32 linked by
+`schedule_match`**, none on the corp-only fallback. The fallback also has to respect time —
+트리니티항공's single ① event is dated 2026-06-22 against a 2026-03-19 report, and a naive
+"corp has one event" link attached the wrong 확정발행가 and 할인율 to a real 실권 count until the
+`original_rcept_dt <= 청약 개시일` guard was added.
+
+**N76 — what §3.6's gate costs, in won: ▷ 49.2억원, 6.4 % of the headline, and it is worth
+it.** Three of the 32 offerings (진양폴리우레탄, 캠시스, LB세미콘) have a citable 실권 count and a
+cross-checked 확정발행가 but **no gate-passed 할인율** — all three failed `span_unresolved` in the
+same way N37 first saw: the model stitched formula fragments from separate paragraphs
+(`▶ 1차 발행가액 = … ▶ 2차 발행가액 = … ▶ 확정 발행가액 = MAX…`) into one quote that exists
+nowhere in the document. The values look right (0.25/0.25/0.20) and are **still not used** — the
+report counts the 주식 and states the gap with a quantified upper bound. This is the single best
+demo of the trust claim in the phase: the gate is not decoration, it costs money.
+
+**N77 — the 2026 result, and the shape of the story.** ▷ **718.1억원** (71,812,971,649원; band
+▷ 549억~718억) across 32 offerings; **51,253,956 of 365,527,824 배정 증서 lapsed = 14.02 %**;
+per-offering 소멸률 ranges **2.51 % (SKC) to 49.09 % (형지I&C)**, median 11.60 %; 할인율 ranges
+5 % (KB스타리츠, a REIT) to 40 % (인베니아 — a real 40 % 유증, not a floor-clause misread), median
+25 %. Largest single loss ▷ 206.4억원 (한화솔루션 `20260730000366`). **18 ① offerings are still
+open**, 11 with a 청약 ahead (soonest 2026-09-04 계양전기 · SG) — which is the line that turns
+the retrospective number into the product's pitch. Regenerate with
+`.venv/bin/python -m mijual.estimate report --today <YYYYMMDD> --korean` (0 requests, 0 calls).
+
+**N78 — two DEFER-JOB candidates for the orchestrator (executors do not file them).**
+(a) **Re-run `P2.S2`'s discovery over the full 2026 window and reconcile** — N73(c) proves the
+corpus missed at least 3 collectable ① originals, and the same run would now also pick up every
+`pifricDecsn` event (N71); ▷ ~120 requests, and it is the difference between "our board shows
+the live rights" and "our board shows the live rights we happened to collect". (b) **Backfill
+`pifricDecsn` history** the way `P2.S7` backfilled ② — 7 of 32 lapsed offerings were 유무상, so
+the live board is under-counting ① by roughly the same fraction today.
+
+**N79 — spend, and what `P2.S9` inherits.** ~337 OpenDART requests (159 survey/census, 111
+collect, 39 warrants, 18 verification) of a 500 ceiling; **22 LLM calls at `thinking_level=LOW`,
+158,863 tokens, ▷ $0.2186, 0 failures** — the 실적보고서 layer spent **0**. The corpus `P2.S9`
+samples from is now materially larger: ① exposable events **25 → 47**, R1 `warrant_confirmed`
+50, plus **32 증권발행실적보고서 with span-verified numbers** — a second document family with
+ground truth that is *deterministic*, which makes it an unusually good accuracy fixture (the
+LLM-read 할인율 can be scored against the 확정발행가/실적보고서 arithmetic on 29 offerings).
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1005,6 +1136,57 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   records the level it ran at (`extraction_call.thinking_level`), because a ▷ cost figure is only
   comparable across runs if the level behind it is known. Source: `P2.S7` result (2026-08-20),
   finding N65.
+
+- **`data`** / **`product`** — **the 소멸 신주인수권 estimate landed (P2.S8), and it added a
+  fourth document family plus a fourth ① source to the documented data model.** (a)
+  **증권발행실적보고서** (`pblntf_ty=C`, filed on the 납입일) is the 청약-결과 source the field
+  matrix never surveyed, and it is **entirely `본문-label` tier — 0 LLM calls**: `Ⅶ` gives
+  발행 증서 / 증서 청약 / 초과청약, `Ⅷ` the 실권주, `3.` the 계 row whose 최종 금액 ÷ 수량 **is**
+  the 확정발행가 (agrees with 본문 `6. 확정발행가` on **31/31** offerings that state both), `1.`
+  the schedule that binds the report to its event (**32/32 `schedule_match`**). Two forms: the
+  standard 주식 form and the 집합투자증권 (REIT) form, which has no `Ⅶ` section. (b) **`유무상증자결정`
+  (`pifricDecsn`, form 11308) is an ① source** — same numbered 유상 section, 10/10 target labels,
+  `18. 신주인수권양도여부` — and was invisible to every earlier run; **7 of the 32 offerings that
+  lapsed in 2026 were filed this way**. Registered in `collect.targets`, and the two `ic_mthn`
+  readers now accept its `piic_ic_mthn` prefix. (c) Storage: a new **`performance_report`** table
+  (sibling to `filing_version`, not a version of it — a 실적보고서 must never become an event's
+  `latest_version`), keeping `Snapshot`'s evidence contract (raw ZIP + `content_sha1`) plus a
+  `facts` JSONB in which every figure carries its char span. Source: `P2.S8` result (2026-08-20),
+  findings N67–N71.
+- **`data`** / **`decisions`** — **the 소멸가치 method, and the correction to how a year is
+  framed.** ▷ 증서 이론가치 = **`확정발행가 × 할인율 / (1 − 할인율)`**, derived by inverting the
+  filing's own 발행가 산식 (DART-only — there is no price feed); the identity holds for both the
+  1차 (cum-rights, whose `증자비율` term *is* the 권리락 adjustment) and the 2차 (ex-rights)
+  formula, so no formula branch is needed, and a filer who omits the 증자비율 term gives the
+  band's lower edge (`× 1/(1+배정비율)`). 소멸 증서 수 = **발행 증서 − 증서 청약**, never
+  최초배정 − 청약 (단수주 was never issued as a 증서, and the filer's own 실권주 cell disagrees in
+  **5 of 31** filings). All of it in `mijual.calc`, unit-tested, no LLM. **Framing rule to
+  record: a lapse year is defined by the 증권발행실적보고서, not by the 주요사항보고서** — the 청약
+  lands 2–6 months after the 결정, and only **10 of the 32** 2026 lapses were reachable from a
+  2026-filed corpus. Source: `P2.S8` result (2026-08-20), findings N68, N70, N72.
+- **`operations`** — **the corpus is not a census, and completeness needs two sweeps.** A
+  `list.json` census over the *result* filings surfaced three 2026 KOSDAQ ① originals that
+  `P2.S2`'s run had missed although discovery finds them today (레이저옵텍 `20260109000634`,
+  RF머트리얼즈 `20260408002647`, 피엠티 `20260409002139`), and one offering the census itself
+  cannot see (KB스타리츠 `20260423000439`, filed as 증권발행실적보고서(집합투자증권) outside
+  발행공시 entirely) which only a **per-event backstop** — one corp-scoped, unfiltered
+  `list.json` per closed-청약 event — caught. Record both as standing practice, plus the cheap
+  repair path: **targeted per-corp adoption** costs 3–4 requests per offering (22 offerings for
+  ~90 requests) against ~300 for a market-wide historical re-run, lands ordinary corpus rows, and
+  *heals* `unpaired_correction` placeholders through the existing `superseded_by_pairing` path.
+  Slice spend: ~337 requests of a 500 ceiling, 22 LLM calls at `thinking_level=LOW` (▷ $0.2186).
+  Source: `P2.S8` result (2026-08-20), findings N73–N75, N79.
+- **`product`** — **the number the landing opens with, and the measured price of the gate.**
+  ▷ **718.1억원** (band ▷ 549억~718억) of 신주인수권 value lapsed unexercised in 2026 YTD across
+  **32** 주주배정 유상증자; **51,253,956 of 365,527,824 배정 증서 (14.02 %)** were neither
+  subscribed nor sold; per-offering 소멸률 **2.51 %–49.09 %**, median 11.60 %; largest single
+  loss ▷ 206.4억원 (한화솔루션). **18 offerings are still open**, 11 with a 청약 ahead — the
+  retrospective number and the live board are the same pipeline. And the trust claim, priced:
+  three offerings with a citable 실권 count are **excluded from the total** because their 할인율
+  extraction failed its citation gate — **▷ 49.2억원, 6.4 % of the headline, deliberately left
+  on the table**. Every committed figure is regenerated by
+  `python -m mijual.estimate report --korean` at 0 requests and 0 calls. Source: `P2.S8` result
+  (2026-08-20), findings N76, N77.
 
 ## Open Questions
 

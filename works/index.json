@@ -20,9 +20,9 @@
       "order": 2,
       "path": "works/phases/active/P2",
       "review_status": "pending",
-      "current_slice": "P2.S8",
+      "current_slice": "P2.S9",
       "slice_count": 11,
-      "done_slice_count": 8
+      "done_slice_count": 9
     },
     {
       "id": "P3",
@@ -52,5 +52,5 @@
   "deferred_open_count": 2,
   "deferred_promoted_count": 0,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-20T01:52:33+09:00"
+  "last_rebuilt_at": "2026-08-20T02:38:30+09:00"
 }

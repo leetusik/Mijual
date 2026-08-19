@@ -6,18 +6,18 @@
 ## Pointer
 
 - Current phase: `P2`
-- Current slice: `P2.S8`
-- Next slice: `P2.S9`
+- Current slice: `P2.S9`
+- Next slice: `P2.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-20T01:52:33+09:00`
+- Rebuilt at: `2026-08-20T02:38:30+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
-| [ ] `P2` | `planned` | `pending` | Data & Extraction Pipeline | `P2.S8` | `works/phases/active/P2` |
+| [ ] `P2` | `planned` | `pending` | Data & Extraction Pipeline | `P2.S9` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design + build) | `P3.DECOMP` | `works/phases/active/P3` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -43,7 +43,7 @@
 | [x] `P2.S5` | `done` | Deterministic validation gates (layer 2) + per-field reason codes | `feature` | `works/phases/active/P2/slices/P2.S5` |
 | [x] `P2.S6` | `done` | Celery beat scheduling: collect / extract / gate tasks | `feature` | `works/phases/active/P2/slices/P2.S6` |
 | [x] `P2.S7` | `done` | ② CB collection + backfill to 2025-06 (quota-gated) | `feature` | `works/phases/active/P2/slices/P2.S7` |
-| [ ] `P2.S8` | `todo` | 2026 소멸 신주인수권 가치 총액 estimation pipeline | `analysis` | `works/phases/active/P2/slices/P2.S8` |
+| [x] `P2.S8` | `done` | 2026 소멸 신주인수권 가치 총액 estimation pipeline | `analysis` | `works/phases/active/P2/slices/P2.S8` |
 | [ ] `P2.S9` | `todo` | ~100-filing labeled evalset + extraction-accuracy report | `eval` | `works/phases/active/P2/slices/P2.S9` |
 | [ ] `P2.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
 

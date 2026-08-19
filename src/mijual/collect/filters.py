@@ -71,7 +71,7 @@ class Suppression:
 
 def evaluate(endpoint: str, detail_row: dict | None) -> Suppression | None:
     """``None`` = keep (still subject to the later 본문/gate checks)."""
-    if endpoint == "piicDecsn":
+    if endpoint in ("piicDecsn", "pifricDecsn"):
         return _evaluate_rights_offering(detail_row)
     if endpoint == "cmpMgDecsn":
         return _evaluate_merger(detail_row)
@@ -83,7 +83,9 @@ def evaluate(endpoint: str, detail_row: dict | None) -> Suppression | None:
 def _evaluate_rights_offering(row: dict | None) -> Suppression | None:
     if row is None:
         return None  # undecided — no detail row was fetched; counted, not suppressed
-    ic_mthn = (row.get("ic_mthn") or "").strip()
+    # ``pifricDecsn`` (유무상증자결정, registered by ``P2.S8``) prefixes every 유상
+    # field with ``piic_``; the 무상 half is ``fric_`` and has no 증자방식 at all.
+    ic_mthn = (row.get("ic_mthn") or row.get("piic_ic_mthn") or "").strip()
     if not is_filled(ic_mthn):
         return Suppression(
             "ic_mthn_unknown",
