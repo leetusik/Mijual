@@ -6,18 +6,18 @@
 ## Pointer
 
 - Current phase: `P2`
-- Current slice: `P2.S3`
-- Next slice: `P2.S4`
+- Current slice: `P2.S4`
+- Next slice: `P2.S5`
 - Waiting on operator: `none`
 - Open deferred jobs: `0`
-- Rebuilt at: `2026-08-19T22:27:20+09:00`
+- Rebuilt at: `2026-08-19T23:03:00+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
-| [ ] `P2` | `planned` | `pending` | Data & Extraction Pipeline | `P2.S3` | `works/phases/active/P2` |
+| [ ] `P2` | `planned` | `pending` | Data & Extraction Pipeline | `P2.S4` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design + build) | `P3.DECOMP` | `works/phases/active/P3` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -38,7 +38,7 @@
 | [x] `P2.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P2/slices/P2.DECOMP` |
 | [x] `P2.S1` | `done` | Package scaffold, storage schema (event/version/snapshot) & DART client port | `feature` | `works/phases/active/P2/slices/P2.S1` |
 | [x] `P2.S2` | `done` | Collector: 유증(①) + 매수청구(③) new filings and 정정 discovery | `feature` | `works/phases/active/P2/slices/P2.S2` |
-| [ ] `P2.S3` | `todo` | 본문 XML parse layer: labeled rows, CORRECTION block, citation spans | `feature` | `works/phases/active/P2/slices/P2.S3` |
+| [x] `P2.S3` | `done` | 본문 XML parse layer: labeled rows, CORRECTION block, citation spans | `feature` | `works/phases/active/P2/slices/P2.S3` |
 | [ ] `P2.S4` | `todo` | LLM extraction (layer 1): Gemini schema extraction for the 10 fields + 정정 re-extraction | `feature` | `works/phases/active/P2/slices/P2.S4` |
 | [ ] `P2.S5` | `todo` | Deterministic validation gates (layer 2) + per-field reason codes | `feature` | `works/phases/active/P2/slices/P2.S5` |
 | [ ] `P2.S6` | `todo` | Celery beat scheduling: collect / extract / gate tasks | `feature` | `works/phases/active/P2/slices/P2.S6` |

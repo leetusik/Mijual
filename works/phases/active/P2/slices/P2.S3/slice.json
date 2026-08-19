@@ -3,14 +3,14 @@
   "phase_id": "P2",
   "name": "본문 XML parse layer: labeled rows, CORRECTION block, citation spans",
   "kind": "feature",
-  "status": "todo",
+  "status": "done",
   "order": 3,
   "depends_on": [
     "P2.S1"
   ],
   "created_at": "2026-08-19T21:19:34+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-19T22:28:06+09:00",
+  "completed_at": "2026-08-19T23:03:00+09:00",
   "risk": "high",
   "source": {
     "type": "manual",

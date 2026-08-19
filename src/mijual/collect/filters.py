@@ -32,14 +32,19 @@ __all__ = [
 ]
 
 #: 증자방식 values that can issue a 신주인수권증서 (measured 2026 population:
-#: 주주배정후 실권주 일반공모 32, 주주배정증자 3, 주주우선공모증자 1 — against
-#: 제3자배정증자 263 and 일반공모증자 14, which cannot).
-#: ``주주우선공모증자`` is kept UNsuppressed pending **O-5** (does it issue a 증서?
-#: one case, ``20260807000339``) — the safer default is to let the reading layer
-#: look, since suppression here would hide a possibly-real right.
-WARRANT_BEARING_IC_MTHN = frozenset(
-    {"주주배정후실권주일반공모", "주주배정증자", "주주우선공모증자"}
-)
+#: 주주배정후 실권주 일반공모 32, 주주배정증자 3 — against 제3자배정증자 263,
+#: 일반공모증자 14 and 주주우선공모증자 1, which cannot).
+#:
+#: **O-5 closed by ``P2.S3`` — ``주주우선공모증자`` was removed from this set.**
+#: The corpus holds exactly one (상지건설 ``00232007``, 정정 ``20260807000339``) and
+#: its 본문 settles it: that 증자방식 uses a *different numbered form* which has no
+#: ``18. 신주인수권양도여부`` row and no ``신주인수권증서`` rows at all — the string
+#: ``신주인수권`` occurs **0 times** in the whole 33,886-char document. Evidence is
+#: one filing (▷ the class generalisation rests on the form template, not on a
+#: sample), and the 본문 check in ``mijual.bodydoc.backfill`` re-derives it from the
+#: document itself, so a counter-example would surface as a ``warrant_conflict``
+#: rather than being silently hidden.
+WARRANT_BEARING_IC_MTHN = frozenset({"주주배정후실권주일반공모", "주주배정증자"})
 
 #: 합병 형태 (``mg_stn``) that grants no 주식매수청구권.
 SMALL_MERGER_FORMS = ("소규모합병", "간이합병")

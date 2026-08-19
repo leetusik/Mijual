@@ -91,3 +91,28 @@ def test_correction_kind_from_report_nm():
     assert f("주요사항보고서(유상증자결정)") is CorrectionKind.ORIGINAL
     assert f("[기재정정]주요사항보고서(유상증자결정)") is CorrectionKind.DISCLOSURE
     assert f("[첨부정정]주요사항보고서(유상증자결정)") is CorrectionKind.ATTACHMENT
+
+
+def test_ensure_columns_adds_a_missing_column_without_touching_rows():
+    """The one gap ``create_all`` leaves: P2 has no Alembic, but the S2 corpus
+    (291 live requests, unmeasured quota) must survive a one-column addition."""
+    from sqlalchemy import inspect, text
+
+    from mijual.db.schema_sync import ensure_columns
+
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO corp (corp_code, corp_name, updated_at) "
+                "VALUES ('00102618', '계양전기', '2026-08-19 00:00:00')"
+            )
+        )
+        conn.execute(text("ALTER TABLE corp DROP COLUMN corp_cls"))
+
+    assert ensure_columns(engine, Base) == ["corp.corp_cls"]
+    assert ensure_columns(engine, Base) == []  # idempotent
+    assert "corp_cls" in {c["name"] for c in inspect(engine).get_columns("corp")}
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT corp_name FROM corp")).scalar() == "계양전기"

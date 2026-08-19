@@ -326,6 +326,86 @@ the property S6's scheduler depends on.
 본문 `18. 신주인수권양도여부` alone. Final exposure for every ① still requires that 본문 check
 (S3/S5); `ic_mthn` alone never confirms a right.
 
+### Appended by `P2.S3` (2026-08-19)
+
+**N27 — `create_all` cannot add a COLUMN, and after S2 a `reset_schema` is no longer free.** N16's
+"just edit `models.py` and re-run" works for a *table*; a new column on a populated table is
+invisible to `create_all`, so the only N16 move would have been dropping the corpus that cost 291
+live requests against an unmeasured quota (O-1). `mijual.db.schema_sync.ensure_columns(engine,
+Base)` closes exactly that gap: it **adds** declared-but-missing **nullable, default-free** columns
+via `ALTER TABLE … ADD COLUMN`, is idempotent, is a no-op on a fresh `create_all` database, and
+raises on anything else. It is deliberately **not** a migration tool — no version table, no
+history, no type changes, no drops — so N16 stands: a change bigger than an additive nullable
+column is still the signal to reset (or to revisit N16 in P3).
+
+**N28 — the 유상증자결정 본문 is not one form, it is a form *family*, and the difference is itself the
+① filter.** Measured over 312 `piicDecsn` 본문 now held: **94 carry `18. 신주인수권양도여부`, and all
+94 yield 10/10 of the field-matrix §1.3 target labels** (P1 measured 9/9; this is the same result
+at 10× the sample). The other 218 use a different numbered template — 제3자배정 runs
+`8. 제3자배정에 대한 정관의 근거 / 9. 납입일 / 12. 신주의 상장 예정일`, 주주우선공모 runs
+`10. 청약예정일 / 11. 납입일 / 14. 신주의 상장 예정일` — with **no 신주인수권 rows at all**. So
+"label `18.` is absent" is not a parse failure, it is evidence: **the form the filer used already
+says whether a 증서 exists.** Any later reader must treat an absent `18.` as a negative, not as a gap.
+
+**N29 — the `<CORRECTION>` header is not 100 % at scale, and the markup has two traps.** Over 360
+`<CORRECTION>` blocks: **354 (98.3 %) carry `2. 최초제출일`; 6 state no date at all** (P1's 40/40 was
+a small sample). 1,450 정정사항 rows parsed. Two markup facts must be got right or nothing parses:
+(a) `<TABLE\b` also matches DART's `<TABLE-GROUP>` wrapper, which desynchronises table nesting and
+makes a whole body look like one unclosed table — the pattern must be `<TABLE(?![-\w])`; (b) value
+cells are `TE` / `TU`, **not** `TD`/`TH` (the spike's `T[DH]` regex silently dropped every value in
+the form), and `TU` carries DART's own machine value in `AUNIT` + `AUNITVALUE`
+(`AUNIT="ALL_BS_DT" AUNITVALUE="20260728"`, `AUNIT="NST_GV_YN" AUNITVALUE="Y"`), verified stable
+across every ① filing that has the row. Also: the ① form leans on `ROWSPAN` hard enough that
+`11. 청약예정일`'s value rows carry **no** label cell, so a ROWSPAN/COLSPAN grid expansion is
+mandatory, not a nicety.
+
+**N30 — a 주주배정 유증 CAN say `18. 신주인수권양도여부 = 아니오`, and that is the case the whole 본문
+check exists for.** 제이알글로벌리츠 `01415892` (`20260205000605`): `ic_mthn = 주주배정후 실권주
+일반공모` while 본문 `18.` reads `아니오` and `- 신주인수권증서의 상장여부` reads `아니오`. Publishing on
+`ic_mthn` alone would have advertised a 증서 that does not exist. Per the plan and N20 it is **kept
+live and flagged `warrant_conflict`**, never suppressed on conflicting evidence — but the honest
+reading is that no tradeable 증서 exists, so **`P2.S5` (the gate layer) owns the exposure decision
+for `warrant_conflict`**, and it should almost certainly block. Do not let this one sit unresolved
+into S8/S9.
+
+**N31 — the 본문 hint settles pairing far more often than it breaks it, and the failures are mostly
+date skew.** Backfill over 360 parsed 정정: 143 `confirmed`, 20 `reattached` (the version moved to
+the event the hint names), 63 `identified` (a placeholder whose original genuinely predates the
+collection window — identity now known), 22 `duplicate` (N21's residue: the twin already holds the
+`rcept_no`), 106 `mismatch`, 6 `absent`. **Of the mismatches, ~half sit within ±7 days of the
+attached event's original 접수일** (접수일/결의일 skew, pairing almost certainly right) and only 4 are
+>1 year stale — P1's `20260429000902`-declares-2022 pattern is rare, not typical. Worklist effect:
+`*_ambiguous` 145 → **66**, `unpaired_correction` 99 → 99 but **46 identified**, exposable events
+53 → **44**. Scheme to reuse: `pairing_method` keeps exactly what S2 wrote and `hint_status` +
+`pairing_note` carry the 본문's verdict — evidence relabelled, never overwritten. Verified: exactly
+20 versions changed `event_id` against a pre-S3 `pg_dump`, **0 rows removed, 0 added**.
+
+**N32 — N20(b) is now proven in the data, and the hint is the splitter.** 9 of the 36
+`event_key_collision` events carry **`hint_split_evidence`**: their versions' 본문 최초제출일 values
+disagree, so the key really does hold 2+ events. 이렘 `00116426/piicDecsn/2026-02-04` holds
+**three** chains (hints 2026-02-04, 2025-04-21, 2026-04-24). S3 re-attaches a version only when
+the hint names an **existing** event (10 events lost a version that way, flag `hint_split`);
+minting an event whose original filing was never collected is a *collector* decision, not a
+parser's, so the rest is flagged for `P2.S5` or a wider re-collection.
+
+**N33 — citation spans are real, cheap, and already verified at scale; S4/S5 must not re-invent
+them.** `mijual.bodydoc` returns every value with a `Span` into the decoded XML **as the snapshot
+stores it**, and `BodyDocument.verify(span, value)` is the exact predicate S5's *원문 인용 스팬 존재*
+gate should call (normalized equality — the raw slice legitimately still contains markup).
+Measured: **23,493 / 23,493** extracted values re-slice to themselves across the 364 documents
+held, 4,538/4,538 over the P1 fixture cache. Offset preservation is an `array('i')` map built in
+one pass, so a 3.4 M-char 증권신고서 costs ~27 MB — but **slice it by `<TITLE>` section first**
+(`sections()` / `find_sections()`): 3.4 M chars → a 33,780-char 청약절차 section, 9.5 M → a
+38,033-char 매수청구권 section, and the slices tile the document so offsets stay valid.
+
+**N34 — S3's whole persisted outcome is reproducible from the on-disk caches at 0 requests.**
+Proven by dropping the database to a pre-S3 `pg_dump` and rebuilding it with two offline
+`backfill` passes (P1 spike cache read-only, then `var/dart-cache`) plus two offline `warrants`
+passes: the rebuild converged to the same state **and improved on it**, attaching 28 documents the
+budget-interrupted live runs had fetched-and-cached but never persisted. Practical rule for S4+:
+after a budget-capped live run, always finish with an offline pass over the cache before reading
+the numbers.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -399,6 +479,41 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   live pass over the same window added zero events and zero versions and cost 25 requests, which is the
   property the scheduled job (S6) relies on. Source: `P2.S2` result (2026-08-19).
 
+- **`data`** — **본문 (deterministic) layer landed (P2.S3), and three corrections/additions to
+  `data.md`'s three-tier field model:** (a) the `본문-label` tier is now a measured, span-carrying
+  parse — **94/94 of the 주주배정 계열 유상증자결정 본문 yield all 10 §1.3 target labels** and every
+  extracted value carries a character span into the stored snapshot (**23,493/23,493 verified**),
+  which is the mechanism §3.6 layer 2's *원문 인용 스팬 존재* gate will call; (b) the 유상증자결정
+  본문 is a **form family, not one form** — 제3자배정 / 일반공모 / 주주우선공모 use templates with **no
+  신주인수권 rows at all**, so an absent `18. 신주인수권양도여부` is *evidence of no 증서*, not a data
+  gap; (c) the `<CORRECTION>` `2. 최초제출일` hint is recovered in **354/360 = 98.3 %** of blocks (P1's
+  40/40 was a small sample) and 1,450 `3. 정정사항` rows parse. Also record the 증권신고서 rule as
+  implemented: it is **sliced by `<TITLE>` section and never read whole** (3.4 M chars → a
+  33,780-char 청약절차 section; 9.5 M → a 38,033-char 매수청구권 section). Source: `P2.S3` result
+  (2026-08-19).
+- **`decisions`** / **`data`** — **O-5 CLOSED: `주주우선공모증자` issues no 신주인수권증서**, so the ①
+  rights universe is `주주배정후 실권주 일반공모` + `주주배정증자` only. Evidence: the corpus's single
+  case (상지건설 `00232007`, 정정 `20260807000339`) uses a form with no `18. 신주인수권양도여부` row and
+  the string `신주인수권` occurs **0 times** in its 33,886-char 본문 (▷ the class generalisation rests
+  on the form template, not on a sample of one). Consequence for the documented filter:
+  `WARRANT_BEARING_IC_MTHN` drops that value, and a new suppression reason **`no_warrant_bodymun`**
+  joins the reason-code list (9 events, 8 of them `P2.S2`'s previously *undecided* ①). Also record
+  the invariant this proves: **`ic_mthn` never confirms a right — 본문 `18.` is the final test**, and
+  when the two disagree the event stays live with a `warrant_conflict` flag (1 case,
+  제이알글로벌리츠 `01415892`) for the gate layer to decide. Source: `P2.S3` result (2026-08-19).
+- **`architecture`** (same note as the S1/S2 entries) / **`operations`** — **the pairing method now
+  has a second, documented arm, and the schema evolves additively:** the 정정 pairing method is
+  `(P2.S2 nearest-earlier-original) + (P2.S3 본문 <CORRECTION> 최초제출일 verdict)`, stored as the pair
+  `(FilingVersion.pairing_method, FilingVersion.hint_status)` with a `pairing_note` audit line —
+  S2's value is never overwritten. Measured effect: `*_ambiguous` 145 → 66, 46 of 99 unpaired
+  corrections identified, 9 collided event keys proven to hold 2+ events, exposable events 53 → 44.
+  Operationally: **P2 still has no Alembic (N16), but `create_all` cannot add a column**, so
+  additive nullable columns land through `mijual.db.schema_sync.ensure_columns` (add-only,
+  idempotent, refuses anything else) rather than a corpus-destroying `reset_schema`; and a
+  budget-capped live run must be followed by an offline pass over the response cache before its
+  numbers are read (S3's live runs left 28 fetched-and-cached documents unpersisted).
+  Source: `P2.S3` result (2026-08-19).
+
 ## Open Questions
 
 - **O-1 (blocks `P2.S7`'s backfill):** ▷ the published **daily OpenDART call quota is unmeasured** —
@@ -415,9 +530,17 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
 - ~~**O-4:**~~ **CLOSED by `P2.S2` (N24).** KONEX (`corp_cls=N`), 2026-01-01~08-19: 30 events, **0
   exposable rights** → no coverage conclusion changes; KOSPI+KOSDAQ stays the frame. `corp_cls=E`
   (기타) was not probed and is judged not worth the requests.
-- **O-5 (now one filing away):** ▷ whether `주주우선공모증자` issues a 신주인수권증서 — the single case
-  (`20260807000339`, corp `00232007`) is **collected and unsuppressed** in the database, so S3 closes
-  this by reading its 본문 `18. 신주인수권양도여부`. Until then that 증자방식 is kept (not suppressed).
+- ~~**O-5:**~~ **CLOSED by `P2.S3` (N28, Doc impact).** `주주우선공모증자` **does not** issue a
+  신주인수권증서: the single case (상지건설 `00232007`, 정정 `20260807000339`) uses a 유상증자결정 form
+  with **no `18. 신주인수권양도여부` row**, and `신주인수권` occurs **0 times** in its 33,886-char 본문.
+  The value was removed from `WARRANT_BEARING_IC_MTHN` and the event is suppressed
+  `no_warrant_bodymun`. ▷ Evidence is one filing; the generalisation rests on the form template,
+  and the per-document 본문 check would surface a counter-example as a `warrant_conflict`.
+- **O-8 (new, `P2.S5`):** the one **`warrant_conflict`** event — 제이알글로벌리츠 `01415892`,
+  `ic_mthn = 주주배정후 실권주 일반공모` vs 본문 `18. 신주인수권양도여부 = 아니오` — is **kept live and
+  flagged** because the phase rule forbids suppressing on conflicting evidence. The gate layer (or
+  the operator) must decide whether `warrant_conflict` blocks exposure; the honest reading of the
+  본문 is that no tradeable 증서 exists. See N30 — do not let it reach `P2.S8`/`P2.S9` unresolved.
 - **O-6:** ▷ meaning of `estkRs.일반사항.exstk/exprc/expd` (2/35 filled) — not needed by any MVP field;
   answer only if it falls out for free.
 - **O-7 (carried from P1 as Q7, deferred to P2/P3):** 증권사 MTS 권리 메뉴 coverage matrix (handoff §4,

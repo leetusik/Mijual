@@ -73,8 +73,10 @@ def test_a_correction_chain_lands_on_its_original_not_on_its_predecessor():
 
 
 def test_correctness_filters_suppress_only_what_grants_no_right():
-    keep = ["주주배정후 실권주 일반공모", "주주배정증자", "주주우선공모증자"]  # O-5: 우선공모 stays
-    drop = ["제3자배정증자", "일반공모증자"]
+    keep = ["주주배정후 실권주 일반공모", "주주배정증자"]
+    # O-5 closed by P2.S3: 주주우선공모증자's 본문 form carries no 신주인수권 rows at
+    # all (상지건설 20260807000339, `신주인수권` ×0), so it joins the drop list.
+    drop = ["제3자배정증자", "일반공모증자", "주주우선공모증자"]
     assert all(evaluate("piicDecsn", {"ic_mthn": v}) is None for v in keep)
     assert {evaluate("piicDecsn", {"ic_mthn": v}).reason for v in drop} == {"no_warrant_class"}
 

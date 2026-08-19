@@ -246,6 +246,17 @@ class Event(Base):
         if flag not in self.flags:
             self.review_flags = ",".join([*self.flags, flag])[:200]
 
+    def drop_flags(self, *flags: str) -> None:
+        """Remove flags a re-run has superseded.
+
+        Not an exception to "never delete evidence": these are *verdicts* a job
+        re-derives from scratch every run (``warrant_*``), so leaving a stale one
+        beside its replacement would make the record say two things at once. The
+        evidence itself — snapshots, versions, suppression reasons — is untouched.
+        """
+        kept = [f for f in self.flags if f not in flags]
+        self.review_flags = ",".join(kept) or None
+
     def __repr__(self) -> str:
         return (
             f"<Event {self.corp_code}/{self.report_subtype}/{self.original_rcept_dt} "
@@ -277,6 +288,20 @@ class FilingVersion(Base):
     #: ``<CORRECTION> 2. 정정대상 공시서류의 최초제출일`` — filer-entered, a *hint*
     #: for pairing, never a key (N3). Backfilled by ``P2.S3``.
     declared_original_dt: Mapped[date | None] = mapped_column(Date)
+    #: What ``P2.S3``'s 본문 hint did to this version's pairing. ``pairing_method``
+    #: is **left exactly as ``P2.S2`` wrote it** — evidence is relabelled, never
+    #: overwritten — so the pairing's real standing is the *pair*
+    #: ``(pairing_method, hint_status)``. Values: ``confirmed`` (hint equals the
+    #: attached event's 접수일), ``reattached`` (hint named a different existing
+    #: event of the same corp+subtype and this version was moved there),
+    #: ``duplicate`` (that event already holds this ``rcept_no`` — N21's residue),
+    #: ``mismatch`` (hint names no event we know), ``absent`` (a ``<CORRECTION>``
+    #: block with no 최초제출일), ``no_correction_block``, ``no_document``,
+    #: ``unparsed``. Plain ``VARCHAR``: a new value never costs a migration.
+    hint_status: Mapped[str | None] = mapped_column(String(30))
+    #: One audit line for whatever ``hint_status`` records — including the
+    #: superseded pairing when a version is re-attached.
+    pairing_note: Mapped[str | None] = mapped_column(Text)
     #: How this version was attached to its event (``P2.S2``): ``original``,
     #: ``earlier``/``earlier_history`` (nearest-earlier original, optionally via
     #: the corp-scoped history query), the ``_ambiguous`` variants of those,
@@ -294,6 +319,21 @@ class FilingVersion(Base):
     @property
     def is_correction(self) -> bool:
         return self.correction_kind is not CorrectionKind.ORIGINAL
+
+    @property
+    def pairing_is_ambiguous(self) -> bool:
+        """``P2.S2`` saw more than one plausible original and the 본문 has not settled it."""
+        return "ambiguous" in (self.pairing_method or "") and not self.pairing_is_resolved
+
+    @property
+    def pairing_is_resolved(self) -> bool:
+        """The 본문 ``<CORRECTION>`` hint confirmed or corrected this attachment."""
+        return self.hint_status in ("confirmed", "reattached")
+
+    def note_pairing(self, status: str, note: str | None = None) -> None:
+        self.hint_status = status
+        if note:
+            self.pairing_note = note
 
     def __repr__(self) -> str:
         return f"<FilingVersion {self.rcept_no} {self.correction_kind.value}>"
