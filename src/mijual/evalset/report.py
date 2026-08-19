@@ -4,11 +4,14 @@ Precision alone would flatter §3.6's design, because the gate's whole job is to
 delete the rows precision would have punished. So this report states both:
 
 **(a) what the product shows.** Of the rows that passed their gate (or are an
-honest ``추후결정``), how many did the operator judge correct? That is the
-number the pitch may quote.
+honest ``추후결정``), how many did the judge call correct? That is the
+number the pitch may quote — **beside the judge's identity**, which the report
+prints from ``labels.json`` itself (N89: this repo's labels are Claude-judged
+cross-model, not human ground truth, and a rate without that word means
+something else).
 
 **(b) what the gate costs.** Of the rows the gate **blocked**, how many did the
-operator judge to have been correct readings all along? Those are right answers
+judge call correct readings all along? Those are right answers
 the product withheld — S8 priced one such pattern at ▷ 49.2억원, 6.4 % of the
 headline (N76). A gate with a low over-block rate is cheap; a gate with a high
 one is buying trust with coverage.
@@ -115,7 +118,7 @@ class FieldScore:
 
     @property
     def over_block_rate(self) -> float | None:
-        """Share of gate-blocked rows the operator judged correct anyway."""
+        """Share of gate-blocked rows the judge called correct anyway."""
         return self.blocked.correct / self.blocked.judged if self.blocked.judged else None
 
     @property
@@ -160,6 +163,7 @@ class EvalReport:
             f"({self.coverage['random']} random · {self.coverage['forced']} hard case · "
             f"{self.coverage['booster']} booster)"
         )
+        lines.append(f"- 판정 출처: {_provenance(self.labels)}")
         lines.append(
             f"- 무작위 표본 기준 노출 필드 정밀도: **{_pct(shown.strict)}** "
             f"({shown.correct}/{shown.judged}, 95% CI {_interval(shown.interval())}), "
@@ -230,6 +234,21 @@ class EvalReport:
                 f"라벨 **{label or '미기입'}**"
             )
         return "\n".join(lines)
+
+
+def _provenance(labels: Labels) -> str:
+    """The judge line, read off the artifact — never a constant in this file.
+
+    A hardcoded sentence would go on printing "hand-labelled" after the labels
+    stopped being hand-made (N95). What the report says about its own judge is
+    therefore exactly what ``labels.json`` carries, and a file that carries
+    nothing says so.
+    """
+    stamp = labels.provenance
+    if stamp is None:
+        return "**미기재** — labels.json에 판정 출처가 없습니다 (`import --judged-by …`로 재수입)"
+    when = f" · 기록 {stamp.imported_at}" if stamp.imported_at else ""
+    return f"**{stamp.judge}** · 근거: {stamp.basis}{when}"
 
 
 def _rate(numerator: int, denominator: int) -> float | None:

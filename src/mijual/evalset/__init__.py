@@ -1,11 +1,11 @@
 """``mijual.evalset`` — the labelled-evalset accuracy measurement (P2.S9).
 
 The phase's last evidence deliverable: a deterministic, stratified sample of the
-corpus, a sheet the operator labels by hand, and a report that turns those labels
+corpus, a sheet a judge labels row by row, and a report that turns those labels
 into **per-field precision + gate-block-rate** at 0 OpenDART requests and 0 LLM
 calls.
 
-Three properties are load-bearing and every module here defends one of them.
+Four properties are load-bearing and every module here defends one of them.
 
 **The sample is frozen, not recomputed.** ``sample.json`` carries every row the
 operator was shown — value, quote, context, gate verdict — plus the corpus-wide
@@ -28,6 +28,12 @@ price: it blocks fields that were in fact read correctly (▷ 49.2억원 of the 
 headline, N76). So the sheet carries gate-**blocked** rows too, and the report
 states the over-blocking rate beside the precision of what the product shows.
 
+**The judge is part of the number.** ``labels.json`` is the only artifact here
+that cannot be recomputed, so it carries a :class:`~mijual.evalset.labels.
+Provenance` block naming who judged the rows and on what basis; the import
+refuses to write without one and the report prints what the file says rather
+than a sentence written when the labels were made (N89/N95).
+
 Nothing here reads a secret, calls a model, or fetches a filing.
 """
 
@@ -36,6 +42,7 @@ from __future__ import annotations
 from mijual.evalset.labels import (
     LABEL_VALUES,
     LabelError,
+    Provenance,
     load_labels,
     parse_label,
     read_sheet_labels,
@@ -58,6 +65,7 @@ __all__ = [
     "EvalSample",
     "LABEL_VALUES",
     "LabelError",
+    "Provenance",
     "Row",
     "SHEET_COLUMNS",
     "build_report",

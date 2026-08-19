@@ -9,7 +9,14 @@ from __future__ import annotations
 
 import pytest
 
-from mijual.evalset.labels import LabelError, Labels, parse_label, read_sheet_labels
+from mijual.evalset.labels import (
+    LabelError,
+    Labels,
+    Provenance,
+    load_labels,
+    parse_label,
+    read_sheet_labels,
+)
 from mijual.evalset.report import build_report, wilson_interval
 from mijual.evalset.sample import CORRECTION_FIELD, EvalSample, Row, select_sample
 
@@ -97,6 +104,34 @@ def test_an_unknown_label_is_refused_and_nothing_is_imported(tmp_path):
     assert labels.labelled == {"E0001": "correct"}
     assert labels.corrections == {"E0001": "2026-09-01"}
     assert parse_label("") is None
+
+
+# --- provenance -------------------------------------------------------------
+def test_labels_cannot_be_written_unstamped_and_the_report_prints_the_stamp(tmp_path):
+    """The judge travels inside the artifact, and the report reads it from there."""
+    rows = [Row(**{**_row("20260101000001", "warrant_trading_period").__dict__, "row_id": "E0001"})]
+    sample = EvalSample(
+        seed=1, generated_at="", quotas={}, booster=0, corpus={}, strata={},
+        field_stats={"warrant_trading_period": {"order": 1, "total": 1, "blocked": 0}},
+        correction_recall={}, duplicates_collapsed=0, rows=rows,
+    )
+    sheet = tmp_path / "sheet.csv"
+    sheet.write_text("row_id,label,corrected_value\nE0001,correct,\n", encoding="utf-8")
+
+    unstamped = read_sheet_labels(sheet, sample)
+    with pytest.raises(LabelError, match="without provenance"):
+        unstamped.write(tmp_path / "labels.json")
+    assert not (tmp_path / "labels.json").exists()
+    # An unstamped file still loads, and the report says so rather than implying a judge.
+    assert "미기재" in build_report(sample, unstamped).render()
+
+    stamp = Provenance.stamp("claude (cross-model)", "operator directive — not ground truth")
+    path = read_sheet_labels(sheet, sample, provenance=stamp).write(tmp_path / "labels.json")
+    reloaded = load_labels(path)
+    assert reloaded.provenance == stamp and reloaded.labelled == {"E0001": "correct"}
+    assert "claude (cross-model)" in build_report(sample, reloaded).render()
+    with pytest.raises(LabelError, match="empty"):
+        Provenance.stamp("  ")
 
 
 # --- the arithmetic ---------------------------------------------------------

@@ -1,5 +1,10 @@
 {
  "corrections": {},
+ "judged_by": {
+  "basis": "운영자 지시 2026-08-20 (\"you self evaluate and self validate…\") — 모델 간 교차판정이며 사람의 정답(ground truth) 아님; 사람이 검증한 라벨 0건",
+  "imported_at": "2026-08-20T04:37:31+09:00",
+  "judge": "Claude (Opus 5) — P2.S9 슬라이스 실행자, cross-model vs gemini-3.7-flash 추출"
+ },
  "labelled": {
   "E0001": "correct",
   "E0002": "correct",

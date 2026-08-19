@@ -6,8 +6,10 @@
     # 2. (operator labels evalset/sheet.csv — see evalset/LABELING.md)
     .venv/bin/python -m mijual.evalset status
 
-    # 3. read the labels back; refuses anything it cannot parse
-    .venv/bin/python -m mijual.evalset import
+    # 3. read the labels back; refuses anything it cannot parse, and refuses an
+    #    import that does not say who judged the rows
+    .venv/bin/python -m mijual.evalset import --judged-by "사람 (운영자)" \\
+        --basis "직접 판정 2026-08-21"
 
     # 4. the accuracy report (per-field precision, gate-block rate, over-blocking)
     .venv/bin/python -m mijual.evalset report
@@ -16,6 +18,10 @@ Only ``sample`` touches the database. ``import`` and ``report`` read
 ``evalset/sample.json`` + the sheet, so the report is regenerable long after the
 corpus has moved on — which is the point: a label is only true about the reading
 it was made on.
+
+``--judged-by`` is required and is never inherited from the previous file: the
+judge is part of the number (N89), and a human re-judging a few rows must not
+silently keep a machine's stamp.
 """
 
 from __future__ import annotations
@@ -27,7 +33,13 @@ from pathlib import Path
 from mijual.db.models import Base
 from mijual.db.schema_sync import ensure_columns
 from mijual.db.session import create_all, make_engine, make_session_factory, session_scope
-from mijual.evalset.labels import LABELS_PATH, LabelError, load_labels, read_sheet_labels
+from mijual.evalset.labels import (
+    LABELS_PATH,
+    LabelError,
+    Provenance,
+    load_labels,
+    read_sheet_labels,
+)
 from mijual.evalset.report import build_report
 from mijual.evalset.sample import (
     DEFAULT_BOOSTER,
@@ -64,6 +76,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     imp = sub.add_parser("import", help="validate the labelled sheet into labels.json")
     imp.add_argument("csv", nargs="?", default=None)
+    imp.add_argument(
+        "--judged-by",
+        required=True,
+        help="who or what judged these rows (recorded into labels.json; required)",
+    )
+    imp.add_argument(
+        "--basis",
+        default=None,
+        help="on what authority, and with what caveat (e.g. 'operator directive … — "
+        "not human ground truth')",
+    )
 
     rep = sub.add_parser("report", help="per-field precision + gate-block rate")
     rep.add_argument("--out", default=None, help="also write the markdown here")
@@ -128,17 +151,20 @@ def _cmd_import(args) -> int:
     sample = load_sample(Path(args.sample))
     source = Path(args.csv or args.sheet)
     try:
-        labels = read_sheet_labels(source, sample)
+        provenance = Provenance.stamp(args.judged_by, args.basis)
+        labels = read_sheet_labels(source, sample, provenance=provenance)
+        path = labels.write(Path(args.labels))
     except LabelError as exc:
         print(f"import     : REFUSED\n{exc}")
         return 1
-    path = labels.write(Path(args.labels))
     judged = len(labels.judged)
     print(
         f"import     : {len(labels.labelled)} label(s) from {source} "
         f"({judged} judged, {len(labels.labelled) - judged} skip), "
         f"{len(labels.corrections)} corrected value(s) → {path}"
     )
+    print(f"judged by  : {provenance.judge}")
+    print(f"basis      : {provenance.basis} (기록 {provenance.imported_at})")
     missing = len(sample.rows) - len(labels.labelled)
     if missing:
         print(f"             {missing} row(s) still unlabelled")

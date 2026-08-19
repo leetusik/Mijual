@@ -70,3 +70,5 @@
 {"ts": "2026-08-20T04:30:04+09:00", "type": "deferred_created", "deferred": "D4", "source": "P2.REVIEW"}
 {"ts": "2026-08-20T04:30:16+09:00", "type": "slice_status_changed", "slice": "P2.F2", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-20T04:31:55+09:00", "type": "slice_status_changed", "slice": "P2.F2", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-20T04:31:55+09:00", "type": "slice_status_changed", "slice": "P2.F3", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-20T04:40:58+09:00", "type": "slice_status_changed", "slice": "P2.F3", "old_status": "in_progress", "new_status": "done"}

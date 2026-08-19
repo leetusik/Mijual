@@ -1145,6 +1145,15 @@ beat does drain it in two runs as N82 claims — **but `THINKING_BY_TASK['correc
 the project HIGH preset, so an unattended scheduled run would make the thinking-level decision N82
 asks a human to make.** Harmless while nothing runs unattended; decide it before P3 deploys a worker.
 
+### Appended by `P2.F3` (2026-08-20)
+
+**N99 — the evalset artifact is now self-describing: `labels.json` carries a `judged_by` block
+(`judge` / `basis` / `imported_at` KST), `Labels.write()` refuses to write without one,
+`import --judged-by` is required and **never inherited** from the previous file (a human re-judging
+rows must not keep a machine's stamp), and the report prints the block instead of any hardcoded
+sentence — re-stamped over the existing 344 labels with the label map verified byte-identical
+(339 correct / 5 partial / 0 wrong, all rates unchanged), 0 calls / 0 requests.**
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1520,6 +1529,13 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   range) and need a `date_basis` marker; `rcept_no 20250930000508`'s stored `corp_name`
   (풍전약품) disagrees with its 본문 header (에스씨엠생명과학) — a DART master artifact affecting
   display only. Source: `P2.S9` result (Phase B, 2026-08-20), findings N89–N93.
+
+- **`qa`** — **the cross-model provenance qualifier is now mechanised, not just prose (P2.F3).**
+  `evalset/labels.json` carries a `judged_by` block (`judge` / `basis` / `imported_at`), the import
+  refuses to write an unstamped file and never inherits a previous judge, and the accuracy report
+  prints the block verbatim — so the `qa` version should state *where* the qualifier lives, not a new
+  number (all P2.S9 figures unchanged: 339 correct / 5 partial / 0 wrong of 344). Source: `P2.F3`
+  result, finding N99.
 
 ## Open Questions
 
