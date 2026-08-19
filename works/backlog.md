@@ -6,18 +6,18 @@
 ## Pointer
 
 - Current phase: `P2`
-- Current slice: `P2.REVIEW`
-- Next slice: `none`
+- Current slice: `P2.F2`
+- Next slice: `P2.F3`
 - Waiting on operator: `none`
-- Open deferred jobs: `3`
-- Rebuilt at: `2026-08-20T04:17:44+09:00`
+- Open deferred jobs: `4`
+- Rebuilt at: `2026-08-20T04:30:04+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
-| [ ] `P2` | `planned` | `pending` | Data & Extraction Pipeline | `P2.REVIEW` | `works/phases/active/P2` |
+| [ ] `P2` | `in_progress` | `changes_requested` | Data & Extraction Pipeline | `P2.F2` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design + build) | `P3.DECOMP` | `works/phases/active/P3` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -46,7 +46,10 @@
 | [x] `P2.S8` | `done` | 2026 소멸 신주인수권 가치 총액 estimation pipeline | `analysis` | `works/phases/active/P2/slices/P2.S8` |
 | [x] `P2.F1` | `done` | Full-2026 discovery re-run + reconcile (run gap + pifricDecsn pickup) | `fix` | `works/phases/active/P2/slices/P2.F1` |
 | [x] `P2.S9` | `done` | ~100-filing labeled evalset + extraction-accuracy report | `eval` | `works/phases/active/P2/slices/P2.S9` |
-| [ ] `P2.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
+| [ ] `P2.F2` | `todo` | Reword evalset docstrings judge-neutrally (provenance honesty) | `fix` | `works/phases/active/P2/slices/P2.F2` |
+| [ ] `P2.F3` | `todo` | Stamp judged_by provenance into labels.json + report | `fix` | `works/phases/active/P2/slices/P2.F3` |
+| [ ] `P2.F4` | `todo` | Fix check_against_items matcher and re-freeze the 정정 recall proxy | `fix` | `works/phases/active/P2/slices/P2.F4` |
+| [ ] `P2.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
 
 ## Phase P3: Mijual Web Service (design + build)
 

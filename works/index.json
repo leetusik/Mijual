@@ -16,12 +16,12 @@
       "id": "P2",
       "name": "Data & Extraction Pipeline",
       "objective": "Build the collection (DART OpenAPI + scheduled jobs) and schema-based LLM extraction pipeline with deterministic validation gates (arithmetic/date/citation-span checks, reason codes); produce the '2026 소멸 신주인수권 가치 총액' estimation and the ~100-filing labeled evalset + extraction-accuracy report.",
-      "status": "planned",
+      "status": "in_progress",
       "order": 2,
       "path": "works/phases/active/P2",
-      "review_status": "pending",
-      "current_slice": "P2.REVIEW",
-      "slice_count": 12,
+      "review_status": "changes_requested",
+      "current_slice": "P2.F2",
+      "slice_count": 15,
       "done_slice_count": 11
     },
     {
@@ -49,8 +49,8 @@
       "done_slice_count": 0
     }
   ],
-  "deferred_open_count": 3,
+  "deferred_open_count": 4,
   "deferred_promoted_count": 0,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-20T04:17:44+09:00"
+  "last_rebuilt_at": "2026-08-20T04:30:04+09:00"
 }

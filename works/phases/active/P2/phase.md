@@ -1090,6 +1090,61 @@ on one timeline compares a claim window against an exercise date. ▷ wants a pe
 DART master/rename artifact: every extracted value is correct against the body, only the
 display name would be wrong.
 
+### Appended by `P2.REVIEW` — cycle 1, verdict `changes_requested` (2026-08-20)
+
+**N94 — the phase's central invariant is verified on the live corpus, not just by test: 409
+renderable field instances, 0 of them outside `passed`/`tbd`.** Re-derived read-only through
+`mijual.gates.exposure.exposure_of_all` over all 630 judged events: 488 exposable, 409 renderable
+fields, **0** renderable fields whose gate is `failed`/`not_evaluable`, **0** `tbd` fields leaking a
+value (N48's `FieldView.value is None` holds), **0** exposable events sitting in a non-exposable
+state. `python -m mijual.gates run` ×2 and `python -m mijual.estimate report --today 20260820` ×2 are
+byte-identical, `python -m mijual.scheduler once --offline` completes all four stages at **0
+requests / 0 calls**, and `pytest` is 56/56. Whoever changes the exposure contract in P3 should re-run
+exactly this check — it is four lines and it is the product's trust claim in one number.
+
+**N95 — a provenance claim survived the operator's amendment in the one place that prints to the
+operator, and it is this review's only blocking finding.** `python -m mijual.evalset --help` renders
+`src/mijual/evalset/__main__.py`'s docstring (`description=__doc__`) and therefore tells its reader
+**"CLI for the hand-labelled evalset"**; `src/mijual/evalset/__init__.py` opens with "the
+hand-labelled accuracy measurement" and describes "a sheet the operator labels by hand". N89 makes
+that description forbidden — the 344 labels are Claude-judged, not human — and `P2.S9` fixed exactly
+this class of wording in `report.py` (`사람이` → `판정자가`) while missing the module level. The
+generated report, `LABELING.md`, `result.md` and this file are all correct; only the module docstrings
+are not. **Rule to carry: when an amendment changes what a number *is*, grep the whole module for the
+old description, not just the string the report prints.**
+
+**N96 — two recorded fix-slice items are cheap enough to land before the docs freeze, and both are
+provenance/accuracy integrity rather than features.** (a) `evalset/labels.json` stores only
+`{labelled, corrections, source}` — verified — so the *only* non-regenerable artifact in the repo
+carries its provenance in prose alone (N93c); a `judged_by` field makes it travel with the data.
+(b) N92's `check_against_items` defect is confirmed still present at
+`src/mijual/extract/runner.py:464-475` and it only ever **understates** (85.3 % stored vs 88.7 %
+re-matched), so it is not a false claim — but the re-check runs over *stored* records at **0 LLM calls
+and 0 OpenDART requests**, so freezing a durable `qa` number the repo already knows is low is the more
+expensive choice.
+
+**N97 — the mid-phase numbers in `P2.S5`/`P2.S7`/`P2.S8` results are point-in-time and MUST NOT be
+copied into a doc.** The corpus grew under them (S7's ② backfill, S8's adoption, F1's sweep). Today's
+regenerated truth, and the only figures a doc version may quote: **649 field rows — 566 passed / 4 tbd
+/ 14 failed / 65 not_evaluable**; **488 exposable events (① 50, ② 422, ③ 16) / 409 renderable field
+instances**; **32 offerings, ▷ 718.1억원, 51,253,956 / 365,527,824 = 14.02 %, 23 still open, 15 with a
+청약 ahead**; 69 증권발행실적보고서 stored. S5's 275/4/5/20-over-304, S7's 457/280 and S8's
+"18 open / 11 청약 ahead" are superseded (each was honest when written, and F1 restated the delta).
+
+**N98 — the three soft spots the review was asked to weigh are all real, all bounded, and none of
+them blocks P3.** Measured today, read-only: (a) **duplicate exposure** — 840 `rcept_no` sit under 2+
+event keys corpus-wide and exactly **2 render on two exposable events** (코이즈 `20260122000058` under
+`piicDecsn/2022-10-13` + `/2025-09-15`, and ②'s 사토시홀딩스 `20251219000402`), which is N81 confirmed
+to the row; the trigger belongs on **D2**, not on a new fix slice. (b) **③'s 44 % block rate is
+version scoping, not misreading** — of the 11 blocked `dissent_notice_procedure` rows, **8 are
+`superseded_api_reference`**, 1 `api_deadline_absent`, 1 `field_absent`, and exactly 1 is a real
+`dissent_period_mismatch`; any doc quoting the 44 % must carry that split or it reads as an extraction
+failure. (c) **N82's 정정 재추출 backlog is exactly 69 calls today** (`scheduler once --offline`
+dry-run: 정정 R1 50ev/59call + 정정 R3 13ev/10call) against `extract_max_calls=60` per run, so the
+beat does drain it in two runs as N82 claims — **but `THINKING_BY_TASK['correction']` still inherits
+the project HIGH preset, so an unattended scheduled run would make the thinking-level decision N82
+asks a human to make.** Harmless while nothing runs unattended; decide it before P3 deploys a worker.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1127,6 +1182,13 @@ Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
 ## Doc impact
 
 _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a pass._
+
+> **Cycle 1 of `P2.REVIEW` returned `changes_requested`, so NOTHING below has been consolidated yet
+> and no doc version exists for P2.** The list itself was checked and is complete — every durable-truth
+> change P2 made has a note here, grouped `architecture` (the S1→S6 running stack note) · `data` ·
+> `operations` · `decisions` · `product` · `qa`. Two instructions for whoever consolidates: quote
+> **N97's figures**, not the mid-phase ones the S5/S7/S8 notes carry; and state the accuracy numbers'
+> **cross-model provenance** (N89) in the `qa` and `decisions` versions, never "hand-labelled".
 
 - **`architecture`** (new doc) / **`decisions`** — **stack decision for the data backbone:** P2 builds a
   plain Python package (collector / parser / extractor / gates / estimation) persisting to **Postgres

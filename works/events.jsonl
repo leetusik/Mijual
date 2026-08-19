@@ -61,3 +61,10 @@
 {"ts": "2026-08-20T03:25:19+09:00", "type": "slice_status_changed", "slice": "P2.S9", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-20T03:34:58+09:00", "type": "slice_status_changed", "slice": "P2.S9", "old_status": "pending", "new_status": "in_progress"}
 {"ts": "2026-08-20T04:17:44+09:00", "type": "slice_status_changed", "slice": "P2.S9", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-20T04:17:51+09:00", "type": "slice_status_changed", "slice": "P2.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-20T04:30:03+09:00", "type": "slice_status_changed", "slice": "P2.REVIEW", "old_status": "in_progress", "new_status": "changes_requested"}
+{"ts": "2026-08-20T04:30:03+09:00", "type": "phase_reviewed", "phase": "P2", "verdict": "changes_requested", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-20T04:30:03+09:00", "type": "slice_created", "phase": "P2", "slice": "P2.F2"}
+{"ts": "2026-08-20T04:30:03+09:00", "type": "slice_created", "phase": "P2", "slice": "P2.F3"}
+{"ts": "2026-08-20T04:30:04+09:00", "type": "slice_created", "phase": "P2", "slice": "P2.F4"}
+{"ts": "2026-08-20T04:30:04+09:00", "type": "deferred_created", "deferred": "D4", "source": "P2.REVIEW"}
