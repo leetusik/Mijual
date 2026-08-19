@@ -1,0 +1,11 @@
+{
+  "id": "D3",
+  "title": "Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill",
+  "status": "deferred",
+  "source": "P2.S8",
+  "reason": "7 of 32 lapsed offerings were 유무상; historical depth improves S9 sampling and any retrospective analysis, but the live board only needs the 2026 window the F1 re-run covers",
+  "trigger": "if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth",
+  "created_at": "2026-08-20T02:39:08+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

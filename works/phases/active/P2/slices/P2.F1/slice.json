@@ -1,0 +1,31 @@
+{
+  "id": "P2.F1",
+  "phase_id": "P2",
+  "name": "Full-2026 discovery re-run + reconcile (run gap + pifricDecsn pickup)",
+  "kind": "fix",
+  "status": "done",
+  "order": 8.5,
+  "depends_on": [],
+  "created_at": "2026-08-20T02:39:08+09:00",
+  "started_at": "2026-08-20T02:39:15+09:00",
+  "completed_at": "2026-08-20T03:03:29+09:00",
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

@@ -4,10 +4,10 @@
 
 ## Summary
 
-- Open: `2`
+- Open: `3`
 - Promoted: `0`
 - Dropped: `0`
-- Rebuilt at: `2026-08-20T02:38:30+09:00`
+- Rebuilt at: `2026-08-20T03:03:29+09:00`
 
 ## Open
 
@@ -15,6 +15,7 @@
 |---|---|---|---|---|---|
 | `D1` | `deferred` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채/이벤트 | P2.S7 | before P3 renders ② event detail pages, or if S9 accuracy shows pairing-driven errors | `works/deferred/open/D1` |
 | `D2` | `deferred` | De-duplication pass for hint_duplicate versions and hint_split_evidence collided event keys | P2.S3 | if P2.S8 corpus work or P3 event pages trip over them | `works/deferred/open/D2` |
+| `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
 
 ## Promoted
 

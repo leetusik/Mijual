@@ -884,6 +884,63 @@ samples from is now materially larger: ① exposable events **25 → 47**, R1 `w
 ground truth that is *deterministic*, which makes it an unusually good accuracy fixture (the
 LLM-read 할인율 can be scored against the 확정발행가/실적보고서 arithmetic on 29 offerings).
 
+### Appended by `P2.F1` (2026-08-20)
+
+**N80 — the run gap N73(c) called "at least 3" was 244 filings, and it was NOT uniform across
+endpoints.** Full-2026 discovery (2026-01-01~08-20, KOSPI+KOSDAQ, `pblntf_ty=B`, 4,634 list rows
+over 50 pages) returns 2,279 target filings. Checked against the stored `filing_version` table:
+**`piicDecsn` 192 of 1,145 unstored, `pifricDecsn` 4 of 25, `cmpMgDecsn` 48 of 286 (17 of them
+originals), `cvbdIsDecsn` 0 of 823.** Two lessons. (a) **② had no gap at all** because `P2.S7`
+backfilled 2025-06-01→2026-08-20, a window that strictly contains 2026 — so the ② arm of the
+sweep was skipped on evidence, saving a *measured* 266 detail requests + 69 history queries for
+zero new rows. **A wider historical backfill immunises a rights type against this failure mode;
+a window-limited one does not.** (b) The check itself is free and reusable: discover offline,
+diff the `rcept_no` set against `filing_version`, and you have the gap before spending anything
+(`DartClient.cache_path(...).exists()` prices the repair the same way). Run this **before**
+claiming a corpus is a census — it is the cheap half of N73's "run both sweeps" rule.
+
+**N81 — the pairing-history reach is a board-quality knob, not a request-saving detail.** This
+slice passed `--history-bgn 20220601` (instead of the default `bgn − 3y` = 2023-01-01) purely to
+reuse 440 already-cached corp-history responses, saving ~100 requests. It reached 7 months
+further back and **minted a second exposable event**: 코이즈's 2026-01-22 정정 nearest-earlier
+paired to a genuine but 3-years-stale `piicDecsn/2022-10-13` original, so `20260122000058` now
+renders on **two** exposable events (the S8 `unpaired_correction_head` chain at 2025-09-15, and
+the 2022 one). The 본문 hint already calls it — `hint_status='duplicate'` + flag `hint_duplicate`
+on the 2022 side, `confirmed` on the 2025 side — but **`hint_duplicate` is not in N48's blocking
+set**, so both render. Corpus-wide today: 840 of 3,024 `rcept_no` sit under 2+ event keys, but
+only **2 sit on two *exposable* events** (this one, and ②'s 사토시홀딩스 `20251219000402`, which
+predates this slice). Not fixed here on purpose — the field-level repair N63 already argues for
+is the same decision, and reopening N48's exposure contract needs its own measurement pass.
+**Practical rule: widening the pairing history is a correctness change, not an optimisation —
+measure the duplicate-exposable count on both sides of it.**
+
+**N82 — §7 #10's 정정 재추출 is now a 69-call job at the *preset* thinking level, and it did not
+run.** Dry-priced after the sweep: **59 calls for ① + 10 for ③**, and
+`THINKING_BY_TASK['correction'] = INHERIT_PRESET` (N65) means every one of them runs at the
+project's HIGH preset. That is ~6× this slice's whole call ceiling at the most expensive level in
+the codebase. Consequence on the board **today**: `correction_interpretation` stays at **41**
+renderable instances while the ① corpus grew to 50 exposable events, so the 정정 story is the one
+field that did not keep up with the sweep. It is a *coverage* gap, not a correctness one — every
+stored interpretation is still gate-judged, and an unread 정정 shows nothing rather than something
+stale. Whoever funds it should decide the thinking level first: N65 kept the preset because N41's
+121-changes/0-unsupported quality measurement was taken there, and re-measuring at `LOW` is
+`P2.S9` work that would likely cut the bill ~20 %.
+
+**N83 — the sweep's real correctness save was 디모아, and it is the exact failure N39 named.**
+Collecting the missing original `20260424000529` created a `warrant_confirmed` 주주배정 유상증자
+event that had never existed — and the **unchanged** N47 row-shape detector immediately read its
+`20260625000227` 정정 and blocked it as `withdrawn`. Before the sweep that 철회 sat on an
+`unpaired_correction` placeholder and N47/N55 correctly recorded it as changing no exposure; the
+moment the real event appeared it would have been **published as a live right**. ① `withdrawn`
+2 → 3. Totals are otherwise stable — **15 distinct withdrawn filings (① 6, ② 9)**, matching N55's
+6 and N60's 9 exactly at a coverage of **1,792 / 2,720 기재정정 versions carrying a 본문** — so the
+sweep found no *new* withdrawal, it moved one onto a real event. **Generalisation worth keeping:
+filling a collection gap can flip a previously harmless flag into a blocking one, so the gate
+layer must be re-run after every collection repair, never assumed stable.** (Board after the
+whole reconciliation: **488 exposable events — ① 50, ③ 16, ② 422 — and 409 renderable field
+instances**, from 479 / 388; ③ `no_document` 9 → 1; the 소멸 headline ▷ 718.1억원 is unchanged
+while the open pipeline grows 18 → 23 offerings, 11 → 15 with a 청약 ahead.)
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1187,6 +1244,29 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   on the table**. Every committed figure is regenerated by
   `python -m mijual.estimate report --korean` at 0 requests and 0 calls. Source: `P2.S8` result
   (2026-08-20), findings N76, N77.
+
+- **`operations`** / **`data`** / **`product`** — **the 2026 ①/③ corpus is now a swept census,
+  and the board numbers move with it (P2.F1).** N73's "the corpus is not a census" is now
+  quantified: full-2026 discovery returns 2,279 target filings and **244 of them (10.7 %) had
+  never been stored** — `piicDecsn` 192/1,145, `pifricDecsn` 4/25, `cmpMgDecsn` 48/286 (17
+  originals) — while **`cvbdIsDecsn` was 0/823**, because `P2.S7`'s backfill window strictly
+  contains 2026. Record the operational rule that follows: **a wider historical backfill
+  immunises a rights type against the run gap, and the gap itself is measurable for free**
+  (discover offline, diff the `rcept_no` set against stored versions) before any request is
+  spent. Board effect, all regenerated from the DB: **exposable events 479 → 488 (① 47 → 50,
+  ③ 10 → 16, ② 422 unchanged), renderable field instances 388 → 409**, ③ blocked
+  `no_document` 9 → 1. **`유무상증자결정` (`pifricDecsn`, N71) is confirmed live on the board**,
+  not just in the retrospective: 9 events, all `warrant_confirmed`, and the 2 the sweep added
+  are open offerings (퓨쳐켐 청약 2026-09-04 — tied soonest — and 엘앤씨바이오 2026-10-15). The
+  **소멸 headline is unchanged at ▷ 718.1억원 / 32 offerings / 14.02 %** (it is framed on the
+  증권발행실적보고서, N72, and S8 had adopted every offering that filed one), while the *live*
+  pipeline grows **18 → 23 offerings still open, 11 → 15 with a 청약 ahead**. Also worth a line
+  in `data`: filling a collection gap can flip a dormant flag into a blocking one — 디모아's 철회
+  moved off an `unpaired_correction` placeholder onto a real `warrant_confirmed` event and now
+  correctly blocks it (① `withdrawn` 2 → 3), with the 철회 totals otherwise stable at 15 distinct
+  filings (① 6, ② 9). Slice spend: **585 of 700 OpenDART requests, 11 LLM calls at
+  `thinking_level=LOW` (▷ $0.0898)**, 0 lines of package code changed. Source: `P2.F1` result
+  (2026-08-20), findings N80–N83.
 
 ## Open Questions
 

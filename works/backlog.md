@@ -9,8 +9,8 @@
 - Current slice: `P2.S9`
 - Next slice: `P2.REVIEW`
 - Waiting on operator: `none`
-- Open deferred jobs: `2`
-- Rebuilt at: `2026-08-20T02:38:30+09:00`
+- Open deferred jobs: `3`
+- Rebuilt at: `2026-08-20T03:03:29+09:00`
 
 ## Active Phases
 
@@ -44,6 +44,7 @@
 | [x] `P2.S6` | `done` | Celery beat scheduling: collect / extract / gate tasks | `feature` | `works/phases/active/P2/slices/P2.S6` |
 | [x] `P2.S7` | `done` | ② CB collection + backfill to 2025-06 (quota-gated) | `feature` | `works/phases/active/P2/slices/P2.S7` |
 | [x] `P2.S8` | `done` | 2026 소멸 신주인수권 가치 총액 estimation pipeline | `analysis` | `works/phases/active/P2/slices/P2.S8` |
+| [x] `P2.F1` | `done` | Full-2026 discovery re-run + reconcile (run gap + pifricDecsn pickup) | `fix` | `works/phases/active/P2/slices/P2.F1` |
 | [ ] `P2.S9` | `todo` | ~100-filing labeled evalset + extraction-accuracy report | `eval` | `works/phases/active/P2/slices/P2.S9` |
 | [ ] `P2.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P2/slices/P2.REVIEW` |
 
