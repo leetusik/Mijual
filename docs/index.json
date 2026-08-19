@@ -71,7 +71,7 @@
       ]
     },
     "data": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints",
       "current_path": "docs/current/data.md",
       "versions": [
         {
@@ -81,6 +81,14 @@
           "source": "bootstrap",
           "summary": "Initial data doc",
           "previous": null
+        },
+        {
+          "id": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints",
+          "path": "docs/versions/data/v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints.md",
+          "created_at": "2026-08-19T20:58:28+09:00",
+          "source": "P1.REVIEW",
+          "summary": "DART as the MVP data source: rights-type field matrix, extraction targets, version and 정정 constraints",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -99,7 +107,7 @@
       ]
     },
     "operations": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -109,6 +117,14 @@
           "source": "bootstrap",
           "summary": "Initial operations doc",
           "previous": null
+        },
+        {
+          "id": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints",
+          "path": "docs/versions/operations/v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints.md",
+          "created_at": "2026-08-19T20:58:29+09:00",
+          "source": "P1.REVIEW",
+          "summary": "Challenge submission deliverables, deadlines and the 결격-grade deploy constraints",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -141,7 +157,7 @@
       ]
     },
     "decisions": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -151,9 +167,17 @@
           "source": "bootstrap",
           "summary": "Initial decisions doc",
           "previous": null
+        },
+        {
+          "id": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm",
+          "path": "docs/versions/decisions/v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm.md",
+          "created_at": "2026-08-19T20:58:29+09:00",
+          "source": "P1.REVIEW",
+          "summary": "MVP rights scope confirmed, domain fact sheet and deferred purchase, application LLM",
+          "previous": "v0001_bootstrap"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-19T17:42:29+09:00"
+  "last_rebuilt_at": "2026-08-19T21:01:23+09:00"
 }

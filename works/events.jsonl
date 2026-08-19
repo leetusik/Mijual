@@ -16,3 +16,9 @@
 {"ts": "2026-08-19T19:11:02+09:00", "type": "slice_status_changed", "slice": "P1.S2", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-19T20:50:26+09:00", "type": "slice_status_changed", "slice": "P1.S2", "old_status": "pending", "new_status": "in_progress"}
 {"ts": "2026-08-19T20:54:11+09:00", "type": "slice_status_changed", "slice": "P1.S2", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-19T20:54:39+09:00", "type": "slice_status_changed", "slice": "P1.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-19T20:58:28+09:00", "type": "doc_version_created", "doc": "data", "version": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints", "source": "P1.REVIEW"}
+{"ts": "2026-08-19T20:58:29+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints", "source": "P1.REVIEW"}
+{"ts": "2026-08-19T20:58:29+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm", "source": "P1.REVIEW"}
+{"ts": "2026-08-19T21:05:37+09:00", "type": "slice_status_changed", "slice": "P1.REVIEW", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-19T21:05:37+09:00", "type": "phase_reviewed", "phase": "P1", "verdict": "pass", "reviewer": "slice-executor-high"}

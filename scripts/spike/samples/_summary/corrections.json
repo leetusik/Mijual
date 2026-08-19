@@ -40,13 +40,182 @@
   },
   {
    "rights_type": "① 유증 신주인수권",
-   "correction": "20260520000303",
+   "correction": "20260210000891",
+   "corp": "푸드나무",
+   "corp_code": "01259311",
+   "correction_dt": "20260210",
+   "target_report": "주요사항보고서(유상증자 결정)",
+   "original_rcept_dt": "20251217",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260729000348",
+     "20260804000291",
+     "20260526000346"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260729000359",
+     "20260210000891"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "12. 신주의 상장예정일",
+     "before": "2026년 02월 20일",
+     "after": "2026년 02월 27일"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260227008348",
+   "corp": "아이톡시",
+   "corp_code": "00346911",
+   "correction_dt": "20260227",
+   "target_report": "주요사항보고서(유상증자결정)",
+   "original_rcept_dt": "20251110",
+   "paired_original": "20260224002203",
+   "pairing": "nearest earlier",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260515001141"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "9. 납입일",
+     "before": "2026년 02월 27일",
+     "after": "2026년 03월 13일"
+    },
+    {
+     "item": "11. 신주권교부예정일",
+     "before": "2026년 03월 27일",
+     "after": "2026년 04월 10일"
+    },
+    {
+     "item": "12. 신주의 상장 예정일",
+     "before": "2026년 03월 27일",
+     "after": "2026년 04월 10일"
+    },
+    {
+     "item": "20. 기타 투자판단에 참고할 사항",
+     "before": "주1) 정정전",
+     "after": "주2) 정정후"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260313001393",
+   "corp": "수성웹툰",
+   "corp_code": "00243979",
+   "correction_dt": "20260316",
+   "target_report": "유상증자 결정",
+   "original_rcept_dt": "20260114",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260713000366"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260713000366"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "9. 납입일",
+     "before": "2026년 3월 16일",
+     "after": "2026년 6월 16일"
+    },
+    {
+     "item": "12. 신주의 상장예정일",
+     "before": "2026년 4월 6일",
+     "after": "2026년 7월 6일"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260429000902",
+   "corp": "우성머티리얼스",
+   "corp_code": "00132868",
+   "correction_dt": "20260429",
+   "target_report": "주요사항보고서(유상증자 결정)",
+   "original_rcept_dt": "20220801",
+   "paired_original": "20260416000330",
+   "pairing": "nearest earlier",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260716000776"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "20. 기타 투자판단에 참고할 사항",
+     "before": "주1)[정정 전]",
+     "after": "주2)[정정 후]"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260520000325",
+   "corp": "GRT",
+   "corp_code": "01170962",
+   "correction_dt": "20260520",
+   "target_report": "주요사항보고서(유상증자결정)",
+   "original_rcept_dt": "20250226",
+   "paired_original": "20260506000510",
+   "pairing": "nearest earlier",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260528000822"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260721000167"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "12. 신주의 상장 예정일",
+     "before": "2026.05.29",
+     "after": "2026.07.31"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260612000630",
    "corp": "테라사이언스",
    "corp_code": "00373021",
-   "correction_dt": "20260520",
+   "correction_dt": "20260612",
    "target_report": "주요사항보고서(유상증자 결정)",
    "original_rcept_dt": "20241107",
-   "paired_original": "20260312000791",
+   "paired_original": "20260529001620",
    "pairing": "nearest earlier",
    "endpoint": "piicDecsn",
    "api_probe": {
@@ -63,18 +232,146 @@
    "items": [
     {
      "item": "9. 납입일",
-     "before": "2026년 05월 20일",
-     "after": "2026년 05월 29일"
+     "before": "2026년 06월 12일",
+     "after": "2026년 06월 22일"
     },
     {
      "item": "12. 신주의 상장 예정일",
-     "before": "2026년 06월 12일",
-     "after": "2026년 06월 19일"
+     "before": "2026년 07월 02일",
+     "after": "2026년 07월 09일"
     },
     {
      "item": "20. 기타 투자판단에 참고할 사항",
-     "before": "4) 청약에 관한 사항- 청약일 : 2026년 05월 20일",
-     "after": "4) 청약에 관한 사항- 청약일 : 2026년 05월 29일"
+     "before": "4) 청약에 관한 사항- 청약일 : 2026년 06월 12일",
+     "after": "4) 청약에 관한 사항- 청약일 : 2026년 06월 22일"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260630000391",
+   "corp": "한창",
+   "corp_code": "00163716",
+   "correction_dt": "20260630",
+   "target_report": "주요사항보고서(유상증자 결정)",
+   "original_rcept_dt": "20230721",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260630000391"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "9. 납입일",
+     "before": "2026년 06월 30일",
+     "after": "2026년 12월 30일"
+    },
+    {
+     "item": "10. 신주의 배당기산일",
+     "before": "2026년 01월 01일",
+     "after": "2026년 01월 01일"
+    },
+    {
+     "item": "12. 신주의 상장 예정일",
+     "before": "2026년 07월 24일",
+     "after": "2027년 01월 22일"
+    },
+    {
+     "item": "20. 기타 투자판단에 참고할 사항【제3자배정 조달자금의 구체적 사용목적】【운영자금ㆍ기타자금의 경우】",
+     "before": "(주1)",
+     "after": "(주2)"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260715000344",
+   "corp": "케이지에이",
+   "corp_code": "01638387",
+   "correction_dt": "20260715",
+   "target_report": "주요사항보고서(유상증자 결정)",
+   "original_rcept_dt": "20260612",
+   "paired_original": "20260612000447",
+   "pairing": "exact 최초제출일",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260715000344"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260715000344"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "1. 신주의 종류와 수 - 보통주식(주)",
+     "before": "648,414",
+     "after": "740,740"
+    },
+    {
+     "item": "4. 자금조달의 목적 - 운영자금(원)",
+     "before": "899,998,632",
+     "after": "899,999,100"
+    },
+    {
+     "item": "6. 신주 발행가액 - 보통주식(원)",
+     "before": "1,388",
+     "after": "1,215"
+    },
+    {
+     "item": "7. 기준주가 - 보통주식(원)",
+     "before": "1,542",
+     "after": "1,349"
+    },
+    {
+     "item": "20. 기타 투자판단에 참고할 사항",
+     "before": "주1)",
+     "after": "주2)"
+    }
+   ]
+  },
+  {
+   "rights_type": "① 유증 신주인수권",
+   "correction": "20260730000278",
+   "corp": "LB세미콘",
+   "corp_code": "00412348",
+   "correction_dt": "20260730",
+   "target_report": "주요사항보고서(유상증자 결정)",
+   "original_rcept_dt": "20260515",
+   "paired_original": "20260515002719",
+   "pairing": "exact 최초제출일",
+   "endpoint": "piicDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260730000278"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260730000278"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "4. 자금조달의 목적",
+     "before": "[표]",
+     "after": "[표]"
+    },
+    {
+     "item": "6. 신주 발행가액",
+     "before": "[표]",
+     "after": "[표]"
     }
    ]
   },
@@ -195,53 +492,592 @@
   },
   {
    "rights_type": "② CB 오버행",
-   "correction": "20260514001445",
-   "corp": "알엔티엑스",
-   "corp_code": "00615723",
-   "correction_dt": "20260514",
-   "target_report": "주요사항보고서(전환사채권발행결정)",
-   "original_rcept_dt": "20260209",
-   "paired_original": "20260209000684",
-   "pairing": "exact 최초제출일",
+   "correction": "20260211000007",
+   "corp": "대양금속",
+   "corp_code": "00111111",
+   "correction_dt": "20260211",
+   "target_report": "주요사항보고서(전환사채권 발행결정)",
+   "original_rcept_dt": "20221020",
+   "paired_original": "20260204000355",
+   "pairing": "nearest earlier",
    "endpoint": "cvbdIsDecsn",
    "api_probe": {
     "year-window": [
-     "20260611000645",
-     "20260708000271",
-     "20260811000532"
+     "20260805000401"
     ],
     "correction_rcept_no_returned": false,
     "bddd": null,
     "orig-submit-date": [
-     "20260708000271"
+     "20260406004232"
     ],
     "corr-submit-date": []
    },
    "items": [
     {
-     "item": "4. 사채의 이율",
-     "before": "표면이자율 (%) : 0만기이자율 (%) : 3",
-     "after": "표면이자율 (%) : 2만기이자율 (%) : 6"
+     "item": "5. 사채만기일",
+     "before": "2026년 02월 10일",
+     "after": "2026년 05월 10일"
     },
     {
-     "item": "5. 이자지급방법",
-     "before": "본 사채 발행일로부터 만기일 전일까지 권면금액에 대하여 표면금리는 연 0%, 만기보장수익률은 3개월 복리 3.0%로 한다.",
-     "after": "본 사채 발행일로부터 상환기일 전일까지 전자등록금액에 대하여 표면금리는 연 2.0 %, 만기보장수익률(YTM)은 분기단위 연복리 6.0%로 한다.본 사채의 이자는"
+     "item": "6. 이자지급방법",
+     "before": "(생략)또한, 만기까지 보유하고 있는 본 사채의 원금에 대하여는 2026년 02월 10일 에 만기보장수익률로 산정한 이자(기지급 이자 차감)를 지급한다.(이하 생",
+     "after": "(생략)또한, 만기까지 보유하고 있는 본 사채의 원금에 대하여는 2026년 05월 10일 에 만기보장수익률로 산정한 이자(기지급 이자 차감)를 지급한다.(이하 생"
     },
     {
      "item": "7. 원금상환방법",
-     "before": "만기까지 보유하고 있는 본 사채의 권면금액에 대하여는 만기일에 권면금액의 109.3806%에 해당하는 금액을 일시 상환한다. 단, 만기일 또는 상환기일이 은행영업",
-     "after": "만기까지 주식으로 전환하지 않고 보유하고 있는 본 사채의 전자등록금액에 대하여는 2029년 6월 11일(사채 만기일)에 전자등록금액의 113.0412%에 해당하는"
+     "before": "만기까지 보유하고 있는 본 사채의 원금에 대하여는 2026년 02월 10일 에 전자등록금액의 100.0000%에 해당하는 금액을 일시 상환한다. (이하 생략)",
+     "after": "만기까지 보유하고 있는 본 사채의 원금에 대하여는 2026년 05월 10일 에 전자등록금액의 100.0000%에 해당하는 금액을 일시 상환한다. (이하 생략)"
     },
     {
-     "item": "9. 전환에 관한 사항- 전환가액 조정에 관한 사항",
-     "before": "1) 전환가격의 조정 기준 가. 전환청구를 하기 이전에 시가 (증권의 발행 및 공시 등에 관한 규정 제 5-18조에서 정하는 기준 주가)를 하회하는 발행가액으로 ",
-     "after": "전환청구에 따라 발행할 주식의 종류: 액면가액 금오백원(\\500)인 발행회사의 전자등록 기명식 보통주식 전환비율: 사채 전자등록금액을 전환가액(전환가액이 조정될 "
+     "item": "9. 전환에 관한 사항 - 종료일",
+     "before": "2026년 01월 10일",
+     "after": "2026년 04월 10일"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항",
+     "before": "※ 본 사채의 사채권자와 만기일 연장합의에 따라 조기상환청구권(Put Option) 및 매도청구권(Call Option)에 관한 사항은 상호 협의하에 권리를 유지",
+     "after": "※ 본 사채의 만기일 연장에 관한 정정공시일(2026년 02월 10일) 현재 본 사채 미전환잔액은 8,000백만원이며, 사채권 전액 당사가 만기전 취득하여 보유하"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항※ 조기상환청구권(Put Option)에 관한 사항",
+     "before": "1. 조기상환지급일별 조기상환금액: 2023년 02월 10일: 전자등록금액의 100.00% 2023년 05월 10일: 전자등록금액의 100.00% 2023년 08",
+     "after": "1. 조기상환지급일별 조기상환금액: 2023년 02월 10일: 전자등록금액의 100.00% 2023년 05월 10일: 전자등록금액의 100.00% 2023년 08"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항※ 조기상환청구권(Put Option)에 관한 사항",
+     "before": "5. 조기상환 청구절차: 사채권자가 전자증권법 제22조 제2항에 따라 작성되는 고객계좌부에 전자등록된 경우에는 거래하는 계좌관리기관을 통하여 한국예탁결제원에 조기",
+     "after": "5. 조기상환 청구절차 가. 인수인은 조기상환지급일로부터 30일전부터 1일 전까지 발행회사에 대하여 조기상환청구내역서(조기상환 청구의 뜻과 조기상환 청구금액, 조"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항※ 조기상환청구권(Put Option)에 관한 사항",
+     "before": "(주1) 4. 조기상환 청구기간",
+     "after": "(주2) 4. 조기상환 청구기간"
+    },
+    {
+     "item": "22. 기타 투자판단에 참고할 사항※ 매도청구권(Call Option)에 관한 사항",
+     "before": "8. 본 사채의 만기연장 합의일(2025년 11월 07일) 이후 매월 10일까지 매도청구권을 행사할 수 있다.",
+     "after": "8. 본 사채의 만기연장일(2026년 02월 10일) 이후 신규 사채권자 발생시 매월 10일까지 1개월마다 매도청구권을 행사할 수 있다."
+    },
+    {
+     "item": "【미상환 주권 관련 사채권에 관한 사항】",
+     "before": "(주3)",
+     "after": "(주4)"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260227008690",
+   "corp": "알엔투테크놀로지",
+   "corp_code": "00915508",
+   "correction_dt": "20260227",
+   "target_report": "전환사채권 발행결정",
+   "original_rcept_dt": "20251016",
+   "paired_original": "20260223004075",
+   "pairing": "nearest earlier",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260227008690"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "2. 사채의 권면(전자등록)총액 (원)",
+     "before": "10,000,000,000",
+     "after": "6,000,000,000"
+    },
+    {
+     "item": "2-1. 정관상 잔여 발행한도 (원)",
+     "before": "173,900,000,000",
+     "after": "177,900,000,000"
+    },
+    {
+     "item": "3. 자금조달의 목적",
+     "before": "타법인 증권 취득자금 (원)10,000,000,000",
+     "after": "운영자금 (원)6,000,000,000"
+    },
+    {
+     "item": "5. 사채만기일",
+     "before": "2029년 03월 23일",
+     "after": "2029년 03월 09일"
+    },
+    {
+     "item": "6. 이자지급방법",
+     "before": "본 사채 발행일로부터 만기일 전일까지 권면금액에 대하여 표면금리는 연 1%, 만기보장수익률은 3개월 복리 4.0%로 한다.",
+     "after": "본 사채 발행일로부터 상환기일 전일까지 전자등록금액에 대하여 표면금리는 연 2.0%, 만기보장수익률(YTM)은 분기단위 연복리 6.5%로 한다 ."
+    },
+    {
+     "item": "7. 원금상환방법",
+     "before": "만기까지 보유하고 있는 본 사채의 권면금액에 대하여는 만기일에 권면금액의 109.5119%에 해당하는 금액을 일시 상환한다. 단, 만기일 또는 상환기일이 은행영업",
+     "after": "만기까지 주식으로 전환하지 않고 보유하고 있는 본 사채의 전자등록금액에 대하여는 2029년 03월 09일(사채 만기일)에 전자등록금액의114.7743% 에 해당하"
+    },
+    {
+     "item": "9. 전환에 관한 사항 - 전환가액",
+     "before": "3,040",
+     "after": "3,560"
+    },
+    {
+     "item": "- 전환가액 결정방법",
+     "before": "본 사채 발행을 위한 이사회 결의일 전일을 기산일로 하여 그 기산일로부터 소급하여 산정한 1개월 가중산술평균주가, 1주일 가중산술평균주가 및 최근일 가중산술평균주",
+     "after": "본 사채 발행을 위한 이사회 결의일 전일로부터 소급한 1개월 가중산술평균주가, 1주일 가중산술평균주가 및 최근일 가중산술평균주가를 산술평균한 가격과 최근일 가중산"
+    },
+    {
+     "item": "- 전환에 따라 발행할 주식",
+     "before": "주식수 : 3,289,473주식총수 대비비율(%) : 34.82",
+     "after": "주식수 : 1,685,393주식총수 대비비율(%) : 17.84"
+    },
+    {
+     "item": "- 전환청구기간",
+     "before": "시작일 : 2027년 03월 23일종료일 : 2029년 02월 23일",
+     "after": "시작일 : 2027년 03월 09일종료일 : 2029년 02월 09일"
+    },
+    {
+     "item": "- 전환가액 조정에 관한 사항",
+     "before": "1) 전환가격의 조정 기준가. 전환청구를 하기 이전에 시가 (증권의 발행 및 공시 등에 관한 규정 제 5-18조에서 정하는 기준 주가)를 하회하는 발행가액으로 전",
+     "after": "(1) 전환가액의 조정: 관련 법령상 허용되는 범위 내에서, 전환가액은 본 사채의 발행일 이후 본 사채의 전환 전에 발생하는 아래 각 항목의 사유에 따라 다음과 "
+    },
+    {
+     "item": "- 시가하락에 따른 전환가액 조정",
+     "before": "2,130",
+     "after": "2,492"
+    },
+    {
+     "item": "12. 납입일",
+     "before": "2026년 03월 23일",
+     "after": "2026년 03월 09일"
+    },
+    {
+     "item": "16. 담보제공에 관한 사항",
+     "before": "-",
+     "after": "(1) 담보제공 자산 내역: 본 사채와 관련하여 발생하는 사채원리금, 조기상환수수료, 지연이자, 비용, 기타 본 계약에 의하여 또는 그와 관련하여 발행회사가 인수"
     },
     {
      "item": "23. 기타 투자판단에 참고할 사항",
      "before": "주1)",
      "after": "주2)"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260320000734",
+   "corp": "캔버스엔",
+   "corp_code": "00550082",
+   "correction_dt": "20260320",
+   "target_report": "전환사채권 발행결정",
+   "original_rcept_dt": "20260122",
+   "paired_original": "20260220001661",
+   "pairing": "nearest earlier",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260819000347",
+     "20260507000780",
+     "20260819000343"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 사채만기일",
+     "before": "2029년 03월 20일",
+     "after": "2029년 04월 20일"
+    },
+    {
+     "item": "6. 이자지급방법",
+     "before": "[이자지급기일] 2026년06월20일, 2026년09월20일, 2026년12월20일, 2027년03월20일, 2027년06월20일, 2027년09월20일, 202",
+     "after": "[이자지급기일] 2026년07월20일, 2026년10월20일, 2027년01월20일, 2027년04월20일, 2027년07월20일, 2027년10월20일, 202"
+    },
+    {
+     "item": "7. 원금상환방법",
+     "before": "2029년 3월 20일 (사채 만기일)에",
+     "after": "2029년 4월 20일 (사채 만기일)에"
+    },
+    {
+     "item": "9. 전환에 관한 사항- 전환청구기간- 전환가액 조정에 관한 사항",
+     "before": "- 시작일 : 2027년 03월 20일 종료일 : 2029년 02월 20일- 라. 위 (가) 내지 (다)와는 별도로, 본 사채 발행 후 매 4개월15일이 경과한 ",
+     "after": "- 시작일 : 2027년 04월 20일 종료일 : 2029년 03월 20일 - 라. 위 (가) 내지 (다)와는 별도로, 본 사채 발행 후 매 4개월15일이 경과한"
+    },
+    {
+     "item": "12. 납입일",
+     "before": "2026년 03월 20일",
+     "after": "2026년 04월 20일"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항- 2) 조기상환 청구권에 관한 사항",
+     "before": "- 주1) 참조",
+     "after": "- 주2) 참조"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260420000474",
+   "corp": "진원생명과학",
+   "corp_code": "00118521",
+   "correction_dt": "20260420",
+   "target_report": "주요사항보고서(제7회차 전환사채발행결정)",
+   "original_rcept_dt": "20251127",
+   "paired_original": "20260417000494",
+   "pairing": "nearest earlier",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260428000832"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 사채 만기일",
+     "before": "2029년 4월 30일",
+     "after": "2029년 4월 28일"
+    },
+    {
+     "item": "7. 원금상환방법",
+     "before": "만기까지 보유하고 있는 본 사채의 전자등록금액에 대하여는 2029년 04월 30일(사채 만기일)에 전자등록금액의 112% 를 일시상환한다. 단, 만기일이 은행영업",
+     "after": "만기까지 보유하고 있는 본 사채의 전자등록금액에 대하여는 2029년 04월 28일 (사채 만기일)에 전자등록금액의 112% 를 일시상환한다. 단, 만기일이 은행영"
+    },
+    {
+     "item": "9. 전환에 관한 사항",
+     "before": "시작일 : 2027년 04월30일종료일 : 2029년 03월30일",
+     "after": "시작일 : 2027년 04월 28일 종료일 : 2029년 03월 28일"
+    },
+    {
+     "item": "9-1. 옵션에 관한 사항",
+     "before": "[조기상환청구권(Put option)에 관한 사항]본 사채의 사채권자는 본 사채의 발행일로부터 1년이 되는 날인 2027년 04월 30일 및 이후 매3개월에 해당",
+     "after": "[조기상환청구권(Put option)에 관한 사항]본 사채의 사채권자는 본 사채의 발행일로부터 1년이 되는 날인 2027년 04월 28일 및 이후 매3개월에 해당"
+    },
+    {
+     "item": "11. 청약일",
+     "before": "2026년 04월 17일",
+     "after": "2026년 04월 20일"
+    },
+    {
+     "item": "12. 납일일",
+     "before": "2026년 04월 30일",
+     "after": "2026년 04월 28일"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항",
+     "before": "주2)",
+     "after": "주2)"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260514001433",
+   "corp": "파이온엑스",
+   "corp_code": "00781202",
+   "correction_dt": "20260514",
+   "target_report": "주요사항보고서(전환사채 발행결정)",
+   "original_rcept_dt": "20260414",
+   "paired_original": "20260513000819",
+   "pairing": "nearest earlier",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260722000285"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 사채만기일",
+     "before": "2029년 05월 15일",
+     "after": "2029년 05월 28일"
+    },
+    {
+     "item": "9. 전환에 관한 사항",
+     "before": "",
+     "after": ""
+    },
+    {
+     "item": "- 전환가액 (원/주)",
+     "before": "541",
+     "after": "525"
+    },
+    {
+     "item": "- 전환에 따라 발행할 주식수",
+     "before": "13,779,527",
+     "after": "13,333,333"
+    },
+    {
+     "item": "-주식총수 대비 비율(%)",
+     "before": "20.71",
+     "after": "20.17"
+    },
+    {
+     "item": "-전환청구기간",
+     "before": "시작일 2027년 05월 15일종료일 2029년 04월 15일",
+     "after": "시작일 2027년 05월 28일종료일 2029년 04월 28일"
+    },
+    {
+     "item": "- 전환가액 조정에 관한 사항",
+     "before": "(1)~(3) : (생략)(4) 위 (1) 내지 (3)과는 별도로 발행회사의 기명식 보통주식의 가격이 하락할 경우 본 사채 발행 후 익월부터 만기일 전월까지, 매",
+     "after": "(1)~(3) : (생략)(4) 위 (1) 내지 (3)과는 별도로 발행회사의 기명식 보통주식의 가격이 하락할 경우 본 사채 발행 후 익월부터 만기일 전월까지, 매"
+    },
+    {
+     "item": "12. 납입일",
+     "before": "2026년 05월 15일",
+     "after": "2026년 05월 28일"
+    },
+    {
+     "item": "22. 기타 투자판단에 참고할 사항",
+     "before": "[주1] 정정 전",
+     "after": "[주1] 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260529002142",
+   "corp": "엑스페릭스",
+   "corp_code": "01231786",
+   "correction_dt": "20260529",
+   "target_report": "주요사항보고서(전환사채권 발행결정)",
+   "original_rcept_dt": "20260507",
+   "paired_original": "20260507000567",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260507000567",
+     "20260818000218"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260507000567",
+     "20260818000218"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 사채만기일",
+     "before": "2029년 06월 04일",
+     "after": "2029년 06월 30일"
+    },
+    {
+     "item": "8. 사채발행방법 - 전환가액 결정방식",
+     "before": "주1) 정정 전",
+     "after": "주1) 정정 후"
+    },
+    {
+     "item": "8. 사채발행방법 - 전환청구기간",
+     "before": "[표]",
+     "after": "[표]"
+    },
+    {
+     "item": "9. 전환에 관한 사항 - 주식총수 대비 비율 (%)",
+     "before": "7.36",
+     "after": "6.73"
+    },
+    {
+     "item": "9-1. 옵션에 관한 사항",
+     "before": "주2) 정정 전",
+     "after": "주2) 정정 후"
+    },
+    {
+     "item": "11. 청약일",
+     "before": "2026년 06월 04일",
+     "after": "2026년 06월 30일"
+    },
+    {
+     "item": "12. 납입일",
+     "before": "2026년 06월 04일",
+     "after": "2026년 06월 30일"
+    },
+    {
+     "item": "23. 기타투자판단에 참고할 사항",
+     "before": "주3) 정정 전",
+     "after": "주3) 정정 후"
+    },
+    {
+     "item": "[미상환 주권 관련 사채권에 관한사항]",
+     "before": "주4) 정정 전",
+     "after": "주4) 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260616000268",
+   "corp": "포니링크",
+   "corp_code": "00392691",
+   "correction_dt": "20260616",
+   "target_report": "주요사항보고서(전환사채권 발행결정)",
+   "original_rcept_dt": "20260529",
+   "paired_original": "20260529001660",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260616000268"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260529",
+    "orig-submit-date": [
+     "20260616000268"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260616000268"
+    ]
+   },
+   "items": [
+    {
+     "item": "2. 사채의 권면(전자등록)총액 (원)",
+     "before": "10,800,000,000",
+     "after": "10,300,000,000"
+    },
+    {
+     "item": "3. 자금조달의 목적",
+     "before": "운영자금(원): 10,800,000,000",
+     "after": "운영자금(원): 10,300,000,000"
+    },
+    {
+     "item": "9. 전환에 관한 사항",
+     "before": "전환에 따라 발행할 주식- 주식수: 3,748,698- 주식 총수대비 비율(%): 12.79",
+     "after": "전환에 따라 발행할 주식- 주식수: 3,575,147- 주식 총수대비 비율(%): 12.27"
+    },
+    {
+     "item": "【특정인에 대한 대상자별 사채발행내역】",
+     "before": "주1) 정정전",
+     "after": "주1) 정정후"
+    },
+    {
+     "item": "【조달자금의 구체적 사용 목적】",
+     "before": "주2) 정정전",
+     "after": "주2) 정정후"
+    },
+    {
+     "item": "【미상환 주권 관련 사채권에 관한 사항】",
+     "before": "주3) 정정전",
+     "after": "주3) 정정후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260630000851",
+   "corp": "콘텐트리중앙",
+   "corp_code": "00203315",
+   "correction_dt": "20260630",
+   "target_report": "주요사항보고서(전환사채권 발행결정)",
+   "original_rcept_dt": "20210428",
+   "paired_original": "20260430001854",
+   "pairing": "nearest earlier",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "4. 사채의 이율 - 만기이자율",
+     "before": "8.478",
+     "after": "-"
+    },
+    {
+     "item": "5. 사채 만기일",
+     "before": "2026년 6월 30일",
+     "after": "-"
+    },
+    {
+     "item": "7. 원금상환방법",
+     "before": "발행회사는 본건 사채에 대하여 사채의 만기일인 2026년 6월 30일에 해당 권면금액의 100%에 해당하는 금액에, 만기보장수익률 연 복리 8.478%를 적용한 ",
+     "after": "-"
+    },
+    {
+     "item": "9. 전환에 관한 사항 - 전환청구기간(종료일)",
+     "before": "2026년 06월 22일",
+     "after": "-"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항",
+     "before": "상기 5. 사채 만기일 관련하여 전환권이 행사되지 아니한 미상환 사채 액면금 금 팔백억원(\\ 80,000,000,000)의 만기일은 2026년 06월 30일로 한",
+     "after": "상기 5. 사채 만기일 관련하여 전환권이 행사되지 아니한 미상환 사채 액면금 금 팔백억원(\\ 80,000,000,000)의 만기일은 발행회사와 사채권자가 합의하여"
+    },
+    {
+     "item": "【미상환 주권 관련 사채권에 관한 사항】- 전환(행사) 가능기간",
+     "before": "2022.05.15 ~ 2026.06.22",
+     "after": "-"
+    }
+   ]
+  },
+  {
+   "rights_type": "② CB 오버행",
+   "correction": "20260721001361",
+   "corp": "애드바이오텍",
+   "corp_code": "01022902",
+   "correction_dt": "20260721",
+   "target_report": "주요사항보고서(전환사채권 발행결정)",
+   "original_rcept_dt": "20260626",
+   "paired_original": "20260626000645",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cvbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260819000256",
+     "20260819000258"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260819000258"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 사채의 만기일",
+     "before": "2031년 07월 24일",
+     "after": "2031년 08월 19일"
+    },
+    {
+     "item": "9. 전환에 관한 사항",
+     "before": "(주1)",
+     "after": "(주2)"
+    },
+    {
+     "item": "9-1. 옵션에 관한 사항",
+     "before": "가. 조기상환청구권(Put Option)에 관한 사항 : 본 사채의 사채권자는 본 사채의 발행일로부터 2년 6개월이 되는 2029년 01월 24일 및 이후 매 3",
+     "after": "가. 조기상환청구권(Put Option)에 관한 사항 : 본 사채의 사채권자는 본 사채의 발행일로부터 2년 6개월이 되는 2029년 02월 19일 및 이후 매 3"
+    },
+    {
+     "item": "11. 청약일",
+     "before": "2026년 06월 26일",
+     "after": "2026년 07월 21일"
+    },
+    {
+     "item": "12. 납입일",
+     "before": "2026년 07월 24일",
+     "after": "2026년 08월 19일"
+    },
+    {
+     "item": "23. 기타 투자판단에 참고할 사항",
+     "before": "(주3)",
+     "after": "(주4)"
     }
    ]
   },
@@ -310,6 +1146,199 @@
   },
   {
    "rights_type": "② EB 오버행",
+   "correction": "20260204000306",
+   "corp": "아이티아이즈",
+   "corp_code": "01429840",
+   "correction_dt": "20260204",
+   "target_report": "주요사항보고서 / 거래소 신고의무 사항",
+   "original_rcept_dt": null,
+   "paired_original": "20260203000345",
+   "pairing": "nearest earlier",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260204000306"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260203",
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260204000306"
+    ]
+   },
+   "items": [
+    {
+     "item": "9. 교환에 관한 사항 교환청구기간",
+     "before": "시작일2023년 3월 11일",
+     "after": "시작일2026년 3월 11일"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260210000877",
+   "corp": "알서포트",
+   "corp_code": "00838962",
+   "correction_dt": "20260210",
+   "target_report": "주요사항보고서(교환사채권 발행결정)",
+   "original_rcept_dt": "20260203",
+   "paired_original": "20260203000402",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260213002359"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260213002359"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 1. 다른 보유주식 대상 교환사채 발행 ",
+     "before": "-",
+     "after": "[주1] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 1. 다른 보유주식 대상 교환사채 발행 ",
+     "before": "[주2] 정정 전",
+     "after": "[주2] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 2. 발행시점 타당성에 대한 검토내용",
+     "before": "[주3] 정정 전",
+     "after": "[주3] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 4. 기존 주주이익 등에 미치는 영향",
+     "before": "[주4] 정정 전",
+     "after": "[주4] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 【조달자금의 구체적 사용 목적】",
+     "before": "[주5] 정정 전",
+     "after": "[주5] 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260211000749",
+   "corp": "한국전자홀딩스",
+   "corp_code": "00159254",
+   "correction_dt": "20260211",
+   "target_report": "주요사항보고서(교환사채권발행결정)",
+   "original_rcept_dt": "20260205",
+   "paired_original": "20260205000495",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260211000749"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260205",
+    "orig-submit-date": [
+     "20260211000749"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260211000749"
+    ]
+   },
+   "items": [
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항]",
+     "before": "(주1) 정정 전",
+     "after": "(주1) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항]",
+     "before": "(주2) 정정 전",
+     "after": "(주2) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항]",
+     "before": "(주3) 정정 전",
+     "after": "(주3) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (1) 다른 보유주식 대상 교환사채 발행",
+     "before": "(주4) 정정 전",
+     "after": "(주4) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (1) 다른 보유주식 대상 교환사채 발행",
+     "before": "(주5) 정정 전",
+     "after": "(주5) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (1) 다른 보유주식 대상 교환사채 발행",
+     "before": "(주6) 정정 전",
+     "after": "(주6) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (2) 발행시점 타당성에 대한 검토내용",
+     "before": "(주7) 정정 전",
+     "after": "(주7) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (4) 기존 주주 이익 등에 미치는 영향",
+     "before": "(주8) 정정 전",
+     "after": "(주8) 정정 후"
+    },
+    {
+     "item": "【조달자금의 구체적 사용 목적】",
+     "before": "(주9) 정정 전",
+     "after": "(주9) 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260212000229",
+   "corp": "알서포트",
+   "corp_code": "00838962",
+   "correction_dt": "20260212",
+   "target_report": "주요사항보고서(교환사채권 발행결정)",
+   "original_rcept_dt": "20260203",
+   "paired_original": "20260203000402",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260213002359"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260213002359"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 2. 발행시점 타당성에 대한 검토내용[교",
+     "before": "[주1] 정정 전",
+     "after": "[주1] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 3. 실제 주식교환시 지배구조 및 회사 ",
+     "before": "[주2] 정정 전",
+     "after": "[주2] 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 【조달자금의 구체적 사용 목적】[분기별 ",
+     "before": "[주3] 정정 전",
+     "after": "[주3] 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
    "correction": "20260213002359",
    "corp": "알서포트",
    "corp_code": "00838962",
@@ -338,6 +1367,240 @@
      "item": "19. 기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 4. 기존 주주이익 등에 미치는 영향",
      "before": "[주1] 정정 전",
      "after": "[주1] 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260306001019",
+   "corp": "위닉스",
+   "corp_code": "00293886",
+   "correction_dt": "20260309",
+   "target_report": "주요사항보고서(교환사채권 발행 결정)",
+   "original_rcept_dt": "20260224",
+   "paired_original": "20260224002371",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260306001019"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "-",
+    "orig-submit-date": [
+     "20260306001019"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "전항목",
+     "before": "교환사채권발행 결정",
+     "after": "교환사채권발행 결정 철회"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260401002847",
+   "corp": "HD한국조선해양",
+   "corp_code": "00164830",
+   "correction_dt": "20260401",
+   "target_report": "주요사항보고서(교환사채권 발행결정)",
+   "original_rcept_dt": "20260331",
+   "paired_original": "20260331003385",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260401002847"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260331",
+    "orig-submit-date": [
+     "20260401002847"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260401002847"
+    ]
+   },
+   "items": [
+    {
+     "item": "2. 사채의 권면(전자등록)총액 (원)",
+     "before": "3,031,400,000,000",
+     "after": "2,372,275,000,000"
+    },
+    {
+     "item": "2-1. (해외발행) - 권면(전자등록)총액(통화단위) - USD",
+     "before": "2,000,000,000",
+     "after": "1,550,000,000"
+    },
+    {
+     "item": "2-1. (해외발행) - 권면(전자등록)총액(통화단위) - 기준환율등",
+     "before": "1,515.7",
+     "after": "1,530.5"
+    },
+    {
+     "item": "3. 자금조달의 목적 -운영자금 (원)",
+     "before": "1,515,700,000,000",
+     "after": "1,186,137,500,000"
+    },
+    {
+     "item": "3. 자금조달의 목적 -타법인 증권 취득자금 (원)",
+     "before": "1,515,700,000,000",
+     "after": "1,186,137,500,000"
+    },
+    {
+     "item": "4. 사채의 이율- 표면이자율 (%)",
+     "before": "1.00",
+     "after": "0.00"
+    },
+    {
+     "item": "4. 사채의 이율- 만기이자율 (%)",
+     "before": "1.00",
+     "after": "0.00"
+    },
+    {
+     "item": "6. 이자지급방법",
+     "before": "미정",
+     "after": "-"
+    },
+    {
+     "item": "9. 교환에 관한 사항 - 교환가액 (원/주)",
+     "before": "540,000",
+     "after": "523,125"
+    },
+    {
+     "item": "9. 교환에 관한 사항 - 교환가액 결정방법",
+     "before": "교환프리미엄을 감안하여, 한국거래소 상장주식 종가의 112.5~117.5%를 교환가액으로 결정",
+     "after": "교환프리미엄을 감안하여, 한국거래소 상장주식 종가의 112.5%를 교환가액으로 결정"
+    },
+    {
+     "item": "9. 교환에 관한 사항 - 교환대상 - 주식수",
+     "before": "5,613,704",
+     "after": "4,534,814"
+    },
+    {
+     "item": "9. 교환에 관한 사항 - 교환대상 - 주식총수 대비 비율(%)",
+     "before": "5.35",
+     "after": "4.32"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 가.",
+     "before": "(주1) 정정 전",
+     "after": "(주1) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 나.",
+     "before": "(주2) 정정 전",
+     "after": "(주2) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 라",
+     "before": "(주3) 정정 전",
+     "after": "(주3) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 마",
+     "before": "(주4) 정정 전",
+     "after": "(주4) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 자",
+     "before": "(주5) 정정 전",
+     "after": "(주5) 정정 후"
+    },
+    {
+     "item": "19. 기타 투자판단에 참고할 사항 - 차",
+     "before": "(주6) 정정 전",
+     "after": "(주6) 정정 후"
+    },
+    {
+     "item": "【운영자금ㆍ기타자금의 경우】",
+     "before": "(주7) 정정 전",
+     "after": "(주7) 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260416000477",
+   "corp": "남성",
+   "corp_code": "00172185",
+   "correction_dt": "20260416",
+   "target_report": "주요사항보고서(교환사채권 발행결정)",
+   "original_rcept_dt": "20251218",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260416000477"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "9.교환에 관한 사항: 교환가액",
+     "before": "1,029",
+     "after": "10,290"
+    },
+    {
+     "item": "9.교환에 관한 사항: 교환대상 주식수",
+     "before": "2,623,906",
+     "after": "262,390"
+    },
+    {
+     "item": "【그 외 투자판단에 참고할 사항】 ※ 잔여 자기주식 활용 계획",
+     "before": "당사는 보유중인 보통주 자기주식 4,889,673주 중 금번 교환사채 발행에 활용되는 2,623,906주를 제외한 잔여 보통주 자기주식 2,265,767주에 대해",
+     "after": "당사는 보유중인 보통주 자기주식 488,967주 중 금번 교환사채 발행에 활용되는 262,390주를 제외한 잔여 보통주 자기주식 226,577주에 대해 주주가치 "
+    },
+    {
+     "item": "【그 외 투자판단에 참고할 사항】 3. 실제 주식교환시 지배구조 및 회사 의사결정에 미치는 영향(참고) 의결",
+     "before": "주1)",
+     "after": "주2)"
+    },
+    {
+     "item": "【그 외 투자판단에 참고할 사항】 4. 기존 주주 이익 등에 미치는 영향[(1안)자사주 소각+은행차입 및 (",
+     "before": "주3)",
+     "after": "주4)"
+    }
+   ]
+  },
+  {
+   "rights_type": "② EB 오버행",
+   "correction": "20260720000119",
+   "corp": "베뉴지",
+   "corp_code": "00267906",
+   "correction_dt": "20260720",
+   "target_report": "주요사항보고서(교환사채권발행결정)",
+   "original_rcept_dt": "20260716",
+   "paired_original": "20260716000586",
+   "pairing": "exact 최초제출일",
+   "endpoint": "exbdIsDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260720000119"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260716",
+    "orig-submit-date": [
+     "20260720000119"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260720000119"
+    ]
+   },
+   "items": [
+    {
+     "item": "5.사채만기일",
+     "before": "2026년 7월 24일",
+     "after": "2028년 7월 24일"
     }
    ]
   },
@@ -376,31 +1639,318 @@
   },
   {
    "rights_type": "③ 매수청구권",
-   "correction": "20260604000347",
-   "corp": "로젠",
-   "corp_code": "00155948",
-   "correction_dt": "20260604",
+   "correction": "20260225004946",
+   "corp": "프리시젼바이오",
+   "corp_code": "01137295",
+   "correction_dt": "20260225",
    "target_report": "주요사항보고서(회사합병결정)",
-   "original_rcept_dt": "20260309",
-   "paired_original": "20260309001792",
-   "pairing": "exact 최초제출일",
+   "original_rcept_dt": "20251114",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
    "endpoint": "cmpMgDecsn",
    "api_probe": {
-    "year-window": [
-     "20260730000215"
-    ],
+    "year-window": [],
     "correction_rcept_no_returned": false,
     "bddd": null,
     "orig-submit-date": [
-     "20260730000215"
+     "20260225004946"
     ],
     "corr-submit-date": []
    },
    "items": [
     {
-     "item": "13. 주식매수청구권에 관한 사항- 지급예정시기, 지급방법",
-     "before": "- 주식회사 모다이노칩 : 2026년 11월 06일",
-     "after": "- 주식회사 모다이노칩 : 2026년 10월 29일"
+     "item": "18. 기타 투자판단과 관련한 중요사항【합병관련 주요사항 상세기재】 1. 합병의 개요(3) 합병등과 관련한 ",
+     "before": "[주1]",
+     "after": "[주2]"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260319000331",
+   "corp": "모다이노칩",
+   "corp_code": "00480048",
+   "correction_dt": "20260319",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": "20260219",
+   "paired_original": "20260219002620",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260421000231",
+     "20260730000170"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260421000231"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "10. 합병일정-합병기일",
+     "before": "2026년 04월 28일",
+     "after": "2026년 04월 30일"
+    },
+    {
+     "item": "10. 합병일정-합병보고 총회일",
+     "before": "2026년 04월 29일",
+     "after": "2026년 04월 30일"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260413002895",
+   "corp": "코오롱인더",
+   "corp_code": "00795135",
+   "correction_dt": "20260413",
+   "target_report": "주요사항보고서",
+   "original_rcept_dt": "20251124",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260413002895"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "7. 합병신주의 종류와 수(주)",
+     "before": "[표]",
+     "after": "[표]"
+    },
+    {
+     "item": "18. 기타 투자판단과 관련한 중요사항",
+     "before": "라. 상기 '7. 합병신주의 종류와 수(주)'는 코오롱이앤피(주) 주주들의 주식매수청구권 행사 결과 및 단주의 처리에 따라 변경 될 수 있습니다.",
+     "after": "(삭제)"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260513000254",
+   "corp": "SGA솔루션즈",
+   "corp_code": "00988364",
+   "correction_dt": "20260513",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": "20260422",
+   "paired_original": null,
+   "pairing": "unpaired (original outside the 2026 list window)",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260513000254"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260422",
+    "orig-submit-date": [
+     "20260513000254"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260513000254"
+    ]
+   },
+   "items": [
+    {
+     "item": "18. 기타 투자판단과 관련한 주요사항",
+     "before": "1) 본 합병은 상법527조의3에 의한 소규모합병 방식으로 진행되므로 에스지에이솔루션즈(주)주주들에게 주식매수청구권이 부여되지 않으며, 합병 승인을 위한 주주총회",
+     "after": "1) 본 합병은 상법527조의3에 의한 소규모합병 방식으로 진행되므로 에스지에이솔루션즈(주)주주들에게 주식매수청구권이 부여되지 않으며, 합병 승인을 위한 주주총회"
+    },
+    {
+     "item": "[합병관련 주요사항 상세기재]",
+     "before": "다. 진행경과 및 일정 1) 진행경과 및 주요 일정 [표]",
+     "after": "다. 진행경과 및 일정 1) 진행경과 및 주요 일정 [표]"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260604000612",
+   "corp": "휴온스",
+   "corp_code": "01159853",
+   "correction_dt": "20260604",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": "20260518",
+   "paired_original": "20260518000408",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260804000344",
+     "20260422000410"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260804000344"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "10. 합병일정",
+     "before": "2026년 06월 16일",
+     "after": "2026년 07월 30일"
+    },
+    {
+     "item": "13. 주식매수청구권에 관한 사항",
+     "before": "주주확정 기준일(2026년 06월 16일)",
+     "after": "주주확정 기준일(2026년 07월 30일)"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260623000274",
+   "corp": "아리바이오홀딩스",
+   "corp_code": "00605522",
+   "correction_dt": "20260623",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": null,
+   "paired_original": "20260528000609",
+   "pairing": "nearest earlier",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "5. 합병비율 산출근거- 법인가치",
+     "before": "[표]",
+     "after": "[표]"
+    },
+    {
+     "item": "7. 합병신주의 종류와 수(주)",
+     "before": "[표]",
+     "after": "[표]"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260710000242",
+   "corp": "알에프텍",
+   "corp_code": "00309831",
+   "correction_dt": "20260710",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": "20260414",
+   "paired_original": "20260624000510",
+   "pairing": "nearest earlier",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260804000294"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [
+     "20260804000294"
+    ],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "10. 합병일정",
+     "before": "[표]",
+     "after": "[표]"
+    },
+    {
+     "item": "13. 주식매수청구권에 관한 사항-행사절차, 방법, 기간, 장소",
+     "before": "가. 반대의사 표시방법 상법 제522조의3에 및 자본시장과 금융투자업에 관한 법률 제165조의5에 의거, 주주확정 기준일(2026년 06월 30일) 현재 합병당사",
+     "after": "가. 반대의사 표시방법 상법 제522조의3에 및 자본시장과 금융투자업에 관한 법률 제165조의5에 의거, 주주확정 기준일(2026년 06월 30일) 현재 합병당사"
+    },
+    {
+     "item": "13. 주식매수청구권에 관한 사항-지급예정시기, 지급방법",
+     "before": "가. 주식매수대금의 지급방법특별주주(기존 '명부주주')의 경우 주주가 신고한 은행 계좌로 이체할 예정입니다. 주권을 증권회사에 위탁하고 있는 일반주주(기존 '실질",
+     "after": "가. 주식매수대금의 지급방법특별주주(기존 '명부주주')의 경우 주주가 신고한 은행 계좌로 이체할 예정입니다. 주권을 증권회사에 위탁하고 있는 일반주주(기존 '실질"
+    },
+    {
+     "item": "18. 기타 투자판단과 관련한 중요사항",
+     "before": "바. 상기 '10. 합병일정'의 종료보고 총회는 '상법 제526조 제3항' 규정에 의거하여 2026년 09월 02일 이사회 결의 공고 절차로 갈음합니다.",
+     "after": "바. 상기 '10. 합병일정'의 종료보고 총회는 '상법 제526조 제3항' 규정에 의거하여 2026년 09월 22일 이사회 결의 공고 절차로 갈음합니다."
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260722000491",
+   "corp": "휴맥스홀딩스",
+   "corp_code": "00219440",
+   "correction_dt": "20260722",
+   "target_report": "주요사항보고서(회사합병결정)",
+   "original_rcept_dt": "20260630",
+   "paired_original": "20260630001117",
+   "pairing": "nearest earlier",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260811000452"
+    ],
+    "correction_rcept_no_returned": false,
+    "bddd": null,
+    "orig-submit-date": [],
+    "corr-submit-date": []
+   },
+   "items": [
+    {
+     "item": "3. 합병의 중요영향 및 효과",
+     "before": "주요사항보고서 제출일 현재 존속회사인 주식회사 휴맥스의 최대주주는 지분 35.60%를 보유한 소멸회사 주식회사 휴맥스홀딩스이며, 주식회사 휴맥스홀딩스의 최대주주는",
+     "after": "주요사항보고서 제출일 현재 존속회사인 주식회사 휴맥스의 최대주주는 지분 35.64% 를 보유한 소멸회사 주식회사 휴맥스홀딩스이며, 주식회사 휴맥스홀딩스의 최대주주"
+    },
+    {
+     "item": "18. 기타 투자판단과 관련한 중요사항",
+     "before": "(주1) 정정 전",
+     "after": "(주1) 정정 후"
+    }
+   ]
+  },
+  {
+   "rights_type": "③ 매수청구권",
+   "correction": "20260730000178",
+   "corp": "한중엔시에스",
+   "corp_code": "00474588",
+   "correction_dt": "20260730",
+   "target_report": "주요사항보고서(회사합병 결정)",
+   "original_rcept_dt": "20260729",
+   "paired_original": "20260729000331",
+   "pairing": "exact 최초제출일",
+   "endpoint": "cmpMgDecsn",
+   "api_probe": {
+    "year-window": [
+     "20260730000178"
+    ],
+    "correction_rcept_no_returned": true,
+    "bddd": "20260729",
+    "orig-submit-date": [
+     "20260730000178"
+    ],
+    "corr-submit-date": [],
+    "bddd-date": [
+     "20260730000178"
+    ]
+   },
+   "items": [
+    {
+     "item": "10. 합병일정- 합병반대의사통지 접수기간",
+     "before": "시작일 : 2026년 8월 14일",
+     "after": "시작일 : 2026년 8월 13일"
+    },
+    {
+     "item": "18. 기타 투자판단과 관련한 중요사항【합병관련 주요사항 상세기재】 1. 합병의 개요 (7) 진행경과 및 일",
+     "before": "시작일 : 2026년 8월 14일(금)",
+     "after": "시작일 : 2026년 8월 13일(목)"
     }
    ]
   }
@@ -408,18 +1958,94 @@
  "item_frequency": [
   [
    "기타 투자판단에 참고할 사항",
-   3
+   11
   ],
   [
    "납입일",
-   2
+   10
   ],
   [
-   "이자지급방법",
-   2
+   "사채만기일",
+   7
   ],
   [
    "원금상환방법",
+   6
+  ],
+  [
+   "이자지급방법",
+   5
+  ],
+  [
+   "전환에 관한 사항",
+   5
+  ],
+  [
+   "신주의 상장 예정일",
+   4
+  ],
+  [
+   "1. 옵션에 관한 사항",
+   4
+  ],
+  [
+   "청약일",
+   4
+  ],
+  [
+   "자금조달의 목적",
+   3
+  ],
+  [
+   "【미상환 주권 관련 사채권에 관한 사항】",
+   3
+  ],
+  [
+   "기타 투자판단에 참고할 사항※ 조기상환청구권(Put Option)에 관한",
+   3
+  ],
+  [
+   "사채의 권면(전자등록)총액 (원)",
+   3
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항]",
+   3
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (1) 다른",
+   3
+  ],
+  [
+   "기타 투자판단과 관련한 중요사항",
+   3
+  ],
+  [
+   "신주 발행가액",
+   2
+  ],
+  [
+   "신주의 상장예정일",
+   2
+  ],
+  [
+   "- 전환가액 (원/주)",
+   2
+  ],
+  [
+   "- 전환청구기간",
+   2
+  ],
+  [
+   "- 전환가액 조정에 관한 사항",
+   2
+  ],
+  [
+   "사채 만기일",
+   2
+  ],
+  [
+   "【조달자금의 구체적 사용 목적】",
    2
   ],
   [
@@ -427,11 +2053,35 @@
    2
   ],
   [
-   "금조달의 목적",
-   1
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 1. 다른 ",
+   2
   ],
   [
-   "신주 발행가액",
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 2. 발행시",
+   2
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 4. 기존 ",
+   2
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 【조달자금의",
+   2
+  ],
+  [
+   "기타 투자판단과 관련한 중요사항【합병관련 주요사항 상세기재】 1. 합병의",
+   2
+  ],
+  [
+   "합병신주의 종류와 수(주)",
+   2
+  ],
+  [
+   "합병일정",
+   2
+  ],
+  [
+   "금조달의 목적",
    1
   ],
   [
@@ -439,19 +2089,31 @@
    1
   ],
   [
-   "신주의 상장 예정일",
+   "신주권교부예정일",
    1
   ],
   [
-   "사채만기일",
+   "신주의 배당기산일",
    1
   ],
   [
-   "전환에 관한 사항",
+   "기타 투자판단에 참고할 사항【제3자배정 조달자금의 구체적 사용목적】【운영",
    1
   ],
   [
-   "- 전환가액 (원/주)",
+   "신주의 종류와 수 - 보통주식(주)",
+   1
+  ],
+  [
+   "자금조달의 목적 - 운영자금(원)",
+   1
+  ],
+  [
+   "신주 발행가액 - 보통주식(원)",
+   1
+  ],
+  [
+   "기준주가 - 보통주식(원)",
    1
   ],
   [
@@ -463,19 +2125,7 @@
    1
   ],
   [
-   "- 전환청구기간",
-   1
-  ],
-  [
    "- 시가하락에 따른 전환가액 조정 : 최저 조정가액(원)",
-   1
-  ],
-  [
-   "1. 옵션에 관한 사항",
-   1
-  ],
-  [
-   "청약일",
    1
   ],
   [
@@ -495,15 +2145,99 @@
    1
   ],
   [
-   "【미상환 주권 관련 사채권에 관한 사항】",
+   "전환에 관한 사항 - 종료일",
    1
   ],
   [
-   "사채의 이율",
+   "기타 투자판단에 참고할 사항※ 매도청구권(Call Option)에 관한 ",
    1
   ],
   [
-   "전환에 관한 사항- 전환가액 조정에 관한 사항",
+   "1. 정관상 잔여 발행한도 (원)",
+   1
+  ],
+  [
+   "전환에 관한 사항 - 전환가액",
+   1
+  ],
+  [
+   "- 전환가액 결정방법",
+   1
+  ],
+  [
+   "- 전환에 따라 발행할 주식",
+   1
+  ],
+  [
+   "- 시가하락에 따른 전환가액 조정",
+   1
+  ],
+  [
+   "담보제공에 관한 사항",
+   1
+  ],
+  [
+   "전환에 관한 사항- 전환청구기간- 전환가액 조정에 관한 사항",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항- 2) 조기상환 청구권에 관한 사항",
+   1
+  ],
+  [
+   "납일일",
+   1
+  ],
+  [
+   "- 전환에 따라 발행할 주식수",
+   1
+  ],
+  [
+   "-주식총수 대비 비율(%)",
+   1
+  ],
+  [
+   "-전환청구기간",
+   1
+  ],
+  [
+   "사채발행방법 - 전환가액 결정방식",
+   1
+  ],
+  [
+   "사채발행방법 - 전환청구기간",
+   1
+  ],
+  [
+   "전환에 관한 사항 - 주식총수 대비 비율 (%)",
+   1
+  ],
+  [
+   "기타투자판단에 참고할 사항",
+   1
+  ],
+  [
+   "[미상환 주권 관련 사채권에 관한사항]",
+   1
+  ],
+  [
+   "【특정인에 대한 대상자별 사채발행내역】",
+   1
+  ],
+  [
+   "사채의 이율 - 만기이자율",
+   1
+  ],
+  [
+   "전환에 관한 사항 - 전환청구기간(종료일)",
+   1
+  ],
+  [
+   "【미상환 주권 관련 사채권에 관한 사항】- 전환(행사) 가능기간",
+   1
+  ],
+  [
+   "사채의 만기일",
    1
   ],
   [
@@ -527,7 +2261,111 @@
    1
   ],
   [
-   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 4. 기존 ",
+   "교환에 관한 사항 교환청구기간",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (2) 발행",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] (4) 기존",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항[그 외 투자판단에 참고할 사항] 3. 실제 ",
+   1
+  ],
+  [
+   "전항목",
+   1
+  ],
+  [
+   "1. (해외발행) - 권면(전자등록)총액(통화단위) - USD",
+   1
+  ],
+  [
+   "1. (해외발행) - 권면(전자등록)총액(통화단위) - 기준환율등",
+   1
+  ],
+  [
+   "자금조달의 목적 -운영자금 (원)",
+   1
+  ],
+  [
+   "자금조달의 목적 -타법인 증권 취득자금 (원)",
+   1
+  ],
+  [
+   "사채의 이율- 표면이자율 (%)",
+   1
+  ],
+  [
+   "사채의 이율- 만기이자율 (%)",
+   1
+  ],
+  [
+   "교환에 관한 사항 - 교환가액 (원/주)",
+   1
+  ],
+  [
+   "교환에 관한 사항 - 교환가액 결정방법",
+   1
+  ],
+  [
+   "교환에 관한 사항 - 교환대상 - 주식수",
+   1
+  ],
+  [
+   "교환에 관한 사항 - 교환대상 - 주식총수 대비 비율(%)",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 가.",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 나.",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 라",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 마",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 자",
+   1
+  ],
+  [
+   "기타 투자판단에 참고할 사항 - 차",
+   1
+  ],
+  [
+   "【운영자금ㆍ기타자금의 경우】",
+   1
+  ],
+  [
+   "교환에 관한 사항: 교환가액",
+   1
+  ],
+  [
+   "교환에 관한 사항: 교환대상 주식수",
+   1
+  ],
+  [
+   "【그 외 투자판단에 참고할 사항】 ※ 잔여 자기주식 활용 계획",
+   1
+  ],
+  [
+   "【그 외 투자판단에 참고할 사항】 3. 실제 주식교환시 지배구조 및 회사",
+   1
+  ],
+  [
+   "【그 외 투자판단에 참고할 사항】 4. 기존 주주 이익 등에 미치는 영향",
    1
   ],
   [
@@ -539,7 +2377,43 @@
    1
   ],
   [
-   "주식매수청구권에 관한 사항- 지급예정시기, 지급방법",
+   "합병일정-합병기일",
+   1
+  ],
+  [
+   "합병일정-합병보고 총회일",
+   1
+  ],
+  [
+   "기타 투자판단과 관련한 주요사항",
+   1
+  ],
+  [
+   "[합병관련 주요사항 상세기재]",
+   1
+  ],
+  [
+   "주식매수청구권에 관한 사항",
+   1
+  ],
+  [
+   "합병비율 산출근거- 법인가치",
+   1
+  ],
+  [
+   "주식매수청구권에 관한 사항-행사절차, 방법, 기간, 장소",
+   1
+  ],
+  [
+   "주식매수청구권에 관한 사항-지급예정시기, 지급방법",
+   1
+  ],
+  [
+   "합병의 중요영향 및 효과",
+   1
+  ],
+  [
+   "합병일정- 합병반대의사통지 접수기간",
    1
   ]
  ]
