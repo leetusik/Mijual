@@ -941,6 +941,66 @@ whole reconciliation: **488 exposable events — ① 50, ③ 16, ② 422 — and
 instances**, from 479 / 388; ③ `no_document` 9 → 1; the 소멸 headline ▷ 718.1억원 is unchanged
 while the open pipeline grows 18 → 23 offerings, 11 → 15 with a 청약 ahead.)
 
+### Appended by `P2.S9` — Phase A only (2026-08-20)
+
+**N84 — the evalset measures TWO directions, and the second one is the only honest way to
+price §3.6's gate.** (a) precision of what the product *shows* (rows whose gate said
+`passed`/`tbd`), and (b) the gate's **over-blocking** price — of the rows the gate
+*blocked*, how many the human judges to have been correct readings all along. S8 already
+found one such pattern worth ▷ 49.2억원 / 6.4 % of the headline (N76); without direction
+(b) a gate can buy any precision figure by blocking more. Both are on the same sheet and
+the sample deliberately carries gate-blocked rows. Three picks keep the arithmetic
+straight: `random` (the seeded stratified draw — **the only pick a rate is computed
+from**), `forced` (every known hard case, included whole and reported case by case, never
+averaged in), `booster` (extra filings contributing **only** their
+`correction_interpretation` row, so boosting the thinnest field cannot de-randomise the
+others on those filings). Rates carry a **95 % Wilson** interval, not a normal one — at
+n ≈ 20 with p near 1 the textbook interval is simply wrong, and `21/21` is not "100 % ± 0".
+
+**N85 — the gate-block rate is a corpus statistic and it is available BEFORE any label,
+and it is wildly uneven per field.** Over the 633 deduped extraction rows, **77 (12.2 %)
+are gate-blocked**. Per field: ① 4.0–8.0 % (`warrant_trading_period` 3/75,
+`subscription_agents` 3/75, `excess_subscription` 3/75, `forfeited_share_method` 5/75,
+`issue_price_formula` 6/75), 정정 해석 6.4 % (3/47), **② 14.5–32.3 %** (`option_schedule`
+9/62, `lockup_release` 14/62, `refixing_terms` **20/62**), **③ 44.0 % (11/25)**, and the
+증권발행실적보고서 figures **0 %** (they pass through no §7 gate — no model read them).
+Reason mix corpus-wide: `field_absent` 44, `lockup_not_quantified` 9,
+`superseded_api_reference` 8, `span_unresolved` 5, `no_correction_rows` 3,
+`release_date_not_derived` 3, `method_not_enumerated` 2, `option_date_out_of_term` 1,
+`dissent_period_mismatch` 1, `api_deadline_absent` 1. **③'s 44 % is mostly N46's
+version-scoping, not a reading failure** — read it with that caveat or it looks like ③ is
+badly extracted when it is mostly "we correctly refuse to compare a superseded 본문 against
+today's API row".
+
+**N86 — N41 re-measured at 45 records, and one trap in the number.** The 정정-해석 recall
+proxy now stands at **177 deterministic 정정사항 rows, 26 uncovered → 85.3 % recall**, with
+**0 unsupported of 157 model changes** — N41's "121 changes / 0 unsupported" holds at 1.5×
+the sample. The trap: a naive aggregate reports **5** unsupported, and all 5 come from
+**3 records whose 정정사항 table did not parse at all** (`items == 0`, 현대바이오
+`20250925000643`, 오성첨단소재 `20251014000295`, 풍전약품 `20250930000508`) — with an empty
+table every model change is trivially unsupported. Those records are counted separately, the
+gate already blocks all three (`no_correction_rows`), and **any later reader must exclude
+`items == 0` or a parse gap reads as a model regression.**
+
+**N87 — N21/N81's duplicate-`rcept_no` residue reaches the extraction table too, and an
+evalset must collapse it.** 16 `(rcept_no, field_key)` readings are stored twice because the
+same filing sits under two event keys (3 filings carried 10–12 extraction rows for what is
+5–6 fields). They are collapsed to one row — preferring the exposable/current-version
+event, then the lowest id — because the evalset measures a *reading*, not a storage residue;
+counting both would have double-weighted exactly the filings the collector is least sure
+about. Corpus row count after dedupe: **633 extraction + 123 실적보고서 figures**.
+
+**N88 — the operator gate is open and its cost is stated: 344 rows / 99 filings /
+▷ 75–95 minutes.** Sheet `evalset/sheet.csv`, instructions `evalset/LABELING.md`, frozen
+sample `evalset/sample.json`, machinery `python -m mijual.evalset {sample,sheet,status,
+import,report}` at 0 requests / 0 calls. Two levers if the operator's budget is smaller,
+neither needing code: the sheet is ordered ① → ② → ③ → 실적 with one filing's rows
+contiguous, so stopping at a block boundary still gives a complete measurement for
+everything above it (① alone is ▷ ~36 min); and a smaller sheet is one command
+(`sample --R1-prose 14 … --force`, seconds). The sheet **refuses to be overwritten once it
+holds labels**, and the refusal happens before `sample.json` is rewritten, so the frozen
+sample and the labels can never drift apart.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -1268,6 +1328,23 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   `thinking_level=LOW` (▷ $0.0898)**, 0 lines of package code changed. Source: `P2.F1` result
   (2026-08-20), findings N80–N83.
 
+- **`qa`** — **how this repo measures extraction accuracy, landed as runnable machinery
+  (P2.S9 Phase A; the measured numbers follow at Phase B).** `mijual.evalset` +
+  `evalset/{sample.json,sheet.csv,LABELING.md}`: a **deterministic** (seed 20260907,
+  per-stratum seeded shuffle over a sorted pool) stratified sample of **344 (filing, field)
+  rows over 99 filings**, hand-labelled by the operator, scored at **0 OpenDART requests and
+  0 LLM calls** with no database in the read-back path (the sample is frozen to JSON, so a
+  label stays meaningful after the corpus moves — N55/N83). The method itself is the durable
+  part: **both error directions are measured** — precision of gate-passed/`tbd` fields *and*
+  the gate's **over-blocking** rate on the rows it blocked, because a gate can buy any
+  precision figure by blocking more (N76 priced one such pattern at ▷ 49.2억원) — rates are
+  computed **only** on the random draw with the deliberately over-sampled hard cases reported
+  case by case, and every rate carries a **95 % Wilson** interval. Also durable and available
+  before any label: the corpus-wide **gate-block rate is 12.2 % (77/633)** and ranges from
+  **0 %** (증권발행실적보고서 figures — no model reads them) through **4–8 %** (① prose) to
+  **44 %** (③, mostly N46's superseded-API scoping, not misreading). Source: `P2.S9` result,
+  findings N84–N88.
+
 ## Open Questions
 
 - ~~**O-1:**~~ **CLOSED by the operator (2026-08-19), recorded at `P2.S4`.** The **daily OpenDART
@@ -1293,9 +1370,15 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   structurally `None` so the superseded schedule cannot leak (경남제약 `20260623000409`, 에이전트AI
   `20260619000455`). ▷ The ③/② generalisation of the detector has **no case in this corpus**: it is
   unit-tested on a constructed `회사합병 결정 → 회사합병 철회` row and untested against real data.
-- **O-3 (`P2.S9`):** the ~100-filing hand-labelling is **operator co-work** — expect a real `pending`
-  gate. Decide the labelling format and the per-field precision definition before asking for the
-  operator's time.
+- **O-3 (`P2.S9`) — GATE RAISED, waiting on the operator (2026-08-20).** Its two
+  prerequisites are answered: the **format** is `evalset/sheet.csv` (one row per
+  `(rcept_no, field)`, labels `correct`/`wrong`/`partial`/`skip` in column A, optional
+  corrected value in column B; instructions in `evalset/LABELING.md`), and the **precision
+  definition** is N84's — strict precision (`partial` counts as a miss, stated beside the
+  lenient figure) over **gate-passed/`tbd`** rows of the **random** draw only, with a 95 %
+  Wilson interval, reported beside the gate's over-blocking rate on the rows it blocked.
+  Cost to the operator: **344 rows / 99 filings / ▷ 75–95 minutes** (N88 lists the two ways
+  to shrink it). Closes when the labels return and Phase B computes the report.
 - ~~**O-4:**~~ **CLOSED by `P2.S2` (N24).** KONEX (`corp_cls=N`), 2026-01-01~08-19: 30 events, **0
   exposable rights** → no coverage conclusion changes; KOSPI+KOSDAQ stays the frame. `corp_cls=E`
   (기타) was not probed and is judged not worth the requests.
