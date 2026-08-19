@@ -84,6 +84,76 @@ Systematic, not a probe: **1,002 distinct cached OpenDART requests** over 2026-0
 
 **Q7 addendum (for P2/P3):** ▷ 분할합병 (`cmpDvmgDecsn`) and 주식교환·이전 (`stkExtrDecsn`, evidence `20260522000296`) carry the same 매수청구 field shape as 합병 — if ③ ships, treat them as the same rights type on a different endpoint rather than a new type; roughly doubles ③'s universe at low marginal cost.
 
+### Findings from `P1.S3` (daker.ai + domain recon, 2026-08-19)
+
+**Sources** (all unauthenticated, read-only, fetched 2026-08-19 ~09:45–10:00 UTC). `[BRIEF]` = the official brief JSON `https://daker.ai/api/hackathons/2026-finance-ai-challenge` (the HTML page is a JS SPA and renders empty to plain fetch; the JSON is the same content the page shows). `[BOARD]` = `https://daker.ai/api/hackathons/55243a57-4641-442e-a53b-f62772cd64c5/posts` and `.../posts/<post_id>/comments`. `[TPL]` = the two 양식 files now committed at `docs/reference/challenge/submission/` (see its `README.md` for URLs + SHA-256). `[WHOIS]` = `whois -h <registry> <domain>`.
+
+**F17 — Q5 ANSWERED (a): a solo entrant is treated identically to a team; there is no 개인/팀 track, handicap, or extra step.** `[BRIEF]` `eligibility: "anyone"`, `minTeamSize: 1`, `maxTeamSize: 4`; 참가자격 = 전 국민. Rules: "개인 참가 방법 : 팀 신청 없이 자유롭게 참여 가능합니다." Judging (`evaluationCriteria`) makes no distinction. The 팀빌딩-only step ('팀장이 팀으로 전환' before submitting) simply does not apply solo. Consequences that *are* solo-specific: 상금 is paid to the 대표자 anyway (consent §13), and every attendance obligation lands on one person (F21). **Registration hard gate: a `dacon.io` account is required** (general rules 나-2-A-i, 나-6-A: one account only) and `registrationDeadline` = **2026-09-07 10:00 KST — the same instant as the submission deadline**, so 참가 신청 is not a day-of formality. ▷ Minor unresolved detail: both 양식 require a `팀명` "등록된 팀명과 동일하게 작성" — what a solo entrant writes there is only visible on the login-gated 제출 탭 (F23).
+
+**F18 — Q5 ANSWERED (b): the deliverable set is fixed, the 양식 are mandatory and now in-repo, and NO demo video is required — or even accepted.** Three submissions `[BRIEF]` rules + `stages`:
+
+| # | What | Deadline (KST) | How |
+|---|---|---|---|
+| ① 공모전 기획서 | 기획서 **PDF**, from 첨부1 양식 | 2026-09-07(월) 10:00 | 대회 페이지 [제출 탭] → [공모전 기획서 제출] |
+| ② MVP 산출물 | 기능명세서 **PDF** (from 첨부2 양식) **+ 웹서비스 URL** | 2026-09-07(월) 10:00 | [제출 탭] → [MVP 산출물 제출] |
+| ③ 최종 산출물 (발표 진출자만) | 발표자료 **PDF** (자유 양식) + 소스코드 **ZIP** | 2026-10-08(목) 23:59 | e-mail `dacon@dacon.io` |
+
+The MVP stage's form schema is decisive on the video question: `linkConfig` = `{demo: enabled+required, github: disabled, youtube: disabled}`. So the only link accepted is the demo URL — **no video, no GitHub link** at 예선. (Source code is only ever handed over at ③, by e-mail, if selected.) 발표 is PDF-only; **PPT is banned** ("기술적 오류 방지"). 기획서 is held 비공개 during 예선. **Both 양식 (.hwpx) are downloaded to `docs/reference/challenge/submission/`, and their full required section structure is extracted and recorded in that folder's `README.md`** — `.hwpx` is a ZIP of OWPML XML and reads fine with the stdlib, so nothing here is blocked on Hangul; only *writing* the filled files is a P4 concern. Two structural requirements bind P3, not just P4: 첨부2 §2 wants a `관련 화면` per feature, and 첨부2 §5 wants a judge-executable verification script (`테스트 계정, 샘플 입력값, 예상 결과`, browser restrictions, MVP limitations) — i.e. **the service must be verifiable by a stranger, unattended, from the URL alone.** 첨부1 §5 explicitly asks how the **생성형 AI 모델** is used and what role it performs — §3.6's AI-role architecture answers this question directly, and the 금지선 (no fine-tuning framing) costs nothing here because the template asks about *use*, not training.
+
+**F19 — Two 결격-grade clauses on the deployed URL. This is the single hardest external constraint on P3/P4, and it is pass/fail, not scored.** (a) `[BRIEF]` rules: "제출된 웹서비스 URL은 2026. 9. 7(월) 11:00 ~ 9. 11.(금) 23:59 동안 접근 가능하여야 하며, **접근 불가 시 결격 사유에 해당합니다**" — a ~5-day continuous uptime window, all of it on working days (월~금). (b) `[BOARD]` DACON.GM 2026-08-19: "배포 URL은 최종 제출 이후 변경된다면 불이익이 발생할 수 있습니다. (**제출한 URL만 인정됩니다**)" — the submitted URL is frozen at submission. Together: whatever URL goes into the form at 9/7 10:00 must be the final one *and* must survive unattended through 9/11 23:59. Consequences: (i) the URL must be decided **before** the deployment freeze, which puts a hard deadline on the domain decision (F22); (ii) deploying to the operator's own `ssh h` box (handoff §108) makes a weekday outage a *disqualification*, so P4 must budget for uptime monitoring and a rollback/standby path; (iii) the 유의사항 also warn that a missing 제출물 can be 결격 — and note the platform does **not** enforce it, since the MVP stage config has `pdfConfig.required: false` even though the rules require 기능명세서 PDF. Do not let the form's leniency stand in for the rules.
+
+**F20 — The 게시판 is fully public and unauthenticated, there are ZERO official 공지, and every official answer is a DACON.GM comment on a participant post.** `[BOARD]` `counts` = `{all: 27, notice: 0, general: 27}`; 27 posts, none pinned. So the amendments check has a clean answer: **no notice has amended the rules to date.** The brief itself is edited in place (`updatedAt: 2026-08-18T20:21:02.841Z`, i.e. the day before this recon) with no changelog and no notice — ▷ so re-reading `[BRIEF]` + `[BOARD]` shortly before 9/7 is a real P4 task, not a nicety. Official DACON.GM answers that bind or unblock us:
+
+1. **Commercial LLM APIs are explicitly allowed** — "gpt 등 상용 api를 사용하여 agent를 구현해도 되는지" → "가능합니다. 다만 발생되는 비용은 참가자가 부담해야합니다." (2026-08-19). Removes any doubt about the §3.6 architecture.
+2. **Web only.** "서비스가 웹 서비스로 제공되어야합니다. 모바일 앱 형태의 서비스는 본 대회에서 요구하는 취지와 다릅니다." (2026-08-14). But **mobile-first responsive web is explicitly fine** — "웹 브라우저에서 URL로 접속·이용할 수 있는 웹 서비스라면 모바일 환경을 우선으로 설계한 반응형 웹 서비스도 제출 가능은 합니다." (2026-08-19). Direct input to P3's design.
+3. **가상(더미) 데이터 is allowed** if disclosed, and **공개/공공 API 연동 is allowed** where legally unconstrained (2026-08-19). Read the other way: since 미주알 runs on *real* DART filings, it clears a bar many entrants will only meet with dummy data — a differentiator for 첨부1 §4 차별성, at zero disclosure burden.
+4. **No page limit** on 기획서/기능명세서 as long as the given 양식 is preserved, and 시각자료 may be added (2026-08-19).
+5. **Draft/final is a real two-state workflow** — a 최종 제출 can be reverted to 임시 저장 by DACON on request, but "수정 이후 대회 종료전까지 **다시 최종 제출 버튼을 눌러야합니다**" (2026-08-19). P4 checklist item: pressing 최종 제출 is a distinct act from uploading.
+6. Whether MVP data must be live rather than dummy is "참가자 선택 사항 … 이는 평가 요소로 반영될 수도 있습니다 (구현 완성도 등)" — real data is not required but can score.
+
+**F21 — Q5 ANSWERED (c): the full timeline vs the operator's constraints. One sharp conflict, one 결격 risk, one contingent conflict.** Dates from `[BRIEF]` `stages` (UTC in the JSON, converted to KST; every weekday cross-checks against the Korean prose — 9/7 월, 9/11 금, 10/8 목, 10/13 화):
+
+| Date (KST) | Event | Source |
+|---|---|---|
+| 08-24 (월) | ▶ operator: A2 구직 서류 마감 | handoff §29 |
+| 08-31 (월) | ▶ operator: 창플 미라클 2.0 계약 종료 | handoff §29 |
+| 09-01 (화) | ▶ operator: **입사 가능일** | handoff §29 |
+| **09-07 (월) 10:00** | 참가 신청 마감 **AND** 기획서 + MVP 산출물 마감 | `registrationDeadline`, stages 1–3 |
+| 09-07 11:00 → **09-11 (금) 23:59** | 웹서비스 URL 접근 가능 필수 — 결격 window | rules |
+| 09-07 → 09-22 | 본선 심사 = 내부 비공개 심사위원단 평가 (100%), 사전 검토 통과분 전체 대상 | `evaluationCriteria` |
+| 09-22 (화) 10:00 | 발표 심사 대상 명단 발표 (상위 **11팀 내외**, 1.5배수) | stage 7 |
+| 09-23 (수) → 10-08 (목) 23:59 | 발표 진출자 최종 산출물 제출 기간 | stage 8 |
+| **10-13 (화) 10:00–16:00** | **오프라인 발표 심사** — PT 15분 + Q&A 5분 | stage 10, `evaluationCriteria` |
+| 10-23 (금) 10:00 | 최종 결과 발표 / 대회 종료 | stage 11, `competitionEndDate` |
+
+Conflicts, stated as facts for the operator to weigh in S2 — not resolved here:
+
+1. **Sharpest: the decisive build week (09-01 → 09-07 10:00) is exactly the week employment could start.** 입사 가능일 is 9/1 and the deadline is 9/7 10:00 — a Monday *morning*, so 9/6 (일) is the last full working day and there is no morning-of buffer. Handoff §29 already sizes real capacity at 2~3 weeks; a job starting on/near 9/1 would take the last third of that at full-time cost, during onboarding.
+2. **결격 risk overlapping the same window:** 09-07 11:00 → 09-11 23:59 is Mon–Fri (F19). If the operator is at a new job that week, the service must run unattended on `ssh h` through five business days with a disqualification as the penalty for a single outage. This raises P4's monitoring requirement regardless of the employment decision.
+3. **Contingent conflict: 10-13 (화) is a weekday and the 발표 심사 is offline, 10:00–16:00** — effectively a full day of leave, ~6 weeks into a new job, plus prep. Solo means no one can stand in. Related: DACON.GM confirmed for the **시상식** that "시상식은 팀 구성원이 참석해야합니다" (2026-07-31, i.e. no 대리인); the 발표 심사 is an in-person PT so attendance is inherent. Venue is not yet announced ("발표 심사 대상자에 한해 추후 자세한 일정 안내 예정") — ▷ travel cost unknown.
+4. **Low-friction stretch:** 09-23 → 10-08 (발표자료 PDF + 소스 ZIP) is a 2-week window for work that is mostly packaging; evenings/weekends are plausible even if employed.
+5. **The strategic tension is the operator's alone:** the phase's whole purpose is 재취업 (handoff §25) and 입상 confers 금융보안원 입사 지원 우대 (handoff §18) — so an early job start protects the goal directly while threatening the instrument, and the reverse. S2 relays this; it does not decide it.
+
+**F22 — Q6 ANSWERED: `mijual.ai` is available, but the .ai economics are worse than assumed, and `mijual.com` cannot be acquired in time under any scenario.** `[WHOIS]` verified directly against each registry:
+
+| Domain | Registry answer | Status |
+|---|---|---|
+| `mijual.ai` | `whois -h whois.nic.ai` → **`Domain not found.`** | **AVAILABLE** |
+| `mijual.kr` | `whois -h whois.kr` → "상기 도메인이름은 등록되어 있지 않습니다." | **AVAILABLE** |
+| `mijual.co.kr` | `whois -h whois.kr` → same | **AVAILABLE** (bonus, not previously checked) |
+| `mijual.io` | `whois -h whois.nic.io` → `Domain not found.` | AVAILABLE (bonus) |
+| `mijual.com` | `whois -h whois.verisign-grs.com` | **REGISTERED** — GoDaddy, created 2018-08-28, updated 2024-08-29, **Registry Expiry 2026-08-28T11:06:44Z**, `clientDelete/Renew/Transfer/UpdateProhibited`, NS `ns75/ns76.domaincontrol.com` |
+
+Two corrections to the going-in assumptions:
+
+- **.ai carries a 2-year minimum term, so it is a ~$165 upfront commitment, not "~$80/yr".** Porkbun lists `.ai` at **$82.70** register/renew with the explicit note "**.AI Domains require a minimum term of 2 years for registration and renewals**" (`https://porkbun.com/tld/ai`); Dynadot's `.ai` page carries the same 2-year minimum. The .ai registry raised wholesale to **$160 per 2-year term on 2026-03-05** (Domain Name Wire, 2026-02-02), which is consistent with ~$80/yr retail. ▷ The exact checkout total was not verified — no purchase, no cart, no account was touched. ▷ Registrar spread runs roughly $75–$112/yr.
+- **`mijual.com` is NOT a lapsing parked domain — it is in active use, and the expiry-watch idea is dead for this deadline.** `http://mijual.com` 301s to **`https://blog.naver.com/tou2me`** (verified: `curl -L` → HTTP 200, final URL that blog), served through GoDaddy domain forwarding (`3.33.152.147`, `15.197.142.173`). An owner actively forwarding it to their live blog is a likely renewer. Independently of intent, the ICANN gTLD lifecycle makes the timing impossible: expiry → renewal grace (**up to 45 days**) → **30-day** Redemption Grace Period → **5-day** pendingDelete → drop. Even with a zero-day renewal grace, the earliest conceivable drop for a 2026-08-28 expiry is **2026-10-02**, i.e. **25 days after the 9/7 submission deadline**; with the full grace it is mid-November. **`mijual.com` therefore cannot be the submitted URL. Remove it from the decision.**
+- `.kr` / `.co.kr` are cheap and instant: **22,000원/yr + VAT** at 도레지 (`https://www.doregi.com/cs/price.php`); ▷ domestic registrars (가비아·후이즈·카페24) sit in a comparable ~19,000–29,000원 band.
+
+**Framing the decision (S2's operator round-trip): a custom domain is a branding choice, not a submission requirement.** The rules demand only "실행 가능한 링크"; a platform hostname (Vercel/Fly/Render/…) satisfies them literally. What makes it *time-critical* is F19: the submitted URL is frozen at 9/7 10:00 and must stay reachable, so if a branded URL is wanted at all it must be **bought and wired before the deployment freeze**. That is the actual deadline on this decision — not 9/7, but whenever P4 freezes deploy.
+
+**F23 — Method and honest gaps.** Everything above came from unauthenticated endpoints; **no account was created, no form submitted, nothing purchased** (slice boundary). What is therefore *not* verified: (a) the login-gated **[제출 탭]** — the real form fields, file size limits, the solo `팀명` question (F17), and whether 최종 제출 has extra steps; (b) whether any *older* version of the brief said something different — the record is edited in place with no changelog, so `updatedAt 2026-08-18` is all that is knowable; (c) the .ai checkout total and whether any registrar waives the 2-year minimum; (d) the 발표 심사 venue and travel cost, which the organizer has not published. Items (a) and (b) are operator/P4 work; (c) is the operator's at purchase time. Also: the 게시판 contains 19 auto-generated "요약: …" marketing posts alongside the 8 genuine Q&A threads — **treat only `DACON.GM` comments as official**; the 요약 posts are third-party content and carry no authority.
+
 ## Constraints
 
 Binding on every P1 slice (handoff §7 + the intent):
@@ -103,6 +173,8 @@ _Running list; the `P1.REVIEW` slice consolidates these into doc versions on a p
 
 - (none from `P1.DECOMP` — the probe findings above are provisional decomposition intel. The first durable note is expected from `P1.S1` against `data` (extraction-target field matrix + DART source constraints), then `P1.S2` against `decisions` (confirmed MVP rights scope).)
 - **`data`** — DART as the sole MVP source is characterised: per-rights-type structured/`본문-label`/`본문-prose` field matrix for the 3 MVP types (durable artifact `docs/reference/dart/field-matrix.md`), the 10-field §3.6 layer-1 extraction-target list with its 결정론 게이트, the 정정공시 pairing method + diff-target fields, and the version/collection constraints that shape P2's entity keys (detail endpoints return newest-version-only, `rcept_no` is version-mutable, event key must be `(corp_code, subtype, original_rcept_dt)` with per-version snapshots). Source: `P1.S1`.
+- **`operations`** — the challenge's submission + deployment rules are now durable ship truth: the three deliverables with their KST deadlines (기획서 PDF and 기능명세서 PDF + 웹서비스 URL at 2026-09-07 10:00 via [제출 탭]; 발표자료 PDF + 소스 ZIP at 2026-10-08 23:59 by e-mail, 발표 진출자만), **no demo video and no GitHub link** (MVP form accepts a demo link only), the mandatory .hwpx 양식 → PDF conversion with both templates + their required section structure committed at `docs/reference/challenge/submission/`, and the two **결격-grade** deploy constraints — the submitted URL is frozen at submission ("제출한 URL만 인정됩니다") and must stay reachable 09-07 11:00 → 09-11 23:59 unattended, which makes uptime monitoring and a rollback path a P4 requirement rather than polish. Plus the rules the organizer confirmed on the 게시판: web-only (mobile-first responsive OK), commercial LLM APIs allowed at the entrant's cost, and 최종 제출 as an explicit act separate from upload. Source: `P1.S3`.
+- **`decisions`** — domain fact sheet for the mijual URL decision: `mijual.ai` / `.kr` / `.co.kr` / `.io` all verified AVAILABLE by direct registry whois, `.ai` costs ~$83/yr but with a **2-year minimum term** (~$165 upfront) vs 22,000원+VAT/yr for `.kr`, and **`mijual.com` is struck from the options** — it is actively forwarding to a live Naver blog and the ICANN expiry lifecycle puts its earliest possible drop at 2026-10-02, weeks after the deadline. Also the framing: a custom domain is a branding choice, not a submission requirement (any reachable link qualifies), but the URL freeze means it must be bought and wired **before the deploy freeze**. The purchase decision itself is the operator's and lands in `P1.S2`'s round-trip. Source: `P1.S3`.
 
 ## Open Questions
 
