@@ -1,4 +1,4 @@
-"""CLI for the hand-labelled evalset — 0 OpenDART requests, 0 LLM calls.
+"""CLI for the labelled evalset (judge recorded per round) — 0 OpenDART requests, 0 LLM calls.
 
     # 1. draw the sample from the corpus and write the operator's sheet
     .venv/bin/python -m mijual.evalset sample

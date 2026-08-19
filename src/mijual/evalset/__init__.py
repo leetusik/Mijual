@@ -1,4 +1,4 @@
-"""``mijual.evalset`` — the hand-labelled accuracy measurement (P2.S9).
+"""``mijual.evalset`` — the labelled-evalset accuracy measurement (P2.S9).
 
 The phase's last evidence deliverable: a deterministic, stratified sample of the
 corpus, a sheet the operator labels by hand, and a report that turns those labels
