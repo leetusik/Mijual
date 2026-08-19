@@ -30,9 +30,9 @@ __all__ = [
 #: Local docker Postgres from ``compose.yaml`` (host port 5433 keeps a system
 #: Postgres on 5432 out of the way).
 DEFAULT_DATABASE_URL = "postgresql+psycopg://mijual:mijual@localhost:5433/mijual"
-#: Reserved for P2.S6 (Celery beat broker); nothing in this slice connects to it.
+#: Celery broker + result backend and the scheduler's run-lock store (P2.S6).
 #: Host port 6380 matches ``compose.yaml`` and keeps the machine's own
-#: (installed, currently stopped) redis-server on 6379 out of the way.
+#: redis-server (and another project's container) on 6379 out of the way.
 DEFAULT_REDIS_URL = "redis://localhost:6380/0"
 
 

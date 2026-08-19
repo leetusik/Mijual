@@ -12,8 +12,13 @@ venv/
 *.egg-info/
 
 # P2 pipeline: on-disk OpenDART response cache (regenerable; byte-compatible
-# with the P1 spike cache below).
+# with the P1 spike cache below). Also holds the scheduler's file-lock fallback
+# and (with `beat -s var/celerybeat-schedule`) beat's own last-run state.
 var/
+
+# P2.S6: celery beat's shelve DB when it is started without `-s var/...`.
+celerybeat-schedule*
+celerybeat.pid
 
 # Node
 node_modules/

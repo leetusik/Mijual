@@ -576,6 +576,65 @@ that would split those keys (`hint_split_evidence`); minting the missing events 
 decision (N32), so it is handed forward — a good `defer-job` candidate worth ~1 event of
 judging-window value per collided key.
 
+### Appended by `P2.S6` (2026-08-20)
+
+**N52 — the pipeline is now a job, and the topology is fixed: `collect → bodydoc → extract →
+gates`.** `mijual.scheduler` wraps the four stages' *run functions* (imports, never subprocesses) as
+five Celery tasks — `mijual.daily_pipeline` plus one per stage (`mijual.collect_recent`,
+`mijual.bodydoc_sync`, `mijual.extract_new`, `mijual.gates_run`) — on the Redis `compose.yaml`
+already reserved (host **6380**, `scheduling` profile, broker + result backend + lock store). Beat
+runs `daily_pipeline` at **07:30** (before the open) and **19:30 KST** (after 공시 접수 closes at
+18:00) over a rolling **14-day** window, plus a **Sunday 04:30, 90-day** straggler pass. Timezone is
+**`Asia/Seoul` with `enable_utc=False`**, and the window is anchored on `mijual.calc.today_kst`, not
+on the host clock — a worker in UTC must not poll yesterday's Korean calendar day. Order is a data
+dependency, not a preference (each stage consumes what the previous one persisted), so
+`daily_pipeline` runs the four **in-process in order** rather than as a Celery `chain`: one lock has
+to span the whole run. `BEAT_SCHEDULE` is a plain dict — **`P2.S7` adds its ② task and one entry
+beside these**, and should pass `extract_rights` nothing (② needs zero LLM, N6).
+
+**N53 — repetition is safe, overlap is not, and that is the whole reason there is a lock.** N14/N25
+proved a re-run adds nothing and costs almost nothing; two *concurrent* runs are a different failure
+— both see "no 본문 held for this version yet" and both fetch it, and spent quota is the one thing an
+idempotent upsert cannot repair. So every corpus-writing entry point (the pipeline task, each stage
+task, and the inline `once`) takes the **same** lock `mijual:lock:pipeline`: Redis `SET NX PX`
+released by **compare-and-delete** (a run that overran its TTL must not delete its successor's lock),
+degrading to a single-host `O_EXCL` file lock under `var/locks/` when no broker answers, with an
+expired lock stolen and the steal reported. A run that cannot take it returns **`skipped`** — it does
+not wait and does not run anyway. Measured live: two `daily_pipeline` tasks dispatched together on a
+2-slot worker, one ran, the other returned `skipped: true, requests: 0, calls: 0`.
+
+**N54 — measured steady-state cost of a scheduled run, and where it actually goes.** A live 3-day
+window cost **19 requests** (54 list rows → 23 targets → 1 new event) and **0 LLM calls**: extraction
+skips every version whose fields are already stored (N42), so the daily marginal LLM cost is normally
+**zero** and only genuinely new prose is paid for. The stage that keeps spending is **bodydoc** — the
+`<CORRECTION>` backfill still has a queue (403 of 803 candidates parsed after this slice, up from
+360) and drains at its `bodydoc_max_documents` cap per run, 40 requests at a time. Budgets are
+explicit per stage (daily: collect ≤ 500 req, bodydoc ≤ 200 req, extract ≤ 60 calls; weekly 1500 /
+600 / 60) and exhaustion is a **reported status, not an exception** — demonstrated with a 3-request
+ceiling: `본문 +3 | 3 req — BUDGET EXHAUSTED`, exit 0, chain continued.
+
+**N55 — N47's "4 withdrawals" is a floor measured on the documents then held, not a property of the
+corpus.** The scheduled 본문 backfill drained 43 more documents and the same unchanged detector found
+**two more real withdrawals** — 베노티앤알 `20260211001005` and 앱튼 `20260213002873`, both with 항목
+`-` and a 정정 후 naming the filing-level decision (the 코퍼스코리아 shape). Distinct withdrawn
+filings **4 → 6**; both sit on `unpaired_correction` placeholders, so exposure did not move (35
+exposable events / 157 renderable fields / 275-4-5-20 field verdicts, all unchanged). Two
+consequences: (a) any 철회 count must be quoted **with the document coverage it was measured at**, and
+`P2.S9`'s evalset should draw after a backfill pass, not before; (b) the gate report counts **flagged
+events**, and one withdrawn `rcept_no` can sit under two event keys (N21's residue), so 7 flagged
+events = 6 distinct filings.
+
+**N56 — `python -m mijual.scheduler once` is the reusable path, and it is broker-free.** The same
+`run_pipeline()` the tasks call, synchronously: `--offline` runs all four stages at **0 requests / 0
+calls** (extraction builds every prompt and sends none) and two consecutive runs print byte-identical
+stage lines; `--stages`, `--window`/`--bgn`/`--end`, `--max-requests`, `--max-calls` and `--no-lock`
+narrow it. This is the ops fallback, the testable path, and what **`P2.S7`/`P2.S8` should reuse**
+instead of re-deriving a run loop. It also makes N34's rule ("finish a budget-capped live run with an
+offline pass over the cache") one command — the 본문 stage passes `fetch=True` even offline and lets
+the *client* decide, so a cached-but-unpersisted document is adopted rather than reported missing.
+Ops footnote paid for once: start beat with `-s var/celerybeat-schedule`, or it drops its shelve DB in
+the repo root (now gitignored).
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -757,6 +816,26 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   D-day in KST, inclusive windows, floored 단수주, Decimal 원 rounded once), which is handoff §3.6's
   *계산은 결정론* clause in code and the arithmetic `P2.S8` inherits. Source: `P2.S5` result
   (2026-08-20), findings N44/N48/N50.
+
+- **`architecture`** (same note as the S1–S5 entries) / **`operations`** — **the job topology landed
+  (P2.S6): the pipeline runs on a schedule, and the schedule is part of the durable stack
+  description.** `mijual.scheduler` = Celery beat + worker on the compose Redis (host 6380,
+  `scheduling` profile — broker, result backend and lock store) running
+  **`collect → bodydoc → extract → gates`** in that fixed order (each stage consumes what the
+  previous persisted), as `mijual.daily_pipeline` plus one task per stage. Schedule:
+  **07:30 and 19:30 KST daily over a rolling 14-day window, Sunday 04:30 over 90 days**, with
+  **timezone `Asia/Seoul` explicit** (`enable_utc=False`) and the window anchored on KST rather than
+  the host clock. Two operational invariants belong in the doc: (a) **every stage runs under an
+  explicit ceiling** — collect ≤ 500 requests, bodydoc ≤ 200, extract ≤ 60 LLM calls per run
+  (weekly 1500/600/60) — and a budget-exhausted stage is a *reported status*, not a failed run;
+  (b) **one lock, `mijual:lock:pipeline`, on every corpus-writing entry point**, because re-running a
+  window is free (N14/N25) but two concurrent runs double-fetch, and spent quota is the one thing
+  idempotent upserts cannot repair. Restates the P2→P3 boundary from the scheduling side: **nothing in
+  the scheduler is reachable from a request path**, the board renders persisted rows filtered by
+  `Event.exposure_state`, so a dead worker leaves it **stale, never dark** (결격). Also record the
+  broker-free fallback `python -m mijual.scheduler once [--offline]` — the same code path, 0
+  requests / 0 calls offline, and the tool `P2.S7`/`P2.S8` reuse. Source: `P2.S6` result (2026-08-20),
+  findings N52–N56.
 
 ## Open Questions
 

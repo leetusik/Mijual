@@ -14,6 +14,12 @@ dependencies = [
     # it, and only when it actually calls: collection, parsing and the tests run
     # without a credential and without this package resolving anything.
     "google-genai>=1.0",
+    # P2.S6 — scheduled collection. `celery` is imported only by the worker, beat
+    # and `python -m mijual.scheduler schedule`; `redis` only by the run lock and
+    # as the broker/backend transport (compose.yaml, host 6380). The inline
+    # `python -m mijual.scheduler once` path needs neither to be running.
+    "celery>=5.4",
+    "redis>=5.0",
 ]
 
 [project.optional-dependencies]
