@@ -10,6 +10,10 @@ requires-python = ">=3.13"
 dependencies = [
     "sqlalchemy>=2.0",
     "psycopg[binary]>=3.2",
+    # P2.S4 — §3.6 layer 1 (Gemini schema extraction). Only the extractor imports
+    # it, and only when it actually calls: collection, parsing and the tests run
+    # without a credential and without this package resolving anything.
+    "google-genai>=1.0",
 ]
 
 [project.optional-dependencies]

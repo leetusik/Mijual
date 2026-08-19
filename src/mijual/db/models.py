@@ -20,8 +20,11 @@ schema evolves through ``create_all`` / drop-and-recreate because every row is
 re-collectable from the response cache or the API. Revisit only if P3 needs
 migrations against data that cannot be rebuilt.
 
-Extraction, gate and reason-code tables are **not** pre-designed here — they
-belong to ``P2.S4``/``P2.S5``.
+``P2.S4`` added the **extraction** side (:class:`ExtractionCall` /
+:class:`Extraction`) at the bottom of this module: what the LLM read, where in
+the stored snapshot it read it, and what the call cost. The gate columns on
+:class:`Extraction` are declared nullable and unused here — they are ``P2.S5``'s
+to fill.
 """
 
 from __future__ import annotations
@@ -32,10 +35,12 @@ import re
 from datetime import date, datetime, timezone
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
     Enum,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -53,6 +58,8 @@ __all__ = [
     "Corp",
     "CorrectionKind",
     "Event",
+    "Extraction",
+    "ExtractionCall",
     "FilingVersion",
     "RightsType",
     "Snapshot",
@@ -375,3 +382,160 @@ class Snapshot(Base):
 
     def __repr__(self) -> str:
         return f"<Snapshot {self.source} {self.content_sha1[:8]} {self.byte_size}B>"
+
+
+# ---------------------------------------------------------------------------
+# P2.S4 — the extraction side (§3.6 layer 1)
+# ---------------------------------------------------------------------------
+class ExtractionCall(Base):
+    """One LLM call: what it read, what it returned, what it cost.
+
+    Kept separate from :class:`Extraction` because a call reads a whole document
+    and yields **several** fields, while a gate verdict, a citation span and a
+    re-run all belong to a single field. Splitting them means the money story
+    (calls, tokens, ▷ cost) is auditable per run without duplicating it per
+    field, and a field re-extracted under a new prompt version does not lose the
+    accounting of the call that produced the old one.
+
+    ``response`` keeps the model's parsed payload verbatim — including any quote
+    that failed to locate — because *what the model claimed* is evidence, and a
+    span this package refused to trust must still be inspectable afterwards.
+    """
+
+    __tablename__ = "extraction_call"
+    __table_args__ = (Index("ix_extraction_call_version", "filing_version_id", "task"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("event.id", ondelete="CASCADE"), index=True
+    )
+    filing_version_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("filing_version.id", ondelete="CASCADE")
+    )
+    #: Which prompt this was — ``r1_prose``, ``r3_prose``, ``correction``, ``probe``.
+    task: Mapped[str | None] = mapped_column(String(40))
+    #: ``ok`` | ``error`` | ``invalid_json`` | ``budget`` — plain VARCHAR (N16/N27).
+    status: Mapped[str | None] = mapped_column(String(20))
+    error: Mapped[str | None] = mapped_column(Text)
+
+    model: Mapped[str | None] = mapped_column(String(60))
+    model_version: Mapped[str | None] = mapped_column(String(60))
+    schema_version: Mapped[str | None] = mapped_column(String(20))
+    prompt_version: Mapped[str | None] = mapped_column(String(20))
+    #: ``document`` | ``window:<anchor>`` | ``section:<title>`` — the input regime
+    #: (field-matrix §5: a 증권신고서 is never fed whole).
+    input_scope: Mapped[str | None] = mapped_column(String(120))
+    input_chars: Mapped[int | None] = mapped_column(Integer)
+
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer)
+    thoughts_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    total_tokens: Mapped[int | None] = mapped_column(Integer)
+    #: ▷ estimate from a published rate card, not a billed figure.
+    cost_usd: Mapped[float | None] = mapped_column(Float)
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    attempts: Mapped[int | None] = mapped_column(Integer)
+
+    response: Mapped[dict | list | None] = mapped_column(JSONBody)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    def __repr__(self) -> str:
+        return f"<ExtractionCall {self.task} {self.status} {self.total_tokens}tok>"
+
+
+class Extraction(Base):
+    """One extracted field of one filing version, with its citation span.
+
+    Identity is ``(filing_version_id, field_key, schema_version)``: re-running the
+    extractor under the same schema **updates in place** (a re-run never
+    duplicates a row), while bumping ``schema_version`` records a new reading
+    beside the old one instead of overwriting evidence.
+
+    The span is **never** taken from the model. ``span_start``/``span_end`` are
+    resolved deterministically by locating the model's verbatim ``quote`` in the
+    stored snapshot through :mod:`mijual.bodydoc`; a quote that cannot be located
+    leaves them ``NULL`` with ``span_status='unresolved'`` — recorded, never
+    silently promoted.
+
+    The ``gate_*`` columns are ``P2.S5``'s and are nullable and unset here, so
+    the gate layer can attach a verdict + reason code without a redesign (and a
+    richer per-gate history, if it needs one, can still be a separate table).
+    """
+
+    __tablename__ = "extraction"
+    __table_args__ = (
+        UniqueConstraint(
+            "filing_version_id", "field_key", "schema_version", name="uq_extraction_field"
+        ),
+        Index("ix_extraction_event_field", "event_id", "field_key"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id", ondelete="CASCADE"), nullable=False
+    )
+    filing_version_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("filing_version.id", ondelete="CASCADE"), nullable=False
+    )
+    #: The document snapshot the span points into — a span is only meaningful
+    #: against the exact bytes it was located in.
+    snapshot_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("snapshot.id", ondelete="SET NULL")
+    )
+    call_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("extraction_call.id", ondelete="SET NULL")
+    )
+    #: Convenience for reports; the version is the authority.
+    rcept_no: Mapped[str | None] = mapped_column(String(14))
+
+    #: Canonical key from :data:`mijual.extract.fields.FIELDS` (§7's 10 targets).
+    field_key: Mapped[str] = mapped_column(String(60), nullable=False)
+    #: ``extracted`` (the field is in the document) | ``absent`` (the model
+    #: reports it is not) | ``error`` (the call failed) — plain VARCHAR.
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="extracted")
+    #: Normalized value in the shape the field's schema declares.
+    value: Mapped[dict | list | None] = mapped_column(JSONBody)
+    #: One-line human rendering, for reports and for the operator's eyes.
+    value_summary: Mapped[str | None] = mapped_column(Text)
+    #: The model's verbatim 본문 quote — kept even when it fails to locate.
+    quote: Mapped[str | None] = mapped_column(Text)
+    span_start: Mapped[int | None] = mapped_column(Integer)
+    span_end: Mapped[int | None] = mapped_column(Integer)
+    #: ``resolved`` | ``unresolved`` | ``no_quote`` | ``not_applicable``.
+    span_status: Mapped[str | None] = mapped_column(String(20))
+    #: How the quote was located: ``exact`` | ``nospace`` | ``trimmed``…
+    locate_method: Mapped[str | None] = mapped_column(String(20))
+    #: ``BodyDocument.verify(span, quote)`` — strict normalized equality (N33).
+    span_verified: Mapped[bool | None] = mapped_column(Boolean)
+    input_scope: Mapped[str | None] = mapped_column(String(120))
+    model_note: Mapped[str | None] = mapped_column(Text)
+
+    model: Mapped[str | None] = mapped_column(String(60))
+    model_version: Mapped[str | None] = mapped_column(String(60))
+    schema_version: Mapped[str] = mapped_column(String(20), nullable=False, default="v1")
+    prompt_version: Mapped[str | None] = mapped_column(String(20))
+    extracted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    # -- P2.S5's room (declared, unused here) ------------------------------
+    #: ``pass`` | ``block`` — set by the gate layer, never by the extractor.
+    gate_status: Mapped[str | None] = mapped_column(String(20))
+    gate_reason_code: Mapped[str | None] = mapped_column(String(60))
+    gate_note: Mapped[str | None] = mapped_column(Text)
+    gate_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def span(self) -> tuple[int, int] | None:
+        if self.span_start is None or self.span_end is None:
+            return None
+        return (self.span_start, self.span_end)
+
+    @property
+    def is_citable(self) -> bool:
+        """Has a value **and** a span that re-slices to the quote (N33)."""
+        return self.status == "extracted" and self.span_status == "resolved"
+
+    def __repr__(self) -> str:
+        return (
+            f"<Extraction {self.field_key} {self.status} span={self.span} "
+            f"{self.rcept_no}>"
+        )

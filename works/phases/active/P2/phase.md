@@ -406,6 +406,92 @@ budget-interrupted live runs had fetched-and-cached but never persisted. Practic
 after a budget-capped live run, always finish with an offline pass over the cache before reading
 the numbers.
 
+### Appended by `P2.S4` (2026-08-19/20)
+
+**N35 — the Gemini integration facts, measured, not assumed.** Model id **`gemini-3.7-flash`** is
+real and reachable on the operator's credential (`models.get` → version `3.7-flash-08-2026`, 1M
+input / 64k output, 50 models visible). **The project preset applies a thinking level**: a probe
+call with **no** thinking config returned `thoughts_token_count=423` on a trivial prompt (565 on a
+small extraction, ~1.2k on a real one), so nothing in the code configures thinking — passing a level
+would silently override an operator-side decision (D-4). Structured output works through
+`response_json_schema`, **including union types (`["string","null"]`) and `enum` with `null`**, which
+is what lets a value schema say "not stated" instead of inventing a value. ▷ Rate card used for every
+cost figure in this phase: **$0.75 / $3.75 per 1M input / output tokens** (introductory through
+2026-12-31; $1.50 / $7.50 after), thinking tokens billed as output. Costs are **estimates**; token
+counts are measurements.
+
+**N36 — group the call by document, not by field: it is the slice's main cost lever.** All five ①
+prose fields live in the same `24. 기타 투자판단에 참고할 사항` block of a 2.6k–10k-char document, so
+one call reads all five. Per-field calls would have been **140 for ① alone** — most of the whole
+slice ceiling — to read the same text five times. The *response* stays one envelope per field
+(`present`/`value`/`quote`/`note`) and every stored row is per field, so nothing is lost. Whole-run
+effect: **100 calls, 983,529 tokens, ▷ $1.41** for 40 events.
+
+**N37 — the span is located, never trusted, and locating is free to redo.** The model returns a
+verbatim quote; `mijual.extract.locate` finds it in the stored snapshot through bodydoc's offset map
+(N33). **292 of 293 quotes located (99.7 %)**: 290 `exact` (so `doc.verify` is True), 2 after
+dropping a leading list marker the model re-rendered (`①` → `1)`), 1 **unresolved** — LB세미콘
+`20260730000278`, where the model **stitched three formulas from different paragraphs** into one
+quote. Each fragment is real; the concatenation is not in the document, so it is not a citation and
+is stored `span_unresolved` for the gate to block. Because location is a pure function of (quote,
+snapshot), `python -m mijual.extract relocate` re-derives every span for **0 calls** — improving the
+locator must never mean paying for the extraction again, and a re-collected snapshot that moved under
+a stored span makes its quote stop locating instead of pointing at the wrong characters.
+
+**N38 — never put the gate's reference value in the prompt.** §7's gate for 청약 취급처 is *"청약일
+must equal 본문 11. 청약예정일"*. Feeding 본문 11's parsed value into the prompt as "context" would let
+the model copy the answer, and the gate would then be checking the prompt against itself. So the
+extraction prompt carries **only the document**: no API values, no label values, no expected
+schedule. The deterministic layer stays the independent witness. (The 정정 prompt is the deliberate
+exception — there the deterministic 정정사항 rows are supplied **as ground truth to be normalised**,
+and the code checks the model against them.)
+
+**N39 — 철회 is invisible to the deterministic layer, and two exposable ① events are already
+withdrawn. `P2.S5` must fix this.** 썸에이지 `20260805000454` (`warrant_confirmed`) and
+제이알글로벌리츠 `20260205000605` (`warrant_conflict`) each file a ~1.9k-char `[기재정정]` whose
+정정사항 table holds **one row — 항목 `유상증자 결정`, 정정 전 `유상증자 결정`, 정정 후 `유상증자
+철회`** — and whose prose reads `부득이하게 금번 유상증자를 철회하기로 결정하였습니다`. Their label
+table still parses **10/10**, so S3's ① filter sees a healthy event; only the extractor returning
+`present=false` on all five fields surfaced it. **Publishing 썸에이지 today would advertise a
+매매기간 that has been cancelled.** The detector is deterministic and cheap (that single 정정사항
+row) and belongs in the gate layer, not in the LLM. A naive `"철회" in 본문` test does **not** work:
+it also fires on 증권신고서 boilerplate (2 further ① events) and on 매수청구 boilerplate (7 of 15 ③).
+
+**N40 — `추후결정` is a third field state, not a missing value.** 경남제약 `20260623000409` and
+에이전트AI `20260619000455` are 정정 filings that suspended the entire schedule (`3) 신주인수권증서
+상장예정기간 : 추후결정`, `청약일 추후결정`). Those extractions are `status='extracted'` with a
+located, **verified** span and **all dates `null`** — deliberately not `absent`, because the document
+does say something. The gate and the board must distinguish "no date yet" / "field absent" / "stale
+date", and must never fall back to the superseded schedule.
+
+**N41 — in a 정정, the deterministic rows are ground truth and the model only normalises.** Each
+interpretation is built from (a) bodydoc's `3. 정정사항` before/after rows and (b) a value diff this
+package computes in Python between the two versions' extractions; the model returns normalised
+changes + schedule impact, and `check_against_items` scores it. Measured over **30 interpretations**:
+137 deterministic rows in, **121 model changes with 0 unsupported**, **20 rows uncovered** (mostly
+the two 13-row 합병 corrections, where near-duplicate rows were merged), 95 prose value moves,
+**121/121 per-change quotes located**. The uncovered count is stored per record, so `P2.S9` gets a
+recall measurement for free.
+
+**N42 — the extraction schema, and the room left for `P2.S5`.** Two tables in `db/models.py`:
+`extraction_call` (one row per call — model, prompt/schema version, input scope + chars, prompt /
+thinking / output tokens, ▷ cost, latency, and the raw payload as evidence) and `extraction` (one row
+per field, keyed **`(filing_version_id, field_key, schema_version)`** — value JSON, verbatim quote,
+located span + `span_status` / `locate_method` / `span_verified`, snapshot FK, model note). That
+identity is what makes a re-run **cost zero calls and never duplicate a row**, while a
+`schema_version` bump records a new reading beside the old one. `gate_status` / `gate_reason_code` /
+`gate_note` / `gate_checked_at` are declared nullable and unused — S5 fills them, and a re-extraction
+clears them (a verdict judges a value, and the value just changed).
+
+**N43 — what the corpus actually yields today** (current version of each event, 0 OpenDART requests):
+① **25 of 29** events carry a citable 신주인수권증서 매매기간 (2 철회, 2 `추후결정`), 27/29 for
+청약 취급처 · 실권주 · 초과청약, 26/29 for 발행가 산식; ③ **10 of 11** events with a 본문 carry the
+반대의사 절차 (아시아나항공 `20260713000482` states the right but not the procedure), and **4 of the
+15 ③ events — all SPAC 합병 — hold no 본문 at all**. For those five the 증권신고서 is the only
+remaining source, and collecting it is collector-side work (a 증권신고서 is a *different* filing, not
+a version of these events), so `mijual.extract.inputs` implements and tests the §5 section-slicing
+path but no run needed it.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -514,16 +600,60 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   numbers are read (S3's live runs left 28 fetched-and-cached documents unpersisted).
   Source: `P2.S3` result (2026-08-19).
 
+- **`architecture`** (same note as the S1/S2/S3 entries) / **`data`** — **the extraction layer landed
+  (P2.S4), and it is the first place §3.6's layer 1 exists in code:** `mijual.extract` reads **only**
+  field-matrix §7's 10 prose targets (the registry is a closed list and a test asserts it stays
+  disjoint from the `본문-label` field set), asks the model for a value **plus a verbatim quote**, and
+  then **locates the span itself** in the stored snapshot — *no span is ever taken from the model*;
+  an unlocatable quote is stored `span_unresolved` and the gate blocks it. Storage: `extraction_call`
+  (per call — model, prompt/schema version, input scope, prompt/thinking/output tokens, ▷ cost, raw
+  payload) + `extraction` (per field, keyed `(filing_version_id, field_key, schema_version)`, with
+  `gate_*` columns reserved for `P2.S5`), so a re-run costs **0 calls** and never duplicates a row.
+  Input regime as implemented: 주요사항보고서 whole (≤ 25k normalized chars), a 100k–180k-char 합병
+  본문 **windowed** around the field anchor, a 증권신고서 **only** as a `<TITLE>` section — never
+  whole. Source: `P2.S4` result (2026-08-19/20).
+- **`data`** — **first measured layer-1 accuracy/coverage, and two document states the field model did
+  not have:** over the exposable corpus (40 events, 304 extraction rows) **292 of 293 model quotes
+  located in the stored snapshot (99.7 %, 290 of them byte-faithful)**; per event's current version
+  ① **25/29** carry a citable 신주인수권증서 매매기간, 27/29 청약 취급처 · 실권주 · 초과청약, 26/29
+  발행가 산식, ③ **10/11** with a 본문 carry the 반대의사 절차 (4 further ③ SPAC 합병 events hold **no
+  본문 at all**). Two states must enter the documented field model: **철회** — a 유상증자 withdrawn by
+  a later 정정, invisible to the label layer (its table still reads 10/10) and detectable
+  deterministically from the single 정정사항 row `유상증자 결정 → 유상증자 철회`, 2 currently-exposable
+  ① events affected — and **`추후결정`** — a schedule suspended by a 정정, which is an *extracted*
+  value with a verified span and null dates, not a missing field. Source: `P2.S4` result
+  (2026-08-19/20), findings N39/N40.
+- **`decisions`** / **`operations`** — **D-4 concretised, and LLM spend is bounded structurally:**
+  the reading model is **`gemini-3.7-flash`** on the operator's credential with the **thinking level
+  left to the project-side preset** (measured, not configured — a no-config probe returns thought
+  tokens); calls are grouped **one per document, not per field** (five ① fields in one call: 28 calls
+  instead of 140); `GeminiClient(max_calls=…)` refuses the call past the ceiling exactly as
+  `DartClient(max_requests=…)` does for quota; every run reports calls / tokens / **▷ estimated cost**
+  from a published rate card ($0.75 / $3.75 per 1M in/out, thinking billed as output) and never claims
+  a billed figure. Whole-slice spend: **100 calls, 983,529 tokens, ▷ $1.41, 0 failures, 0 OpenDART
+  requests**. Re-running is free (already-stored fields are skipped) and **span re-resolution is a
+  separate 0-call pass**, so improving the locator never re-pays for extraction. Source: `P2.S4`
+  result (2026-08-19/20).
+
 ## Open Questions
 
-- **O-1 (blocks `P2.S7`'s backfill):** ▷ the published **daily OpenDART call quota is unmeasured** —
-  1,002 distinct requests in one P1 session drew no quota error, but the ② backfill is another
-  ~300–600. **Measure or confirm the cap before running it**, and raise it with the operator early
-  (N10).
-- **O-2 (blocks `P2.S4`):** the Gemini **"changple5" credential is not in this repo** and must be
-  obtained from the operator, stored gitignored beside `DART_API_KEY`, never echoed — and the **exact
-  API model id** for "Gemini 3.7 Flash (high)" must be confirmed at integration time (D-4 says model
-  naming is the operator's call). Raise early (N10).
+- ~~**O-1:**~~ **CLOSED by the operator (2026-08-19), recorded at `P2.S4`.** The **daily OpenDART
+  quota is 20,000 requests per key** (operator statement, corroborated by community documentation;
+  ▷ the official page defers to a homepage notice, so this is authoritative-by-operator rather than
+  scraped). P2's spend to date is ~1,600 requests total (P1 ~1,002 + S2 291 + S3 289 + S4 **0**), so
+  `P2.S7`'s ~300–600-request backfill is comfortably inside one day. **The `DartClient
+  max_requests` ceiling stays** as good practice (N25) — a known cap is not a reason to run unbounded.
+- ~~**O-2:**~~ **CLOSED by `P2.S4` (N35).** `GEMINI_API_KEY` (the "changple5" credential) is in the
+  gitignored repo-root `.env` and reaches only the SDK; **model id `gemini-3.7-flash`** is confirmed
+  present on the credential (`models.get` → `3.7-flash-08-2026`); and the **thinking level is a
+  project-side preset** — a no-config probe returned 423 thought tokens — so no thinking config is
+  hardcoded anywhere. ▷ Cost basis recorded: $0.75 / $3.75 per 1M in/out tokens.
+- **O-9 (new, `P2.S5`, countdown-critical):** **what does a 철회 (withdrawn) 유상증자 do to exposure,
+  and who detects it?** Two currently-exposable ① events are already withdrawn and the deterministic
+  ① filter cannot see it (N39). The signal is one 정정사항 row (`유상증자 결정` → `유상증자 철회`) and
+  the detector belongs in the gate layer. The companion question — how `추후결정` (schedule suspended,
+  N40) is shown — is the same decision in a softer form: neither may fall back to the superseded
+  schedule. Must not reach `P2.S8`/`P2.S9` unresolved.
 - **O-3 (`P2.S9`):** the ~100-filing hand-labelling is **operator co-work** — expect a real `pending`
   gate. Decide the labelling format and the per-field precision definition before asking for the
   operator's time.
@@ -541,6 +671,9 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   flagged** because the phase rule forbids suppressing on conflicting evidence. The gate layer (or
   the operator) must decide whether `warrant_conflict` blocks exposure; the honest reading of the
   본문 is that no tradeable 증서 exists. See N30 — do not let it reach `P2.S8`/`P2.S9` unresolved.
+  **Update (`P2.S4`, N39): that same filing is a 철회** — its 정정사항 table reads `유상증자 결정` →
+  `유상증자 철회` and the extractor found all five prose fields absent — so in practice the conflict is
+  moot and O-9's 철회 rule decides it; the formal `warrant_conflict` policy is still S5's to state.
 - **O-6:** ▷ meaning of `estkRs.일반사항.exstk/exprc/expd` (2/35 filled) — not needed by any MVP field;
   answer only if it falls out for free.
 - **O-7 (carried from P1 as Q7, deferred to P2/P3):** 증권사 MTS 권리 메뉴 coverage matrix (handoff §4,
