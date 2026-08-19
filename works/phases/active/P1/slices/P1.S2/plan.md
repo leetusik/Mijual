@@ -36,3 +36,25 @@ The tentative 3종 is confirmed **only tentatively**; the matrix may demote a ty
 
 - `recommendation.md` exists, covers all 3 types + package recommendation + operator question set.
 - `python3 scripts/workflow.py validate` passes.
+
+## Operator decision (2026-08-19, verbatim — appended by orchestrator after the pending gate)
+
+The operator answered the five questions:
+
+> 1. keep all
+> 2. I'll get you a domain later.
+> 3. I registered
+> 4. you don't need to worry about the schedule. I'll handle it. only focus on building
+> 5. good. I'll use gemini 3.7 flash high for the application. use changple5 credential.
+
+Orchestrator's reading (confirm nothing beyond this; record it):
+
+1. **Rights scope: recommended package approved** — "keep all" = keep all three types (① 유증 신주인수권 hero / ② CB 오버행 conditional on the ≥2025-06 backfill / ③ 매수청구권), with the recommended exclusions (EB, 분할합병·주식교환, 제3자배정 유증) and drop order (EB → ②'s backfill → ③ → ②) standing as the deadline-pressure fallback.
+2. **Domain: deferred** — the operator will provide a domain later; no purchase now; P4 must not assume a custom domain until it arrives (the URL-freeze constraint stands).
+3. **Registration: done** — the operator has registered on daker.ai.
+4. **Schedule: operator-owned** — schedule conflicts are the operator's to manage; the workspace focuses purely on building.
+5. **Application LLM decided: Gemini 3.7 Flash (high) using the operator's "changple5" credential** — the extraction/generation layers (P2/P3) target Gemini 3.7 Flash at high thinking; the credential comes from the operator's 창플 project ("changple5"). The actual credential is NOT yet in this repo — P2 must obtain it from the operator (or a path they name) and store it gitignored beside `DART_API_KEY`; commercial LLM APIs are explicitly allowed by the challenge rules (F-finding from S3).
+
+## Completion pass (what remains for this dispatch)
+
+(a) Record the decision in `phase.md` — a decision-record entry (F25 or a "Decisions" note under Findings) carrying the five outcomes above with the verbatim quotes; (b) append the deferred **`decisions`** Doc impact note now that the decision exists (confirmed MVP package + exclusions + drop order, domain deferred, application LLM = Gemini 3.7 Flash high via operator credential); (c) update `result.md` to reflect the closed gate and final state; (d) `python3 scripts/workflow.py validate`; return `done`.
