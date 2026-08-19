@@ -93,6 +93,7 @@ def ensure_version(
     report_nm: str | None = None,
     correction_kind: CorrectionKind | None = None,
     declared_original_dt: str | date | None = None,
+    pairing_method: str | None = None,
 ) -> FilingVersion:
     """Get-or-create on ``(event, rcept_no)`` — every observed version is kept."""
     version = session.scalar(
@@ -108,11 +109,16 @@ def ensure_version(
             report_nm=report_nm,
             correction_kind=correction_kind or CorrectionKind.from_report_nm(report_nm),
             declared_original_dt=parse_dart_date(declared_original_dt),
+            pairing_method=pairing_method,
         )
         session.add(version)
     else:
         if declared_original_dt is not None:
             version.declared_original_dt = parse_dart_date(declared_original_dt)
+        if report_nm and not version.report_nm:
+            version.report_nm = report_nm
+        if pairing_method and not version.pairing_method:
+            version.pairing_method = pairing_method
     session.flush()
     return version
 

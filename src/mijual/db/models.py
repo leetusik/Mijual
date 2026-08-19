@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import enum
 import hashlib
+import re
 from datetime import date, datetime, timezone
 
 from sqlalchemy import (
@@ -99,22 +100,35 @@ class RightsType(enum.Enum):
 
 
 class CorrectionKind(enum.Enum):
-    """``report_nm`` prefix of one filing version."""
+    """What one filing version *is*, read off ``report_nm``'s bracketed prefix.
 
+    Three buckets, chosen by **behaviour** rather than by literal prefix, so a
+    new prefix never has to become a new native-PG-enum member (which would cost
+    a ``reset_schema`` — see N16). ``FilingVersion.report_nm`` keeps the literal
+    string, so nothing is lost.
+    """
+
+    #: No bracketed prefix — the first submission of an event.
     ORIGINAL = "original"
-    #: ``[기재정정]`` — content correction; the one that moves a D-day
+    #: ``[기재정정]`` (and ``[정정명령부과]``) — content correction; moves a D-day.
     DISCLOSURE = "기재정정"
-    #: ``[첨부정정]`` — attachment-only; skippable for extraction (N3)
+    #: ``[첨부정정]`` / ``[첨부추가]`` — attachments only; no 본문 re-read (§4.1).
     ATTACHMENT = "첨부정정"
 
     @classmethod
     def from_report_nm(cls, report_nm: str | None) -> "CorrectionKind":
-        name = (report_nm or "").lstrip()
-        if name.startswith("[기재정정]"):
-            return cls.DISCLOSURE
-        if name.startswith("[첨부정정]"):
-            return cls.ATTACHMENT
-        return cls.ORIGINAL
+        """Prefix → kind. **Any** bracketed prefix means "not an original".
+
+        Measured over the 2026 KOSPI+KOSDAQ 주요사항보고 list (P2.S2): besides
+        ``[기재정정]``/``[첨부정정]`` the wild also carries ``[첨부추가]`` (6 rows)
+        and ``[정정명령부과]`` (2). Reading an unknown prefix as ORIGINAL would
+        mint a phantom event and give later corrections the wrong original date,
+        so the default for an unrecognised prefix is DISCLOSURE.
+        """
+        match = re.match(r"\[([^\]]*)\]", (report_nm or "").lstrip())
+        if match is None:
+            return cls.ORIGINAL
+        return cls.ATTACHMENT if "첨부" in match.group(1) else cls.DISCLOSURE
 
 
 class SnapshotSource(str, enum.Enum):
@@ -188,6 +202,14 @@ class Event(Base):
     suppressed_note: Mapped[str | None] = mapped_column(Text)
     suppressed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    #: Comma-separated collector flags that need a human or a later slice to
+    #: look — currently ``event_key_collision`` (two distinct filings share this
+    #: event key: same corp, same subtype, same 접수일 — measured on 한솔테크닉스
+    #: ``20260410003732`` / ``…3738``) and ``detail_conflict`` (the detail rows
+    #: collapsed onto this key disagree about whether a right exists). Not a
+    #: suppression: a flagged event is still exposed unless a reason is set.
+    review_flags: Mapped[str | None] = mapped_column(String(200))
+
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -215,6 +237,14 @@ class Event(Base):
         self.suppressed_reason = reason
         self.suppressed_note = note
         self.suppressed_at = utcnow()
+
+    @property
+    def flags(self) -> list[str]:
+        return [f for f in (self.review_flags or "").split(",") if f]
+
+    def add_flag(self, flag: str) -> None:
+        if flag not in self.flags:
+            self.review_flags = ",".join([*self.flags, flag])[:200]
 
     def __repr__(self) -> str:
         return (
@@ -245,8 +275,15 @@ class FilingVersion(Base):
         nullable=False,
     )
     #: ``<CORRECTION> 2. 정정대상 공시서류의 최초제출일`` — filer-entered, a *hint*
-    #: for pairing, never a key (N3).
+    #: for pairing, never a key (N3). Backfilled by ``P2.S3``.
     declared_original_dt: Mapped[date | None] = mapped_column(Date)
+    #: How this version was attached to its event (``P2.S2``): ``original``,
+    #: ``earlier``/``earlier_history`` (nearest-earlier original, optionally via
+    #: the corp-scoped history query), the ``_ambiguous`` variants of those,
+    #: ``unpaired``/``unpaired_chain``, or ``detail_only`` (a version only the
+    #: detail endpoint showed us). Plain ``VARCHAR`` on purpose — a new value
+    #: must never cost a migration.
+    pairing_method: Mapped[str | None] = mapped_column(String(30))
     observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     event: Mapped[Event] = relationship(back_populates="versions")

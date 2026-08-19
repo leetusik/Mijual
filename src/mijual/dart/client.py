@@ -46,6 +46,7 @@ __all__ = [
     "DartError",
     "DartFetchError",
     "NotAZipError",
+    "RequestBudgetExceeded",
     "groups",
     "rows",
     "safe_query",
@@ -69,6 +70,15 @@ class CacheMiss(DartError):
 
 class NotAZipError(DartError):
     """``document.xml`` returned an error body instead of a ZIP."""
+
+
+class RequestBudgetExceeded(DartError):
+    """``max_requests`` reached — the run stops before spending more quota.
+
+    The published daily OpenDART cap is **unmeasured** (open question O-1), so a
+    long collection is run under an explicit ceiling rather than on trust.
+    Cached reads are unaffected; only live requests are refused.
+    """
 
 
 def safe_query(params: dict[str, Any]) -> str:
@@ -110,6 +120,10 @@ class DartClient:
         api_key: overrides ``settings.dart_api_key``. Resolved lazily — an
             offline client never needs one.
         offline: never hit the network; a cache miss raises :class:`CacheMiss`.
+        max_requests: ceiling on **live** requests for this client's lifetime;
+            once reached, every further live fetch raises
+            :class:`RequestBudgetExceeded` (cached reads keep working). The
+            daily OpenDART quota is unmeasured — O-1.
     """
 
     def __init__(
@@ -122,6 +136,7 @@ class DartClient:
         base_url: str = BASE_URL,
         timeout: int = 30,
         tries: int = 4,
+        max_requests: int | None = None,
     ) -> None:
         self.settings = settings if settings is not None else load_settings()
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self.settings.cache_dir
@@ -130,6 +145,9 @@ class DartClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.tries = tries
+        self.max_requests = max_requests
+        #: Live requests (HTTP attempts, retries included) made by this client.
+        self.request_count = 0
 
     # -- key handling -----------------------------------------------------
     @property
@@ -157,6 +175,11 @@ class DartClient:
             raise CacheMiss("offline client: refusing to fetch")
         last: Exception | None = None
         for attempt in range(self.tries):
+            if self.max_requests is not None and self.request_count >= self.max_requests:
+                raise RequestBudgetExceeded(
+                    f"live request budget exhausted ({self.max_requests})"
+                )
+            self.request_count += 1
             try:
                 with urllib.request.urlopen(url, timeout=timeout or self.timeout) as resp:  # noqa: S310
                     return resp.read()

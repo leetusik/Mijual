@@ -265,6 +265,67 @@ schema must carry the same flag.
 touches only the live request URL — never a filename, never the recorded `_url`, never an exception
 message. A grep for the key value across every new file and the new cache returned 0 hits.
 
+### Appended by `P2.S2` (2026-08-19)
+
+**N19 — `report_nm` carries more prefixes than `[기재정정]`/`[첨부정정]`, and a wrong read mints a
+phantom event.** Measured over the 2026 KOSPI+KOSDAQ 주요사항보고 list: also `[첨부추가]` (6 rows) and
+`[정정명령부과]` (2). `CorrectionKind.from_report_nm` now buckets **any** bracketed prefix — `첨부*` →
+`ATTACHMENT`, everything else → `DISCLOSURE` — so an unknown prefix is never mistaken for an original
+(which would give later corrections the wrong `original_rcept_dt`). The literal string is kept in
+`FilingVersion.report_nm`, so no PG-enum member (and no `reset_schema`) was needed.
+
+**N20 — The N2 event key is NOT injective on real data: ~8% of events collide.** Two independent
+collision modes, both measured: (a) a corp files **two** 주요사항보고서 of the same subtype on the same
+day (한솔테크닉스 `20260410003732` + `…3738`, both `rcept_dt` 2026-04-13 — one 제3자배정, one 주주배정);
+(b) a corp runs **two concurrent events** of the same subtype and only one original is visible, so
+nearest-earlier pairing merges both chains (이렘 `00116426`: 제3자배정증자 + 주주배정증자; 모다이노칩
+`00480048`: 소규모합병(케이브랜즈) + 정식합병(로젠)). Detector: the detail endpoint returns **one row per
+event**, so **2+ detail rows landing on one event key means the key collided** — 36 events flagged
+`event_key_collision`, 3 of them `detail_conflict` (the rows disagree about whether a right exists).
+**Rule that follows and must not be relaxed: never suppress an event whose detail rows disagree** —
+doing so hid a real 주주배정 유증 (한솔테크닉스) in the first implementation. S3 can split these using
+`<CORRECTION> 2. 최초제출일`; until then they are flagged, not merged silently.
+
+**N21 — Unpaired corrections need a placeholder *and* a retirement path.** A correction whose original
+is invisible becomes its own event (`suppressed_reason=unpaired_correction`), with its chain-mates
+within 240 days attached to it rather than one event each. When a later/wider run pairs the same
+filing properly, the placeholder is re-suppressed `superseded_by_pairing` naming the winner
+(17 retired). Residue after both runs: 47 of 1,179 `rcept_no` sit under two event keys — 38
+placeholder-vs-real (labelled), 5 placeholder-vs-placeholder (window-dependent chain head, both
+suppressed), **3 on two exposable events** (the N20(b) mis-merge, all flagged). Nothing exposable is
+duplicated without a flag.
+
+**N22 — The detail window must be per (corp, subtype), not per event, and joined by `rcept_no`.** One
+call per corp+subtype covering `[min(original 접수일) − 30d, max(original 접수일)]` is the same request
+count as per-corp and tolerates 접수일/결의일 skew. Rows are matched back by `rcept_no`; a row for a
+version `list.json` never showed us (a 정정 filed after the window ends) is **adopted** as a
+`detail_only` version instead of being dropped — 16–19 per run. Also: `rcept_no[:8]` is the submission
+date and is **not always** the `rcept_dt` (`20260410003732` → `rcept_dt` 2026-04-13), so it is only a
+fallback for versions discovery never saw.
+
+**N23 — The P1 cache is complete for KOSPI but truncated for KOSDAQ H1.** P1 fetched 10 pages per
+window; KOSDAQ 2026-01~03 has 14 pages and 04~06 has 15, so pages 11+ were never cached. Offline runs
+over those windows are ~2,300 list rows short and say so (`gaps:` in the run report). Anything needing
+the complete H1 KOSDAQ universe must re-fetch (~9 requests), **not** assume the cache is a census.
+
+**N24 — O-4 answered (26 requests): KONEX changes nothing.** `corp_cls=N`, 2026-01-01~08-19: 30 events
+(27 ①, 3 ③), of which **0 are exposable** — 25 `no_warrant_class`, 1 `no_appraisal_right`, 4 unpaired.
+KOSPI+KOSDAQ stays the MVP frame. (`corp_cls=E` 기타 not probed.)
+
+**N25 — Request discipline is now structural, not a habit.** `DartClient(max_requests=N)` raises
+`RequestBudgetExceeded` on the next live fetch; the collector catches it per phase, keeps everything
+already collected, and reports `BUDGET EXHAUSTED`. Slice spend: 291 live requests (26 KONEX + 240 +
+25), no quota error. **Re-running a window is nearly free** — the second live pass over the same
+window cost 25 requests (17 detail retries + 8 본문) and added zero events and zero versions, which is
+the property S6's scheduler depends on.
+
+**N26 — `ic_mthn` decides ① provisionally; the corpus for O-5 is one event.** The filter keeps
+`주주배정후 실권주 일반공모` / `주주배정증자` / `주주우선공모증자` and suppresses the rest as
+`no_warrant_class` (213 events). Exactly one `주주우선공모증자` exists in the corpus
+(`20260807000339`, corp `00232007`), collected and unsuppressed — S3 can close **O-5** by reading its
+본문 `18. 신주인수권양도여부` alone. Final exposure for every ① still requires that 본문 check
+(S3/S5); `ic_mthn` alone never confirms a right.
+
 ## Constraints
 
 Binding on every P2 slice (handoff §7 + `intent.md` + the P1 doc set):
@@ -320,6 +381,23 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
   in docker on host 5433; Redis reserved for S6 on 6380). **P2 runs without Alembic on purpose** —
   `create_all`/drop-and-recreate, since all data is re-collectable. Source: `P2.S1` result
   (2026-08-19).
+- **`data`** — **collection method landed (P2.S2), and two corrections to `data.md`'s collection
+  section:** (a) the 정정 pairing method's fallback arm is "nearest earlier **original**" (not nearest
+  earlier filing — a chain would otherwise split into one event per correction), with a corp-scoped
+  `list.json` widening (no 3-month cap) and an explicit `pairing_method` per version; (b) **the event
+  key `(corp_code, report_subtype, original_rcept_dt)` is not injective** — ~8% of 2026 events collide
+  (same-day double filings, and concurrent events of one corp), so the documented key needs the caveat
+  plus the detector (2+ detail rows on one key) and the rule *never suppress an event whose detail rows
+  disagree*. Also record: excluded events are retained with `suppressed_reason` ∈ {`no_warrant_class`,
+  `no_appraisal_right`, `unpaired_correction`, `superseded_by_pairing`}; discovery covers
+  originals + `[기재정정]` + `[첨부정정]` + `[첨부추가]` + `[정정명령부과]`; **O-4 is closed — KONEX adds
+  zero exposable rights** (26-request probe), so KOSPI+KOSDAQ remains the frame. Source: `P2.S2` result
+  (2026-08-19).
+- **`operations`** — **collection is bounded by an explicit request ceiling** (`DartClient
+  max_requests` → `RequestBudgetExceeded`; a run stops cleanly and keeps what it collected) because the
+  daily OpenDART quota is unmeasured (O-1); and **re-collecting a window is nearly free** — the second
+  live pass over the same window added zero events and zero versions and cost 25 requests, which is the
+  property the scheduled job (S6) relies on. Source: `P2.S2` result (2026-08-19).
 
 ## Open Questions
 
@@ -334,10 +412,12 @@ _Running list; the `P2.REVIEW` slice consolidates these into doc versions on a p
 - **O-3 (`P2.S9`):** the ~100-filing hand-labelling is **operator co-work** — expect a real `pending`
   gate. Decide the labelling format and the per-field precision definition before asking for the
   operator's time.
-- **O-4:** ▷ whether KONEX / 기타 (`corp_cls=N/E`) changes any coverage conclusion — P1's whole survey
-  frame was KOSPI + KOSDAQ, 2026-01-01 ~ 08-18. Cheap to answer during `P2.S2`.
-- **O-5:** ▷ whether `주주우선공모증자` issues a 신주인수권증서 (1 case, `20260807000339`) — verify from
-  본문 `18.`; it decides whether that 증자방식 is in ①'s filter.
+- ~~**O-4:**~~ **CLOSED by `P2.S2` (N24).** KONEX (`corp_cls=N`), 2026-01-01~08-19: 30 events, **0
+  exposable rights** → no coverage conclusion changes; KOSPI+KOSDAQ stays the frame. `corp_cls=E`
+  (기타) was not probed and is judged not worth the requests.
+- **O-5 (now one filing away):** ▷ whether `주주우선공모증자` issues a 신주인수권증서 — the single case
+  (`20260807000339`, corp `00232007`) is **collected and unsuppressed** in the database, so S3 closes
+  this by reading its 본문 `18. 신주인수권양도여부`. Until then that 증자방식 is kept (not suppressed).
 - **O-6:** ▷ meaning of `estkRs.일반사항.exstk/exprc/expd` (2/35 filled) — not needed by any MVP field;
   answer only if it falls out for free.
 - **O-7 (carried from P1 as Q7, deferred to P2/P3):** 증권사 MTS 권리 메뉴 coverage matrix (handoff §4,
