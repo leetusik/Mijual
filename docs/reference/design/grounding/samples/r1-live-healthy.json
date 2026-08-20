@@ -1,0 +1,375 @@
+{
+  "_meta": {
+    "slug": "r1-live-healthy",
+    "title": "① 계양전기 — 정상: 6개 필드 전부 인용 근거와 함께 노출",
+    "what_to_notice": "The healthy ① card: every rendered field carries quote + span + rcept_no, and the 증서 매매기간 is the countdown the product exists for.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20260724000546",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 3,
+    "corp_code": "00102618",
+    "corp_name": "계양전기",
+    "rights_type": "R1",
+    "original_rcept_dt": "2026-05-08",
+    "rcept_no": "20260724000546",
+    "state": "exposable",
+    "reason_code": null,
+    "note": null,
+    "notice_ko": null,
+    "exposable": true,
+    "renderable_field_count": 6,
+    "gate_passing_field_count": 6,
+    "fields": [
+      {
+        "field_key": "correction_interpretation",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "field_moves": [
+            {
+              "new": {
+                "detail": "우리사주조합, 구주주 청약 및 초과청약 후 발생한 실권주 및 단수주는 일반공모하며, 일반공모 후 청약 미달 잔여주식은 대표주관회사가 자기 계산으로 인수함",
+                "method": "일반공모"
+              },
+              "old": {
+                "detail": "우리사주조합 및 구주주 청약, 초과청약 결과 발생한 실권주 및 단수주는 일반공모하며 미달 잔여주식은 대표주관회사가 자기계산으로 인수함",
+                "method": "일반공모"
+              },
+              "new_span": [
+                27705,
+                27807
+              ],
+              "field_key": "forfeited_share_method",
+              "new_rcept_no": "20260724000546",
+              "old_rcept_no": "20260611000483",
+              "new_span_status": "resolved"
+            },
+            {
+              "new": {
+                "ratio": 0.2,
+                "detail": "신주인수권증서 청약 한도주식수 1주당 0.2주(20%) 비율로 초과청약 가능",
+                "allowed": true
+              },
+              "old": {
+                "ratio": 0.2,
+                "detail": "실권주를 구주주(신주인수권증서 보유자)가 초과청약(초과청약비율 : 배정 신주 1주당 0.2주)한 주식수에 비례하여 배정",
+                "allowed": true
+              },
+              "new_span": [
+                27379,
+                27508
+              ],
+              "field_key": "excess_subscription",
+              "new_rcept_no": "20260724000546",
+              "old_rcept_no": "20260611000483",
+              "new_span_status": "resolved"
+            },
+            {
+              "new": {
+                "discount_rate": 0.2,
+                "final_price_date": "2026-09-01",
+                "final_price_method": "MAX[MIN(1차 발행가액, 2차 발행가액), 청약일전 과거 제3~5거래일 가중산술평균주가의 60%]",
+                "first_price_method": "신주배정기준일 전 제3거래일을 기산일로 1개월·1주일·기산일 가중산술평균주가의 산술평균가와 기산일 가중산술평균주가 중 낮은 가액에 할인율 20% 적용",
+                "second_price_method": "구주주 청약 초일 전 제3거래일을 기산일로 1주일·기산일 가중산술평균주가의 산술평균가와 기산일 가중산술평균주가 중 낮은 가액에 할인율 20% 적용"
+              },
+              "old": {
+                "discount_rate": 0.2,
+                "final_price_date": "2026-08-31",
+                "final_price_method": "MAX【MIN(1차 발행가액, 2차 발행가액), 기준주가의 60%】",
+                "first_price_method": "기준주가 × (1-할인율) / ［1 + (증자비율 × 할인율)］ (할인율 20% 적용)",
+                "second_price_method": "기준주가 × (1-할인율) (할인율 20% 적용)"
+              },
+              "new_span": [
+                26810,
+                26941
+              ],
+              "field_key": "issue_price_formula",
+              "new_rcept_no": "20260724000546",
+              "old_rcept_no": "20260611000483",
+              "new_span_status": "resolved"
+            }
+          ],
+          "new_rcept_no": "20260724000546",
+          "old_rcept_no": "20260611000483",
+          "interpretation": {
+            "changes": [
+              {
+                "new": "4. 자금조달의 목적 시설자금 (원) 4,800,000,000 영업양수자금 (원) - 운영자금 (원) 8,440,000,000 채무상환자금 (원) 13,000,000,000 타법인 증권취득자금 (원) - 기타자금 (원) -",
+                "old": "4. 자금조달의 목적 시설자금 (원) 4,800,000,000 영업양수자금 (원) - 운영자금 (원) 16,409,000,000 채무상환자금 (원) 19,668,000,000 타법인 증권취득자금 (원) - 기타자금 (원) -",
+                "item": "4. 자금조달의 목적",
+                "kind": "amount_changed",
+                "span": [
+                  4972,
+                  6004
+                ],
+                "quote": "4. 자금조달의 목적 시설자금 (원) 4,800,000,000 영업양수자금 (원) - 운영자금 (원) 8,440,000,000 채무상환자금 (원) 13,000,000,000 타법인 증권취득자금 (원) - 기타자금 (원) -",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "funding_purpose",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 0
+              },
+              {
+                "new": "예정발행가 보통주식 (원) 3,200 기타주식 (원) -",
+                "old": "예정발행가 보통주식 (원) 4,985 기타주식 (원) -",
+                "item": "6. 신주발행가액",
+                "kind": "amount_changed",
+                "span": [
+                  7221,
+                  7572
+                ],
+                "quote": "예정발행가 보통주식 (원) 3,200 기타주식 (원) -",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "issue_price",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 1
+              }
+            ],
+            "summary": "1차 발행가액 확정에 따라 예정발행가액(4,985원 -> 3,200원) 및 자금조달의 목적별 금액(운영자금, 채무상환자금)이 하향 조정되었습니다.",
+            "schedule_impact": "일정 변동 없음"
+          },
+          "deterministic_check": {
+            "items": 2,
+            "changes": 2,
+            "uncovered": 0,
+            "unsupported": 0
+          },
+          "deterministic_items": [
+            {
+              "item": "4. 자금조달의 목적",
+              "after": "4. 자금조달의 목적 시설자금 (원) 4,800,000,000 영업양수자금 (원) - 운영자금 (원) 8,440,000,000 채무상환자금 (원) 13,000,000,000 타법인 증권취득자금 (원) - 기타자금 (원) -",
+              "before": "4. 자금조달의 목적 시설자금 (원) 4,800,000,000 영업양수자금 (원) - 운영자금 (원) 16,409,000,000 채무상환자금 (원) 19,668,000,000 타법인 증권취득자금 (원) - 기타자금 (원) -",
+              "reason": "1차 발행가액 확정에 따른 정정",
+              "after_span": [
+                4695,
+                6034
+              ],
+              "before_span": [
+                3363,
+                4659
+              ]
+            },
+            {
+              "item": "6. 신주발행가액",
+              "after": "예정발행가 보통주식 (원) 3,200 기타주식 (원) -",
+              "before": "예정발행가 보통주식 (원) 4,985 기타주식 (원) -",
+              "reason": "1차 발행가액 확정에 따른 정정",
+              "after_span": [
+                6933,
+                7602
+              ],
+              "before_span": [
+                6220,
+                6867
+              ]
+            }
+          ]
+        },
+        "quote": "※ 금번 주요사항보고서 정정은 1차 발행가액 확정에 따른 기재정정으로, 정정사항은 굵은 빨간색 을 사용하여 표시하였습니다.",
+        "span": [
+          2189,
+          2292
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "정정 해석 (무엇이 바뀌어 D-day가 어떻게 이동했나)"
+      },
+      {
+        "field_key": "excess_subscription",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "ratio": 0.2,
+          "detail": "신주인수권증서 청약 한도주식수 1주당 0.2주(20%) 비율로 초과청약 가능",
+          "allowed": true
+        },
+        "quote": "3) 초과청약 : 우리사주조합 청약 및 구주주(신주인수권증서 보유자) 청약 이후 발생한 실권주가 있는 경우, 실권주를 구주주(신주인수권증서 보유자)가 초과청약(초과청약비율 : 배정 신주 1주당 0.2주)한 주식수에 비례하여 배정하며",
+        "span": [
+          27379,
+          27508
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "초과청약 조건 (비율)"
+      },
+      {
+        "field_key": "forfeited_share_method",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "우리사주조합, 구주주 청약 및 초과청약 후 발생한 실권주 및 단수주는 일반공모하며, 일반공모 후 청약 미달 잔여주식은 대표주관회사가 자기 계산으로 인수함",
+          "method": "일반공모"
+        },
+        "quote": "4) 일반공모 청약: 상기 우리사주조합 청약, 구주주 청약 및 초과청약 결과 발생한 실권주 및 단수주(이하 \"일반공모 배정분\")는 \"대표주관회사\"가 다음 각호와 같이 일반에게 공모하되",
+        "span": [
+          27705,
+          27807
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "실권주 처리 방식"
+      },
+      {
+        "field_key": "issue_price_formula",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "discount_rate": 0.2,
+          "final_price_date": "2026-09-01",
+          "final_price_method": "MAX[MIN(1차 발행가액, 2차 발행가액), 청약일전 과거 제3~5거래일 가중산술평균주가의 60%]",
+          "first_price_method": "신주배정기준일 전 제3거래일을 기산일로 1개월·1주일·기산일 가중산술평균주가의 산술평균가와 기산일 가중산술평균주가 중 낮은 가액에 할인율 20% 적용",
+          "second_price_method": "구주주 청약 초일 전 제3거래일을 기산일로 1주일·기산일 가중산술평균주가의 산술평균가와 기산일 가중산술평균주가 중 낮은 가액에 할인율 20% 적용"
+        },
+        "quote": "▶ 확정 발행가액 = MAX【MIN(1차 발행가액, 2차 발행가액), 기준주가의 60%】 5) 최종 발행가액은 구주주청약일 초일 전 제3거래일에 결정되어 금융감독원 전자공시시스템에 2026년 09월 01일에 공시될 예정이며",
+        "span": [
+          26810,
+          26941
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "발행가액 산정방법 (1·2차·확정 산식)"
+      },
+      {
+        "field_key": "subscription_agents",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "entries": [
+            {
+              "agent": "케이비증권(주) 본ㆍ지점",
+              "target": "우리사주조합",
+              "end_date": "2026-09-03",
+              "start_date": "2026-09-03"
+            },
+            {
+              "agent": "케이비증권(주) 본ㆍ지점",
+              "target": "구주주(신주인수권증서 보유자) 특별계좌 보유자(기존 '명부주주')",
+              "end_date": "2026-09-04",
+              "start_date": "2026-09-03"
+            },
+            {
+              "agent": "1) 주주확정일 현재 계양전기(주)의 주식을 예탁하고 있는 당해 증권회사 본ㆍ지점 2) 케이비증권(주) 본ㆍ지점",
+              "target": "구주주(신주인수권증서 보유자) 일반주주(기존 '실질주주')",
+              "end_date": "2026-09-04",
+              "start_date": "2026-09-03"
+            },
+            {
+              "agent": "케이비증권(주) 본ㆍ지점",
+              "target": "일반공모청약(고위험고수익투자신탁등 청약 포함)",
+              "end_date": "2026-09-09",
+              "start_date": "2026-09-08"
+            }
+          ]
+        },
+        "quote": "우리사주조합 케이비증권(주) 본ㆍ지점 2026년 09월 03일 구주주(신주인수권증서 보유자) 특별계좌 보유자(기존 '명부주주') 케이비증권(주) 본ㆍ지점 2026년 09월 03일 ~2026년 09월 04일 일반주주(기존 '실질주주') 1) 주주확정일 현재 계양전기(주)의 주식을 예탁하고 있는 당해 증권회사 본ㆍ지점2) 케이비증권(주) 본ㆍ지점 일반공모청약(고위험고수익투자신탁등 청약 포함) 케이비증권(주) 본ㆍ지점 2026년 09월 08일 ~2026년 09월 09일",
+        "span": [
+          29327,
+          30408
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "청약 취급처 (대상자별 증권사 + 청약일)"
+      },
+      {
+        "field_key": "warrant_trading_period",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "end_date": "2026-08-25",
+          "start_date": "2026-08-19",
+          "listing_date": null,
+          "trading_days": null
+        },
+        "quote": "3) 신주인수권증서 상장예정기간 : 2026년 08월 19일~ 2026년 08월 25일",
+        "span": [
+          30615,
+          30663
+        ],
+        "rcept_no": "20260724000546",
+        "korean_name": "신주인수권증서 상장·매매기간"
+      }
+    ],
+    "countdown": {
+      "label_ko": "신주인수권증서 매매 마감",
+      "date": "2026-08-25",
+      "window": [
+        "2026-08-19",
+        "2026-08-25"
+      ],
+      "window_state": "open",
+      "d_day_label": "D-5",
+      "source": "warrant_trading_period.end_date",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[+] R1 계양전기 20260724000546 exposable\n      노출 6: correction_interpretation, excess_subscription, forfeited_share_method, issue_price_formula, subscription_agents, warrant_trading_period",
+    "corp_name_in_body": "계양전기",
+    "corp_name_agrees_with_body": true,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "offering_inputs": {
+    "확정발행가": null,
+    "예정발행가": 3200.0,
+    "할인율": 0.2,
+    "할인율_gate": "passed",
+    "배정비율": 0.2314082845,
+    "신주발행수": 8200000,
+    "신주배정기준일": "2026-07-28",
+    "청약일정": {
+      "우리사주": {
+        "start": "2026-09-03",
+        "end": "2026-09-03"
+      },
+      "구주주": {
+        "start": "2026-09-03",
+        "end": "2026-09-04"
+      }
+    },
+    "▷증서_1주_이론가치": null,
+    "note": "▷증서 이론가치 = 확정발행가 × 할인율 / (1 − 할인율) — mijual.calc.warrant_intrinsic_value. Derived, so it is always marked ▷."
+  },
+  "lapse_result": {
+    "corp_code": "00102618",
+    "corp_name": "계양전기",
+    "status": "pending",
+    "reason": "청약 예정",
+    "decision_rcept_no": "20260724000546",
+    "performance_rcept_no": null,
+    "event_state": null,
+    "subscription_end": "2026-09-04",
+    "warrants_issued": null,
+    "warrants_exercised": null,
+    "lapsed": null,
+    "lapse_rate": null,
+    "confirmed_price": null,
+    "price_check": null,
+    "discount_rate": null,
+    "allotment_ratio": null,
+    "unit_value": null,
+    "unit_value_floor": null,
+    "value_krw": null,
+    "value_floor_krw": null,
+    "notes": []
+  }
+}

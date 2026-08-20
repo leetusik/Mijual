@@ -1,0 +1,291 @@
+{
+  "_meta": {
+    "slug": "r3-version-split",
+    "title": "③ 세기상사 — 정정공시 버전 분리 (superseded_api_reference)",
+    "what_to_notice": "The same field is `passed` on the current version and `superseded_api_reference` on the one it replaced. The product only ever reads the current version.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20260713000345",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 54,
+    "corp_code": "00133618",
+    "corp_name": "세기상사",
+    "rights_type": "R3",
+    "original_rcept_dt": "2026-05-21",
+    "rcept_no": "20260713000345",
+    "state": "exposable",
+    "reason_code": null,
+    "note": null,
+    "notice_ko": null,
+    "exposable": true,
+    "renderable_field_count": 2,
+    "gate_passing_field_count": 2,
+    "fields": [
+      {
+        "field_key": "correction_interpretation",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "field_moves": [
+            {
+              "new": {
+                "detail": "주주확정 기준일 현재 주주명부에 등재된 주주 중 합병에 반대하는 주주는 주주총회 전 회사에 서면으로 반대의사를 통지하거나, 증권회사 위탁 주주의 경우 해당 증권회사에 주주총회 3영업일 전까지 통지함.",
+                "method": "서면 통지 (직접 회사 통지 또는 거래 증권회사 신청)",
+                "recipient": "존속회사(서울특별시 중구 퇴계로 212 (충무로 4가)) 또는 거래 증권회사",
+                "notice_end_date": "2026-07-06",
+                "exercise_end_date": "2026-07-27",
+                "notice_start_date": "2026-06-22",
+                "exercise_start_date": "2026-07-07"
+              },
+              "old": {
+                "detail": "합병에 반대하는 주주는 주주총회 전(2026년 07월 06일까지) 회사에 서면으로 반대의사를 통지하여야 하며, 증권회사에 위탁 중인 일반주주는 주주총회 3영업일 전까지 거래 증권회사에 통지하여야 함.",
+                "method": "서면 통지 (주권을 증권회사에 위탁하고 있는 일반주주는 당해 증권회사에 통지)",
+                "recipient": "존속회사(서울특별시 중구 퇴계로 212 (충무로 4가)) 또는 거래 증권회사",
+                "notice_end_date": "2026-07-06",
+                "exercise_end_date": "2026-07-27",
+                "notice_start_date": "2026-06-22",
+                "exercise_start_date": "2026-07-07"
+              },
+              "new_span": [
+                66796,
+                66968
+              ],
+              "field_key": "dissent_notice_procedure",
+              "new_rcept_no": "20260713000345",
+              "old_rcept_no": "20260623000277",
+              "new_span_status": "resolved"
+            }
+          ],
+          "new_rcept_no": "20260713000345",
+          "old_rcept_no": "20260623000277",
+          "interpretation": {
+            "changes": [
+              {
+                "new": "25,197,936",
+                "old": "25,197,931",
+                "item": "7. 합병신주의 종류의 수(주)보통주식",
+                "kind": "amount_changed",
+                "span": [
+                  49706,
+                  49958
+                ],
+                "quote": "7. 합병신주의 종류와 수(주) 보통주식 25,197,93 6",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "new_shares_total",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 0
+              },
+              {
+                "new": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다. 본 합병으로 발생하는 해당 단수주인 5주에 대해 '상법 제341조의2'에 따라 존속회사가 자기주식으로 취득하고 합병 후 1년이내 소각할 예정입니다.",
+                "old": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다.",
+                "item": "18. 기타 투자판단과 관련한 중요사항 중 (2)",
+                "kind": "text_changed",
+                "span": [
+                  7645,
+                  7838
+                ],
+                "quote": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다. 본 합병으로 발생하는 해당 단수주인 5주에 대해 '상법 제341조의2'에 따라 존속회사가 자기주식으로 취득하고 합병 후 1년이내 소각할 예정입니다.",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "other_important_matters",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 4
+              }
+            ],
+            "summary": "합병신주 수가 단주 계산 정정에 따라 25,197,931주에서 25,197,936주로 5주 증가 정정되었고, 단수주 5주의 자기주식 취득 및 소각 계획이 보완 기재되었습니다.",
+            "schedule_impact": "일정 변동 없음"
+          },
+          "deterministic_check": {
+            "items": 5,
+            "changes": 2,
+            "uncovered": 3,
+            "unsupported": 0
+          },
+          "deterministic_items": [
+            {
+              "item": "7. 합병신주의 종류의 수(주)보통주식",
+              "after": "25,197,93 6",
+              "before": "25,197,931",
+              "reason": "단순기재사항 정정(합병으로 인해 교부되는 신주 중 1주 미만의 단주에 대하여 오기되어 오기정정)",
+              "after_span": [
+                5073,
+                5118
+              ],
+              "before_span": [
+                4979,
+                4989
+              ]
+            },
+            {
+              "item": "[합병관련 주요사항 상세기재] 1. 합병의 개요 가. 합병에 관한 기본사항(4) 회사의 경영, 재무, 영업 등에 미치는 중요 영향 및 효과① 회사의 경영에 미치는 영향 및 효과",
+              "after": "본건 합병으로 인해 세기상사(주)는 존속하고, 우양수산(주)는 소멸합니다.주요사항보고서 제출일 현재 존속회사인 세기상사(주)의 최대주주 및 특수관계인은 지분 53.95%를 보유하고 있으며, 소멸법인인 우양수산(주)의 최대주주 및 특수관계인은 조영준, 조효식, 이주분, 조미분, 조영수, 조영미, 조영란 총 7인으로 지분 100%를 보유하고 있습니다. 본건 합병으로 발행되는 합병신주 25,197,93 6 주에 대해 증권의 발행 및 공시 등에 관한 규정 제2-2조 제2항 제1호에 의거하여 합병신주 발행 후 지체없이 한국예탁결제원에 1년간 의무보유 등록하여 의무보유를 진행할 예정입니다.",
+              "before": "본건 합병으로 인해 세기상사(주)는 존속하고, 우양수산(주)는 소멸합니다.주요사항보고서 제출일 현재 존속회사인 세기상사(주)의 최대주주 및 특수관계인은 지분 53.95%를 보유하고 있으며, 소멸법인인 우양수산(주)의 최대주주 및 특수관계인은 조영준, 조효식, 이주분, 조미분, 조영수, 조영미, 조영란 총 7인으로 지분 100%를 보유하고 있습니다. 본건 합병으로 발행되는 합병신주 25,197,931주에 대해 증권의 발행 및 공시 등에 관한 규정 제2-2조 제2항 제1호에 의거하여 합병신주 발행 후 지체없이 한국예탁결제원에 1년간 의무보유 등록하여 의무보유를 진행할 예정입니다.",
+              "reason": "단순기재사항 정정(합병으로 인해 교부되는 신주 중 1주 미만의 단주에 대하여 오기되어 오기정정)",
+              "after_span": [
+                5752,
+                6114
+              ],
+              "before_span": [
+                5374,
+                5699
+              ]
+            },
+            {
+              "item": "(4) 회사의 경영, 재무, 영업 등에 미치는 중요 영향 및 효과① 회사의 경영에 미치는 영향 및 효과",
+              "after": "(주1) 정정 후",
+              "before": "(주1) 정정 전",
+              "reason": "단순기재사항 정정(합병으로 인해 교부되는 신주 중 1주 미만의 단주에 대하여 오기되어 오기정정)",
+              "after_span": [
+                6408,
+                6417
+              ],
+              "before_span": [
+                6321,
+                6330
+              ]
+            },
+            {
+              "item": "[합병관련 주요사항 상세기재] 1. 합병의 개요 가. 합병에 관한 기본사항(6) 합병이 성사될 경우 관련 증권을 투자함에 있어 고려해야할 위험요소",
+              "after": "본건 합병은 소멸회사 우양수산(주) 주주에게 발행되는 합병신주 25,197,93 6 주에 대하여 세기상사(주) 합병신주(보통주) 상장일로부터 1년간 의무보유를 진행할 예정이며, 합병신주 배정 시 발생하는 1주 미만의 단주에 대해서는 현금으로 지급할 예정입니다. 따라서, 본건 합병과 관련된 모집 또는 매출의 대상이 되는 증권은 없습니다.또한, 소멸회사가 합병기일 현재 보유하고 있는 자산, 부채 및 권리, 의무 일체를 존속회사가 승계하기에 이에 따른 재무적 영향 및 경영위험 등이 제한적일 것으로 판단됩니다.",
+              "before": "본건 합병은 소멸회사 우양수산(주) 주주에게 발행되는 합병신주 25,197,931주에 대하여 세기상사(주) 합병신주(보통주) 상장일로부터 1년간 의무보유를 진행할 예정이며, 합병신주 배정 시 발생하는 1주 미만의 단주에 대해서는 현금으로 지급할 예정입니다. 따라서, 본건 합병과 관련된 모집 또는 매출의 대상이 되는 증권은 없습니다.또한, 소멸회사가 합병기일 현재 보유하고 있는 자산, 부채 및 권리, 의무 일체를 존속회사가 승계하기에 이에 따른 재무적 영향 및 경영위험 등이 제한적일 것으로 판단됩니다.",
+              "reason": "단순기재사항 정정(합병으로 인해 교부되는 신주 중 1주 미만의 단주에 대하여 오기되어 오기정정)",
+              "after_span": [
+                6991,
+                7310
+              ],
+              "before_span": [
+                6656,
+                6938
+              ]
+            },
+            {
+              "item": "18. 기타 투자판단과 관련한 중요사항 중 (2)",
+              "after": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다. 본 합병으로 발생하는 해당 단수주인 5주에 대해 '상법 제341조의2'에 따라 존속회사가 자기주식으로 취득하고 합병 후 1년이내 소각할 예정입니다.",
+              "before": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다.",
+              "reason": "보완기재",
+              "after_span": [
+                7645,
+                7846
+              ],
+              "before_span": [
+                7510,
+                7592
+              ]
+            }
+          ]
+        },
+        "quote": "(2) 신주배정 시 발생하는 단주 처리 방법에 따라 지급되는 금전 이외에 금번 합병에 참여하는 회사의 주주에게는 어떠한 교부금도 지급하지 않습니다. 본 합병으로 발생하는 해당 단수주인 5주에 대해 '상법 제341조의2'에 따라 존속회사가 자기주식으로 취득하고 합병 후 1년이내 소각할 예정입니다.",
+        "span": [
+          7645,
+          7838
+        ],
+        "rcept_no": "20260713000345",
+        "korean_name": "정정 해석 (무엇이 바뀌어 D-day가 어떻게 이동했나)"
+      },
+      {
+        "field_key": "dissent_notice_procedure",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "주주확정 기준일 현재 주주명부에 등재된 주주 중 합병에 반대하는 주주는 주주총회 전 회사에 서면으로 반대의사를 통지하거나, 증권회사 위탁 주주의 경우 해당 증권회사에 주주총회 3영업일 전까지 통지함.",
+          "method": "서면 통지 (직접 회사 통지 또는 거래 증권회사 신청)",
+          "recipient": "존속회사(서울특별시 중구 퇴계로 212 (충무로 4가)) 또는 거래 증권회사",
+          "notice_end_date": "2026-07-06",
+          "exercise_end_date": "2026-07-27",
+          "notice_start_date": "2026-06-22",
+          "exercise_start_date": "2026-07-07"
+        },
+        "quote": "- 합병반대의사 통지 접수기간 : 2026년 06월 22일 ~ 2026년 07월 06일 - 합병승인을 위한 주주총회 예정일자 : 2026년 07월 07일 - 주식매수청구권 행사기간 : 2026년 07월 07일 ~ 2026년 07월 27일라. 접수장소 -존속회사: 서울특별시 중구 퇴계로 212 (충무로 4가)",
+        "span": [
+          66796,
+          66968
+        ],
+        "rcept_no": "20260713000345",
+        "korean_name": "반대의사 통지 방법·절차"
+      }
+    ],
+    "countdown": {
+      "label_ko": "반대의사 통지 마감",
+      "date": "2026-07-06",
+      "window": [
+        "2026-06-22",
+        "2026-07-06"
+      ],
+      "window_state": "closed",
+      "d_day_label": "D+45",
+      "source": "dissent_notice_procedure.notice_end_date",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[+] R3 세기상사 20260713000345 exposable\n      노출 2: correction_interpretation, dissent_notice_procedure",
+    "corp_name_in_body": "세기상사주식회사",
+    "corp_name_agrees_with_body": true,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "versions": [
+    {
+      "rcept_no": "20260521000642",
+      "rcept_dt": "2026-05-21",
+      "correction_kind": "original",
+      "is_current_readable": false,
+      "extractions": []
+    },
+    {
+      "rcept_no": "20260617000483",
+      "rcept_dt": "2026-06-17",
+      "correction_kind": "기재정정",
+      "is_current_readable": false,
+      "extractions": []
+    },
+    {
+      "rcept_no": "20260623000277",
+      "rcept_dt": "2026-06-23",
+      "correction_kind": "기재정정",
+      "is_current_readable": false,
+      "extractions": [
+        {
+          "field_key": "dissent_notice_procedure",
+          "gate_status": "not_evaluable",
+          "reason_code": "superseded_api_reference",
+          "reason_ko": "이전 버전이라 최신 API 값과 대조할 수 없습니다",
+          "gate_note": "not_evaluable:superseded_api_reference — 20260623000277은 이전 버전 | citation=ok(verified)"
+        }
+      ]
+    },
+    {
+      "rcept_no": "20260713000345",
+      "rcept_dt": "2026-07-13",
+      "correction_kind": "기재정정",
+      "is_current_readable": true,
+      "extractions": [
+        {
+          "field_key": "correction_interpretation",
+          "gate_status": "passed",
+          "reason_code": null,
+          "reason_ko": null,
+          "gate_note": "passed | citation=ok(verified) rows_parsed=ok(5행) changes_supported=ok(2건 전부 근거 있음, 미언급 3행)"
+        },
+        {
+          "field_key": "dissent_notice_procedure",
+          "gate_status": "passed",
+          "reason_code": null,
+          "reason_ko": null,
+          "gate_note": "passed | citation=ok(verified) dissent_period=ok(2026-06-22~2026-07-06)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "_meta": {
+    "slug": "r1-lapse-mismatch",
+    "title": "① 대한광통신 — 발행사 기재 불일치 (증권발행실적보고서)",
+    "what_to_notice": "The issuer's own 실권주 cell disagrees with its own Ⅶ table. The product shows the literal string 발행사 기재 불일치 and never silently reconciles the two.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20260306000600",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.estimate.perf.parse_performance()",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "performance_report": {
+    "rcept_no": "20260306000600",
+    "corp_name": "대한광통신",
+    "rcept_dt": "2026-03-06",
+    "form": "standard",
+    "link_status": "schedule_match",
+    "link_note": "본문 11. 구주주 2026-02-25~2026-02-26"
+  },
+  "facts": {
+    "rcept_no": "20260306000600",
+    "form": "standard",
+    "schedule": [
+      {
+        "group": "구주주 청약(초과청약 포함)",
+        "begin": {
+          "value": "2026-02-25",
+          "raw": "2026년 02월 25일",
+          "span": [
+            7280,
+            7293
+          ],
+          "label": "청약개시일"
+        },
+        "end": {
+          "value": "2026-02-26",
+          "raw": "2026년 02월 26일",
+          "span": [
+            7398,
+            7411
+          ],
+          "label": "청약종료일"
+        },
+        "pay": {
+          "value": "2026-03-06",
+          "raw": "2026년 03월 06일",
+          "span": [
+            7513,
+            7526
+          ],
+          "label": "납입기일"
+        }
+      }
+    ],
+    "warrants_issued": {
+      "value": "23465365",
+      "raw": "23,465,365",
+      "span": [
+        76542,
+        76552
+      ],
+      "label": "신주인수권증서 발행 계"
+    },
+    "warrants_exercised": {
+      "value": "21382063",
+      "raw": "21,382,063",
+      "span": [
+        78367,
+        78377
+      ],
+      "label": "신주인수권증서 청약"
+    },
+    "excess_subscribed": {
+      "value": "3338023",
+      "raw": "3,338,023",
+      "span": [
+        78786,
+        78795
+      ],
+      "label": "초과청약"
+    },
+    "lapse_stated": {
+      "value": "2117937",
+      "raw": "2,117,937",
+      "span": [
+        80623,
+        80632
+      ],
+      "label": "신주인수권증서 청약 실권주"
+    },
+    "lapse_with_fractions": {
+      "value": "2133000",
+      "raw": "2,133,000",
+      "span": [
+        81977,
+        81986
+      ],
+      "label": "신주인수권증서청약실권주 및 단수주"
+    },
+    "fractional_shares": {
+      "value": "15063",
+      "raw": "15,063",
+      "span": [
+        80696,
+        80702
+      ],
+      "label": "구주주 배정 단수주"
+    },
+    "offer_shares": {
+      "value": "23500000",
+      "raw": "23,500,000",
+      "span": [
+        16103,
+        16113
+      ],
+      "label": "계"
+    },
+    "final_shares": {
+      "value": "23500000",
+      "raw": "23,500,000",
+      "span": [
+        16623,
+        16633
+      ],
+      "label": "계"
+    },
+    "final_amount": {
+      "value": "54990000000",
+      "raw": "54,990,000,000",
+      "span": [
+        16700,
+        16714
+      ],
+      "label": "계"
+    },
+    "lapse_derived": 2083302,
+    "issue_price": "2340",
+    "lapse_rate": "0.0888",
+    "notes": [
+      "lapse_mismatch: 실적보고서 states 2,117,937 but Ⅶ gives 2,083,302 (발행 − 청약)"
+    ]
+  },
+  "notes": [
+    "lapse_mismatch: 실적보고서 states 2,117,937 but Ⅶ gives 2,083,302 (발행 − 청약)"
+  ],
+  "exposed_contract_ko": "발행사 기재 불일치"
+}

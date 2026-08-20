@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "slug": "r2-incomplete-api",
+    "title": "② 파이온엑스 — 비노출: 전환청구기간이 공시에 없음",
+    "what_to_notice": "A 38 %대 오버행 whose 전환청구기간 the filing simply does not state. Conservative default: not shown, reason recorded — a blank window would be worse than absence.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20260722000285",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 888,
+    "corp_code": "00781202",
+    "corp_name": "파이온엑스",
+    "rights_type": "R2",
+    "original_rcept_dt": "2026-04-15",
+    "rcept_no": "20260722000285",
+    "state": "incomplete_api_row",
+    "reason_code": "incomplete_api_row",
+    "note": "필수 API 값 누락: 전환청구기간 개시일(cvrqpd_bgd), 전환청구기간 종료일(cvrqpd_edd)",
+    "notice_ko": null,
+    "exposable": false,
+    "renderable_field_count": 0,
+    "gate_passing_field_count": 0,
+    "fields": [],
+    "countdown": {
+      "label_ko": "전환청구 개시",
+      "date": null,
+      "window": [
+        null,
+        null
+      ],
+      "window_state": null,
+      "d_day_label": null,
+      "source": "cvbdIsDecsn.cvrqpd_bgd",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[-] R2 파이온엑스 20260722000285 incomplete_api_row:incomplete_api_row\n      노출 없음 (incomplete_api_row) — 게이트 통과 0건은 기록만",
+    "corp_name_in_body": "파이온엑스",
+    "corp_name_agrees_with_body": true,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "convertible_api_facts": {
+    "rcept_no": "20260722000285",
+    "전환가액": "2124",
+    "전환비율_pct": "100",
+    "전환청구기간": [
+      null,
+      null
+    ],
+    "전환발행주식수": "3295668",
+    "오버행_pct": "38.45",
+    "리픽싱_최저조정가액": "1487",
+    "리픽싱_기준": "「증권의 발행 및 공시 등에 관한 규정」제5-23조(전환가액의 하향조정) 제2호 가목",
+    "권면총액": "7000000000",
+    "만기일": null,
+    "납입일": null,
+    "발행방법": "사모",
+    "complete": false,
+    "missing": [
+      [
+        "cvrqpd_bgd",
+        "전환청구기간 개시일"
+      ],
+      [
+        "cvrqpd_edd",
+        "전환청구기간 종료일"
+      ]
+    ]
+  }
+}

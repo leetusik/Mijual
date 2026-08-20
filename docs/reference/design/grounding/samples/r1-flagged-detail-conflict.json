@@ -1,0 +1,407 @@
+{
+  "_meta": {
+    "slug": "r1-flagged-detail-conflict",
+    "title": "① 한솔테크닉스 — 비노출: 6개 필드가 게이트를 통과했는데도 보이지 않음",
+    "what_to_notice": "The trust claim at its most expensive: a conflicting event is never published, so six perfectly gated fields render nowhere. Admin-panel material (R7).",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20260709000212",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 79,
+    "corp_code": "00157399",
+    "corp_name": "한솔테크닉스",
+    "rights_type": "R1",
+    "original_rcept_dt": "2026-04-13",
+    "rcept_no": "20260709000212",
+    "state": "flagged",
+    "reason_code": "detail_conflict",
+    "note": "같은 이벤트 키의 상세 행들이 권리 존재 여부에 대해 엇갈립니다",
+    "notice_ko": null,
+    "exposable": false,
+    "renderable_field_count": 0,
+    "gate_passing_field_count": 6,
+    "fields": [
+      {
+        "field_key": "correction_interpretation",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "field_moves": [
+            {
+              "new": {
+                "detail": "우리사주조합, 구주주청약 및 초과청약 결과 발생한 실권주 및 단수주는 일반공모하며, 미달 잔여주식은 대표주관회사가 자기계산으로 잔액인수함.",
+                "method": "일반공모"
+              },
+              "old": {
+                "detail": "우리사주조합, 구주주청약 및 초과청약 결과 발생한 실권주 및 단수주는 일반공모를 실시하며, 미달 시 대표주관회사가 잔액인수함",
+                "method": "일반공모"
+              },
+              "new_span": [
+                30898,
+                31093
+              ],
+              "field_key": "forfeited_share_method",
+              "new_rcept_no": "20260709000212",
+              "old_rcept_no": "20260605000028",
+              "new_span_status": "resolved"
+            },
+            {
+              "new": {
+                "ratio": 0.2,
+                "detail": "우리사주조합 및 구주주 청약 이후 발생한 실권주를 초과청약한 주식수에 비례하여 배정(배정 신주 1주당 0.2주)",
+                "allowed": true
+              },
+              "old": {
+                "ratio": 0.2,
+                "detail": "신주인수권증서청약 한도주식수 대비 20%(배정 신주 1주당 0.2주) 한도로 초과청약 가능",
+                "allowed": true
+              },
+              "new_span": [
+                30568,
+                30767
+              ],
+              "field_key": "excess_subscription",
+              "new_rcept_no": "20260709000212",
+              "old_rcept_no": "20260605000028",
+              "new_span_status": "resolved"
+            },
+            {
+              "new": {
+                "discount_rate": 0.2,
+                "final_price_date": "2026-07-08",
+                "final_price_method": "Max{Min[1차 발행가액, 2차 발행가액], 청약일전 과거 제3거래일부터 제5거래일까지의 가중산술평균주가의 60%}",
+                "first_price_method": "[1차 기준주가 x (1-할인율 20%)] / [1 + (증자비율 x 할인율 20%)]",
+                "second_price_method": "2차 기준주가 x (1-할인율 20%)"
+              },
+              "old": {
+                "discount_rate": 0.2,
+                "final_price_date": "2026-07-08",
+                "final_price_method": "Max{Min[1차 발행가액, 2차 발행가액], 청약일전 과거 제3거래일부터 제5거래일까지의 가중산술평균주가의 60%}",
+                "first_price_method": "[1차 기준주가 x (1-할인율)] / [1 + (증자비율 x 할인율)] (할인율 20%)",
+                "second_price_method": "2차 기준주가 x (1-할인율) (할인율 20%)"
+              },
+              "new_span": [
+                29640,
+                29937
+              ],
+              "field_key": "issue_price_formula",
+              "new_rcept_no": "20260709000212",
+              "old_rcept_no": "20260605000028",
+              "new_span_status": "resolved"
+            }
+          ],
+          "new_rcept_no": "20260709000212",
+          "old_rcept_no": "20260605000028",
+          "interpretation": {
+            "changes": [
+              {
+                "new": "타법인 증권취득자금 (원) 81,684,120,000",
+                "old": "타법인 증권취득자금 (원) 116,070,900,000",
+                "item": "4. 자금조달의 목적",
+                "kind": "amount_changed",
+                "span": [
+                  14275,
+                  15682
+                ],
+                "quote": "4. 자금조달의 목적 시설자금 (원) - 영업양수자금 (원) - 운영자금 (원) - 채무상환자금 (원) - 타법인 증권취득자금 (원) 81,684,120,000 기타자금 (원) -",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "funding_purpose",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 0
+              },
+              {
+                "new": "확정발행가 보통주식 (원) 6,580",
+                "old": "예정발행가 보통주식 (원) 9,350",
+                "item": "6. 신주 발행가액",
+                "kind": "amount_changed",
+                "span": [
+                  17424,
+                  19001
+                ],
+                "quote": "6. 신주 발행가액 확정발행가 보통주식 (원) 6,580 기타주식 (원) - 예정발행가 보통주식 (원) - 확정예정일 - 기타주식 (원) - 확정예정일 -",
+                "direction": "해당없음",
+                "supported": true,
+                "field_hint": "issue_price",
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 1
+              },
+              {
+                "new": "2026-07-09",
+                "old": "2026-06-05",
+                "item": "24. 기타 투자판단에 참고할 사항마. 기타 참고사항",
+                "kind": "date_moved",
+                "span": [
+                  9564,
+                  9774
+                ],
+                "quote": "④ 본 주요사항보고서에 기재되어 있지 않은 청약의 방법 및 청약의 장소 등 기타 유상증자에 대한 자세한 사항은 2026년 07월 09일 제출할 예정인 증권신고서 및 투자설명서 를 참고하시기 바랍니다.",
+                "direction": "연기",
+                "supported": true,
+                "field_hint": null,
+                "span_status": "resolved",
+                "locate_method": "exact",
+                "span_verified": true,
+                "deterministic_item": 2
+              }
+            ],
+            "summary": "최종 신주 발행가액이 6,580원으로 확정됨에 따라 총 조달자금(타법인 증권취득자금)이 81,684,120,000원으로 변경되었습니다.",
+            "schedule_impact": "청약 및 납입, 상장일 등 주요 투자자 일정에 변동 없음."
+          },
+          "deterministic_check": {
+            "items": 3,
+            "changes": 3,
+            "uncovered": 0,
+            "unsupported": 0
+          },
+          "deterministic_items": [
+            {
+              "item": "4. 자금조달의 목적",
+              "after": "시설자금 (원) - 영업양수자금 (원) - 운영자금 (원) - 채무상환자금 (원) - 타법인 증권취득자금 (원) 81,684,120,000 기타자금 (원) -",
+              "before": "시설자금 (원) - 영업양수자금 (원) - 운영자금 (원) - 채무상환자금 (원) - 타법인 증권취득자금 (원) 116,070,900,000 기타자금 (원) -",
+              "reason": "최종 발행가액 확정",
+              "after_span": [
+                4656,
+                6002
+              ],
+              "before_span": [
+                3249,
+                4582
+              ]
+            },
+            {
+              "item": "6. 신주 발행가액",
+              "after": "확정발행가 보통주식 (원) 6,580 기타주식 (원) - 예정발행가 보통주식 (원) - 확정예정일 - 기타주식 (원) - 확정예정일 -",
+              "before": "확정발행가 보통주식 (원) - 기타주식 (원) - 예정발행가 보통주식 (원) 9,350 확정예정일 2026년 07월 08일 기타주식 (원) - 확정예정일 -",
+              "reason": "최종 발행가액 확정",
+              "after_span": [
+                7655,
+                9105
+              ],
+              "before_span": [
+                6162,
+                7581
+              ]
+            },
+            {
+              "item": "24. 기타 투자판단에 참고할 사항마. 기타 참고사항",
+              "after": "④ 본 주요사항보고서에 기재되어 있지 않은 청약의 방법 및 청약의 장소 등 기타 유상증자에 대한 자세한 사항은 2026년 07월 09일 제출할 예정인 증권신고서 및 투자설명서 를 참고하시기 바랍니다.",
+              "before": "④ 본 주요사항보고서에 기재되어 있지 않은 청약의 방법 및 청약의 장소 등 기타 유상증자에 대한 자세한 사항은 2026년 06월 05일 제출할 예정인 증권신고서 및 투자설명서 를 참고하시기 바랍니다.",
+              "reason": "최종 발행가액 확정",
+              "after_span": [
+                9557,
+                9782
+              ],
+              "before_span": [
+                9281,
+                9506
+              ]
+            }
+          ]
+        },
+        "quote": "※ 금번 주요사항보고서 정정은 최종 발행가액 확정에 따른 것이며, 정정 사항은 '굵은 하늘색' 을 사용하여 기재하였습니다.",
+        "span": [
+          2875,
+          2992
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "정정 해석 (무엇이 바뀌어 D-day가 어떻게 이동했나)"
+      },
+      {
+        "field_key": "excess_subscription",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "ratio": 0.2,
+          "detail": "우리사주조합 및 구주주 청약 이후 발생한 실권주를 초과청약한 주식수에 비례하여 배정(배정 신주 1주당 0.2주)",
+          "allowed": true
+        },
+        "quote": "③ 초과청약에 대한 배정: 우리사주조합 및 구주주(신주인수권증서 보유자) 청약 이후 발생한 실권주가 있는 경우, 실권주를 구주주(신주인수권증서 보유자)가 초과청약(초과청약비율 : 배정 신주 1주당 0.2주)한 주식수에 비례하여 배정하며(단, 초과청약 주식수가 실권주 및 단수주에 미달한 경우 100% 배정), 1주 미만의 주식은 절사하여 배정하지 않습니다.",
+        "span": [
+          30568,
+          30767
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "초과청약 조건 (비율)"
+      },
+      {
+        "field_key": "forfeited_share_method",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "우리사주조합, 구주주청약 및 초과청약 결과 발생한 실권주 및 단수주는 일반공모하며, 미달 잔여주식은 대표주관회사가 자기계산으로 잔액인수함.",
+          "method": "일반공모"
+        },
+        "quote": "④ 일반공모 청약 : 상기 우리사주조합, 구주주청약 및 초과청약 결과 발생한 실권주 및 단수주는 \"대표주관회사\"가 다음 각호와 같이 일반에게 공모하되, 「증권 인수업무 등에 관한 규정」 제9조 제2항 제3호에 따라 고위험고수익투자신탁등에 공모주식의 5%를 배정하며, 나머지 95%에 해당하는 주식은 개인청약자 및 기관투자자에게 구분 없이 배정합니다.",
+        "span": [
+          30898,
+          31093
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "실권주 처리 방식"
+      },
+      {
+        "field_key": "issue_price_formula",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "discount_rate": 0.2,
+          "final_price_date": "2026-07-08",
+          "final_price_method": "Max{Min[1차 발행가액, 2차 발행가액], 청약일전 과거 제3거래일부터 제5거래일까지의 가중산술평균주가의 60%}",
+          "first_price_method": "[1차 기준주가 x (1-할인율 20%)] / [1 + (증자비율 x 할인율 20%)]",
+          "second_price_method": "2차 기준주가 x (1-할인율 20%)"
+        },
+        "quote": "④ 확정 발행가액 : 확정 발행가액은 1차 발행가액과 2차 발행가액 중 낮은 가액으로 합니다. 다만 「자본시장과 금융투자업에 관한 법률」 제165조의6 및 「증권의 발행 및 공시 등에 관한 규정」 제5-15조의 2에 의거하여 1차 발행가액과 2차 발행가액 중 낮은 가액이 청약일 전 과거 제3거래일부터 제5거래일까지의 가중산술평균주가를 기준주가로 하여 40% 할인율을 적용하여 산정한 가격보다 낮은 경우 청약일전 과거 제3거래일부터 제5거래일까지의 가중산술평균주가에서 40% 할인율을 적용하여 산정한 가격을 확정발행가액으로 합니다.",
+        "span": [
+          29640,
+          29937
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "발행가액 산정방법 (1·2차·확정 산식)"
+      },
+      {
+        "field_key": "subscription_agents",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "entries": [
+            {
+              "agent": "한국투자증권(주)의 본ㆍ지점",
+              "target": "우리사주조합",
+              "end_date": "2026-07-13",
+              "start_date": "2026-07-13"
+            },
+            {
+              "agent": "한국투자증권(주)의 본ㆍ지점",
+              "target": "구주주(신주인수권증서 보유자) 특별계좌 보유자(기존 '명부주주')",
+              "end_date": "2026-07-14",
+              "start_date": "2026-07-13"
+            },
+            {
+              "agent": "1) 주주확정일 현재 한솔테크닉스(주)의 주식을 예탁하고 있는 해당 증권회사 본ㆍ지점 2) 한국투자증권(주)의 본ㆍ지점",
+              "target": "구주주(신주인수권증서 보유자) 일반주주(기존 '실질주주')",
+              "end_date": "2026-07-14",
+              "start_date": "2026-07-13"
+            },
+            {
+              "agent": "한국투자증권(주)의 본ㆍ지점",
+              "target": "일반공모청약(고위험고수익투자신탁등 청약 포함)",
+              "end_date": "2026-07-20",
+              "start_date": "2026-07-16"
+            }
+          ]
+        },
+        "quote": "다. 청약사무 취급처 및 청약기간 청약대상자 청약취급처 청약일 우리사주조합 한국투자증권(주)의 본ㆍ지점 2026년 07월 13일 구주주(신주인수권증서 보유자) 특별계좌 보유자(기존 '명부주주') 한국투자증권(주)의 본ㆍ지점 2026년 07월 13일,2026년 07월 14일 일반주주(기존 '실질주주') 1) 주주확정일 현재 한솔테크닉스(주)의 주식을 예탁하고 있는 해당 증권회사 본ㆍ지점2) 한국투자증권(주)의 본ㆍ지점 일반공모청약(고위험고수익투자신탁등 청약 포함) 한국투자증권(주)의 본ㆍ지점 2026년 07월 16일,2026년 07월 20일",
+        "span": [
+          31835,
+          33601
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "청약 취급처 (대상자별 증권사 + 청약일)"
+      },
+      {
+        "field_key": "warrant_trading_period",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "end_date": "2026-07-02",
+          "start_date": "2026-06-26",
+          "listing_date": null,
+          "trading_days": 5
+        },
+        "quote": "※ 신주인수권증서 상장기간 : 2026년 06월 26일 ~2026년 07월 02일(5영업일)",
+        "span": [
+          34607,
+          34658
+        ],
+        "rcept_no": "20260709000212",
+        "korean_name": "신주인수권증서 상장·매매기간"
+      }
+    ],
+    "countdown": {
+      "label_ko": "신주인수권증서 매매 마감",
+      "date": "2026-07-02",
+      "window": [
+        "2026-06-26",
+        "2026-07-02"
+      ],
+      "window_state": "closed",
+      "d_day_label": "D+49",
+      "source": "warrant_trading_period.end_date",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[-] R1 한솔테크닉스 20260709000212 flagged:detail_conflict\n      노출 없음 (detail_conflict) — 게이트 통과 6건은 기록만",
+    "corp_name_in_body": "한솔테크닉스(주)",
+    "corp_name_agrees_with_body": true,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "offering_inputs": {
+    "확정발행가": 6580.0,
+    "예정발행가": null,
+    "할인율": 0.2,
+    "할인율_gate": "passed",
+    "배정비율": 0.2444331297,
+    "신주발행수": 12414000,
+    "신주배정기준일": "2026-06-09",
+    "청약일정": {
+      "우리사주": {
+        "start": "2026-07-13",
+        "end": "2026-07-13"
+      },
+      "구주주": {
+        "start": "2026-07-13",
+        "end": "2026-07-14"
+      }
+    },
+    "▷증서_1주_이론가치": "1645.0",
+    "note": "▷증서 이론가치 = 확정발행가 × 할인율 / (1 − 할인율) — mijual.calc.warrant_intrinsic_value. Derived, so it is always marked ▷."
+  },
+  "lapse_result": {
+    "corp_code": "00157399",
+    "corp_name": "한솔테크닉스",
+    "status": "valued",
+    "reason": null,
+    "decision_rcept_no": "20260709000212",
+    "performance_rcept_no": "20260722000448",
+    "event_state": "flagged",
+    "subscription_end": "2026-07-14",
+    "warrants_issued": 9920295,
+    "warrants_exercised": 9156211,
+    "lapsed": 764084,
+    "lapse_rate": "0.0770",
+    "confirmed_price": "6580.0",
+    "price_check": "agree",
+    "discount_rate": 0.2,
+    "allotment_ratio": 0.2444331297,
+    "unit_value": "1645.0",
+    "unit_value_floor": "1321.887018868234491362722196",
+    "value_krw": "1256918180",
+    "value_floor_krw": "1010032721",
+    "notes": []
+  }
+}

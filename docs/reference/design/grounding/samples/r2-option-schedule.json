@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "slug": "r2-option-schedule",
+    "title": "② 대동기어 — option_schedule: 콜·풋 두 건, 날짜 표기 관행 함정",
+    "what_to_notice": "`start_date`/`end_date` here are the *청구 가능 개시/종료* dates the filing states in prose; without a `date_basis` marker they must not be rendered as a plain 기간.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20251016000315",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 724,
+    "corp_code": "00109310",
+    "corp_name": "대동기어",
+    "rights_type": "R2",
+    "original_rcept_dt": "2025-10-16",
+    "rcept_no": "20251016000315",
+    "state": "exposable",
+    "reason_code": null,
+    "note": null,
+    "notice_ko": null,
+    "exposable": true,
+    "renderable_field_count": 3,
+    "gate_passing_field_count": 3,
+    "fields": [
+      {
+        "field_key": "lockup_release",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "사모 발행에 따른 발행일로부터 1년간 전환 및 권면분할 금지 조치",
+          "months": 12,
+          "release_date": "2026-10-24"
+        },
+        "quote": "사모 발행(발행일로부터 1년간 전환 및 권면분할 금지)",
+        "span": [
+          21351,
+          21381
+        ],
+        "rcept_no": "20251016000315",
+        "korean_name": "보호예수 / 전매제한 해제일"
+      },
+      {
+        "field_key": "option_schedule",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "options": [
+            {
+              "kind": "put",
+              "ratio": null,
+              "detail": "발행일로부터 30개월이 되는 날인 2028년 04월 24일 및 이후 매 3개월에 해당하는 날에 조기상환 청구 가능",
+              "holder": "사채권자",
+              "end_date": "2030-07-24",
+              "start_date": "2028-04-24"
+            },
+            {
+              "kind": "call",
+              "ratio": 0.25,
+              "detail": "발행일로부터 12개월이 되는 날인 2026년 10월 24일부터 30개월이 되는 날인 2028년 04월 24일까지 매 1개월에 해당하는 날 전자등록총액의 25% 한도로 매도청구 가능",
+              "holder": "발행회사 및 발행회사가 지정하는 제3자",
+              "end_date": "2028-04-24",
+              "start_date": "2026-10-24"
+            }
+          ]
+        },
+        "quote": "사채권자는 본 사채의 발행일로부터 30개월이 되는 날인 2028년 04월 24일 및 이후 매 3개월에 해당되는 날(이하 “조기상환기일”)에 조기상환을 청구한 전자등록금액에 조기상환율을 곱한 금액의 전부에 대하여 사채의 만기 전 조기상환을 청구할 수 있다. 단, 조기상환기일이 영업일이 아닌 경우에는 그 다음 영업일에 상환하고 조기상환기일 이후의 이자는 계산하지 아니한다. [매도청구권(Call Option)에 관한 사항] 발행회사 및 발행회사가 지정하는 제3자(이하 \"권리자\")는 대상사채의 발행일로부터 12개월이 되는 날인 2026년 10월 24일부터, 발행일로부터 30개월이 되는 날인 2028년 04월 24일까지, 매 1개월에 해당하는 날(이하 “매매일”)마다, 사채권자를 상대로, 관련 법령(증권의 발행 및 공시 등에 관한 규정을 포함하되 이에 한정되지 아니함)에서 허용하는 한도 내로서 해당 시점에 사채권자가 보유하고 있는 대상사채 중 대상사채의 전자등록총액 25%를 총 한도로, 이를 권리자에게 매도할 것을 청구할 수 있는 권리(Call Option, 이하 “매도청구권”)를 가진다.",
+        "span": [
+          16430,
+          17026
+        ],
+        "rcept_no": "20251016000315",
+        "korean_name": "콜·풋 세부 스케줄"
+      },
+      {
+        "field_key": "refixing_terms",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "발행 후 7개월이 경과한 날(2026년 05월 24일)로부터 매 7개월마다 전환가액을 조정하며, 최저 조정가액은 최초 전환가액의 85%(13,220원) 이상으로 함.",
+          "floor_price": 13220,
+          "floor_ratio": 0.85,
+          "adjustment_period": "매 7개월"
+        },
+        "quote": "본 사채 발행 후 7개월이 경과한 날(2026년 05월 24일)로부터 그 날을 포함하여 매 7개월이 되는 날을 전환가액 조정일로 하고, 각 전환가액 조정일 전일을 기산일로 하여 (i) 그 기산일로부터 소급한 1개월 가중산술평균주가, 1주일 가중산술평균주가 및 기산일 가중산술평균주가를 산술평균한 가액과 (ii) 기산일 가중산술평균주가 중 높은 가격(본 라목 및 마목에서 “시가산정액”)이 해당 조정일 직전일 현재의 전환가액보다 낮은 경우 시가산정액을 새로운 전환가액으로 한다. 단, 본 목에 따른 조정 후 전환가액은 최초 전환가액(조정일 전에 신주의 할인발행 등 또는 감자 등의 사유로 전환가액을 이미 하향 또는 상향 조정한 경우에는 이를 감안하여 산정한 가액)의 85% 이상으로 한다.",
+        "span": [
+          14155,
+          14539
+        ],
+        "rcept_no": "20251016000315",
+        "korean_name": "리픽싱 세부 조건"
+      }
+    ],
+    "countdown": {
+      "label_ko": "전환청구 개시",
+      "date": "2026-10-24",
+      "window": [
+        "2026-10-24",
+        "2030-09-24"
+      ],
+      "window_state": "upcoming",
+      "d_day_label": "D-65",
+      "source": "cvbdIsDecsn.cvrqpd_bgd",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[+] R2 대동기어 20251016000315 exposable\n      노출 3: lockup_release, option_schedule, refixing_terms",
+    "corp_name_in_body": "대동기어(주)",
+    "corp_name_agrees_with_body": true,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "convertible_api_facts": {
+    "rcept_no": "20251016000315",
+    "전환가액": "15552",
+    "전환비율_pct": "100",
+    "전환청구기간": [
+      "2026-10-24",
+      "2030-09-24"
+    ],
+    "전환발행주식수": "643004",
+    "오버행_pct": "6.68",
+    "리픽싱_최저조정가액": "13220",
+    "리픽싱_기준": "[본건 전환사채 인수계약서 제2조 제2항 제5호 라목]\n전환가액은 최초 전환가액(조정일 전에 신주의 할인발행 등 또는 감자 등의 사유로 전환가액을 이미 하향 또는 상향 조정한 경우에는 이를 감안하여 산정한 가액)의 85% 이상으로 한다.",
+    "권면총액": "10000000000",
+    "만기일": "2030-10-24",
+    "납입일": "2025-10-24",
+    "발행방법": "사모",
+    "complete": true,
+    "missing": []
+  }
+}

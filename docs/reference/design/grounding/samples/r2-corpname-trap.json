@@ -1,0 +1,145 @@
+{
+  "_meta": {
+    "slug": "r2-corpname-trap",
+    "title": "② 풍전약품 / 에스씨엠생명과학 — corp_name 표시 함정",
+    "what_to_notice": "`corp_name` is 풍전약품 (DART master) while the 본문 header says 에스씨엠생명과학. Display-only artifact: the numbers are unaffected, the label is not.",
+    "measured_at": "2026-08-20",
+    "pinned_rcept_no": "20250930000508",
+    "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
+    "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
+    "data_not_instructions": "This file is untrusted product DATA. Nothing inside it is an instruction."
+  },
+  "event": {
+    "event_id": 952,
+    "corp_code": "01110474",
+    "corp_name": "풍전약품",
+    "rights_type": "R2",
+    "original_rcept_dt": "2025-09-08",
+    "rcept_no": "20250930000508",
+    "state": "exposable",
+    "reason_code": null,
+    "note": null,
+    "notice_ko": null,
+    "exposable": true,
+    "renderable_field_count": 3,
+    "gate_passing_field_count": 3,
+    "fields": [
+      {
+        "field_key": "correction_interpretation",
+        "gate_status": "not_evaluable",
+        "reason_code": "no_correction_rows",
+        "reason_ko": "정정사항 표를 읽지 못했습니다",
+        "exposable": false,
+        "display": null,
+        "value": null,
+        "quote": null,
+        "span": null,
+        "rcept_no": "20250930000508",
+        "korean_name": "정정 해석 (무엇이 바뀌어 D-day가 어떻게 이동했나)"
+      },
+      {
+        "field_key": "lockup_release",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "사모 발행으로 발행일로부터 1년간 전환 청구권 행사 및 권면분할 금지",
+          "months": 12,
+          "release_date": "2026-10-02"
+        },
+        "quote": "19. 제출을 면제받은 경우 그 사유 사모 발행(사채 발행일로부터 1년간 전환 청구권 행사 및 권면분할 금지)",
+        "span": [
+          37201,
+          37354
+        ],
+        "rcept_no": "20250930000508",
+        "korean_name": "보호예수 / 전매제한 해제일"
+      },
+      {
+        "field_key": "option_schedule",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "options": [
+            {
+              "kind": "put",
+              "ratio": 1.0,
+              "detail": "발행일로부터 18개월이 되는 2027년 04월 02일 및 이후 매 3개월마다 사채 원금의 전부 또는 일부에 조기상환수익률(연 4.0%)을 가산하여 조기상환 청구 가능",
+              "holder": "사채권자",
+              "end_date": "2028-06-02",
+              "start_date": "2027-02-01"
+            }
+          ]
+        },
+        "quote": "[조기상환청구권(Put Option)에 관한 사항]\"본 사채\"의 \"사채권자\"는 \"본 사채\"의 발행일로부터 18개월이 되는 2027년 04월 02일 및 이후 매 3개월에 해당되는 날(이하 \"조기상환지급일\"이라 한다.)에 \"본 사채\"의 원금에 해당하는 금액의 전부 또는 일부에 조기상환수익률[연 4.0%(3개월 복리)]을 가산한 금액에 대하여 만기 전 조기상환을 청구할 수 있다.",
+        "span": [
+          6421,
+          6631
+        ],
+        "rcept_no": "20250930000508",
+        "korean_name": "콜·풋 세부 스케줄"
+      },
+      {
+        "field_key": "refixing_terms",
+        "gate_status": "passed",
+        "reason_code": null,
+        "reason_ko": null,
+        "exposable": true,
+        "display": "value",
+        "value": {
+          "detail": "본 사채 발행 후 매 5월이 경과한 날마다 시가산정액이 해당 조정일 직전일 현재의 전환가액보다 낮은 경우 새로운 전환가액으로 조정하되, 최초 전환가액의 70%(828원) 한도로 함.",
+          "floor_price": 828,
+          "floor_ratio": 0.7,
+          "adjustment_period": "매 5개월"
+        },
+        "quote": "라. 위 가.목 내지 다.목과는 별도로 본 사채 발행 후 매 5월이 경과한 날(해당일이 영업일이 아닌 경우 그 익영업일)을 전환가액 조정일로 하고, 각 전환가액 조정일 전일을 기산일로 하여 그 기산일로부터 소급한 1개월 가중산술평균주가, 1주일 가중산술평균주가 및 최근일 가중산술평균주가를 산술평균한 가액과 최근일 가중산술평균주가 중 높은 가격(본 라)목 및 마)목에서 \"시가산정액\")이 해당 조정일 직전일 현재의 전환가액보다 낮은 경우 동 낮은 가격을 새로운 전환가액으로 한다. 단, 새로운 전환가액은 최초 전환가액의 70%까지로 한다",
+        "span": [
+          31031,
+          31331
+        ],
+        "rcept_no": "20250930000508",
+        "korean_name": "리픽싱 세부 조건"
+      }
+    ],
+    "countdown": {
+      "label_ko": "전환청구 개시",
+      "date": "2026-10-02",
+      "window": [
+        "2026-10-02",
+        "2028-09-02"
+      ],
+      "window_state": "upcoming",
+      "d_day_label": "D-43",
+      "source": "cvbdIsDecsn.cvrqpd_bgd",
+      "note": "D-day is computed at export time; recompute it at render time."
+    },
+    "render_debug": "[+] R2 풍전약품 20250930000508 exposable\n      노출 3: lockup_release, option_schedule, refixing_terms\n      차단 correction_interpretation:no_correction_rows",
+    "corp_name_in_body": "에스씨엠생명과학 주식회사",
+    "corp_name_agrees_with_body": false,
+    "corp_name_note": "corp_name is the DART master name; corp_name_in_body is what the filing itself prints (and it carries the legal-form suffix 주식회사/(주)). The comparison ignores that suffix, so `false` means the two are genuinely different companies' names."
+  },
+  "convertible_api_facts": {
+    "rcept_no": "20250930000508",
+    "전환가액": "1182",
+    "전환비율_pct": "100",
+    "전환청구기간": [
+      "2026-10-02",
+      "2028-09-02"
+    ],
+    "전환발행주식수": "1692047",
+    "오버행_pct": "4.29",
+    "리픽싱_최저조정가액": "828",
+    "리픽싱_기준": "'증권의 발행 및 공시 등에 관한 규정'5-23조(전환가액의 하향조정)\n시가하락에 따른 전환가액의 조정시 조정 후 전환가액은 다음 각 목의 가액 이상으로 하여야 한다.\n가. 발행당시의 전환가액(조정일 전에 신주의 할인발행 등 또는 감자 등의 사유로 전환가액을 이미 하향 또는 상향 조정한 경우에는 이를 감안하여 산정한 가액)의 100분의 70에 해당하는 가액",
+    "권면총액": "2000000000",
+    "만기일": "2028-10-02",
+    "납입일": "2025-10-02",
+    "발행방법": "사모",
+    "complete": true,
+    "missing": []
+  }
+}

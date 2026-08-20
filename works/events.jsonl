@@ -93,3 +93,5 @@
 {"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S7"}
 {"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S8"}
 {"ts": "2026-08-20T09:35:14+09:00", "type": "slice_status_changed", "slice": "P3.DECOMP", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-20T09:36:53+09:00", "type": "slice_status_changed", "slice": "P3.S1", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-20T09:58:06+09:00", "type": "slice_status_changed", "slice": "P3.S1", "old_status": "in_progress", "new_status": "done"}
