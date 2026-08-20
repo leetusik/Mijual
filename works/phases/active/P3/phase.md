@@ -228,6 +228,35 @@ several events (a 정정 pairing leaves `superseded_by_pairing` placeholders car
 resolving by version row alone silently picks the wrong one. A sample that vanishes from the corpus is
 reported as a `GAP` by the exporter rather than swapped for a substitute.
 
+### R1 landed design (P3.S2 read-back, 2026-08-20) — the spec downstream rounds compose
+
+Record + implementation contract landed read-only at
+`docs/reference/design/rounds/01-brand-foundations/output/` (`result.md`, `build-prompt.md`,
+`tokens.css`, `fonts.css`). Direction: **C "terminal-light"** — paper-grey control room, mono
+numerals, hairline borders, square corners, **light theme only**. Key decisions binding R2–R7:
+
+- **Color semantics:** brand charcoal `#1f2926` is identity-only (wordmark neutral — color is
+  reserved for data); green `--live #0d5c48` = 살아있는 가치 (▷ estimates, citations, live counts);
+  red `--alert #c53030` = expiring/lost only (≤7d urgency, D-DAY fill, 소멸주의보, 기재 불일치) and
+  **never encodes price movement**. Rights types get subtle hues: ① `#2b5aa0` ② `#96610f` ③ `#6d3a5d`,
+  tinted chips only, label-only (no ①②③ numbering in UI).
+- **Type:** Pretendard Variable (Korean UI, self-hosted woff2 in the design project) + IBM Plex Mono
+  for **every numeral**; Korean prose never mono. Sizes 11–44, body 13.5/1.55.
+- **Shape/motion:** radius 0 everywhere, no shadows (hairline borders carry elevation), fades only
+  (120/200/320ms, one ease), reduced-motion: ticks freeze, fades become cuts.
+- **Urgency scale:** >30d faint → ≤30d ink → ≤7d alert → D-DAY filled; color-only, never size; D+N unfilled.
+- **Trust primitives** exist as React reference implementations in the design project
+  (`components/*.jsx` + `.prompt.md`): EstimateMarker, Citation ([근거] chip → inset quote panel →
+  DART link), StateBadge (추후결정/철회/기재 불일치; gate-failed renders as nothing), DDay, RightsChip,
+  소멸주의보 strip (sub-brand confirmed).
+- **Lockup changed by the operator mid-session:** English wordmark **alone** — 한글 '미주알' 병기
+  dropped from the lockup (logged departure, operator-directed; supersedes the handoff's locked
+  elements). Final wordmark asset: `assets/mijual-wordmark-charcoal.png` + reversed white, in the
+  design project.
+- **Known gaps carried forward:** no favicon-scale symbol mark and no SVG wordmark exist (PNG only) —
+  needed at latest by the apply phase; binary assets (wordmark PNGs, PretendardVariable.woff2) live in
+  the design project, not the repo — fetch at apply time.
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3
