@@ -10,7 +10,7 @@
 - Next slice: `P3.S5`
 - Waiting on operator: `none`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T03:05:16+09:00`
+- Rebuilt at: `2026-08-21T03:05:54+09:00`
 
 ## Active Phases
 
@@ -59,7 +59,7 @@
 | [x] `P3.S1` | `done` | Design grounding pack: dated real content export for the design sessions | `feature` | `works/phases/active/P3/slices/P3.S1` |
 | [x] `P3.S2` | `done` | Design R1: brand identity + foundations (logo lockup, palette, type, tokens) | `co-work` | `works/phases/active/P3/slices/P3.S2` |
 | [x] `P3.S3` | `done` | Design R2: landing 관제 현황판 + global chrome + vocky feedback touchpoint | `co-work` | `works/phases/active/P3/slices/P3.S3` |
-| [ ] `P3.S4` | `todo` | Design R3: event detail for ①②③ + citation display + 철회/추후결정/불일치 states | `co-work` | `works/phases/active/P3/slices/P3.S4` |
+| [ ] `P3.S4` | `in_progress` | Design R3: event detail for ①②③ + citation display + 철회/추후결정/불일치 states | `co-work` | `works/phases/active/P3/slices/P3.S4` |
 | [ ] `P3.S5` | `todo` | Design R4: 종목 검색 + 보유량 슬라이더 + 놓친 돈 조회기 (anonymous 금액 환산) | `co-work` | `works/phases/active/P3/slices/P3.S5` |
 | [ ] `P3.S6` | `todo` | Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load | `co-work` | `works/phases/active/P3/slices/P3.S6` |
 | [ ] `P3.S7` | `todo` | Design R6: grounded 해설 panel (citation-forced, SSE streaming states) | `co-work` | `works/phases/active/P3/slices/P3.S7` |
