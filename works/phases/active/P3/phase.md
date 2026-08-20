@@ -286,5 +286,7 @@ numerals, hairline borders, square corners, **light theme only**. Key decisions 
   R2, posed back, never answered by us (carried over from `product` v0002).
 - The admin panel's audience boundary: operator-only, or also a judge-visible "how the gate works" view?
   Posed at R7.
-- vocky's embed shape (script widget vs. link-out) — an integration fact the operator supplies before R2's
-  handoff; it constrains where the touchpoint can live.
+- ~~vocky's embed shape~~ **Resolved (operator, 2026-08-20):** vocky embeds as a **script widget**
+  (vocky's own UI, triggered from the chrome — R2 places and styles the trigger point), and vocky
+  **provides an API for observing collected feedback** — the admin panel (R7) includes a
+  feedback-observation view backed by it; the apply phase integrates both.
