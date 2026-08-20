@@ -257,6 +257,39 @@ numerals, hairline borders, square corners, **light theme only**. Key decisions 
   needed at latest by the apply phase; binary assets (wordmark PNGs, PretendardVariable.woff2) live in
   the design project, not the repo — fetch at apply time.
 
+### R2 landed design (P3.S3 read-back, 2026-08-21) — landing + chrome, and the R2.1 cosmos pivot
+
+Record + contract landed read-only at `docs/reference/design/rounds/02-landing-chrome/output/`
+(`result.md`, `build-prompt.md`, `tokens.css` — fonts.css unchanged from R1). Where R2 and R2.1
+conflict, **R2.1 governs**. Binding on R3–R7 and the apply phase:
+
+- **R2.1 theme pivot (operator-directed): app surfaces run cosmos-dark** — one continuous
+  full-page starfield, green radial glows, shooting stars; cards are aerospace-craft panels
+  (translucent dark, luminous hairline, top-edge glow, 9px corner brackets); 소멸주의보 is a
+  hazard placard. Implemented as the `.cosmos` token scope (29 remaps + `--panel-bracket`,
+  `--panel-glow`, `--live-solid`) so R1 components adapt unchanged; light `:root` stays for
+  light/print. **This supersedes R1's "light theme only"** for app surfaces. All R1-era cards
+  were re-cut to cosmos in content (groups stayed clean — no re-review address).
+- **Hero is search-first**: 내 종목 연결 H1 + console search + mono stat line — the hero IS the
+  종목 연결 entry; submit goes to R4's 조회. Retrospective anchor (▷718.1억 + band 하한) moved to
+  a craft value card beside the countdown/stats card. Orbit ellipses hero-only, never shrunk.
+- **One page** (no separate retrospective page); board = urgency-interleaved with type tabs;
+  a row carries exactly one governing countdown; ② past-opening rows = "전환청구 진행 중 — 56건"
+  strip (never "종료"); past ①/③ not on the landing; `발행가 확정 전` chip is the ① pre-fixing
+  state; freshness = 기준-timestamp chip + stale inset notice, board never dims (stale-never-dark).
+- **vocky**: chrome-level triggers (nav `[의견]`, mobile sheet row, footer link), plain elements
+  with `data-vocky-trigger`; widget UI is vocky's own; no floating button.
+- **Estimate mark decided at the R2 gate (operator): 「추정」 everywhere.** The bordered tag is the
+  system-wide estimate mark; ▷ retires from the UI (docs/pipeline keep ▷ internally). The
+  `EstimateMarker` component gets re-cut to the tag in a later round; the apply phase builds
+  tag-only. Until the re-cut, the component card's ▷ rendering is historical, not governing.
+- **New assets**: ring logo (`assets/mijual-logo-ring-{charcoal,white}.png`, from the operator's
+  upload `uploads/mijual_logo_v2_tran.png`) — closes R1's missing-symbol-mark gap; nav/footer use
+  the white ring wordmark.
+- **Carried to later rounds / apply**: countdown cut-off instant (assumed 2026-09-04 24:00 KST —
+  real 접수 마감 시각 TBC), stale threshold (hours), nav labels still provisional (내 종목 연결 /
+  관제 현황판 / 해설), 추후결정-countdown rows (4 today) surface decided at R3/R4.
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3
