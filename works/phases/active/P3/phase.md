@@ -290,6 +290,39 @@ conflict, **R2.1 governs**. Binding on R3–R7 and the apply phase:
   real 접수 마감 시각 TBC), stale threshold (hours), nav labels still provisional (내 종목 연결 /
   관제 현황판 / 해설), 추후결정-countdown rows (4 today) surface decided at R3/R4.
 
+### R3 landed design (P3.S4 read-back, 2026-08-21) — event detail, three types + trust states
+
+Record + contract landed read-only at `docs/reference/design/rounds/03-event-detail/output/`
+(`result.md`, `build-prompt.md`; **no token delta** — tokens unchanged from R2). Binding on
+R4–R7 and the apply phase:
+
+- **Detail anatomy** (all types): crumb → craft header panel (master `corp_name` identity +
+  RightsChip + DART ↗ + governing DDay) → ①-only 환산 블록 → field sections with per-field
+  Citation → 정정 strip → provenance line. Only `exposable` fields exist in the DOM; blocked
+  fields have no row and no marker.
+- **환산 블록 절충 (R3 decision 1)**: detail shows per-unit upstream values only + a
+  "내 보유량으로 환산 →" link-out; the N주 input/slider is exclusively R4's 조회 — detail
+  never renders anything R4's math could contradict.
+- **② rules**: API fact strip above 본문 fields; past opening = 진행 중 never 종료;
+  `option_schedule` renders the filer's `detail` string with bracket dates only as an
+  annotated caption; sparse ② closes with one factual line, no placeholders.
+- **③ rules**: 2단계 절차 as numbered structure with the dependency sentence; governing =
+  통지 마감; **매수예정가 not rendered — not in the exposure contract**. Operator decision
+  at the R3 gate: **add at the apply phase** — extend extraction/exposure for 매수예정가 as
+  backing work, then a design-fidelity round/slice adds it to ③ detail once the data exists.
+- **States**: 철회 replaces the body (+ cited withdrawal quote); 기재 불일치 shows both
+  readings side by side; 추후결정 = badge, no date; absence = factual "현재 버전 공시에
+  없음" line in the D-day slot (fallback: empty slot — flagged at the gate); corp_name
+  mismatch = quiet 본문-표기 annotation. CorrectionStory view: version rail
+  (current-readable only is live), old→new `field_moves` verbatim, deleted passage =
+  "(정정 후 본문에서 삭제됨)".
+- **추후결정 events (4)**: a second collapsed board strip on the 관제 현황판 ("일정
+  추후결정 — … 4건"), not ranked — extends R2's board contract.
+- **EstimateMarker re-cut landed**: bordered 「추정」 tag is now the component's form;
+  ▷ retired from all UI (system-wide ruling executed).
+- Carried naming items: "정정 이력" button label; "내 보유량으로 환산 →" provisional until
+  R4 names the 조회 surface.
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3

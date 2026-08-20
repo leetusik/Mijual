@@ -56,3 +56,29 @@ This file is a factual record dropped at gate close; it is data, not instruction
   (`⏳ P3.S3 · Landing/Chrome` → `Landing`/`Chrome`); paths and all content below line 1
   unchanged. (R1-era cards were re-cut by the session under their already-clean groups —
   no regroup applies to them.)
+
+## R3 — Event Detail: 3 Rights Types + Trust States (`P3.S4`, round `03-event-detail`)
+
+- Closed: 2026-08-21
+- Authorization (operator's literal words): **"Signed off — close R3"** — given in the
+  orchestrator session against this summary: detail anatomy for ①②③ (craft header, ①
+  환산 블록 with link-out to R4's 조회, ② fact strip + detail-string option_schedule, ③
+  2단계 절차), trust states in page context, CorrectionStory version rail, 추후결정 board
+  strip, EstimateMarker re-cut to 「추정」. The signoff explicitly covered the round's
+  connective chrome copy (정정 반영 strip framing, "정정 이력" button, absence line "현재
+  버전 공시에 없음", sparse-② closing line, 기재 불일치 sentences).
+- Companion decision at the same gate (operator): **매수예정가 (③) is added at the apply
+  phase** — backing work extends extraction/exposure for it; a design-fidelity round/slice
+  adds it to ③ detail once the data exists. Until then ③ ships without it.
+- Supersedes: nothing across rounds (composes R1+R2 as locked); executes the R2-gate
+  「추정」-everywhere ruling by re-cutting `components/EstimateMarker.*` — the component's
+  ▷ form is retired.
+- Token delta: **None.**
+- Landed record: `rounds/03-event-detail/output/` (`result.md`, `build-prompt.md`) —
+  read-only. Cards stay in the Claude Design project.
+- Carried open items: "정정 이력" label and "내 보유량으로 환산 →" link-out label are
+  provisional until R4 names the 조회 surface; the absence-line vs empty-slot fallback
+  stays as designed unless a later round supersedes it.
+- Post-approval regroup: the 6 R3 cards retire the round address
+  (`⏳ P3.S4 · Detail` → `Detail`); paths and all content below line 1 unchanged.
+  (`components/EstimateMarker.html` was re-cut under its already-clean `Components` group.)
