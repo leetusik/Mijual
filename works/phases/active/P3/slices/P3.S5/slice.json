@@ -3,7 +3,7 @@
   "phase_id": "P3",
   "name": "Design R4: 종목 검색 + 보유량 슬라이더 + 놓친 돈 조회기 (anonymous 금액 환산)",
   "kind": "co-work",
-  "status": "in_progress",
+  "status": "pending",
   "order": 5,
   "depends_on": [
     "P3.S4"
