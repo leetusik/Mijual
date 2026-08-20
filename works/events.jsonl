@@ -83,3 +83,13 @@
 {"ts": "2026-08-20T05:11:01+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers", "source": "P2.REVIEW"}
 {"ts": "2026-08-20T05:14:45+09:00", "type": "slice_status_changed", "slice": "P2.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-20T05:14:45+09:00", "type": "phase_reviewed", "phase": "P2", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-20T09:29:57+09:00", "type": "slice_status_changed", "slice": "P3.DECOMP", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-20T09:33:40+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S1"}
+{"ts": "2026-08-20T09:33:40+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S2"}
+{"ts": "2026-08-20T09:33:40+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S3"}
+{"ts": "2026-08-20T09:33:40+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S4"}
+{"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S5"}
+{"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S6"}
+{"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S7"}
+{"ts": "2026-08-20T09:33:47+09:00", "type": "slice_created", "phase": "P3", "slice": "P3.S8"}
+{"ts": "2026-08-20T09:35:14+09:00", "type": "slice_status_changed", "slice": "P3.DECOMP", "old_status": "in_progress", "new_status": "done"}
