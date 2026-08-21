@@ -134,3 +134,24 @@
 {"ts": "2026-08-21T23:51:38+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes", "source": "P3.REVIEW"}
 {"ts": "2026-08-21T23:54:53+09:00", "type": "slice_status_changed", "slice": "P3.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-21T23:54:53+09:00", "type": "phase_reviewed", "phase": "P3", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-22T00:07:54+09:00", "type": "slice_status_changed", "slice": "P5.DECOMP", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-22T00:14:18+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S1"}
+{"ts": "2026-08-22T00:14:19+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S2"}
+{"ts": "2026-08-22T00:14:19+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S3"}
+{"ts": "2026-08-22T00:14:19+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S4"}
+{"ts": "2026-08-22T00:14:21+09:00", "type": "deferred_promoted", "deferred": "D1", "phase": "P5", "slice": "P5.S5"}
+{"ts": "2026-08-22T00:14:28+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S6"}
+{"ts": "2026-08-22T00:14:28+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S7"}
+{"ts": "2026-08-22T00:14:28+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S8"}
+{"ts": "2026-08-22T00:14:28+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S9"}
+{"ts": "2026-08-22T00:14:35+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S10"}
+{"ts": "2026-08-22T00:14:35+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S11"}
+{"ts": "2026-08-22T00:14:35+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S12"}
+{"ts": "2026-08-22T00:14:35+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S13"}
+{"ts": "2026-08-22T00:14:42+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S14"}
+{"ts": "2026-08-22T00:14:43+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S15"}
+{"ts": "2026-08-22T00:14:43+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S16"}
+{"ts": "2026-08-22T00:14:43+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S17"}
+{"ts": "2026-08-22T00:14:48+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S18"}
+{"ts": "2026-08-22T00:14:48+09:00", "type": "slice_created", "phase": "P5", "slice": "P5.S19"}
+{"ts": "2026-08-22T00:18:54+09:00", "type": "slice_status_changed", "slice": "P5.DECOMP", "old_status": "in_progress", "new_status": "done"}

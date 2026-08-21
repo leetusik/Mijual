@@ -1,0 +1,34 @@
+{
+  "id": "P5.S18",
+  "phase_id": "P5",
+  "name": "vocky integration: observation API shape decision + admin vocky view",
+  "kind": "implementation",
+  "status": "todo",
+  "order": 18,
+  "depends_on": [
+    "P5.S11",
+    "P5.S17"
+  ],
+  "created_at": "2026-08-22T00:14:48+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

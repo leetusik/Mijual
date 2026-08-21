@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.DECOMP`
-- Next slice: `P5.REVIEW`
+- Current slice: `P5.S1`
+- Next slice: `P5.S2`
 - Waiting on operator: `none`
-- Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T23:54:53+09:00`
+- Open deferred jobs: `3`
+- Rebuilt at: `2026-08-22T00:18:54+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.DECOMP` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S1` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -72,7 +72,26 @@
 
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
-| [ ] `P5.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P5/slices/P5.DECOMP` |
+| [x] `P5.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P5/slices/P5.DECOMP` |
+| [ ] `P5.S1` | `todo` | FastAPI service skeleton + read-layer foundations | `implementation` | `works/phases/active/P5/slices/P5.S1` |
+| [ ] `P5.S2` | `todo` | Presentation contract: countdowns, 환산 chain, lapse results, citations, 「추정」 tagging | `implementation` | `works/phases/active/P5/slices/P5.S2` |
+| [ ] `P5.S3` | `todo` | Board, summary and event-detail read endpoints (+ CorrectionStory version rail) | `implementation` | `works/phases/active/P5/slices/P5.S3` |
+| [ ] `P5.S4` | `todo` | 내 종목 조회 endpoints: stock resolution, live rights, 2026 놓친 돈 breakdown | `implementation` | `works/phases/active/P5/slices/P5.S4` |
+| [ ] `P5.S5` | `todo` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채 | `implementation` | `works/phases/active/P5/slices/P5.S5` |
+| [ ] `P5.S6` | `todo` | ③ 매수예정가 backing (D-15): extraction target, gate, exposure | `implementation` | `works/phases/active/P5/slices/P5.S6` |
+| [ ] `P5.S7` | `todo` | Reader auth backend: accounts, password hashing, sessions, reset flow | `implementation` | `works/phases/active/P5/slices/P5.S7` |
+| [ ] `P5.S8` | `todo` | Portfolio backend: holdings, D-day list, 챙긴 돈, 알림 preferences, sample portfolio | `implementation` | `works/phases/active/P5/slices/P5.S8` |
+| [ ] `P5.S9` | `todo` | Admin backend: operator door + read-only ops endpoints + pipeline run log | `implementation` | `works/phases/active/P5/slices/P5.S9` |
+| [ ] `P5.S10` | `todo` | Next.js foundation: scaffold, tokens/fonts/assets, cosmos shell, trust primitives, API client | `implementation` | `works/phases/active/P5/slices/P5.S10` |
+| [ ] `P5.S11` | `todo` | Global chrome: nav, footer, mobile sheet, vocky triggers | `implementation` | `works/phases/active/P5/slices/P5.S11` |
+| [ ] `P5.S12` | `todo` | Landing 관제 현황판: hero, 회고 anchor panels, countdown, 소멸주의보, board | `implementation` | `works/phases/active/P5/slices/P5.S12` |
+| [ ] `P5.S13` | `todo` | Event detail ①②③: header, 환산 블록, field rows, trust states, CorrectionStory | `implementation` | `works/phases/active/P5/slices/P5.S13` |
+| [ ] `P5.S14` | `todo` | 내 종목 조회 surface: search, 보유량, 진행 중인 권리, 놓친 돈 breakdown, empty states | `implementation` | `works/phases/active/P5/slices/P5.S14` |
+| [ ] `P5.S15` | `todo` | Auth surfaces + conversion offers + sample entry | `implementation` | `works/phases/active/P5/slices/P5.S15` |
+| [ ] `P5.S16` | `todo` | 내 포트폴리오: holdings, D-day list, 챙긴 돈, 알림 설정, sample mode, account menu | `implementation` | `works/phases/active/P5/slices/P5.S16` |
+| [ ] `P5.S17` | `todo` | 운영 관제 admin panel: door + six sections | `implementation` | `works/phases/active/P5/slices/P5.S17` |
+| [ ] `P5.S18` | `todo` | vocky integration: observation API shape decision + admin vocky view | `implementation` | `works/phases/active/P5/slices/P5.S18` |
+| [ ] `P5.S19` | `todo` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P5/slices/P5.S19` |
 | [ ] `P5.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P5/slices/P5.REVIEW` |
 
 ## Phase P6: Apply — AI 질문 agent
