@@ -3,14 +3,14 @@
   "phase_id": "P5",
   "name": "Presentation contract: countdowns, 환산 chain, lapse results, citations, 「추정」 tagging",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 2,
   "depends_on": [
     "P5.S1"
   ],
   "created_at": "2026-08-22T00:14:19+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-22T00:29:29+09:00",
+  "completed_at": "2026-08-22T00:51:21+09:00",
   "risk": "high",
   "source": {
     "type": "manual",

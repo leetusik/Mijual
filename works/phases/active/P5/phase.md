@@ -253,6 +253,97 @@ Run it: `.venv/bin/uvicorn mijual.web.app:app --reload` (also in `compose.yaml`'
    the session cookie. Pool sizing / `pool_pre_ping` / read-replica routing are noted in `deps.py` as
    **P4** deploy decisions.
 
+### `P5.S2` — the presentation contract exists; do not re-derive any of it
+
+`src/mijual/present/` is the derivation layer. **Every surface reads it; no endpoint
+re-derives a number.** Import map, so no slice goes looking:
+
+| you need | import |
+|---|---|
+| a tagged value | `from mijual.present import Figure` → `Figure.fact(v, quote=…, span=…, rcept_no=…)` / `Figure.estimate(v)` |
+| one event for a board row or a detail page | `event_view(exposure, facts=…, corp_name_in_body=…, today=…)` → `EventView` |
+| just the countdown / identity / fields | `countdown_of` · `identity_of` · `field_payloads` · `field_value` |
+| ①'s money factors | `offering_inputs(exposure, event_inputs_result)` → `OfferingInputs` |
+| an offering's 소멸 outcome | `lapse_result(row_or_stored_json, facts=perf_facts)` → `LapseResult` |
+| 발행사 기재 불일치 | `issuer_disagreement(perf_facts_mapping)` → `Disagreement | None` |
+| the landing/board aggregates | `board_summary(views, as_of=…, …)` → `BoardSummary` |
+| JSON | every shape's **`payload()`** — never `dataclasses.asdict` (it emits the nulls the contract exists to prevent) |
+
+1. **Serialization is decided.** Money and every ratio are **exact decimal strings**
+   (`decimal_str`, never rounded, never a float — 배정비율 keeps all ten decimals);
+   counts are `int`; calendar dates are **bare** `YYYY-MM-DD` (`iso_day`); instants are
+   `datetime` in the dataclass and `+09:00` second-precision strings in `payload()`
+   (`present.values.instant`). **Absent means the key is absent**, never `null` — the
+   same rule `mijual.web.errors` already uses for `message_ko`.
+2. **Keys are English `snake_case`; Korean appears only as content** (`label_ko`,
+   `korean_name`, `notice_ko`). The grounding samples' `offering_inputs` shows Korean
+   keys — that is the exporter script's shape, not the product's; `lapse_result`'s
+   English keys are product code and the build prompts name `unit_value`,
+   `unit_value_floor`, `final_price_date` in code position. **Do not re-litigate this**,
+   and do not mix scripts in one JSON contract.
+3. **The plan's key name `dday` governs**, holding what the grounding samples call
+   `d_day_label` (`"D-5"`); `days` carries the signed integer beside it.
+4. **What raises, on purpose** (each one is a rule the design states as a prohibition):
+   a `Figure` with no `estimated`, or with a quote on an estimate; an `OfferingInputs` /
+   `LapseResult` carrying money with no `confirmed_price`; a `FieldPayload` with a value
+   beside `추후결정`; a `Disagreement` with fewer than two readings or with none/two
+   marked `used`; `countdown_of` on an **exposable ②** with no `facts=` (a silently
+   dateless board row looks like data, not like a bug).
+5. **A non-exposable event has no countdown and no fields.** `EventView.renderable` is
+   `state in {"exposable", "withdrawn"}`; 철회 *is* a surface (the notice replaces the
+   body), everything else — suppressed / flagged / `no_document` / `no_detail` /
+   `incomplete_api_row` — has no board row and no detail page, so **`P5.S3` answers 404
+   rather than rendering a page that explains why an event is not exposed**. This is
+   stricter than `scripts/export_design_grounding.py`, which emits a countdown for the
+   flagged sample; that is a designer's debug convenience, not the contract.
+6. **The reader payload carries no gate reason code and no report `reason` string.** Why
+   a field is missing is internal (`states-and-trust.md` §4, D-14) — `P5.S9`/`P5.S17`
+   read `EventExposure` / the report directly, and they are the only surfaces that do.
+7. **⚠ `P5.S3`/`P5.S4` blocker, measured here: `mijual.estimate` imports `mijual.dart`,
+   `mijual.collect` **and** `mijual.extract` at module level.** A router therefore cannot
+   call `build_report` or `event_inputs` — `tests/test_web_smoke.py`'s AST scan would
+   fail on a direct import, and the module tree comes along regardless. So the 놓친 돈 /
+   소멸가치 numbers must reach the request path from **persisted** state: either the
+   `PerformanceReport.facts` JSON already stored (which is why `lapse_result` also accepts
+   a `LapseRow.as_json()` mapping and `issuer_disagreement` takes the stored mapping), or
+   an additive persisted precomputation written by the worker (`schema_sync.ensure_columns`
+   / a new table — **no Alembic**), the same shape of backing work as `P5.S9`'s run log.
+   Note that `event_inputs`' 확정발행가 / 할인율 / 배정비율 are **not** in the exposure
+   columns today; decide this in `P5.S3` and record it, do not smuggle an extractor import
+   into a router. (`mijual.cb` and `mijual.gates.exposure` are both clean — verified.)
+8. **`mijual.present` itself imports only `mijual.calc` + `mijual.gates.exposure`** at
+   runtime; `mijual.estimate` / `mijual.cb` types are `TYPE_CHECKING`-only and the
+   functions read attributes. `tests/test_present.py` enforces it with the same AST scan
+   `web` uses (TYPE_CHECKING blocks excluded). **`web → present`, never the reverse** —
+   which is why `present.values.instant` restates `mijual.web.clock.iso`'s policy instead
+   of importing it; a test pins the two together byte-for-byte.
+9. **No Korean was invented.** `COUNTDOWN_LABELS_KO` (신주인수권증서 매매 마감 · 전환청구
+   개시 · 반대의사 통지 마감) are the strings the grounding pack was exported with and R3
+   names as `countdown.label_ko`; `MISMATCH_LABEL_KO` is ui-traps #2's locked literal;
+   `FIELD_NAMES_KO` is copied verbatim from `mijual.extract.fields.FIELDS` (importing it
+   would drag the extractor tree) and **pinned to it by a test**, so a label change in
+   `fields.py` fails the suite. The three countdown labels are also duplicated in
+   `scripts/export_design_grounding.py`'s `key_date()`; the script was deliberately left
+   untouched (it regenerates a landed, dated pack) — **if a later slice ever edits it,
+   import them from `mijual.present` instead of re-typing them.**
+10. **`board_summary` definitions**, so a SQL-side count in `P5.S3` matches: 감시 중 =
+    `state == "exposable"`; 30일 이내 = `0 <= days <= 30` **inclusive** (the definition
+    `board-snapshot.md` measured 34 with); 추후결정 = exposable with **no** countdown date;
+    ② 진행 중 = `window_state == "open"` **and** the anchor is past. That last one is
+    deliberately narrower than the snapshot's `지남` column (56, which is only `days < 0`):
+    an ② whose 전환청구기간 has fully closed is not "지금 전환할 수 있는". If the live count
+    differs from 56, that is why — it is not a regression.
+11. **The landing countdown instant is still open.** `BoardSummary.countdown_target` is
+    `None` and the contract will not invent one; R2's assumed 2026-09-04 24:00 KST is not
+    in the code. `next_lapse_date` / `next_lapse_corp_name` feed the 소멸주의보 strip's
+    live numbers (15건 / 2026-09-04 / 계양전기) from the *same* object as the stats card,
+    which is the whole point of one summary shape.
+12. **Cross-checked against the landed pack.** All 11 grounding samples were replayed
+    through the layer: countdown, identity, exposable-field set, `lapse_result` values
+    (한화솔루션 20,635,460,625원 = ▷206.4억원) and the 대한광통신 두 readings all reproduce,
+    with only the flagged-event divergence in note 5. Worth re-running as a scratch script
+    (never as a committed test — the pack is dated) if a later slice changes a derivation.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -333,6 +424,28 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   (DB-independent by design). **`qa`** — suite baseline 59 → **62 tests**, still ~1 s, no network/
   model/DB. **`operations`** — `/health` is a liveness probe that deliberately does not touch
   Postgres ("stale, never dark"); data freshness is a separate corpus fact served by `P5.S3`.
+- (`P5.S2`) **`api`** — the **presentation contract** every surface reads is now a named,
+  versionable shape set: `countdown` (`label_ko` · `date` · `dday` · `days` · `window` ·
+  `window_state` · `reference` · `source`, one governing anchor per rights type),
+  `corp_name_in_body` / `corp_name_agrees_with_body`, `offering_inputs`, `lapse_result`, the
+  per-field payload (`display` · `value` · `quote` · `span` · `rcept_no` · `korean_name`), the
+  발행사 기재 불일치 two-reading shape, and the single board/landing summary — plus three
+  contract-wide serialization rules (**every value carries `estimated`**; money and ratios are
+  exact decimal **strings**, counts are ints, calendar dates are bare `YYYY-MM-DD` and instants
+  are absolute `+09:00`; an absent value means an **absent key**, never `null`) and the
+  English-`snake_case`-keys / Korean-only-as-content convention. **`backend`** — the new pure
+  derivation package `mijual.present` (`values` · `event` · `money` · `summary`) and what its
+  constructors *refuse* to build: a blocked field, a date beside 추후결정, an untagged estimate
+  and a won amount before 확정발행가 are now **unconstructable**, not merely forbidden.
+  **`architecture`** — a layer between the pipeline and the HTTP layer, with two boundary rules:
+  **`web → present`, never the reverse** (so instant serialization is restated rather than
+  imported back), and `present` imports nothing that can spend an OpenDART request or a model
+  call — enforced by an AST scan in `tests/test_present.py`, as `web` already is. Measured
+  consequence worth recording: **`mijual.estimate` pulls `mijual.dart` + `mijual.collect` +
+  `mijual.extract` at module level**, so the retrospective 소멸가치 numbers must reach a request
+  path from persisted state, never from `build_report`. **`qa`** — suite baseline 62 → **75
+  tests**, still ~1 s, no network/model/DB; the derivation was additionally cross-checked
+  against all 11 landed grounding samples out-of-suite (a dated pack is not a fixture).
 
 ## Open Questions
 
