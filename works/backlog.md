@@ -8,9 +8,9 @@
 - Current phase: `P5`
 - Current slice: `P5.S10`
 - Next slice: `P5.S11`
-- Waiting on operator: `none`
+- Waiting on operator: `P5.S10`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T04:24:26+09:00`
+- Rebuilt at: `2026-08-22T04:48:13+09:00`
 
 ## Active Phases
 
@@ -83,7 +83,7 @@
 | [x] `P5.S7` | `done` | Reader auth backend: accounts, password hashing, sessions, reset flow | `implementation` | `works/phases/active/P5/slices/P5.S7` |
 | [x] `P5.S8` | `done` | Portfolio backend: holdings, D-day list, 챙긴 돈, 알림 preferences, sample portfolio | `implementation` | `works/phases/active/P5/slices/P5.S8` |
 | [x] `P5.S9` | `done` | Admin backend: operator door + read-only ops endpoints + pipeline run log | `implementation` | `works/phases/active/P5/slices/P5.S9` |
-| [ ] `P5.S10` | `in_progress` | Next.js foundation: scaffold, tokens/fonts/assets, cosmos shell, trust primitives, API client | `implementation` | `works/phases/active/P5/slices/P5.S10` |
+| [~] `P5.S10` | `pending` | Next.js foundation: scaffold, tokens/fonts/assets, cosmos shell, trust primitives, API client | `implementation` | `works/phases/active/P5/slices/P5.S10` |
 | [ ] `P5.S11` | `todo` | Global chrome: nav, footer, mobile sheet, vocky triggers | `implementation` | `works/phases/active/P5/slices/P5.S11` |
 | [ ] `P5.S12` | `todo` | Landing 관제 현황판: hero, 회고 anchor panels, countdown, 소멸주의보, board | `implementation` | `works/phases/active/P5/slices/P5.S12` |
 | [ ] `P5.S13` | `todo` | Event detail ①②③: header, 환산 블록, field rows, trust states, CorrectionStory | `implementation` | `works/phases/active/P5/slices/P5.S13` |

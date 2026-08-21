@@ -3,7 +3,7 @@
   "phase_id": "P5",
   "name": "Next.js foundation: scaffold, tokens/fonts/assets, cosmos shell, trust primitives, API client",
   "kind": "implementation",
-  "status": "in_progress",
+  "status": "pending",
   "order": 10,
   "depends_on": [
     "P5.S3"
