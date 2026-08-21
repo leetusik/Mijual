@@ -3,7 +3,7 @@
   "phase_id": "P3",
   "name": "Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load",
   "kind": "co-work",
-  "status": "in_progress",
+  "status": "pending",
   "order": 6,
   "depends_on": [
     "P3.S5"
