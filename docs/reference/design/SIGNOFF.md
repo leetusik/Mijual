@@ -82,3 +82,31 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 6 R3 cards retire the round address
   (`⏳ P3.S4 · Detail` → `Detail`); paths and all content below line 1 unchanged.
   (`components/EstimateMarker.html` was re-cut under its already-clean `Components` group.)
+
+## R4 — 내 종목 조회: 검색 + 보유량 환산 + 놓친 돈 (`P3.S5`, round `04-lookup`)
+
+- Closed: 2026-08-21
+- Authorization (operator's literal words): **"Signed off — close R4"** — given in the
+  orchestrator session against this summary: the 5 lookup cards, the surface name
+  **내 종목 조회**, one-page/two-section layout (진행 중인 권리 → 2026년 놓친 돈),
+  direct number input + preset chips (no slider), no 기간 picker (fixed factual coverage
+  line), session-only memory (sessionStorage + restore chip, never server-side), and the
+  round's proposed chrome copy including the disclaimer footnote ("실제 손익은 개별
+  청약·매도 행동에 따라 다릅니다 — 이 값은 소멸된 증서의 이론가치를 보유량 기준으로
+  환산한 것입니다").
+- Companion decision at the same gate (operator): **②/③ lookup rows stay contract-only**
+  — the deadline-rows-never-money rule is binding as written; no pinned per-stock ②/③
+  sample and no drawn card needed. The apply phase builds from the contract.
+- Naming consequences: nav label 내 종목 연결 → **내 종목 조회**; R3's link-out
+  "내 보유량으로 환산 →" is confirmed as-is (no longer provisional).
+- Rounding verification (orchestrator, factual): the cards' ⌊N × 배정비율⌋ display
+  assumption matches `mijual.calc.allotted_shares` (Decimal multiply, floored — 단수주
+  절사). The mijual.calc rule governs, as the contract states.
+- Supersedes: nothing — composes R1–R3 as locked.
+- Token delta: **None.**
+- Landed record: `rounds/04-lookup/output/` (`result.md`, `build-prompt.md`) — read-only.
+  Cards stay in the Claude Design project.
+- Carried open items: "정정 이력" button label (still open, R5+); 삼성전자 on
+  `LookupEmpty` is a labeled structural stand-in, not a corpus claim.
+- Post-approval regroup: the 5 R4 cards retire the round address
+  (`⏳ P3.S5 · Lookup` → `Lookup`); paths and all content below line 1 unchanged.

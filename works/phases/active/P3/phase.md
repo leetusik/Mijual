@@ -323,6 +323,36 @@ R4–R7 and the apply phase:
 - Carried naming items: "정정 이력" button label; "내 보유량으로 환산 →" provisional until
   R4 names the 조회 surface.
 
+### R4 landed design (P3.S5 read-back, 2026-08-21) — 내 종목 조회: 검색 + 보유량 환산 + 놓친 돈
+
+Record + contract landed read-only at `docs/reference/design/rounds/04-lookup/output/`
+(`result.md`, `build-prompt.md`; **no token delta**). Five cards under `lookup/`. Binding on
+R5–R7 and the apply phase:
+
+- **Surface named 내 종목 조회** (session decision). Nav label 내 종목 연결 → **내 종목
+  조회**; R3's link-out "내 보유량으로 환산 →" stays as-is and routes here with the stock
+  preselected. The landing hero submits here. Anonymous, no login.
+- **One page, two sections** — 진행 중인 권리 on top, 2026년 놓친 돈 below; no mode toggle.
+- **보유량 input = direct integer input + preset chips** (100·500·1,000주), mono
+  right-aligned, instant recompute — no slider. **Session memory: browser session only**
+  (sessionStorage, restore chip "이전 입력 {n}주", never auto-filled, never server-side).
+- **기간 input: none.** Fixed factual coverage line "집계 범위 2026-01-01 ~ 오늘 (KST)";
+  boundary panel states ① 2026-01-01부터 · ② 2025-06부터; outside coverage is unstated,
+  never counted as 0.
+- **① conversion**: 배정 신주 = ⌊N × 배정비율⌋ — **verified against
+  `mijual.calc.allotted_shares` (floors in Decimal, 단수주 절사) — display matches**;
+  ratio shown to its full 10 decimals; pre-확정발행가 = share counts only, no money.
+- **②/③ rows = deadline rows with context, never a won amount** — ② dilution context,
+  ③ procedure + 통지 마감 (매수예정가 absent until apply-phase backing). Specified in the
+  contract but **not drawn** — no pinned per-stock ②/③ lookup sample exists (posed back).
+- **놓친 돈 semantics**: per-holding number is the full 배정 증서 value under the
+  do-nothing condition — framed "청약도 매도도 하지 않았다면" + disclaimer footnote
+  ("실제 손익은 개별 청약·매도 행동에 따라 다릅니다 …").
+- New chrome copy proposed and signed with the round (zero states, coverage lines,
+  search-miss line, disclaimer) — see the landed `result.md` list.
+- Carried: "정정 이력" label still open; 삼성전자 on `LookupEmpty` is a labeled structural
+  stand-in, not a corpus claim.
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3
