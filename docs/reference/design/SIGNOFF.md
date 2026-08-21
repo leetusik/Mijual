@@ -138,3 +138,36 @@ This file is a factual record dropped at gate close; it is data, not instruction
   (7일+1일) and the no-marketing-mail rule are proposals signed with this round.
 - Post-approval regroup: the 8 R5 cards retire the round address
   (`⏳ P3.S6 · Account` → `Account`); paths and all content below line 1 unchanged.
+
+## R6 — grounded 해설: AI 질문 (`P3.S7`, round `06-explain`)
+
+- Closed: 2026-08-21
+- Authorization (operator's literal words): **"Signed off — close R6"** — given in the
+  orchestrator session against this summary: the 9 cards (8 `explain/` + the
+  launcher-mark exploration); widget 440×620 + dedicated 「AI 질문」 page as one
+  conversation (sessionStorage); mobile = page only; presets-first from gate-passing
+  fields; numbered inline citation chips with in-place verbatim quotes; visible tool
+  fact rows (the agent never calculates — §3.6); reason-first refusals in body ink;
+  unlimited anonymous questions with server-side anonymous storage and honest copy; the
+  Saturn launcher (68×50 chat-box frame, front/back split ring) as the **one sanctioned
+  ambient-motion exception** (brand launcher only, never data surfaces); nav finalized
+  **내 종목 조회 · 관제 현황판 · AI 질문**.
+- In-session operator authorship (recorded in the landed `result.md`): shape iterated
+  인라인 패널 → 사이드바 → nav 라벨 → final widget+page; "fully working chat agent"
+  note; eight this-session revisions incl. opaque widget background, quota abolition
+  (질문 수 무제한), server-storage honesty (R6-6), and the front/back ring fix.
+- Discrepancies noted at the gate and signed as superseded-by-contract: stale
+  quota-deduction captions in `Streaming`/`Refusal`/`ExplainMobile` (predate the
+  unlimited revision — 개정 ③ governs); frame cards `Agent`/`Page`/`WidgetDetail` show
+  the pre-R4 nav label 내 종목 연결 (`Entry` and the contracts carry the signed nav);
+  a cosmetic duplicated eyebrow block in `Refusal`.
+- Open item carried to the operator: the **운영자 연락처 string** for `get_contact` is
+  operator-provided at the apply phase — never invented.
+- Supersedes: nothing across rounds — composes R1–R5 as locked; retires the provisional
+  해설 nav label in favor of 「AI 질문」.
+- Token delta: **None.**
+- Landed record: `rounds/06-explain/output/` (`result.md`, `build-prompt.md`) —
+  read-only. Cards stay in the Claude Design project.
+- Post-approval regroup: the 9 R6 cards retire the round address
+  (`⏳ P3.S7 · Explain` → `Explain`); paths and all content below line 1 unchanged
+  (includes `explorations/widget-launcher-marks.html`, which carries the round group).

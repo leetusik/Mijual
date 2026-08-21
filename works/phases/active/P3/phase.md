@@ -392,6 +392,59 @@ the apply phase:
   slot; notification settings hidden in sample (no address exists); no fake identity.
 - Carried: "정정 이력" label still open (R6+).
 
+### R6 landed design (P3.S7 read-back, 2026-08-21) — grounded 해설: AI 질문 (위젯 + 전용 페이지)
+
+Record + contract landed read-only at `docs/reference/design/rounds/06-explain/output/`
+(`result.md`, `build-prompt.md`; **no token delta**). Nine cards: eight under `explain/`
+(required five + `Widget`/`Page`/`WidgetDetail` frame splits — file `Agent.html` holds
+the Widget frame) plus the launcher-mark exploration
+`explorations/widget-launcher-marks.html`. Heavy in-session operator authorship: shape
+iterated 인라인 패널 → 사이드바 → nav 라벨 → **final: 위젯 챗룸 + 전용 페이지**, plus
+eight this-session revisions. Binding on R7 and the apply phase:
+
+- **해설 = fully functional agent, surfaced as 「AI 질문」**: desktop bottom-right
+  launcher → in-place opaque widget 440×620 (no backdrop/dim, page layout untouched);
+  nav third slot = 「AI 질문」 dedicated page (widget closes and the same conversation
+  continues — one sessionStorage thread); **mobile has no widget/launcher** — one
+  full-width page. Detail pages carry a preset question strip (generated only from
+  gate-passing fields) that opens the widget/page with event scope.
+- **Scope model**: opened from a detail → scope = that event (header chip + × to clear);
+  otherwise 전체 공시, including portfolio questions (R5 sample rules apply).
+- **Agent tools are visible**: every tool call renders as a mono fact row
+  (`이벤트 검색 「…」 → 1건 · ② …`); tools = search_events / get_event / get_portfolio /
+  save_feedback / get_contact. **Operator contact string is unset — operator-provided,
+  never invented.** Feedback auto-saves with optional reply email.
+- **The agent never calculates** (§3.6) — every number is a verified-contract value;
+  calculation requests are redirected to 내 종목 조회 with a fixed sentence.
+- **Inline citations = numbered evidence chips** per claim (same source → same number),
+  tap → in-place verbatim quote block + DART link; a sentence without a citation cannot
+  exist in the stream; chips arrive with their claims (no placeholder chips).
+- **SSE states**: text-swap "답변 준비 중…" (no spinners), streaming with 1s-step caret,
+  complete (footer fades in), interrupted keeps the partial answer + 재시도.
+- **Refusal = reason-first family, body ink, never alert-colored**: ① locked state fact
+  (with its own citation) ② "…는 해설하지 않습니다" ③ where to go. Five categories only
+  (철회 · 확정 전 · 공시에 없음 · 검증 미통과 폴백 · 계산 요청) — per-reason-code copy
+  stays an R7 operator question.
+- **완전 익명 + 질문 수 무제한 (operator revision)** — no quota display anywhere; and
+  **server-side anonymous conversation storage (operator revision)** viewed in the R7
+  admin panel — UI copy says 「대화는 익명으로 저장됩니다 (품질 점검용)」 and never
+  claims "저장 이력 없음". Screen persistence is sessionStorage (NOT localStorage —
+  differs from R5 portfolio rule).
+- **Launcher mark**: 68×50 chat-box frame + tail with a 22px Saturn (rotating band 4.5s,
+  ring split front/back sharing one 14s drift; hover scales the mark only). Recorded as
+  the **one sanctioned exception** to the no-ambient-motion rule — brand launcher only,
+  never data surfaces. Candidate comparison in `explorations/widget-launcher-marks.html`.
+- **Card-level discrepancies noted at the gate (contracts govern over frames)**:
+  (a) stale "질문 수 차감/같은 quota" captions in `Streaming`/`Refusal`/`ExplainMobile`
+  predate the unlimited-questions revision — superseded by 개정 ③; (b) the three
+  full-page frame cards (`Agent`/`Page`/`WidgetDetail`) show nav slot 1 as 내 종목 연결,
+  which R4 renamed 내 종목 조회 (`Entry` shows the signed nav correctly); (c) `Refusal`
+  has a duplicated eyebrow/caption block around its C/D sections (cosmetic mislabel).
+- vocky corner-conflict rule: launcher/widget must not collide with the 의견 trigger —
+  slot adjustment sits with the R2 Feedback spec (vocky bottom-left proposed).
+- Naming settled: nav = 내 종목 조회 · 관제 현황판 · **AI 질문** (the provisional 해설
+  label is retired).
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3
