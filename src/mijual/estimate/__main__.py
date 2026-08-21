@@ -12,6 +12,9 @@
     # 4. one 실적보고서, every parsed figure with its citation span
     .venv/bin/python -m mijual.estimate show 20260521000623
 
+    # 5. refresh what the API may not compute for itself (P5.S3) — 0 requests
+    .venv/bin/python -m mijual.estimate snapshot
+
 ``report`` is the command the committed numbers come from (N8): every figure the
 result quotes is printed by it, so a stale hand-copied total cannot survive.
 Nothing here prints, writes or accepts a secret.
@@ -37,6 +40,7 @@ from mijual.db.session import create_all, make_engine, make_session_factory, ses
 from mijual.estimate import build_report, won
 from mijual.estimate.perf import census, parse_performance
 from mijual.estimate.runner import collect_performance
+from mijual.estimate.snapshot import refresh_serving_snapshot
 
 DEFAULT_BGN = "20260101"
 
@@ -72,6 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     show = sub.add_parser("show", help="one stored 실적보고서 and its citation spans")
     show.add_argument("rcept_no")
+
+    snap = sub.add_parser(
+        "snapshot", help="precompute what the API may not compute (0 requests, 0 calls)"
+    )
+    snap.add_argument("--today", default=None, help="anchor date YYYYMMDD (default: today KST)")
     return p
 
 
@@ -213,11 +222,27 @@ def cmd_show(args, factory) -> dict:
         return facts.as_json()
 
 
+def cmd_snapshot(args, factory) -> dict:
+    """Refresh the serving precomputation the HTTP layer reads (``P5.S3``)."""
+    today = _as_date(args.today)
+    with session_scope(factory) as session:
+        written = refresh_serving_snapshot(session, today=today)
+        print(written.render())
+        return {
+            "offerings": written.offerings,
+            "priced": written.priced,
+            "upcoming": written.upcoming,
+            "lapse_rows": written.lapse_rows,
+            "valued": written.valued,
+        }
+
+
 COMMANDS = {
     "report": cmd_report,
     "collect": cmd_collect,
     "census": cmd_census,
     "show": cmd_show,
+    "snapshot": cmd_snapshot,
 }
 
 

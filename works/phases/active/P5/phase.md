@@ -344,6 +344,129 @@ re-derives a number.** Import map, so no slice goes looking:
     with only the flagged-event divergence in note 5. Worth re-running as a scratch script
     (never as a committed test — the pack is dated) if a later slice changes a derivation.
 
+### `P5.S3` — the read endpoints exist; the route map, and two stated defaults
+
+**The endpoint map** (no prefix, matching `/health` — `P5.S10`'s client should hard-code these):
+
+| route | what it serves |
+|---|---|
+| `GET /board/summary` | every landing number in **one** `BoardSummary` payload — 감시 중 · 30일 이내 · 소멸 앞둔 · 읽은 실적보고서 · 「추정」 headline + band edge · 소멸 증서/발행 증서/소멸률 · `next_lapse{date, corp_name, target}` · `freshness{as_of, stale, age_hours, stale_after_hours}` |
+| `GET /board?rights=R1\|R2\|R3` | `counts` (tabs, **always whole-board**) · `rows` (D-day ascending, `days >= 0` only) · `open_now{count,total,rows}` (② 진행 중) · `tbd{…}` (일정 추후결정, unranked) · `reference` · `freshness` |
+| `GET /events/{rcept_no}` | the detail card: `EventView.payload()` + `corrections` teaser + ① `offering`/`lapse_result`/`issuer_disagreement` + ② `convertible` + 철회 `withdrawal` |
+| `GET /events/{rcept_no}/corrections` | the CorrectionStory: version rail (`is_current_readable` on exactly one row) + `field_moves` + `interpretation` verbatim |
+
+**Route key = `rcept_no`, resolved against *every* `FilingVersion`** (recorded choice): it is what the
+design links by, and `rcept_no` mutates to the newest version (N2), so yesterday's link must still
+open the page — it renders today's readable version regardless. `event_id` travels in every payload
+for a client that wants a stable handle. **840 stored `rcept_no` values sit under two event keys**
+(N21 pairing residue, far more than D2's 2 `hint_duplicate` pairs), so resolution orders
+**renderable first** (`exposable` → `withdrawn` → rest), then newest 최초 접수일. Without that,
+계양전기 `20260724000546` opens its `superseded_by_pairing` twin and 404s a row the board is showing —
+found by the live curl pass, not by reasoning.
+
+**Decision 1 — the countdown instant.** Served as `next_lapse.target`, an absolute KST instant =
+`next_lapse_date + 1 day at 00:00 KST`, i.e. **end of the 청약 day** — exactly R2's stated assumption
+(2026-09-04 24:00 KST). Behind `MIJUAL_COUNTDOWN_CUTOFF_TIME` (`"24:00"` default, or `"HH:MM"`), so
+the operator's real 접수 마감 시각 lands **without a code change**. The policy lives in
+`mijual.web.reads.countdown_target`; `mijual.present` still refuses to invent one and only carries
+what it is handed. **The open question stays the operator's.**
+
+**Decision 2 — the stale threshold: 18 hours** (`present.DEFAULT_STALE_AFTER_HOURS`, overridable with
+`MIJUAL_STALE_AFTER_HOURS`). Derived from the beat schedule, not from taste: the pipeline runs 07:30
+and 19:30 KST, so the widest *healthy* gap is 12 h and a **missed** beat reaches ~24 h. 18 h is the
+smallest threshold that cannot fire on a healthy schedule and still fires on the first miss.
+**기준시각 is `max(Event.last_seen_at)`** — a corpus fact ("when did we last look at DART"), never the
+request time; a dead worker therefore makes the board *stale*, never fresh and never dark. `stale`
+and the `N시간 전` `age_hours` (floored, never rounded up) are **served**, so no client computes
+staleness against its own clock.
+
+**What `P5.S4`/`P5.S9`/`P5.S10+` inherit**
+
+| you need | use |
+|---|---|
+| rows/summary/detail loading | `mijual.web.reads` — `load_board` · `load_summary` · `resolve_event` + `load_detail` · `corpus_as_of` · `countdown_target` |
+| an exposure from rows you already loaded | `mijual.gates.exposure.exposure_of(event, version=…, rows=…, facts=…)` — pure; `event_exposure` is now just its loading half |
+| the newest readable version | `mijual.db.repository` — `readable_versions` · `document_of` · `current_document` (one decode, gives the 본문 back) · `current_version` · `current_versions` (batched) |
+| ① money inputs / 소멸 결과 in a request path | the **persisted** `OfferingInput.inputs` / `PerformanceReport.lapse` mappings → `present.offering_inputs` / `present.lapse_result` (both now read an object *or* its stored JSON) |
+| a board row / ② fact strip / 정정 rail / freshness / totals | `present.board_row` · `present.convertible_view` · `present.correction_story` · `present.freshness` · `present.lapse_totals` |
+
+1. **The version-selection near-miss (S1 note 5) is closed by moving, not forking.**
+   `readable_versions` / `document_of` now live in **`mijual.db.repository`**; `mijual.extract.runner`
+   re-exports them, so every existing caller is untouched and the suite stayed green at 75. The gates,
+   the exposure contract and the 철회 detector import them at module level now — no function-local
+   `import mijual.extract.runner`, so **importing `mijual.gates.exposure` no longer drags the extractor
+   tree (model client included) onto a request path**. Verified: importing `mijual.web.app` loads
+   none of `mijual.dart` / `collect` / `extract` / `estimate`. What a *detail* request still pulls at
+   call time is `mijual.dart`'s module (stdlib-only) inside `BodyDocument.from_bytes` — a ZIP decode,
+   not a request. `tests/test_web_smoke.py`'s AST scan covers `web/` only, so that remains a fact to
+   keep in mind rather than one the suite catches.
+2. **`current_versions` is the same rule, batched without decoding** (a board must not decode ~500
+   ZIPs). It can only differ from `current_version` for a stored body that fails to decode; **measured
+   over all 488 exposable events: 0 differences**, and the difference would be conservative anyway (an
+   undecodable body has no gate-passing rows, so the row loses its date rather than inheriting a
+   superseded version's). Re-measure with `scripts/` if the corpus grows a corrupt snapshot.
+3. **The board loads one field per event, on purpose** (`reads.COUNTDOWN_FIELDS`): a row renders no
+   field values, so shipping all 409 gate-passing fields (some with 600-character quotes) would be
+   payload nobody renders. `exposure_of` accepts a subset of rows exactly for this.
+4. **The estimate-import blocker is closed by a persisted precomputation** (S2 note 7's sanctioned
+   route, additive, no Alembic):
+   - **new table `offering_input`** — one row per ① event: `inputs` (the whole
+     `EventInputs.as_json()`), plus `price_confirmed` / `subscription_start` / `subscription_end` /
+     `decision_rcept_no` as **columns** so the 소멸 앞둔 count and the 발행가 확정 전 state are SQL;
+   - **additive column `performance_report.lapse`** — one `LapseRow.as_json()` per 실적보고서;
+   - written by **`python3 -m mijual.estimate snapshot`** (`mijual.estimate.snapshot`, 0 requests, 0
+     LLM calls, idempotent, ~2 s over the corpus). `EventInputs.as_json()` is new and its keys **are**
+     the attribute names, so `present.offering_inputs` reads an object and the stored mapping
+     identically (pinned by a test).
+   - ⚠ **The snapshot is not yet wired into the beat schedule.** Adding a 5th stage changes
+     `PipelineConfig.stages`' default and would edit `tests/test_scheduler.py` — out of this slice's
+     scope. **`P5.S9` (it already touches the scheduler for the run log) or P4 must wire it**; until
+     then it is run by hand after a `collect`, or the ① extras and the headline age silently while
+     기준시각 says the corpus is fresh.
+5. **D4's trigger has fired, and it is wider than the deferred note assumed.** Measured over the 32
+   parsed 실적보고서: **7 figures in 4 companies** carry a citation cell that does not state the number
+   it backs — SKC, 에스에너지, **루닛** and **한화솔루션** (the landing's own headline example): 청약
+   38,430,497 against a cell reading `38,427,609`, because 청약 is a **sum of two table rows** while
+   `raw`/`span` point at one addend. The note named SKC + 에스에너지 only. Interim, landed here:
+   `present.money._cited_count` attaches `quote`/`span` **only when the cell's text parses to exactly
+   that number**; otherwise the value keeps its `rcept_no` (the DART link still resolves) and carries
+   no verbatim chip. **Promote D4** as a fix slice to make those figures properly citable (a span per
+   addend); `P5.S13`/`P5.S14` must not re-attach a one-addend quote.
+6. **The 철회 page carries its notice and its evidence and nothing else.** `state: withdrawn` returns
+   early: no `offering`, no `convertible`, no 정정 teaser — R3's "no fields, no countdown, no old
+   dates" is a payload rule, not only a rendering one. `withdrawal{rcept_no,item,before,after,span}`
+   comes from re-running `detect_withdrawal` (stored bytes only; 11 events corpus-wide) because the
+   stored `exposure_note` is one prose line for an operator and a `Citation` needs the parts.
+7. **The ② fact strip is exactly R3's six values** (`present.convertible_view`): 전환가액 · 오버행 % ·
+   전환 시 주식수 · 권면총액 · 발행방법 · 만기, all facts, none with a quote/span (an API row has no
+   character offsets — its citation is the filing number). 리픽싱 floor and 전환비율 are deliberately
+   **not** in the payload: the countdown already carries 전환청구기간 and the design names six.
+8. **Live numbers, measured 2026-08-22 against the pack's 2026-08-20** — shapes match, counts drift as
+   expected: 488 exposable (50/422/16 ✓) · **389 ranked rows** (upcoming) · **57 ② 진행 중** (the pack's
+   `지남` was 56; two days of openings, and S2 note 10's narrower definition currently excludes nobody —
+   **0** ② in the corpus has a fully-closed 전환청구 window) · **4 추후결정** ✓ · 38 past ①/③ off the
+   landing (389+57+4+38 = 488 ✓) · within_30d 33 (pack 34) · 소멸 앞둔 **15** ✓ · 실적보고서 **69** ✓ ·
+   headline **71,812,971,649원 = 718.1억원** ✓ with floor 548.7억원 ✓ · 소멸/발행 51,253,956 /
+   365,527,824 ✓ · 소멸률 **0.1402** ✓ · 한화솔루션 소멸가치 **20,635,460,625원 = 206.4억원** ✓ ·
+   증서 1주 5,525원 ✓ · 대한광통신's two readings both cited ✓ · `20250930000508` 풍전약품 vs
+   본문 에스씨엠생명과학 → `corp_name_agrees_with_body: false` ✓.
+9. **`next_lapse` tie-break, and it is visible on the landing.** Three offerings share 청약 마감
+   2026-09-04 (계양전기 · SG · 퓨쳐켐). The pipeline's `min()` picked whichever row the DB returned
+   (the R2 card shows **계양전기**); the API orders `(마감일, 접수번호)` and names **퓨쳐켐** — earliest
+   filed, stable across databases and locales (a 회사명 sort depends on the DB's Korean collation).
+   The strip's numbers are live by contract ("발표용 문장 4 with live numbers"), so this is data, not a
+   design deviation — but `P5.S12`/`P5.S19` will see a different company than the landed card.
+10. **The ① extras cell needs one decision from `P5.S12`.** R2 says `청약 YYYY-MM-DD`; the row carries
+    the whole 구주주 window (`subscription_start` / `subscription_end`) because the design does not say
+    which end that date is (the 소멸주의보 sentence uses the **마감**). Pick one when rendering and note
+    it; the payload does not choose for you.
+11. **Payload sizes / timings** (local Postgres, warm): `/board` **160 KB in ~54 ms** (all 389 rows,
+    no paging — `?rights=` cuts it to ~8 KB for ①), `/board/summary` ~98 ms, a detail 6–15 ms. If
+    `P5.S12` wants paging, add it there; the design paginates nothing today.
+12. **The contract outranks the persisted column.** `load_board` skips a row whose `exposure_of`
+    verdict is not `exposable` even though `Event.exposure_state` said it was (a gate run that has not
+    landed). The API renders what `gates.exposure` says — never its own reading.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -446,13 +569,41 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   path from persisted state, never from `build_report`. **`qa`** — suite baseline 62 → **75
   tests**, still ~1 s, no network/model/DB; the derivation was additionally cross-checked
   against all 11 landed grounding samples out-of-suite (a dated pack is not a fixture).
+- (`P5.S3`) **`api`** — the four read endpoints are now a contract: `GET /board/summary` (one object
+  for every landing number, incl. `next_lapse{date,corp_name,target}` and
+  `freshness{as_of,stale,age_hours,stale_after_hours}`), `GET /board?rights=` (whole-board tab
+  `counts` + ranked `rows` + the `open_now` / `tbd` strips with `count` vs `total`),
+  `GET /events/{rcept_no}` and `GET /events/{rcept_no}/corrections`; **the route key is `rcept_no`,
+  resolved against every stored version and renderable-event-first**; a non-renderable event is a
+  **404 envelope**, never a page explaining itself; a 철회 page carries its notice + withdrawal
+  evidence and nothing else. **`backend`** — `mijual.web.reads` (the batched read layer), the
+  `present` additions (`board_row` · `convertible_view` · `correction_story` · `freshness` ·
+  `lapse_totals`), `gates.exposure.exposure_of` as the pure derivation behind `event_exposure`, and
+  the two new settings `MIJUAL_COUNTDOWN_CUTOFF_TIME` / `MIJUAL_STALE_AFTER_HOURS`.
+  **`architecture`** — `readable_versions` / `document_of` / `current_version` moved to
+  `mijual.db.repository` (a neutral home; `mijual.extract.runner` re-exports them), so the exposure
+  contract no longer reaches the extractor through a function-local import and **no request path
+  imports a spending module even at call time**; the serving precomputation seam is now explicit
+  (worker computes → request path reads). **`data`** — new table **`offering_input`** (one row per ①
+  event: `inputs` JSON + `price_confirmed` / `subscription_start` / `subscription_end` /
+  `decision_rcept_no` columns) and additive column **`performance_report.lapse`**, both written by
+  `python3 -m mijual.estimate snapshot`, both additive (`create_all` + `ensure_columns`, no Alembic).
+  **`operations`** — **기준시각 = `max(Event.last_seen_at)`** (a corpus fact, not the request time) and
+  the **18-hour stale threshold** derived from the 07:30/19:30 KST beat schedule; the snapshot worker
+  must run after each pipeline run and is **not yet a beat stage**. **`decisions`** — two stated
+  defaults: the landing countdown ticks to **end of the 청약 day (KST)**, overridable per deployment;
+  **stale after 18 h**, overridable. **`qa`** — suite baseline 75 → **83 tests**, still ~1 s, no
+  network/model/DB; the endpoints were additionally curl-verified against the live corpus
+  (718.1억원 / 548.7억원 / 51,253,956 / 365,527,824 / 14.02% / 15건 / 69건 all reproduce).
 
 ## Open Questions
 
-- **The countdown cut-off instant.** R2 assumed 2026-09-04 24:00 KST for 계양전기; the real 접수 마감
-  시각 is TBC and the backend must serve an absolute KST timestamp. Operator input, needed by `P5.S3`.
-- **The stale threshold in hours** — R2 carried it open; needed by `P5.S3` (freshness chip) and
-  `P5.S12`. Operator or a stated default recorded as a decision.
+- **The countdown cut-off instant** — *stated default landed, still the operator's call*: `P5.S3`
+  serves R2's own assumption (end of the 청약 day, 00:00 KST of the next day) behind
+  `MIJUAL_COUNTDOWN_CUTOFF_TIME`, so the real 접수 마감 시각 replaces it with no code change.
+- **The stale threshold in hours** — *stated default landed*: **18 h**
+  (`present.DEFAULT_STALE_AFTER_HOURS`, override `MIJUAL_STALE_AFTER_HOURS`), derived from the
+  07:30/19:30 KST beat schedule. Operator may still choose another number.
 - **The "정정 이력" button label** — exited P3 unresolved and is carried here (`experience` v0002,
   `product` v0003); `P5.S13` needs it.
 - **Binary design assets** — who exports the wordmark/ring PNGs and `PretendardVariable.woff2` out of

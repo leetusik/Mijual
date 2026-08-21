@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from mijual.bodydoc import BodyDocument
 from mijual.db.models import Event, Extraction, FilingVersion, RightsType, Snapshot, utcnow
+from mijual.db.repository import document_of
 from mijual.db.session import session_scope
 from mijual.gates.context import VersionContext, version_context
 from mijual.gates.exposure import (
@@ -91,8 +92,6 @@ class GateReport:
 
 
 def _documents_of(session: Session, version: FilingVersion) -> tuple[Snapshot, BodyDocument] | None:
-    from mijual.extract.runner import document_of
-
     return document_of(session, version)
 
 

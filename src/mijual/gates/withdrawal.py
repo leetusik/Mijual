@@ -87,6 +87,7 @@ from sqlalchemy.orm import Session
 
 from mijual.bodydoc.correction import CorrectionItem, parse_correction
 from mijual.db.models import Event, FilingVersion
+from mijual.db.repository import document_of, readable_versions
 from mijual.gates.context import squash
 
 __all__ = [
@@ -181,8 +182,6 @@ def detect_withdrawal(session: Session, event: Event) -> Withdrawal | None:
     versions of the same event do not un-withdraw it (a revived offering is a new
     filing with its own 접수일, i.e. a different event under the N2 key).
     """
-    from mijual.extract.runner import document_of, readable_versions
-
     for version in reversed(readable_versions(event)):
         loaded = document_of(session, version)
         if loaded is None:
@@ -206,8 +205,6 @@ def scan_withdrawal_rows(session: Session, event: Event) -> list[tuple[FilingVer
     Used by the CLI's audit view: it prints what the word-level signal would have
     caught so the shape rules stay honest about their own precision.
     """
-    from mijual.extract.runner import document_of, readable_versions
-
     found: list[tuple[FilingVersion, CorrectionItem]] = []
     for version in readable_versions(event):
         loaded = document_of(session, version)

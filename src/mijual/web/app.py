@@ -32,7 +32,7 @@ from mijual import __version__
 from mijual.config import Settings, load_settings
 from mijual.web.deps import dispose_engine
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import health
+from mijual.web.routers import board, events, health
 
 __all__ = ["app", "create_app"]
 
@@ -69,6 +69,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     register_error_handlers(app)
     app.include_router(health.router)
+    app.include_router(board.router)
+    app.include_router(events.router)
     return app
 
 

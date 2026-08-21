@@ -108,6 +108,37 @@ class EventInputs:
         window = self.subscription.get("구주주") or self.subscription.get("주주배정") or {}
         return (window.get("start"), window.get("end"))
 
+    def as_json(self) -> dict:
+        """The persisted form (``OfferingInput.inputs``), read back by the API.
+
+        Numbers travel as **exact decimal strings** and dates as bare ISO days,
+        the same serialization the presentation contract emits — a JSON float
+        would quietly round a 10-decimal 배정비율 on the way through storage.
+        Keys are the attribute names, so :func:`mijual.present.offering_inputs`
+        reads this mapping and a live :class:`EventInputs` identically.
+        """
+
+        def number(value: float | Decimal | None) -> str | None:
+            return None if value is None else str(value)
+
+        return {
+            "rcept_no": self.rcept_no,
+            "confirmed_price": number(self.confirmed_price),
+            "price_source": self.price_source,
+            "price_span": list(self.price_span) if self.price_span else None,
+            "planned_price": number(self.planned_price),
+            "discount_rate": number(self.discount_rate),
+            "discount_gate": self.discount_gate,
+            "discount_rcept_no": self.discount_rcept_no,
+            "allotment_ratio": number(self.allotment_ratio),
+            "new_shares": self.new_shares,
+            "record_date": str(self.record_date) if self.record_date else None,
+            "subscription": {
+                group: {key: str(day) for key, day in window.items() if day is not None}
+                for group, window in (self.subscription or {}).items()
+            },
+        }
+
 
 def event_inputs(session: Session, event: Event) -> EventInputs:
     """Read one ① event's 확정발행가 · 할인율 · 배정비율 from stored evidence only.

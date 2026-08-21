@@ -42,13 +42,20 @@ about superseded values, and the countdown must never fall back to them (N4).
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+if TYPE_CHECKING:  # pragma: no cover - imported for types only
+    # ``mijual.cb`` imports this module, so the type is not imported at runtime.
+    from mijual.cb import ConvertibleFacts
+
 from mijual.db.models import Event, Extraction, FilingVersion, RightsType
+from mijual.db.repository import current_version
 from mijual.gates.outcome import EXPOSABLE_STATUSES, TBD
 
 __all__ = [
@@ -58,6 +65,7 @@ __all__ = [
     "WITHDRAWN_NOTICE_KO",
     "current_version",
     "event_exposure",
+    "exposure_of",
     "exposure_of_all",
 ]
 
@@ -158,20 +166,6 @@ class EventExposure:
         return head + body + (f"\n      차단 {blocked}" if blocked else "")
 
 
-def current_version(session: Session, event: Event) -> FilingVersion | None:
-    """The newest version of the event that has a stored 본문 — the only one read.
-
-    Identical selection to the extractor's (``P2.S4``), so the gate judges exactly
-    the values the product would show and never a sibling version's.
-    """
-    from mijual.extract.runner import document_of, readable_versions
-
-    for version in reversed(readable_versions(event)):
-        if document_of(session, version) is not None:
-            return version
-    return None
-
-
 def _blocking_flag(event: Event) -> str | None:
     """The most explanatory blocking flag, in :data:`BLOCKING_FLAGS` order.
 
@@ -193,6 +187,11 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
     :mod:`mijual.gates.runner`; the flags and gate verdicts are the evidence), so
     P3 can call this on a read-only replica in the request path — the phase
     forbids an OpenDART call there, and this makes none.
+
+    This is the *loading* half; :func:`exposure_of` is the derivation. A caller
+    that has already loaded a page of events (``P5.S3``'s board, which batches its
+    queries instead of running four per row) calls that one directly — with the
+    same inputs, so there is exactly one definition of what an event's exposure is.
     """
     version = current_version(session, event)
     rows: list[Extraction] = []
@@ -202,7 +201,36 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
                 select(Extraction).where(Extraction.filing_version_id == version.id)
             ).all()
         )
+    facts = None
+    if event.rights_type is RightsType.CONVERTIBLE_OVERHANG:
+        # Local import: ``mijual.cb`` imports this package, so the dependency is
+        # resolved at call time.
+        from mijual.cb import event_facts
 
+        facts = event_facts(session, event)
+    return exposure_of(event, version=version, rows=rows, facts=facts)
+
+
+def exposure_of(
+    event: Event,
+    *,
+    version: FilingVersion | None,
+    rows: "Iterable[Extraction]",
+    facts: "ConvertibleFacts | None" = None,
+) -> EventExposure:
+    """The exposure derivation itself, over rows a caller has already loaded.
+
+    Pure — no session, no query. ``version`` is the event's current readable
+    version (:func:`mijual.db.repository.current_version`), ``rows`` are that
+    version's :class:`~mijual.db.models.Extraction` rows and ``facts`` is
+    :func:`mijual.cb.event_facts` for a ② event (``None`` elsewhere; ``None`` on a
+    ② means "no stored detail row", exactly as an absent snapshot does).
+
+    A caller may hand over a **subset** of the version's rows — the board loads
+    only the governing countdown field, because a board row renders no field
+    values — and gets an exposure whose ``fields`` hold exactly what was passed.
+    The event-level verdict does not depend on the rows at all.
+    """
     fields: dict[str, FieldView] = {}
     for row in sorted(rows, key=lambda r: r.field_key):
         exposable = row.gate_status in EXPOSABLE_STATUSES
@@ -218,7 +246,7 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
             rcept_no=row.rcept_no,
         )
 
-    state, reason, note = _event_state(event, version, session)
+    state, reason, note = _event_state(event, version, facts)
     return EventExposure(
         event_id=event.id,
         corp_code=event.corp_code,
@@ -239,7 +267,7 @@ def event_exposure(session: Session, event: Event) -> EventExposure:
 
 
 def _event_state(
-    event: Event, version: FilingVersion | None, session: Session | None = None
+    event: Event, version: FilingVersion | None, facts: "ConvertibleFacts | None" = None
 ) -> tuple[str, str | None, str | None]:
     if event.suppressed_reason:
         return ("suppressed", event.suppressed_reason, event.suppressed_note)
@@ -249,13 +277,13 @@ def _event_state(
     if flag:
         return ("flagged", flag, BLOCKING_FLAGS[flag])
     if event.rights_type is RightsType.CONVERTIBLE_OVERHANG:
-        return _convertible_state(event, session)
+        return _convertible_state(facts)
     if version is None:
         return ("no_document", "no_document", "본문 스냅샷이 없습니다")
     return ("exposable", None, None)
 
 
-def _convertible_state(event: Event, session: Session | None) -> tuple[str, str | None, str | None]:
+def _convertible_state(facts: "ConvertibleFacts | None") -> tuple[str, str | None, str | None]:
     """②'s arm: the countdown is `API` tier, so the detail row is the requirement.
 
     Conservative in both directions, like every other rule here: an event with no
@@ -264,13 +292,8 @@ def _convertible_state(event: Event, session: Session | None) -> tuple[str, str 
     countdown field names exactly which one in the note rather than rendering a
     card with a blank price or a blank window.
     """
-    # Local import: ``mijual.cb`` imports this package, so the dependency is
-    # resolved at call time — the same pattern ``current_version`` already uses.
-    from mijual.cb import event_facts
-
-    if session is None:  # pragma: no cover - every caller has a session
+    if facts is None:  # no detail snapshot was loaded for this event at all
         return ("no_detail", "no_detail", "상세 API 스냅샷을 읽을 수 없습니다")
-    facts = event_facts(session, event)
     if facts.complete:
         return ("exposable", None, None)
     if facts.rcept_no is None:

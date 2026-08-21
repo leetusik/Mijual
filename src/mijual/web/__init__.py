@@ -29,7 +29,13 @@ Layout::
     mijual.web.deps     — request-scoped, read-only DB session dependency
     mijual.web.errors   — the one JSON error envelope for the whole service
     mijual.web.clock    — the KST time policy every timestamp goes through
-    mijual.web.routers  — one module per surface (health today; P5.S3+ add the rest)
+    mijual.web.reads    — loading: persisted rows in, ``mijual.present`` shapes out
+    mijual.web.routers  — one module per surface (health · board · events)
+
+Routers stay transport-thin: they read settings, call :mod:`mijual.web.reads`, and
+serialize. Loading lives in ``reads``; meaning lives in :mod:`mijual.present`. An
+endpoint that starts computing a displayed number is an endpoint that will
+eventually disagree with another one about it.
 
 Run it in development (no Docker service — deployment is P4)::
 

@@ -48,6 +48,7 @@ from mijual.db.models import (
     RightsType,
     Snapshot,
 )
+from mijual.db.repository import document_of, readable_versions
 from mijual.db.session import session_scope
 from mijual.extract.client import CallBudgetExceeded, CallResult, GeminiClient
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION, TASKS, response_schema
@@ -59,12 +60,19 @@ from mijual.extract.store import existing_fields, record_call, upsert_extraction
 __all__ = [
     "ExtractionReport",
     "RecheckReport",
+    "document_of",
+    "readable_versions",
     "recheck_corrections",
     "relocate_spans",
     "run_corrections",
     "run_extraction",
     "select_targets",
 ]
+
+#: ``readable_versions`` / ``document_of`` were defined here through ``P2``; they
+#: now live in :mod:`mijual.db.repository` so the gates, the exposure contract and
+#: the ``P5`` read layer can reach the *same* rule without importing the extractor
+#: (and its model client) — re-exported above, so every caller is unchanged.
 
 #: Which task reads which rights type.
 TASK_BY_RIGHTS = {
@@ -162,30 +170,6 @@ def select_targets(
         by_id = {e.id: e for e in events}
         return [by_id[i] for i in event_ids if i in by_id]
     return sorted(events, key=lambda e: (e.corp_code, e.original_rcept_dt))
-
-
-def readable_versions(event: Event) -> list[FilingVersion]:
-    """Versions that can carry a 본문, newest last (첨부-only 정정 skipped, §4.1)."""
-    return sorted(
-        (v for v in event.versions if v.correction_kind is not CorrectionKind.ATTACHMENT),
-        key=lambda v: (v.rcept_dt or date.min, v.rcept_no),
-    )
-
-
-def document_of(session: Session, version: FilingVersion) -> tuple[Snapshot, BodyDocument] | None:
-    """Newest stored 본문 snapshot of a version, decoded. Zero requests."""
-    snapshot = session.scalar(
-        select(Snapshot)
-        .where(Snapshot.filing_version_id == version.id, Snapshot.source == "document")
-        .order_by(Snapshot.captured_at.desc())
-        .limit(1)
-    )
-    if snapshot is None or not snapshot.payload_bytes:
-        return None
-    try:
-        return (snapshot, BodyDocument.from_bytes(snapshot.payload_bytes, rcept_no=version.rcept_no))
-    except Exception:  # noqa: BLE001 - a bad body must not stop a corpus run
-        return None
 
 
 # ---------------------------------------------------------------------------

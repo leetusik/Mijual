@@ -61,6 +61,7 @@ __all__ = [
     "Extraction",
     "ExtractionCall",
     "FilingVersion",
+    "OfferingInput",
     "PerformanceReport",
     "RightsType",
     "Snapshot",
@@ -634,6 +635,16 @@ class PerformanceReport(Base):
     #: Every parsed figure with its raw text and citation span.
     facts: Mapped[dict | list | None] = mapped_column(JSONBody)
 
+    #: ``P5.S3``: this offering's **valued** outcome — one
+    #: :meth:`mijual.estimate.LapseRow.as_json` mapping, written by the worker
+    #: (``python -m mijual.estimate snapshot``). ``facts`` alone cannot carry it:
+    #: 소멸가치 needs the 확정발행가 and the gate-passed 할인율, which live in the
+    #: **유상증자결정's** 본문 and extraction rows, and reading those costs a ZIP
+    #: decode that a request path must not pay. A reader serves it through
+    #: :func:`mijual.present.lapse_result`, which accepts exactly this mapping.
+    #: Additive nullable column — lands through ``schema_sync.ensure_columns``.
+    lapse: Mapped[dict | list | None] = mapped_column(JSONBody)
+
     payload_bytes: Mapped[bytes | None] = mapped_column(LargeBinary)
     content_sha1: Mapped[str | None] = mapped_column(String(40))
     byte_size: Mapped[int | None] = mapped_column(Integer)
@@ -641,3 +652,60 @@ class PerformanceReport(Base):
 
     def __repr__(self) -> str:
         return f"<PerformanceReport {self.rcept_no} {self.corp_name} {self.parse_status}>"
+
+
+# ---------------------------------------------------------------------------
+# P5.S3 — the serving precomputation (① money inputs)
+# ---------------------------------------------------------------------------
+class OfferingInput(Base):
+    """One ① offering's 확정발행가 · 할인율 · 배정비율 · 청약일정, precomputed.
+
+    **Why this table exists at all.** Everything a reader sees comes from
+    persisted rows, and the ① money chain's inputs are the one part of it that is
+    *not* persisted: :func:`mijual.estimate.event_inputs` reads them by decoding
+    the event's stored 본문 ZIP and parsing its labels. That is a worker's job
+    twice over — it costs a parse, and :mod:`mijual.estimate` imports
+    :mod:`mijual.dart` / :mod:`mijual.collect` / :mod:`mijual.extract` at module
+    level, so the HTTP layer may not import it at all (`architecture` boundary,
+    enforced by ``tests/test_web_smoke.py``). So the worker computes and writes;
+    the request path reads.
+
+    It holds **inputs, not products**: no 소멸가치, no 환산액, no board row. Every
+    figure a surface shows is still derived on read by :mod:`mijual.present`, so
+    there is one derivation and this table can never disagree with it — it can
+    only be *older* than the corpus, which is the freshness question the board
+    already answers out loud (기준시각).
+
+    Refreshed by ``python -m mijual.estimate snapshot`` (0 requests, 0 LLM calls).
+    """
+
+    __tablename__ = "offering_input"
+    __table_args__ = (UniqueConstraint("event_id", name="uq_offering_input_event"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id", ondelete="CASCADE"), nullable=False
+    )
+    corp_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    #: The 유상증자결정 version these inputs were read from (the current readable one).
+    decision_rcept_no: Mapped[str | None] = mapped_column(String(14))
+
+    #: Is a won figure permitted for this offering at all? Mirrors
+    #: ``inputs["confirmed_price"] is not None`` as a column so the board can
+    #: filter and count the 발행가 확정 전 state in SQL.
+    price_confirmed: Mapped[bool | None] = mapped_column(Boolean)
+    #: 구주주(주주배정) 청약 window — the anchor of "소멸 앞둔 신주인수권" and of the
+    #: 소멸주의보 strip's earliest date. A column, not only JSON, because those two
+    #: are **counted** over the whole corpus on every landing request.
+    subscription_start: Mapped[date | None] = mapped_column(Date)
+    subscription_end: Mapped[date | None] = mapped_column(Date)
+
+    #: The whole :meth:`mijual.estimate.EventInputs.as_json` mapping — prices as
+    #: exact decimal strings, dates as ISO days.
+    inputs: Mapped[dict | list | None] = mapped_column(JSONBody)
+    computed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<OfferingInput event={self.event_id} {self.decision_rcept_no}>"

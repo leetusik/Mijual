@@ -8,7 +8,7 @@ right here, which is the point of a derivation layer that takes loaded rows.
 from __future__ import annotations
 
 import ast
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -27,10 +27,12 @@ from mijual.present import (
     countdown_of,
     event_view,
     field_payloads,
+    freshness,
     identity_of,
     instant,
     issuer_disagreement,
     lapse_result,
+    lapse_totals,
     offering_inputs,
 )
 from mijual.web import clock
@@ -303,6 +305,60 @@ def test_one_summary_counts_the_board_and_tags_the_headline() -> None:
     assert payload["as_of"] == "2026-08-20T18:30:00+09:00"  # absolute KST, always
     assert payload["next_lapse"] == {"date": "2026-09-04", "corp_name": "계양전기"}
     assert summary.countdown_target is None  # the 마감 instant is not assumed
+
+
+def test_the_board_says_how_old_it_is_rather_than_going_dark() -> None:
+    """Freshness is a served fact, never a client-side clock diff (P5.S3)."""
+    as_of = datetime(2026, 8, 20, 5, 2, tzinfo=timezone(timedelta(hours=9)))
+    fresh = freshness(as_of, now=as_of + timedelta(hours=11, minutes=59))
+    stale = freshness(as_of, now=as_of + timedelta(hours=44))
+    assert fresh.stale is False and fresh.age_hours == 11  # a healthy 12h beat gap
+    assert stale.stale is True and stale.age_hours == 44  # floored, never rounded up
+    assert stale.payload()["as_of"] == "2026-08-20T05:02:00+09:00"
+    assert freshness(None, now=as_of).stale is True  # an unknown 기준시각 is stale
+
+
+def test_the_totals_add_up_and_a_cell_that_does_not_state_the_number_is_not_cited() -> None:
+    """D4's shape, live in 4 of 32 reports: 청약 is a sum, its cell is one addend."""
+    rows = [
+        {"status": "valued", "lapsed": 3734925, "warrants_issued": 42165422,
+         "confirmed_price": "22100", "value_krw": "20635460625",
+         "value_floor_krw": "16554561031"},
+        {"status": "counted_only", "lapsed": 2080336, "warrants_issued": 11955000},
+    ]
+    totals = lapse_totals(rows)
+    assert totals.lapsed == 5815261 and totals.issued == 54120422  # counted, valued or not
+    assert totals.value == Decimal("20635460625") and totals.valued == 1
+
+    facts = {
+        "warrants_issued": {"value": "42165422", "raw": "42,165,422", "span": [1, 2]},
+        "warrants_exercised": {"value": "38430497", "raw": "38,427,609", "span": [3, 4]},
+    }
+    result = lapse_result(rows[0] | {"warrants_exercised": 38430497}, facts=facts).payload()
+    assert result["warrants_issued"]["quote"] == "42,165,422"
+    # The 청약 cell states one of the two rows that were summed — no false chip.
+    exercised = result["warrants_exercised"]
+    assert exercised["value"] == 38430497
+    assert "quote" not in exercised and "span" not in exercised
+
+
+def test_offering_inputs_read_the_same_from_an_object_and_from_its_stored_json() -> None:
+    """The worker writes ``as_json``; the request path reads it. One shape, both ways."""
+    inputs = EventInputs(
+        rcept_no="20260720000067",
+        confirmed_price=22100,
+        discount_rate=0.2,
+        allotment_ratio=0.2314082845,
+        new_shares=8200000,
+        record_date=date(2026, 7, 28),
+        subscription={"구주주": {"start": date(2026, 9, 3), "end": date(2026, 9, 4)}},
+    )
+    exposure = _exposure(fields=[_field("issue_price_formula", {"discount_rate": 0.2})])
+    live = offering_inputs(exposure, inputs).payload()
+    stored = offering_inputs(exposure, inputs.as_json()).payload()
+    assert live == stored
+    assert stored["allotment_ratio"]["value"] == "0.2314082845"  # all ten decimals
+    assert stored["unit_value"]["estimated"] is True  # 「추정」, both ways
 
 
 # ---------------------------------------------------------------------------

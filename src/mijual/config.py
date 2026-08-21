@@ -84,6 +84,20 @@ class Settings:
     redis_url: str = DEFAULT_REDIS_URL
     cache_dir: Path = DEFAULT_CACHE_DIR
 
+    # -- serving policy (P5.S3). Both are ``None`` = "use the stated default",
+    # which lives beside its reasoning in ``mijual.present`` / ``mijual.web``
+    # rather than being duplicated here.
+    #: ``MIJUAL_COUNTDOWN_CUTOFF_TIME`` — the KST wall-clock time on the 소멸 day
+    #: that the landing countdown ticks down to. ``24:00`` (the default) means
+    #: end of day, i.e. midnight at the **start of the next** day. R2 assumed
+    #: exactly that for 계양전기 2026-09-04; the real 접수 마감 시각 is an operator
+    #: fact, and when it is known this setting takes it **without a code change**.
+    countdown_cutoff_time: str | None = None
+    #: ``MIJUAL_STALE_AFTER_HOURS`` — how old the corpus may get before the board
+    #: says so (default :data:`mijual.present.DEFAULT_STALE_AFTER_HOURS`, 18 h,
+    #: derived from the beat schedule). The board never goes dark either way.
+    stale_after_hours: int | None = None
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -130,10 +144,15 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         return value.strip() or None if value else None
 
     cache_dir = pick("DART_CACHE_DIR")
+    stale_after = pick("MIJUAL_STALE_AFTER_HOURS")
     return Settings(
         dart_api_key=pick("DART_API_KEY"),
         gemini_api_key=pick("GEMINI_API_KEY"),
         database_url=pick("DATABASE_URL") or DEFAULT_DATABASE_URL,
         redis_url=pick("REDIS_URL") or DEFAULT_REDIS_URL,
         cache_dir=Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR,
+        countdown_cutoff_time=pick("MIJUAL_COUNTDOWN_CUTOFF_TIME"),
+        # A malformed value is ignored rather than crashing the service: a
+        # mistyped ops env var must not take the board down.
+        stale_after_hours=int(stale_after) if (stale_after or "").isdigit() else None,
     )

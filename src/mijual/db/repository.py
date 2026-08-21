@@ -1,18 +1,34 @@
-"""Idempotent upserts for the collection schema.
+"""Idempotent upserts for the collection schema, and **which version is read**.
 
 Storage-side only: re-running a collection must never duplicate an event, a
 version or an unchanged snapshot. **Collector/polling logic belongs to
 ``P2.S2``** — this module knows nothing about windows, paging or 정정 discovery.
+
+``P5.S3`` added the second half: :func:`readable_versions` / :func:`document_of`
+/ :func:`current_version` — the rule that decides **which stored version of an
+event the product reads**. They lived in :mod:`mijual.extract.runner`, where the
+gates and the exposure contract had to reach them through a function-local import
+because importing that module pulls the whole extractor tree (model client
+included) into whatever imports it. Serving reads the same rule on a request
+path, so it now lives here, in a neutral home that spends nothing:
+:mod:`mijual.extract.runner` re-exports both names, and every existing caller is
+unchanged.
+
+**Never fork this rule.** A superseded version's values are true about superseded
+facts; a countdown that falls back to one is a wrong number (N4). One
+implementation, one place.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from mijual.bodydoc.document import BodyDocument
 from mijual.db.models import (
     Corp,
     CorrectionKind,
@@ -25,7 +41,19 @@ from mijual.db.models import (
     utcnow,
 )
 
-__all__ = ["ensure_corp", "ensure_event", "ensure_version", "ensure_snapshot"]
+__all__ = [
+    "current_document",
+    "current_version",
+    "current_versions",
+    "document_of",
+    "document_snapshot",
+    "ensure_corp",
+    "ensure_event",
+    "ensure_snapshot",
+    "ensure_version",
+    "readable_versions",
+    "versions_with_document",
+]
 
 
 def ensure_corp(
@@ -173,3 +201,104 @@ def ensure_snapshot(
     session.add(snapshot)
     session.flush()
     return snapshot
+
+
+# ---------------------------------------------------------------------------
+# which version the product reads (moved here by P5.S3 — see the module docstring)
+# ---------------------------------------------------------------------------
+def readable_versions(event: Event) -> list[FilingVersion]:
+    """Versions that can carry a 본문, newest last (첨부-only 정정 skipped, §4.1)."""
+    return sorted(
+        (v for v in event.versions if v.correction_kind is not CorrectionKind.ATTACHMENT),
+        key=lambda v: (v.rcept_dt or date.min, v.rcept_no),
+    )
+
+
+def document_snapshot(session: Session, version: FilingVersion) -> Snapshot | None:
+    """Newest stored 본문 snapshot of a version, **not** decoded. Zero requests."""
+    return session.scalar(
+        select(Snapshot)
+        .where(Snapshot.filing_version_id == version.id, Snapshot.source == "document")
+        .order_by(Snapshot.captured_at.desc())
+        .limit(1)
+    )
+
+
+def document_of(session: Session, version: FilingVersion) -> tuple[Snapshot, BodyDocument] | None:
+    """Newest stored 본문 snapshot of a version, decoded. Zero requests."""
+    snapshot = document_snapshot(session, version)
+    if snapshot is None or not snapshot.payload_bytes:
+        return None
+    try:
+        return (snapshot, BodyDocument.from_bytes(snapshot.payload_bytes, rcept_no=version.rcept_no))
+    except Exception:  # noqa: BLE001 - a bad body must not stop a corpus run
+        return None
+
+
+def current_document(
+    session: Session, event: Event
+) -> tuple[FilingVersion, Snapshot, BodyDocument] | None:
+    """The newest version with a readable 본문, **and that 본문** — one decode.
+
+    Callers that need the document itself (the 회사명 the filing prints, the
+    정정사항 table) should use this rather than calling :func:`current_version`
+    and decoding again: the ZIP is large and the answer is the same one.
+    """
+    for version in reversed(readable_versions(event)):
+        loaded = document_of(session, version)
+        if loaded is not None:
+            return (version, loaded[0], loaded[1])
+    return None
+
+
+def current_version(session: Session, event: Event) -> FilingVersion | None:
+    """The newest version of the event that has a stored 본문 — the only one read.
+
+    Identical selection to the extractor's (``P2.S4``), so the gate judges exactly
+    the values the product would show and never a sibling version's.
+    """
+    loaded = current_document(session, event)
+    return loaded[0] if loaded is not None else None
+
+
+def versions_with_document(session: Session, version_ids: Iterable[int]) -> set[int]:
+    """Which of these versions have a stored 본문 body — one query, no decoding."""
+    ids = list(version_ids)
+    if not ids:
+        return set()
+    return set(
+        session.scalars(
+            select(Snapshot.filing_version_id).where(
+                Snapshot.filing_version_id.in_(ids),
+                Snapshot.source == "document",
+                Snapshot.payload_bytes.is_not(None),
+            )
+        ).all()
+    )
+
+
+def current_versions(session: Session, events: Sequence[Event]) -> dict[int, FilingVersion]:
+    """:func:`current_version` for a whole page of events — two queries, no decode.
+
+    A board request selects one version for each of several hundred events, and
+    decoding several hundred 본문 ZIPs to answer "which one" would put a
+    multi-second parse on a read path. So the *presence* of a stored body stands
+    in for its decodability here, and the rule is otherwise the same one:
+    **newest non-첨부정정 version that has a 본문**.
+
+    The two can only disagree about a stored body that fails to decode — measured
+    on the live corpus (488 exposable events, 2026-08-22): **0 disagreements**.
+    And the disagreement is conservative if it ever happens: an undecodable body
+    has no gate-passing extraction rows (the gate marks them ``not_evaluable``),
+    so the row loses its date rather than inheriting a superseded version's.
+    """
+    with_body = versions_with_document(
+        session, (v.id for event in events for v in event.versions)
+    )
+    chosen: dict[int, FilingVersion] = {}
+    for event in events:
+        for version in reversed(readable_versions(event)):
+            if version.id in with_body:
+                chosen[event.id] = version
+                break
+    return chosen

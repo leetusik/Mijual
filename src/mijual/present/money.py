@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING, Any
 
 from mijual.calc import warrant_intrinsic_value, warrant_intrinsic_value_floor
@@ -61,20 +62,41 @@ __all__ = [
 MISMATCH_LABEL_KO = "발행사 기재 불일치"
 
 #: ``LapseRow`` attribute → the key its ``as_json()`` uses, where they differ.
+#: :meth:`mijual.estimate.EventInputs.as_json` needs no aliases — its keys *are*
+#: the attribute names, deliberately, so both forms read identically here.
 _ROW_ALIASES = {"value": "value_krw", "value_floor": "value_floor_krw"}
 
 
 def _read(row: Any, name: str) -> Any:
-    """One field of a report row, whether it arrived as an object or as JSON.
+    """One field of a stored row, whether it arrived as an object or as JSON.
 
-    ``build_report`` produces :class:`~mijual.estimate.LapseRow` objects, but a
-    request path cannot call it (it imports the extractor). Accepting the stored
-    ``as_json()`` form too means a caller can serve the same shape from a
-    persisted row without importing ``mijual.estimate`` at all.
+    ``build_report`` produces :class:`~mijual.estimate.LapseRow` objects and
+    :func:`~mijual.estimate.event_inputs` produces ``EventInputs`` ones, but a
+    request path cannot call either (importing :mod:`mijual.estimate` pulls
+    :mod:`mijual.dart`, :mod:`mijual.collect` and :mod:`mijual.extract`).
+    Accepting the stored ``as_json()`` form too means a caller can serve the same
+    shape from a persisted row — ``PerformanceReport.lapse``,
+    ``OfferingInput.inputs`` — without importing ``mijual.estimate`` at all.
     """
     if isinstance(row, Mapping):
         return row.get(_ROW_ALIASES.get(name, name))
     return getattr(row, name, None)
+
+
+def _shareholder_window(subscription: Any) -> tuple[str | None, str | None]:
+    """구주주(주주배정) 청약 window out of a ``subscription`` mapping.
+
+    The same selection :attr:`mijual.estimate.EventInputs.shareholder_window`
+    makes — 구주주 first, 주주배정 as the other name for it — restated for the
+    stored JSON form. 일반공모 is deliberately not a fallback: it is a *later*
+    offering to the public, and the 증서 that lapse are the shareholders'.
+    """
+    if not isinstance(subscription, Mapping):
+        return (None, None)
+    window = subscription.get("구주주") or subscription.get("주주배정") or {}
+    if not isinstance(window, Mapping):
+        return (None, None)
+    return (iso_day(window.get("start")), iso_day(window.get("end")))
 
 
 # ---------------------------------------------------------------------------
@@ -168,50 +190,60 @@ def _cite(exposure: "EventExposure", field_key: str) -> dict[str, Any]:
     }
 
 
-def offering_inputs(exposure: "EventExposure", inputs: "EventInputs") -> OfferingInputs:
-    """①'s money inputs, from an already-loaded exposure + ``event_inputs`` result.
+def offering_inputs(
+    exposure: "EventExposure", inputs: "EventInputs | Mapping[str, Any]"
+) -> OfferingInputs:
+    """①'s money inputs, from an exposure + ``event_inputs`` (object **or** JSON).
 
     The prices, 배정비율 and 신주발행수 are ``본문-label`` reads (deterministic, no
     LLM); the 할인율, 초과청약 비율 and 확정 예정일 come from **gate-passing**
     extraction fields only — a blocked field contributes nothing, exactly as it
     contributes no row to the card.
+
+    ``inputs`` may be a live :class:`~mijual.estimate.EventInputs` (a worker) or
+    its stored ``as_json()`` mapping (``OfferingInput.inputs``, which is how a
+    request path gets it — see :func:`_read`). The two produce the same object.
     """
     price_cite = _cite(exposure, "issue_price_formula")
     formula = field_value(exposure, "issue_price_formula")
     excess = field_value(exposure, "excess_subscription")
 
+    rcept_no = _read(inputs, "rcept_no")
+    confirmed_price = _read(inputs, "confirmed_price")
+    discount_rate = _read(inputs, "discount_rate")
+    allotment_ratio = _read(inputs, "allotment_ratio")
+    price_span = _read(inputs, "price_span")
+
     confirmed = Figure.fact(
-        decimal_str(inputs.confirmed_price),
-        span=tuple(inputs.price_span) if inputs.price_span else None,
-        rcept_no=inputs.rcept_no,
+        decimal_str(confirmed_price),
+        span=tuple(price_span) if price_span else None,
+        rcept_no=rcept_no,
     )
-    unit = warrant_intrinsic_value(inputs.confirmed_price, inputs.discount_rate)
-    floor = warrant_intrinsic_value_floor(
-        inputs.confirmed_price, inputs.discount_rate, inputs.allotment_ratio
-    )
+    unit = warrant_intrinsic_value(confirmed_price, discount_rate)
+    floor = warrant_intrinsic_value_floor(confirmed_price, discount_rate, allotment_ratio)
     return OfferingInputs(
-        rcept_no=inputs.rcept_no,
-        planned_price=Figure.fact(decimal_str(inputs.planned_price), rcept_no=inputs.rcept_no),
-        confirmed_price=confirmed,
-        discount_rate=Figure.fact(decimal_str(inputs.discount_rate), **price_cite),
-        allotment_ratio=Figure.fact(
-            decimal_str(inputs.allotment_ratio), rcept_no=inputs.rcept_no
+        rcept_no=rcept_no,
+        planned_price=Figure.fact(
+            decimal_str(_read(inputs, "planned_price")), rcept_no=rcept_no
         ),
+        confirmed_price=confirmed,
+        discount_rate=Figure.fact(decimal_str(discount_rate), **price_cite),
+        allotment_ratio=Figure.fact(decimal_str(allotment_ratio), rcept_no=rcept_no),
         excess_ratio=Figure.fact(
             decimal_str(excess.get("ratio")) if isinstance(excess, Mapping) else None,
             **_cite(exposure, "excess_subscription"),
         ),
-        new_shares=Figure.fact(inputs.new_shares, rcept_no=inputs.rcept_no),
-        record_date=iso_day(inputs.record_date),
+        new_shares=Figure.fact(_read(inputs, "new_shares"), rcept_no=rcept_no),
+        record_date=iso_day(_read(inputs, "record_date")),
         final_price_date=(
             iso_day(formula.get("final_price_date")) if isinstance(formula, Mapping) else None
         ),
         subscription={
             group: {key: iso_day(value) for key, value in window.items() if iso_day(value)}
-            for group, window in (inputs.subscription or {}).items()
+            for group, window in (_read(inputs, "subscription") or {}).items()
         },
-        unit_value=Figure.estimate(decimal_str(unit), rcept_no=inputs.rcept_no),
-        unit_value_floor=Figure.estimate(decimal_str(floor), rcept_no=inputs.rcept_no),
+        unit_value=Figure.estimate(decimal_str(unit), rcept_no=rcept_no),
+        unit_value_floor=Figure.estimate(decimal_str(floor), rcept_no=rcept_no),
     )
 
 
@@ -320,18 +352,45 @@ def _int(value: Any) -> int | None:
 
 
 def _cited_count(count: Any, cited: Any, rcept_no: str | None) -> Figure | None:
-    """A share count, carrying the cell it was printed in when one is available."""
+    """A share count, carrying the cell it was printed in **when that cell says it**.
+
+    The citation is attached only if the stored cell's own text parses to exactly
+    the number it would sit beside. That guard is not hypothetical: in 4 of the 32
+    parsed 증권발행실적보고서 the 청약 (and 초과청약) figure is a **sum of two table
+    rows** while ``raw``/``span`` point at one of them — 한화솔루션's 청약 38,430,497
+    against a cell reading 38,427,609, and the same shape at SKC, 에스에너지 and
+    루닛 (measured 2026-08-22). A ``[근거]`` chip quoting one addend as if it backed
+    the whole number is a *false* citation, which is worse than none in a product
+    whose one claim is "a number only when it can show where the number came from".
+
+    So the value keeps its filing (``rcept_no`` — the DART link still resolves) and
+    loses the verbatim quote. Making those figures properly citable, with a span
+    per addend, is deferred job **D4**; this is the honest reading until it lands.
+    """
     if count is None:
         return None
     if not isinstance(cited, Mapping):
         return Figure.fact(_int(count), rcept_no=rcept_no)
-    span = cited.get("span")
-    return Figure.fact(
-        _int(count),
-        quote=cited.get("raw"),
-        span=tuple(span) if span else None,
-        rcept_no=rcept_no,
-    )
+    if _backs(cited.get("raw"), count):
+        span = cited.get("span")
+        return Figure.fact(
+            _int(count),
+            quote=cited.get("raw"),
+            span=tuple(span) if span else None,
+            rcept_no=rcept_no,
+        )
+    return Figure.fact(_int(count), rcept_no=rcept_no)
+
+
+def _backs(raw: Any, value: Any) -> bool:
+    """Does this printed cell state exactly this number? Commas and 주 ignored."""
+    if not isinstance(raw, str) or value is None:
+        return False
+    text = raw.replace(",", "").replace("주", "").strip()
+    try:
+        return Decimal(text) == Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return False
 
 
 # ---------------------------------------------------------------------------

@@ -253,6 +253,25 @@ class BodyDocument:
         """``주요사항보고서(유상증자결정)`` etc., as printed in the document."""
         return self._doc_name[1]
 
+    @cached_property
+    def company_name(self) -> str | None:
+        """The 회사명 **this filing prints** — not always the DART master name.
+
+        ``rcept_no 20250930000508`` stores master ``풍전약품`` while its own
+        ``<COMPANY-NAME>`` reads ``에스씨엠생명과학 주식회사``. That is a
+        master-data artifact affecting display only, and the product's rule is to
+        show the master name and *state* the disagreement rather than silently
+        correct it (`ui-traps.md` #3) — which needs this value, so it is read here
+        once rather than re-typed by every surface that compares the two.
+        """
+        start = self.text.find("<COMPANY-NAME")
+        if start < 0:
+            return None
+        open_end, close = self.text.find(">", start), self.text.find("</COMPANY-NAME>", start)
+        if open_end < 0 or close < 0:
+            return None
+        return " ".join(self.text[open_end + 1 : close].split()) or None
+
     @property
     def is_registration_statement(self) -> bool:
         """증권신고서 regime: 0.6M–1.9M text chars — **never feed it whole**.
