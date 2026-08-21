@@ -23,7 +23,10 @@ Two shapes exist and both are read here: the standard 주식 form and the
 
 Every figure comes back as a :class:`Cited` — value, the raw printed text, and a
 character span into the decoded XML — so nothing this module produces can be
-quoted without its evidence.
+quoted without its evidence. A figure the table states across **several rows**
+(``한국예탁결제원(신주인수권증서 청약)`` + ``직접청약(신주인수권증서 청약)``) carries
+one :class:`CitedPart` per addend, because a single addend's cell does not state
+the sum and quoting it as if it did would be a false citation (**D4**).
 """
 
 from __future__ import annotations
@@ -40,6 +43,7 @@ from mijual.dart import rows as client_rows
 
 __all__ = [
     "Cited",
+    "CitedPart",
     "PERF_REPORT_PREFIX",
     "PerformanceFacts",
     "ScheduleRow",
@@ -78,25 +82,68 @@ def _number(text: str | None) -> Decimal | None:
 
 
 @dataclass(frozen=True)
+class CitedPart:
+    """One cell that contributed to a figure — its printed text and its span."""
+
+    raw: str
+    span: tuple[int, int] | None
+
+    def as_json(self) -> dict:
+        return {"raw": self.raw, "span": list(self.span) if self.span else None}
+
+
+@dataclass(frozen=True)
 class Cited:
-    """One figure, the text it was printed as, and where that text lives."""
+    """One figure, the text it was printed as, and where that text lives.
+
+    Most figures are printed whole in one cell and ``raw``/``span`` *are* the
+    citation. A few are a **sum the filer split across rows** — 한화솔루션's 청약
+    38,430,497 is 예탁결제원 38,427,609 + 직접청약 2,888 — and there the whole
+    number appears nowhere in the document. :attr:`parts` then holds every addend
+    with its own text and span, so a surface can show the sum backed by all of
+    them instead of quoting one and implying it says the rest (**D4**).
+    ``parts`` is empty for the ordinary one-cell figure; when it is set,
+    ``parts[0]`` is ``raw``/``span``, so every reader that knows only the single
+    form keeps working and simply sees the first addend.
+    """
 
     value: Decimal | date | None
     raw: str
     span: tuple[int, int] | None
     label: str = ""
+    #: Every cell that was added up, and only when there was more than one.
+    parts: tuple[CitedPart, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.parts:
+            return
+        if len(self.parts) < 2:
+            raise ValueError("one part is not a sum — leave parts empty and cite raw/span")
+        first = self.parts[0]
+        if first.raw != self.raw or first.span != self.span:
+            raise ValueError("parts[0] must be raw/span: a multi-part citation starts there")
 
     @property
     def int_value(self) -> int | None:
         return int(self.value) if isinstance(self.value, Decimal) else None
 
+    @property
+    def citations(self) -> tuple[CitedPart, ...]:
+        """Every cell backing this figure, one-cell figures included."""
+        return self.parts or (CitedPart(raw=self.raw, span=self.span),)
+
     def as_json(self) -> dict:
-        return {
+        """The stored form. ``parts`` appears **only** on a real multi-addend sum,
+        so a single-cell figure serializes byte-identically to before D4."""
+        out: dict = {
             "value": str(self.value) if self.value is not None else None,
             "raw": self.raw,
             "span": list(self.span) if self.span else None,
             "label": self.label,
         }
+        if self.parts:
+            out["parts"] = [part.as_json() for part in self.parts]
+        return out
 
 
 @dataclass(frozen=True)
@@ -229,6 +276,23 @@ def _cited(cell: Cell, label: str) -> Cited | None:
     return Cited(value=value, raw=cell.text, span=(cell.span.start, cell.span.end), label=label)
 
 
+def _cited_sum(value: Decimal, cells: list[Cell], label: str) -> Cited:
+    """A figure summed over table rows, keeping **every** addend's cell.
+
+    Dropping all but the first (which is what this module did before D4) leaves
+    ``value`` stating the sum while ``raw``/``span`` state one term — the exact
+    shape that made 7 figures in 4 filings uncitable.
+    """
+    parts = tuple(CitedPart(raw=c.text, span=(c.span.start, c.span.end)) for c in cells)
+    return Cited(
+        value=value,
+        raw=parts[0].raw,
+        span=parts[0].span,
+        label=label,
+        parts=parts if len(parts) > 1 else (),
+    )
+
+
 def _header_numbers(grid: list[list[Cell]]) -> list[tuple[str, Cited]]:
     """``(header text, number directly beneath it)`` for every column of a table.
 
@@ -359,7 +423,8 @@ def parse_performance(doc: BodyDocument) -> PerformanceFacts:
         elif any("청약자" in h for h in header) and any("주식수" in h for h in header):
             column = next(i for i, h in enumerate(header) if "주식수" in h)
             used = excess = Decimal(0)
-            used_cell = excess_cell = None
+            used_cells: list[Cell] = []
+            excess_cells: list[Cell] = []
             for line in grid[1:]:
                 if squash(line[0].text) in ("계", "합계") or len(line) <= column:
                     continue
@@ -369,24 +434,16 @@ def parse_performance(doc: BodyDocument) -> PerformanceFacts:
                 who = squash(" ".join(c.text for c in line[:column]))
                 if "초과" in who:
                     excess += amount
-                    excess_cell = excess_cell or line[column]
+                    excess_cells.append(line[column])
                 elif "신주인수권증서" in who or "증서" in who:
                     used += amount
-                    used_cell = used_cell or line[column]
-            if used_cell is not None:
-                facts.warrants_exercised = Cited(
-                    value=used,
-                    raw=used_cell.text,
-                    span=(used_cell.span.start, used_cell.span.end),
-                    label="신주인수권증서 청약",
-                )
-            if excess_cell is not None:
-                facts.excess_subscribed = Cited(
-                    value=excess,
-                    raw=excess_cell.text,
-                    span=(excess_cell.span.start, excess_cell.span.end),
-                    label="초과청약",
-                )
+                    used_cells.append(line[column])
+            # 예탁결제원 청약 and 직접청약 are two rows of the same figure in 4 of
+            # the 32 parsed reports; both are kept, so the sum can be cited.
+            if used_cells:
+                facts.warrants_exercised = _cited_sum(used, used_cells, "신주인수권증서 청약")
+            if excess_cells:
+                facts.excess_subscribed = _cited_sum(excess, excess_cells, "초과청약")
 
         if facts.final_shares is None:
             first, final_shares, final_amount, note = _allocation(grid)

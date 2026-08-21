@@ -31,6 +31,13 @@ placeholder, a dash or a stale stand-in.
 that says 「추정」 5,525원 — a quote pinned to an estimate would be a fabricated
 citation. The estimate's inputs carry the citations instead.
 
+*A citation states the number it backs — in one part or in parts that sum.* A few
+표 figures are printed as several rows the filer expects the reader to add up
+(한화솔루션's 청약 38,430,497 = 38,427,609 + 2,888). :attr:`Figure.parts` carries
+one :class:`QuotePart` per addend, and a figure that has parts has **no**
+``quote``/``span`` of its own — there is no single passage to point at, so the
+one-addend quote that would look like a citation cannot be constructed (**D4**).
+
 *Money and ratios serialize as exact decimal strings.* 배정비율 is printed to ten
 decimal places (``0.2314082845``) and a ₩ total runs past 10^10; a JSON float
 would quietly round both. :func:`decimal_str` never rounds — it only drops a
@@ -46,7 +53,7 @@ from typing import Any
 
 from mijual.calc import KST
 
-__all__ = ["Figure", "decimal_str", "instant", "iso_day", "to_decimal"]
+__all__ = ["Figure", "QuotePart", "decimal_str", "instant", "iso_day", "to_decimal"]
 
 
 def to_decimal(value: Any) -> Decimal | None:
@@ -121,6 +128,22 @@ def instant(moment: datetime | None) -> str | None:
 
 
 @dataclass(frozen=True)
+class QuotePart:
+    """One passage of a citation the filing split across several cells."""
+
+    #: The filing's own words for this addend, verbatim.
+    quote: str
+    #: Character offsets of ``quote`` in the stored document.
+    span: tuple[int, int] | None = None
+
+    def payload(self) -> dict[str, Any]:
+        out: dict[str, Any] = {"quote": self.quote}
+        if self.span is not None:
+            out["span"] = list(self.span)
+        return out
+
+
+@dataclass(frozen=True)
 class Figure:
     """One value a surface may render, and whether it is a fact or an estimate."""
 
@@ -135,6 +158,9 @@ class Figure:
     span: tuple[int, int] | None = None
     #: The filing the value (or its quote) came from.
     rcept_no: str | None = None
+    #: A citation the filing prints in **parts that sum to this value** — every
+    #: addend verbatim, each with its own span. Empty for the usual single quote.
+    parts: tuple[QuotePart, ...] = ()
 
     def __post_init__(self) -> None:
         if self.value is None:
@@ -142,11 +168,19 @@ class Figure:
                 "a value that does not exist is absent from the payload, never a "
                 "Figure carrying None — use Figure.fact()/Figure.estimate()"
             )
-        if self.estimated and (self.quote is not None or self.span is not None):
+        if self.estimated and (self.quote is not None or self.span is not None or self.parts):
             raise ValueError(
                 "an estimate has no verbatim quote: no filing states a derived "
                 "number. Cite its inputs instead."
             )
+        if self.parts:
+            if self.quote is not None or self.span is not None:
+                raise ValueError(
+                    "a multi-part citation has no single quote: one addend does not "
+                    "state the sum, and offering it as the quote is a false citation"
+                )
+            if len(self.parts) < 2:
+                raise ValueError("one part is not a sum — pass quote/span instead")
 
     @classmethod
     def fact(
@@ -156,11 +190,19 @@ class Figure:
         quote: str | None = None,
         span: tuple[int, int] | None = None,
         rcept_no: str | None = None,
+        parts: tuple[QuotePart, ...] = (),
     ) -> "Figure | None":
         """A value read from a filing. ``None`` in → ``None`` out (key omitted)."""
         if value is None:
             return None
-        return cls(value=value, estimated=False, quote=quote, span=span, rcept_no=rcept_no)
+        return cls(
+            value=value,
+            estimated=False,
+            quote=quote,
+            span=span,
+            rcept_no=rcept_no,
+            parts=parts,
+        )
 
     @classmethod
     def estimate(cls, value: Any, *, rcept_no: str | None = None) -> "Figure | None":
@@ -176,6 +218,8 @@ class Figure:
             out["quote"] = self.quote
         if self.span is not None:
             out["span"] = list(self.span)
+        if self.parts:
+            out["parts"] = [part.payload() for part in self.parts]
         if self.rcept_no is not None:
             out["rcept_no"] = self.rcept_no
         return out

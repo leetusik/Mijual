@@ -97,6 +97,36 @@ def test_a_filers_own_실권주_cell_can_disagree_and_the_Ⅶ_tables_win():
     assert any("lapse_mismatch" in note for note in facts.notes)
 
 
+#: 한화솔루션 ``20260730000366``'s Ⅶ 청약내역, cut down to the shape that matters:
+#: the same 청약 arrives through 예탁결제원 **and** 직접청약, so the figure the report
+#: means is the sum of two rows and is printed nowhere as itself.
+SPLIT_SUBSCRIPTION_TABLE = """<DOCUMENT><TABLE>
+<TR><TD>청약일</TD><TD>청약자</TD><TD>발행회사와의 관계</TD><TD>주식수</TD></TR>
+<TR><TD>2026년 07월 23일</TD><TD>한국예탁결제원(신주인수권증서 청약)</TD><TD>-</TD><TD>38,427,609</TD></TR>
+<TR><TD>2026년 07월 23일</TD><TD>한국예탁결제원(초과청약)</TD><TD>-</TD><TD>6,148,305</TD></TR>
+<TR><TD>2026년 07월 23일</TD><TD>직접청약(신주인수권증서 청약)</TD><TD>-</TD><TD>2,888</TD></TR>
+<TR><TD>계</TD><TD>44,578,802</TD></TR>
+</TABLE></DOCUMENT>"""
+
+
+def test_a_청약_summed_over_rows_keeps_every_addends_own_cell():
+    """D4: cite the sum with all of its parts, or it cannot be cited at all."""
+    doc = BodyDocument.from_text(SPLIT_SUBSCRIPTION_TABLE)
+    facts = parse_performance(doc)
+
+    exercised = facts.warrants_exercised
+    assert exercised.int_value == 38430497  # 38,427,609 + 2,888
+    assert [p.raw for p in exercised.parts] == ["38,427,609", "2,888"]
+    assert all(doc.verify(Span(*p.span), p.raw) for p in exercised.parts)
+    # 초과청약 arrived on one row here, so it stays an ordinary one-cell citation
+    # — and serializes exactly as it did before parts existed.
+    assert facts.excess_subscribed.parts == () and facts.excess_subscribed.raw == "6,148,305"
+    assert set(facts.excess_subscribed.as_json()) == {"value", "raw", "span", "label"}
+    single = facts.excess_subscribed.citations
+    assert len(single) == 1 and single[0].raw == facts.excess_subscribed.raw
+    assert len(exercised.as_json()["parts"]) == 2
+
+
 def test_the_실권주_column_is_found_by_its_header_not_by_its_position():
     """대동기어 ``20260728000264`` puts 단수주 first and labels it 배정 실권주."""
     header = "신주인수권증서 배정 실권주 | 신주인수권증서 청약 실권주 | 실권주 및 단수주 총계"

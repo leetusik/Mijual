@@ -24,6 +24,7 @@ from mijual.present import (
     FIELD_NAMES_KO,
     Figure,
     OfferingInputs,
+    QuotePart,
     board_summary,
     countdown_of,
     event_view,
@@ -337,10 +338,38 @@ def test_the_totals_add_up_and_a_cell_that_does_not_state_the_number_is_not_cite
     }
     result = lapse_result(rows[0] | {"warrants_exercised": 38430497}, facts=facts).payload()
     assert result["warrants_issued"]["quote"] == "42,165,422"
-    # The 청약 cell states one of the two rows that were summed — no false chip.
+    # A pre-D4 stored figure states one of the two rows that were summed — no false chip.
     exercised = result["warrants_exercised"]
     assert exercised["value"] == 38430497
     assert "quote" not in exercised and "span" not in exercised
+
+
+def test_a_summed_figure_is_cited_by_every_addend_or_by_none_of_them() -> None:
+    """D4: 청약 38,430,497 is printed as 38,427,609 + 2,888 and nowhere as itself."""
+    row = {"status": "counted_only", "lapsed": 3734925,
+           "warrants_issued": 42165422, "warrants_exercised": 38430497}
+    parts = [{"raw": "38,427,609", "span": [3, 4]}, {"raw": "2,888", "span": [5, 6]}]
+    facts = {
+        "rcept_no": "20260730000366",
+        "warrants_issued": {"value": "42165422", "raw": "42,165,422", "span": [1, 2]},
+        "warrants_exercised": {"value": "38430497", "raw": "38,427,609", "span": [3, 4],
+                               "parts": parts},
+    }
+    served = lapse_result(row, facts=facts).payload()
+    assert served["warrants_exercised"]["parts"] == [
+        {"quote": "38,427,609", "span": [3, 4]},
+        {"quote": "2,888", "span": [5, 6]},
+    ]
+    # No addend poses as the whole number, and one cell is still one quote.
+    assert "quote" not in served["warrants_exercised"]
+    assert served["warrants_issued"]["quote"] == "42,165,422"
+
+    # Parts that do not add up to the value back nothing at all.
+    short = dict(facts["warrants_exercised"], parts=[parts[0], {"raw": "2,880", "span": [5, 6]}])
+    degraded = lapse_result(row, facts=facts | {"warrants_exercised": short}).payload()
+    assert set(degraded["warrants_exercised"]) == {"value", "estimated", "rcept_no"}
+    with pytest.raises(ValueError):  # and a half-cited figure cannot be built by hand
+        Figure.fact(1, quote="38,427,609", parts=(QuotePart(quote="2,888"),))
 
 
 def test_offering_inputs_read_the_same_from_an_object_and_from_its_stored_json() -> None:

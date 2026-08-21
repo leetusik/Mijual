@@ -455,6 +455,15 @@ def _perf_rows(session: Session) -> list[Row]:
             if not isinstance(cited, dict) or cited.get("span") is None:
                 continue
             span = tuple(cited["span"])  # type: ignore[assignment]
+            # A figure the filer split across 청약 경로 rows is stated by all of
+            # its addends and by none of them alone (D4); show the grader every
+            # cell, or the sum reads as a mis-transcription of the first one.
+            parts = cited.get("parts") or []
+            printed = (
+                " + ".join(str(part.get("raw") or "") for part in parts)
+                if len(parts) > 1
+                else str(cited.get("raw") or "")
+            )
             out.append(
                 Row(
                     unit=f"perf:{report.rcept_no}",
@@ -468,7 +477,7 @@ def _perf_rows(session: Session) -> list[Row]:
                     field_ko=f"[실적] {cited.get('label') or key}",
                     field_order=20 + order,
                     extracted_value=str(cited.get("value") or ""),
-                    quote=_squash(str(cited.get("raw") or "")),
+                    quote=_squash(printed),
                     context=_context(doc, span),
                     gate_status="deterministic",
                     gate_reason_code="",

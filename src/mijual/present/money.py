@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING, Any
 
 from mijual.calc import warrant_intrinsic_value, warrant_intrinsic_value_floor
 from mijual.present.event import field_value
-from mijual.present.values import Figure, decimal_str, iso_day
+from mijual.present.values import Figure, QuotePart, decimal_str, iso_day
 
 if TYPE_CHECKING:  # pragma: no cover - imported for types only
     # ``mijual.estimate`` is **never** imported at runtime: it pulls
@@ -352,45 +352,81 @@ def _int(value: Any) -> int | None:
 
 
 def _cited_count(count: Any, cited: Any, rcept_no: str | None) -> Figure | None:
-    """A share count, carrying the cell it was printed in **when that cell says it**.
+    """A share count, carrying the cells it was printed in **when they say it**.
 
-    The citation is attached only if the stored cell's own text parses to exactly
-    the number it would sit beside. That guard is not hypothetical: in 4 of the 32
-    parsed 증권발행실적보고서 the 청약 (and 초과청약) figure is a **sum of two table
-    rows** while ``raw``/``span`` point at one of them — 한화솔루션's 청약 38,430,497
-    against a cell reading 38,427,609, and the same shape at SKC, 에스에너지 and
-    루닛 (measured 2026-08-22). A ``[근거]`` chip quoting one addend as if it backed
-    the whole number is a *false* citation, which is worse than none in a product
-    whose one claim is "a number only when it can show where the number came from".
+    The rule is one sentence: *a citation is attached only when its text states
+    the number — in one cell, or in parts that sum to it.* Both halves are live in
+    the corpus. Most 실적보고서 figures are one cell. In 4 of the 32 parsed reports
+    the 청약 (and 초과청약) figure is a **sum of table rows** the filer split by
+    청약 경로 — 한화솔루션's 38,430,497 is 예탁결제원 38,427,609 + 직접청약 2,888,
+    and SKC, 에스에너지 and 루닛 have the same shape. Those now arrive with a
+    ``parts`` list (one per addend, each with its own span) and are cited in full.
 
-    So the value keeps its filing (``rcept_no`` — the DART link still resolves) and
-    loses the verbatim quote. Making those figures properly citable, with a span
-    per addend, is deferred job **D4**; this is the honest reading until it lands.
+    A stored figure that carries neither — one cell whose text is not the number,
+    which is what the pre-D4 parser wrote — keeps its filing (``rcept_no``, so the
+    DART link still resolves) and carries **no** verbatim chip. Quoting one addend
+    as if it backed the whole number is a false citation, and this layer has no
+    way to construct one.
     """
     if count is None:
         return None
     if not isinstance(cited, Mapping):
         return Figure.fact(_int(count), rcept_no=rcept_no)
-    if _backs(cited.get("raw"), count):
-        span = cited.get("span")
+    parts = _backing_parts(cited, count)
+    if parts is None:
+        return Figure.fact(_int(count), rcept_no=rcept_no)
+    if len(parts) == 1:
         return Figure.fact(
-            _int(count),
-            quote=cited.get("raw"),
-            span=tuple(span) if span else None,
-            rcept_no=rcept_no,
+            _int(count), quote=parts[0].quote, span=parts[0].span, rcept_no=rcept_no
         )
-    return Figure.fact(_int(count), rcept_no=rcept_no)
+    return Figure.fact(_int(count), parts=parts, rcept_no=rcept_no)
 
 
-def _backs(raw: Any, value: Any) -> bool:
-    """Does this printed cell state exactly this number? Commas and 주 ignored."""
-    if not isinstance(raw, str) or value is None:
-        return False
+def _backing_parts(cited: Mapping[str, Any], value: Any) -> tuple[QuotePart, ...] | None:
+    """The passages that back ``value``, or ``None`` when the text does not state it.
+
+    ``cited`` is a stored ``perf.Cited`` mapping: ``raw``/``span``, plus ``parts``
+    when the filing printed the figure as a sum. Every part must parse, and the
+    parts must add up **exactly** — a citation that is nearly right is not one.
+    """
+    printed = cited.get("parts")
+    if not isinstance(printed, (list, tuple)) or not printed:
+        printed = [cited]
+    total = Decimal(0)
+    parts: list[QuotePart] = []
+    for part in printed:
+        if not isinstance(part, Mapping):
+            return None
+        number = _printed_number(part.get("raw"))
+        if number is None:
+            return None
+        total += number
+        span = part.get("span")
+        parts.append(QuotePart(quote=str(part.get("raw")), span=tuple(span) if span else None))
+    target = _to_decimal(value)
+    if target is None or total != target:
+        return None
+    return tuple(parts)
+
+
+def _printed_number(raw: Any) -> Decimal | None:
+    """A printed cell as a number — commas and a trailing 주 ignored, else ``None``."""
+    if not isinstance(raw, str):
+        return None
     text = raw.replace(",", "").replace("주", "").strip()
     try:
-        return Decimal(text) == Decimal(str(value))
+        return Decimal(text)
     except (InvalidOperation, ValueError):
-        return False
+        return None
+
+
+def _to_decimal(value: Any) -> Decimal | None:
+    if value is None:
+        return None
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return None
 
 
 # ---------------------------------------------------------------------------

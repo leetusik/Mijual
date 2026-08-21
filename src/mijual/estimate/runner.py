@@ -28,7 +28,7 @@ from mijual.estimate.perf import PERF_REPORT_PREFIX, PerformanceFacts, census, p
 from mijual.extract.runner import readable_versions
 from mijual.gates.context import version_context
 
-__all__ = ["CollectionReport", "collect_performance"]
+__all__ = ["CollectionReport", "ReparseReport", "collect_performance", "reparse_performance"]
 
 
 @dataclass
@@ -342,6 +342,71 @@ def _backstop(client: DartClient, session_factory, report: CollectionReport, *, 
                     report.unlinked += 1
                 if log:
                     log(f"  backstop  {corp_name} {row['rcept_no']} → {link_status}")
+
+
+@dataclass
+class ReparseReport:
+    """What one offline re-read of the stored 실적보고서 bytes changed."""
+
+    reports: int = 0
+    reparsed: int = 0
+    changed: int = 0
+    no_bytes: int = 0
+    errors: int = 0
+    notes: list[str] = field(default_factory=list)
+
+    def render(self) -> str:
+        lines = [
+            f"reparse    : {self.reparsed} of {self.reports} stored 실적보고서 re-read "
+            f"from their own bytes ({self.changed} with changed facts, "
+            f"{self.no_bytes} without stored bytes, {self.errors} error(s)) — "
+            f"0 request(s), 0 LLM call(s)",
+        ]
+        lines.extend(f"  ! {note}" for note in self.notes)
+        return "\n".join(lines)
+
+
+def reparse_performance(session) -> ReparseReport:
+    """Re-read every stored 증권발행실적보고서 from its own bytes. **Offline.**
+
+    ``facts`` is written by :func:`collect_performance`, which needs a client to
+    *discover* filings — but re-reading one costs nothing: the evidence contract
+    keeps ``payload_bytes`` beside every row, so a change to
+    :func:`~mijual.estimate.perf.parse_performance` can be rolled over the corpus
+    with **0 OpenDART requests and 0 model calls**. Only the parse-derived columns
+    are touched; the event link, the raw bytes and their hash are not this pass's
+    business.
+
+    The run order after it is the same as after a collect —
+    ``estimate reparse`` → ``estimate snapshot`` — because ``LapseRow`` is built
+    from ``facts``.
+    """
+    report = ReparseReport()
+    for stored in session.scalars(
+        select(PerformanceReport).order_by(PerformanceReport.rcept_no)
+    ).all():
+        report.reports += 1
+        if not stored.payload_bytes:
+            report.no_bytes += 1
+            continue
+        try:
+            facts = parse_performance(
+                BodyDocument.from_bytes(stored.payload_bytes, rcept_no=stored.rcept_no)
+            )
+        except Exception as exc:  # noqa: BLE001 — one bad document is not a failed run
+            report.errors += 1
+            report.notes.append(f"{stored.rcept_no}: parse {type(exc).__name__}")
+            continue
+        before = stored.facts
+        stored.form = facts.form
+        stored.parse_status = "parsed" if facts.has_warrant_table else "no_warrant_table"
+        stored.parse_note = "; ".join(facts.notes) or None
+        stored.facts = facts.as_json()
+        report.reparsed += 1
+        if before != stored.facts:
+            report.changed += 1
+    session.flush()
+    return report
 
 
 def _persist(session, row: dict, blob: bytes, facts: PerformanceFacts, *, event, link) -> None:

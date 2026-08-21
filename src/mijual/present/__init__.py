@@ -38,7 +38,9 @@ remember and become things the contract cannot express otherwise:
 
 * **an estimate never renders untagged, a fact never carries the mark** —
   :class:`~mijual.present.values.Figure` has no default for ``estimated``, and
-  refuses to attach a verbatim quote to a derived number;
+  refuses to attach a verbatim quote to a derived number; a citation states the
+  number it backs, either as one ``quote`` or as ``parts`` that **sum** to it
+  (:class:`~mijual.present.values.QuotePart`), and no third form constructs;
 * **money never appears before 확정발행가** —
   :class:`~mijual.present.money.OfferingInputs` and
   :class:`~mijual.present.money.LapseResult` will not construct with a won figure
@@ -111,7 +113,14 @@ from mijual.present.summary import (
     freshness,
     lapse_totals,
 )
-from mijual.present.values import Figure, decimal_str, instant, iso_day, to_decimal
+from mijual.present.values import (
+    Figure,
+    QuotePart,
+    decimal_str,
+    instant,
+    iso_day,
+    to_decimal,
+)
 
 __all__ = [
     "COUNTDOWN_LABELS_KO",
@@ -136,6 +145,7 @@ __all__ = [
     "LapseResult",
     "LapseTotals",
     "OfferingInputs",
+    "QuotePart",
     "Reading",
     "VersionRow",
     "bare_name",

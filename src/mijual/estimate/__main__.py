@@ -15,6 +15,9 @@
     # 5. refresh what the API may not compute for itself (P5.S3) — 0 requests
     .venv/bin/python -m mijual.estimate snapshot
 
+    # 6. re-read every stored 실적보고서 from its own bytes — 0 requests, 0 calls
+    .venv/bin/python -m mijual.estimate reparse
+
 ``report`` is the command the committed numbers come from (N8): every figure the
 result quotes is printed by it, so a stale hand-copied total cannot survive.
 Nothing here prints, writes or accepts a secret.
@@ -39,7 +42,7 @@ from mijual.db.schema_sync import ensure_columns
 from mijual.db.session import create_all, make_engine, make_session_factory, session_scope
 from mijual.estimate import build_report, won
 from mijual.estimate.perf import census, parse_performance
-from mijual.estimate.runner import collect_performance
+from mijual.estimate.runner import collect_performance, reparse_performance
 from mijual.estimate.snapshot import refresh_serving_snapshot
 
 DEFAULT_BGN = "20260101"
@@ -81,6 +84,11 @@ def build_parser() -> argparse.ArgumentParser:
         "snapshot", help="precompute what the API may not compute (0 requests, 0 calls)"
     )
     snap.add_argument("--today", default=None, help="anchor date YYYYMMDD (default: today KST)")
+
+    sub.add_parser(
+        "reparse",
+        help="re-read every stored 실적보고서 from its own bytes (0 requests, 0 calls)",
+    )
     return p
 
 
@@ -212,10 +220,16 @@ def cmd_show(args, factory) -> dict:
         ):
             if cited is None:
                 continue
-            span = Span(*cited.span) if cited.span else None
-            ok = doc.verify(span, cited.raw) if span else False
+            ok = all(
+                part.span is not None and doc.verify(Span(*part.span), part.raw)
+                for part in cited.citations
+            )
             print(f"  {label:<14} {cited.value!s:>18}  span={cited.span} "
-                  f"verify={'ok' if ok else 'FAILED'}  [{cited.label}]")
+                  f"verify={'ok' if ok else 'FAILED'}  [{cited.label}]"
+                  + (f"  = {len(cited.parts)} rows summed" if cited.parts else ""))
+            # A summed figure is printed nowhere as a whole; show every addend.
+            for part in cited.parts:
+                print(f"  {'':<14} {part.raw:>18}  span={part.span}")
         print(f"  소멸(도출)     {facts.lapse_derived!s:>18}   확정발행가 {facts.issue_price}")
         for note in facts.notes:
             print(f"  ! {note}")
@@ -237,12 +251,32 @@ def cmd_snapshot(args, factory) -> dict:
         }
 
 
+def cmd_reparse(args, factory) -> dict:
+    """Re-read the stored 실적보고서 bytes — the offline half of ``collect``.
+
+    A parser change (D4's multi-addend citations, say) reaches the corpus through
+    here without a single request. Follow it with ``snapshot``: ``LapseRow`` is
+    built from ``facts``.
+    """
+    with session_scope(factory) as session:
+        written = reparse_performance(session)
+        print(written.render())
+        return {
+            "reports": written.reports,
+            "reparsed": written.reparsed,
+            "changed": written.changed,
+            "no_bytes": written.no_bytes,
+            "errors": written.errors,
+        }
+
+
 COMMANDS = {
     "report": cmd_report,
     "collect": cmd_collect,
     "census": cmd_census,
     "show": cmd_show,
     "snapshot": cmd_snapshot,
+    "reparse": cmd_reparse,
 }
 
 

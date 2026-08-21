@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.S20`
-- Next slice: `P5.S7`
+- Current slice: `P5.S7`
+- Next slice: `P5.S8`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T02:56:03+09:00`
+- Rebuilt at: `2026-08-22T03:12:12+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S20` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S7` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -79,7 +79,7 @@
 | [x] `P5.S4` | `done` | 내 종목 조회 endpoints: stock resolution, live rights, 2026 놓친 돈 breakdown | `implementation` | `works/phases/active/P5/slices/P5.S4` |
 | [x] `P5.S5` | `done` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채 | `implementation` | `works/phases/active/P5/slices/P5.S5` |
 | [x] `P5.S6` | `done` | ③ 매수예정가 backing (D-15): extraction target, gate, exposure | `implementation` | `works/phases/active/P5/slices/P5.S6` |
-| [ ] `P5.S20` | `todo` | Multi-span citations for multi-addend 실적보고서 figures | `implementation` | `works/phases/active/P5/slices/P5.S20` |
+| [x] `P5.S20` | `done` | Multi-span citations for multi-addend 실적보고서 figures | `implementation` | `works/phases/active/P5/slices/P5.S20` |
 | [ ] `P5.S7` | `todo` | Reader auth backend: accounts, password hashing, sessions, reset flow | `implementation` | `works/phases/active/P5/slices/P5.S7` |
 | [ ] `P5.S8` | `todo` | Portfolio backend: holdings, D-day list, 챙긴 돈, 알림 preferences, sample portfolio | `implementation` | `works/phases/active/P5/slices/P5.S8` |
 | [ ] `P5.S9` | `todo` | Admin backend: operator door + read-only ops endpoints + pipeline run log | `implementation` | `works/phases/active/P5/slices/P5.S9` |

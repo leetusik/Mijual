@@ -722,6 +722,63 @@ verbatim citation; the other 4 serve **no key at all**. **0 LLM calls, 0 OpenDAR
     not a defect. Likewise `scripts/export_design_grounding.py` would now emit `appraisal_price` in ③
     samples — **the landed pack is dated and must not be regenerated** (P3.REVIEW note 3).
 
+### `P5.S20` — D4 is closed: a citation states its number, in one part or in parts that sum
+
+The 7 figures S3 measured (에스에너지 · 루닛 · SKC · 한화솔루션) now carry **one span per
+addend**; **0 of the 269 stored 실적보고서 figures is uncitable** (was 7). Offline: **0
+OpenDART requests, 0 LLM calls**, and every rendered number is byte-identical before → after
+(718.1억/548.7억 · 51,253,956/365,527,824 · 0.1402 · 488 = 50/422/16 · 33 · 57 · 4 · 15 · 69 ·
+퓨쳐켐 2026-09-04 · `estimate report` diff empty).
+
+1. **The payload shape `P5.S13`/`P5.S14` render — three states, no fourth.** A `Figure`
+   carries **either** `quote` + `span` (one cell) **or** `parts` (≥ 2 addends, each
+   `{quote, span}`, and they sum to `value`) **or** neither (uncitable → render **no** chip;
+   `rcept_no` still links to DART). The three are mutually exclusive *by construction* —
+   `present.Figure` raises on `quote` beside `parts`, and on a one-element `parts`.
+   ```json
+   "warrants_exercised": {"value": 38430497, "estimated": false,
+     "parts": [{"quote": "38,427,609", "span": [285071, 285081]},
+               {"quote": "2,888", "span": [285911, 285916]}],
+     "rcept_no": "20260730000366"}
+   ```
+   **Render every part verbatim.** Never one of them, and never joined into a single quote
+   string: the sum is printed **nowhere** in the filing, so a joined quote would be a sentence
+   the document does not contain. Live today on 4 figures (한화솔루션's 청약 is the landing's
+   own example); `warrants_issued` and the other 58 served counts stay single-quote.
+2. **Why the figures existed at all.** The filer splits the same 청약 by 경로 — 한국예탁결제원
+   *and* 직접청약/실질주주 — so Ⅶ 청약내역 states 38,427,609 and 2,888 on two rows and the
+   number the report means (38,430,497) on none. All 7 cases are exactly two rows; the missing
+   term was small (866 · 10 · 2 · 239 · 41 · 2,888 · 149), which is why the defect read as a
+   typo rather than a sum. `perf.py` summed correctly and kept only the first cell.
+3. **Stored form: additive and byte-compatible.** `perf.Cited.as_json()` emits `"parts"`
+   **only** on a real multi-addend sum, so the other 262 figures serialize exactly as before
+   and every reader that knows only `raw`/`span` still works (it sees the first addend).
+   `Cited.citations` normalizes both forms. `performance_report.lapse` did not change at all —
+   `LapseRow` carries values, not citations.
+4. **New offline command, and the run order grows a step.**
+   **`python -m mijual.estimate reparse`** re-reads every stored 실적보고서 from its own
+   `payload_bytes` and rewrites only the parse-derived columns (`facts` · `form` ·
+   `parse_status` · `parse_note`) — never the event link, the bytes or the hash. **0 requests,
+   0 model calls**, idempotent (second pass: `0 with changed facts`). This is how *any* future
+   `parse_performance` change reaches the corpus: `facts` is otherwise only written by
+   `estimate collect`, which needs a client to discover filings. **Order after any collect:
+   `bodydoc backfill` → `gates run` → `estimate reparse` → `estimate snapshot`.**
+5. **The guard was generalized, never relaxed.** `present.money._cited_count` now asks
+   "does this text state this number — in one cell, or in parts that add up exactly?" A
+   stored figure that answers no still loses its chip and keeps its `rcept_no`. The
+   발행사 기재 불일치 rule is untouched: still 5 filings, both readings, both quotes,
+   `used` on 발행 − 청약 (verified live on 대한광통신).
+6. **Two readers of `facts` citations existed, not one.** `evalset/sample.py`'s 실적보고서
+   rows showed the grader the first addend beside the summed value — the same false-citation
+   shape, in the artifact that measures accuracy. Its `quote` column now prints every addend.
+   Sampling is unaffected (the draw keys on `unit`/`stratum`/`hard_case`). **`P5.S17`'s
+   정확도 tab reads this sheet — it inherits the fix, not a caveat.**
+7. **Gotcha for anyone touching `perf.py` again:** the pattern to watch for is
+   `x = x or cell` **beside an accumulating `+=`** — that is the shape that drops evidence.
+   The three remaining `or` assignments (`lapse_stated` · `lapse_with_fractions` ·
+   `fractional_shares`) are first-*header*-wins over one printed cell, not addends, and the
+   corpus confirms it: all 262 single-cell figures state their own number exactly.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -931,6 +988,37 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   unresolved, 0 fall-backs), **12/12** served ③ citations re-slice to their quote and their value,
   all **16/16** exposable ③ pages answer 200, and every pre-existing gate distribution and landing
   number is byte-identical before → after.
+
+- (`P5.S20`) **`data`** — the stored citation model gains **multi-part evidence**:
+  `estimate.perf.Cited` carries `parts` (one `{raw, span}` per contributing cell) for a figure
+  the filer printed as a **sum of table rows**, and `performance_report.facts` therefore gains
+  an optional `parts` list on such a figure. Additive and byte-compatible — the key appears
+  only on a real sum, so every single-cell figure serializes exactly as before, and
+  `performance_report.lapse` is unchanged (it carries values, not citations). Corpus effect:
+  **7 figures in 4 filings** (에스에너지 · 루닛 · SKC · 한화솔루션 — each a
+  한국예탁결제원 + 직접청약 two-row 청약), **0 of 269 stored figures now uncitable** (was 7),
+  all 14 spans re-slice to their cells. **`api`** — the contract-wide citation rule is now
+  stated and structural: a served value carries **either** `quote` + `span` (one cell)
+  **or** `parts` (≥ 2, each `{quote, span}`, summing exactly to `value`) **or** neither
+  (no chip; `rcept_no` still links to DART) — `present.Figure` refuses every other
+  combination, so a one-addend quote posing as the whole number is unconstructable. Live on
+  `lapse_result.warrants_exercised` for the four filers, the landing's own 한화솔루션 example
+  included. **`backend`** — `perf.CitedPart` / `Cited.citations` / `_cited_sum` (the Ⅶ
+  청약내역 branch keeps **all** contributing cells, not the first), `present.QuotePart`,
+  `present.money._backing_parts`, and `estimate.runner.reparse_performance`. **`operations`**
+  — new offline command **`python -m mijual.estimate reparse`** (0 requests, 0 model calls,
+  idempotent, ~4 s over 69 reports) which re-reads every stored 실적보고서 from its own
+  `payload_bytes` and rewrites only the parse-derived columns; the re-derivation order after
+  any collection becomes **`bodydoc backfill` → `gates run` → `estimate reparse` →
+  `estimate snapshot`**. It is the general answer to "a parser change must reach the corpus
+  without spending a request". **`qa`** — the *Known Fragile Areas* row "값은 두 행의 합인데
+  인용은 한 행 → deferred **D4**" **closes**: 7 → 0 uncitable 실적보고서 figures, 7 multi-part
+  citations all verifying, and the evalset's 실적보고서 rows now show the grader every addend
+  instead of the first one (sampling unaffected). Suite baseline 91 → **93 tests**, still
+  ~1.2 s, no network/model/DB; the landing/board/stock numbers were re-measured after the
+  re-derivation and are byte-identical (718.1억/548.7억 · 51,253,956/365,527,824 · 0.1402 ·
+  488 = 50/422/16 · 33 · 57 · 4 · 15 · 69 · 퓨쳐켐 2026-09-04), with `estimate report`
+  diffing empty line for line.
 
 ## Open Questions
 
