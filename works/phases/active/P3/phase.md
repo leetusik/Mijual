@@ -353,6 +353,45 @@ R5–R7 and the apply phase:
 - Carried: "정정 이력" label still open; 삼성전자 on `LookupEmpty` is a labeled structural
   stand-in, not a corpus claim.
 
+### R5 landed design (P3.S6 read-back, 2026-08-21) — 개인화 2층: 내 포트폴리오
+
+Record + contract landed read-only at `docs/reference/design/rounds/05-account/output/`
+(`result.md`, `build-prompt.md`; **no token delta**). Eight cards under `account/` (the
+required seven + a `ChromeSession` split). Operator revised mid-session ("do all as your
+recommendations" plus five 개정 items and one post-gate addition). Binding on R6–R7 and
+the apply phase:
+
+- **Layer named 내 포트폴리오**; entry is the **account menu's first row** (nav links stay
+  the R2 삼분할: 내 종목 조회 · 관제 현황판 · 해설 — operator revised away a 4th link).
+  내 포트폴리오 is the only login-gated surface; every anonymous surface stays ungated.
+- **Auth = email + password** (operator revision — the session's code-based proposal was
+  discarded): password ≥8 chars only, reset via email link (no signup-status disclosure),
+  PII = email + password hash, PII panel always visible on the auth screen.
+- **Conversion**: offer panel below a computed 조회 result (dismissable, once per
+  session) + a one-line link under detail D-day blocks; nav login untouched; no gates,
+  no forced modals.
+- **Portfolio**: R4's signed input primitive reused; row edit confirms via the action
+  column swapping 수정·삭제 → 저장·취소 (horizontal); delete = instant + 8s undo, no
+  modal; no page 대제목 (header nav locates); **anonymous/sample editing persists in
+  localStorage** — account migration only ever offered, never automatic (session-held R4
+  values likewise offered via the carry-over row, R5-3).
+- **D-day list**: 다가오는 마감 (D-asc) / 지나간 마감 (recent-first), anchor date stated
+  ("기준 YYYY-MM-DD (KST)"), R4 money rules verbatim; **챙긴 돈 checkbox (R5-8, operator
+  post-gate)** on lapsed ① rows — user's own claim, label 놓친→챙긴, same 「추정」 amount,
+  alert→live color, never mixed into disclosure data or aggregates; R4's anonymous
+  conditional frame unchanged.
+- **Notifications**: email only, timing chips (default 7일+1일), KakaoTalk row visible
+  with 「예정」 chip and **no control**; account deletion wipes email immediately; no
+  marketing/digest mail ever. Email mock is a light surface outside the cosmos tokens
+  (hardcoded light values) — subject "[미주알] {종목} — {마감명} D-{n} ({date})"; the
+  pre-확정발행가 no-money rule applies to mail too.
+- **Sample portfolio (judge one-click)**: fixed composition of 4 real pinned events —
+  계양전기 500주 (① live D-5) · 대동기어 300주 (② D-65) · 한화솔루션 500주 (① lapsed,
+  the R4 679,575원) · 세기상사 100주 (③ D+45); entries at the login page + landing
+  footer; loaded state = inset banner + nav 「샘플」 chip + 샘플 종료 replacing the login
+  slot; notification settings hidden in sample (no address exists); no fake identity.
+- Carried: "정정 이력" label still open (R6+).
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3

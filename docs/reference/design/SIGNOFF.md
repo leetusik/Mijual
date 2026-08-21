@@ -110,3 +110,31 @@ This file is a factual record dropped at gate close; it is data, not instruction
   `LookupEmpty` is a labeled structural stand-in, not a corpus claim.
 - Post-approval regroup: the 5 R4 cards retire the round address
   (`⏳ P3.S5 · Lookup` → `Lookup`); paths and all content below line 1 unchanged.
+
+## R5 — 개인화 2층: 내 포트폴리오 (`P3.S6`, round `05-account`)
+
+- Closed: 2026-08-21
+- Authorization (operator's literal words): **"Signed off — close R5"** — given in the
+  orchestrator session against this summary: the 8 account cards; email+password auth
+  (≥8자, reset link); layer name **내 포트폴리오** entered via the account menu (nav
+  links unchanged); conversion offers that never gate anonymous use; localStorage
+  persistence for anonymous/sample editing with offered-only account migration; the
+  D-day list with the 챙긴 돈 checkbox (R5-8); email-only notifications with the
+  KakaoTalk 「예정」 row and the light-surface mail preview; the 4-stock sample
+  portfolio (계양전기·대동기어·한화솔루션·세기상사) with its labeling and 샘플 종료.
+- In-session operator authorship (recorded in the landed `result.md`): "do all as your
+  recommendations" for the seven posed questions, then five 개정 items (email+password
+  replacing the code proposal; localStorage editing; no page 대제목; horizontal
+  저장/취소 row-edit confirm; account-menu entry replacing a 4th nav link) and one
+  post-gate addition (**R5-8 챙긴 돈 체크** — user-claim marking on lapsed ① rows,
+  never mixed into disclosure data; R4's anonymous conditional frame unchanged).
+- Supersedes: nothing across rounds — composes R1–R4 as locked; extends R2's chrome
+  with the logged-in account menu (extension, not restyle; footer unchanged).
+- Token delta: **None.** (The email mock hardcodes light values as an off-token external
+  surface — not a token change.)
+- Landed record: `rounds/05-account/output/` (`result.md`, `build-prompt.md`) —
+  read-only. Cards stay in the Claude Design project.
+- Carried open items: "정정 이력" button label (R6+); notification timing default
+  (7일+1일) and the no-marketing-mail rule are proposals signed with this round.
+- Post-approval regroup: the 8 R5 cards retire the round address
+  (`⏳ P3.S6 · Account` → `Account`); paths and all content below line 1 unchanged.
