@@ -7,6 +7,9 @@ output is non-deterministic, so it is fenced in on four sides:
 is field-matrix §7's closed list of 10 targets. Everything else the service shows
 is an ``API`` field or a ``본문-label`` row that :mod:`mijual.bodydoc` already
 reads for free — paying an LLM for those is the phase's explicit anti-rule.
+:mod:`mijual.extract.labelfields` is that anti-rule made concrete: it stores the
+label-readable fields (③'s 매수예정가격, D-15) in the *same* row shape at zero
+cost, so everything downstream of layer 1 sees one kind of field.
 
 **It never supplies its own evidence.** The model returns a value *and a verbatim
 quote*; the citation span is then located deterministically in the stored
@@ -44,6 +47,13 @@ from mijual.extract.client import (
 )
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION, TASKS, FieldSpec, TaskSpec, response_schema
 from mijual.extract.inputs import DocumentInput, build_input
+from mijual.extract.labelfields import (
+    LABEL_SPECS,
+    LabelFieldReport,
+    LabelFieldSpec,
+    label_field_keys_for,
+    read_label_fields,
+)
 from mijual.extract.locate import Located, QuoteLocator, locate_quote
 from mijual.extract.prompt import build_correction_prompt, build_field_prompt
 from mijual.extract.runner import (
@@ -62,6 +72,9 @@ __all__ = [
     "ExtractionReport",
     "FIELDS",
     "FieldSpec",
+    "LABEL_SPECS",
+    "LabelFieldReport",
+    "LabelFieldSpec",
     "GeminiClient",
     "GeminiError",
     "Located",
@@ -74,7 +87,9 @@ __all__ = [
     "build_correction_prompt",
     "build_field_prompt",
     "build_input",
+    "label_field_keys_for",
     "locate_quote",
+    "read_label_fields",
     "record_call",
     "response_schema",
     "run_corrections",

@@ -645,6 +645,83 @@ there). When the hint names no event of this corp+subtype:
     OpenDART call. Harmless here (hours), but a freshness signal that a repair job can reset is worth
     knowing before it is used as an alert.
 
+### `P5.S6` — ③ 매수예정가격 exists, and it cost nothing: the layer decision and the numbers
+
+D-15 is **backed**. 12 of the 16 exposable ③ events now serve 매수예정가격 as a gated fact with a
+verbatim citation; the other 4 serve **no key at all**. **0 LLM calls, 0 OpenDART requests, ▷ $0.0000.**
+
+1. **The plan's shape moved one layer down, and the corpus is why.** `plan.md` specified a
+   `FieldSpec` in `extract/fields.py` + a bounded Gemini run. Reading the ③ 본문 first (the step the
+   plan asked for) showed the value is **not LLM-tier**: 매수예정가격 is a **본문 form cell** —
+   `13. 주식매수청구권에 관한 사항` → qualifier `매수예정가격` — that `bodydoc.extract_labels`
+   already parses with a real span, present in **95 of 95** stored ③ 본문 (70 a number, 25 `-`), and
+   the ③ detail API row carries the same number in **`aprskh_plnprc`**, agreeing **17/17 with
+   0 mismatches** over every comparable current version. Paying a model for it would have broken the
+   phase's own anti-rule *and* `fields.py`'s registry rule ("a field that turns out to be
+   label-readable belongs in `bodydoc`, not here"). So it was built as the **`본문-label` tier's first
+   stored field**.
+2. **The new layer, and where later work plugs into it.** `mijual/extract/labelfields.py` —
+   `LABEL_SPECS` (declaration: key · Korean name · 본문 위치 · label block · qualifier · gate),
+   `read_document(doc, spec)` (pure), `read_label_fields(factory, …)` (the corpus pass).
+   **A second label field is now a registry entry plus a gate, nothing more.** Rows land in the
+   *same* `Extraction` shape, so exposure / `present.field_payloads` / `/events/{rcept_no}` needed
+   **no change at all** beyond `FIELD_NAMES_KO`.
+   | you need | use |
+   |---|---|
+   | the label-tier registry | `from mijual.extract.labelfields import LABEL_SPECS` |
+   | one document's reading | `read_document(doc, LABEL_SPECS["appraisal_price"])` |
+   | the corpus pass | `python -m mijual.extract labels [--rights R3] [--current-only]` (0 calls) |
+   | a rights type's label fields | `label_field_keys_for("R3")` |
+3. **The citation is composed, and self-checked.** The quote is the document's own two adjacent
+   cells (`매수예정가격 5,649`), located with the same `QuoteLocator` an LLM quote goes through and
+   **accepted only if its span ends exactly where the label parser's own value cell ends**.
+   Measured: **70/70** compose, resolve and verify; 0 fell back to the narrower label span, 0
+   unresolved. **A label row relocates against the whole document, never a prompt-sized window** —
+   the cell sits at char 65k of a 120k-char 합병 본문, so `relocate`'s default head window would have
+   lost it (handled in `runner.relocate_spans`).
+4. **The gate is two machine witnesses** (`gates.rules.gate_appraisal_price`): citation → positive 원
+   → the value equals the number the citation prints → **value == API `aprskh_plnprc`**. An absent
+   API value (`-`, or a superseded version, whose reference row belongs to a newer filing) is a
+   **skip**, not a pass in disguise; the document's own number still stands, because unlike a prose
+   reading there is no hallucination to defend against. Result over the corpus:
+   **47 passed / 0 tbd / 0 failed / 14 not_evaluable**, and **no `appraisal_price_*` reason code
+   fired anywhere**.
+5. **An empty cell is `absent`, never 0 and never a null.** The 4 exposable ③ without a price:
+   모다이노칩 (소규모합병 — the 본문 says the right is not granted) and 케이피항공산업 ·
+   미래에셋비전스팩7호 · IBKS제25호스팩 (스팩 합병 — the price is deferred to the 증권신고서). All four
+   print `-` in the cell *and* in the API row. **There is no `추후결정` case for this field**: none of
+   those filings writes 추후결정 in that cell (they write "향후 … 결정하여 공시할 예정"), and N40's rule
+   stands — only positive evidence earns a `tbd`. **`P5.S13`: a ③ page with no `appraisal_price` key
+   renders no row at all.**
+6. **Before → after: the diff is only the new field.** exposable **488 = 50/422/16 unchanged**;
+   every event state unchanged; every other field's gate distribution **byte-identical**; extraction
+   rows **649 → 710** (+61); renderable fields gain **`appraisal_price: 12`**; landing numbers
+   (33 · 57 · 4 · 15 · 69 · 718.1억/548.7억 · 0.1402 · 퓨쳐켐 2026-09-04) all identical. All 16
+   exposable ③ pages still answer **200**, and 12/12 served citations re-slice to their quote *and*
+   to their value.
+7. **Run order, and a trap inside it: `extract labels` → `gates run`, always.** `upsert_extraction`
+   clears the gate verdict on **every** write (the existing contract — a re-read invalidates the
+   previous verdict), so a label pass on its own leaves 61 rows with `gate_status = NULL` and the ③
+   pages temporarily without the field. The pipeline's stage order does this correctly, and the free
+   pass now runs **first inside `stage_extract`, outside `extract_max_calls`** — budgeting a pass
+   that spends nothing could only starve it. Verified idempotent: two `labels` → `gates run` cycles
+   reproduce a byte-identical measurement.
+8. **The 정정 diff now covers label fields** (`run_corrections` diffs
+   `prose_task.fields + label_field_keys_for(rights)`), so a 정정 that revises the 매수예정가격 shows
+   up in the CorrectionStory's `field_moves` rather than changing a published number silently. It
+   takes effect on the next 정정 run; stored interpretations were not re-run (and cost nothing today).
+9. **Freshness caveat, wider than S5 note 11 — `P5.S9`/P4 should know.** `Event.last_seen_at` is
+   `onupdate=utcnow`, and `gates run` writes `exposure_checked_at` on every event every run. So the
+   landing's 기준시각 (`max(last_seen_at)`) is moved to "just now" by **any** gate run — not only by
+   `ensure_event` during a collect. Measured live: `/board/summary.as_of` was 02:48 immediately after
+   an offline gate run. **A freshness signal that an offline maintenance job resets cannot, by
+   itself, be an alert that the collector stopped.**
+10. **Evalset is untouched and structurally unaffected**: `evalset/sample.py` skips a row whose
+    `field_key` is not in `FIELDS`, so the label field is outside its universe. Whether a
+    deterministic two-witness field ever belongs in an *accuracy* evalset is a `P5.REVIEW` question,
+    not a defect. Likewise `scripts/export_design_grounding.py` would now emit `appraisal_price` in ③
+    samples — **the landed pack is dated and must not be regenerated** (P3.REVIEW note 3).
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -817,6 +894,43 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   0 model calls); the backfill converges in two passes and is a no-op from the third. Caveat:
   `ensure_event` bumps `last_seen_at`, so an offline repair moves the landing's 기준시각
   (`max(last_seen_at)`) without any OpenDART call.
+- (`P5.S6`) **`data`** — the field model gains its **11th field and its first stored `본문-label`
+  field**: ③ **`appraisal_price` (매수예정가격)**, read deterministically from 본문
+  `13. 주식매수청구권에 관한 사항 → 매수예정가격` (present in **95/95** stored ③ 본문; never twice, so
+  there is no per-주식종류 split) and stored in the same `Extraction` row shape as an LLM field, with
+  `call_id`/`model` **NULL** — which is how a report tells a free reading from a paid one. New
+  registry `mijual.extract.labelfields.LABEL_SPECS` beside §7's `FIELDS`, and
+  `bodydoc.LABEL_FIELDS` gains ③'s label block (`주식매수청구권에관한사항 → appraisal_rights`, eight
+  qualified sub-rows). Its **gate** is a §7-shaped two-witness rule — 본문 cell **==** API
+  `aprskh_plnprc`, measured agreeing **17/17, 0 mismatches** — with three new reason codes
+  (`appraisal_price_mismatch` · `_quote_mismatch` · `_out_of_range`); an empty cell is **`absent`**,
+  never 0 and never a null, and there is **no `추후결정` case** for this field. Corpus effect:
+  extraction rows **649 → 710** (+61: 47 passed / 14 not_evaluable / 0 failed), exposable
+  **488 = 50/422/16 unchanged**. **`api`** — a ③ detail payload now carries
+  `fields.appraisal_price` = `{value: {price: <int 원>}, quote, span, rcept_no, korean_name:
+  "매수예정가격", display: "value", estimated: false}` on **12 of the 16** exposable ③ events; the
+  other 4 carry **no key** (a field the filing does not state is absent from the payload, the same
+  contract-wide rule as every blocked field). The 정정 story's `field_moves` now covers label fields,
+  so a revised 매수예정가격 is visible in the CorrectionStory. **`architecture`** — layer 1 now has
+  **two halves**: the paid schema-based reader (`mijual.extract.runner`) and the free deterministic
+  one (`mijual.extract.labelfields`), which writes the same rows and is therefore invisible to the
+  gate layer, the exposure contract and the presentation contract. The free half runs **first in the
+  `extract` pipeline stage and outside `extract_max_calls`** — a pass that spends nothing is never
+  budgeted. **`operations`** — new command `python -m mijual.extract labels [--rights R3]` (0 calls,
+  0 requests, ~1.4 s over ③, idempotent); the re-derivation order is **`extract labels` →
+  `gates run`**, because `upsert_extraction` clears the gate verdict on every write. Caveat that
+  **widens `P5.S5`'s**: `Event.last_seen_at` is `onupdate=utcnow` and `gates run` writes every event,
+  so the landing's 기준시각 is reset to "now" by **any** gate run, not only by a collect — a freshness
+  signal that an offline maintenance job resets cannot by itself alert that the collector stopped.
+  **`decisions`** — **D-15's backing has landed**, and the worked example carries a second lesson
+  worth recording beside it: the design implied data that did not exist, and building the backing
+  meant **measuring which tier the value lives in first** — it turned out to be deterministic in two
+  places, so the honest build cost **0 calls and ▷ $0.0000** rather than the re-extraction the plan
+  assumed. **`qa`** — suite baseline 89 → **91 tests**, still ~1.3 s, no network/model/DB (one reader
+  test, one gate test); new corpus invariants: **47/47** label citations resolve *and* verify (0
+  unresolved, 0 fall-backs), **12/12** served ③ citations re-slice to their quote and their value,
+  all **16/16** exposable ③ pages answer 200, and every pre-existing gate distribution and landing
+  number is byte-identical before → after.
 
 ## Open Questions
 

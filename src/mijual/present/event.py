@@ -86,7 +86,9 @@ COUNTDOWN_SOURCES: dict[str, str] = {
 
 #: ``field_key`` → the Korean row label R3 puts in the 220px label column.
 #: Copied verbatim from :data:`mijual.extract.fields.FIELDS` (the source
-#: ``copy-inventory.md`` is generated from) and **pinned to it by
+#: ``copy-inventory.md`` is generated from) **plus**
+#: :data:`mijual.extract.labelfields.LABEL_SPECS` (the 본문-label tier, whose
+#: names are the form's own labels), and **pinned to both by
 #: ``tests/test_present.py``**, rather than imported: importing
 #: ``mijual.extract.fields`` pulls the whole extractor tree — client, runner,
 #: store — into whatever imports it, and this layer sits on a request path.
@@ -101,6 +103,8 @@ FIELD_NAMES_KO: dict[str, str] = {
     "lockup_release": "보호예수 / 전매제한 해제일",
     "dissent_notice_procedure": "반대의사 통지 방법·절차",
     "correction_interpretation": "정정 해석 (무엇이 바뀌어 D-day가 어떻게 이동했나)",
+    # 본문-label tier (P5.S6 / D-15) — the 합병 form's own label, not coined here.
+    "appraisal_price": "매수예정가격",
 }
 
 #: States in which an event has a reader surface at all. Everything else —

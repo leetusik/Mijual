@@ -93,6 +93,10 @@ REASON_LABELS_KO: dict[str, str] = {
     "dissent_period_mismatch": "반대의사 접수기간이 API 값과 다릅니다",
     "api_deadline_absent": "API에 반대의사 접수기간이 없어 대조할 수 없습니다",
     "superseded_api_reference": "이전 버전이라 최신 API 값과 대조할 수 없습니다",
+    # --- ③ 매수예정가격 (본문-label, P5.S6 / D-15) --------------------------
+    "appraisal_price_out_of_range": "매수예정가격이 양수가 아닙니다",
+    "appraisal_price_quote_mismatch": "매수예정가격이 인용 구절의 금액과 다릅니다",
+    "appraisal_price_mismatch": "매수예정가격이 API 값과 다릅니다",
     # --- 10 정정 해석 -----------------------------------------------------
     "correction_rows_unparsed": "정정사항 표의 일부가 기록에 없습니다",
     "unsupported_change": "정정사항 표가 뒷받침하지 않는 변경이 있습니다",

@@ -20,6 +20,9 @@
     .venv/bin/python -m mijual.extract relocate
     .venv/bin/python -m mijual.extract --dry-run recheck   # measure, write nothing
 
+    # 6. the 본문-label tier — same rows, no model, no money (P5.S6)
+    .venv/bin/python -m mijual.extract labels --rights R3
+
 ``--max-calls`` is **on by default** (50): this is the slice that spends real
 money, so an unbounded run has to be asked for explicitly. Nothing here prints,
 writes or accepts a secret — ``mijual.config`` reads the key in-process and it
@@ -42,6 +45,7 @@ from mijual.db.schema_sync import ensure_columns
 from mijual.db.session import create_all, make_engine, make_session_factory, session_scope
 from mijual.extract.client import DEFAULT_MODEL, GeminiClient
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION
+from mijual.extract.labelfields import LABEL_SPECS, read_label_fields
 from mijual.extract.runner import (
     recheck_corrections,
     relocate_spans,
@@ -75,6 +79,15 @@ def build_parser() -> argparse.ArgumentParser:
         "the global --dry-run, before the subcommand, measures without writing)",
     )
     sub.add_parser("summary", help="what is stored and what it cost (0 calls)")
+
+    lab = sub.add_parser(
+        "labels", help="read the 본문-label tier fields deterministically (0 calls)"
+    )
+    lab.add_argument("--rights", choices=sorted(RIGHTS), default=None,
+                     help="only this rights type's label fields (default: all)")
+    lab.add_argument("--current-only", action="store_true",
+                     help="only each event's current readable version")
+    lab.add_argument("--limit", type=int, default=None, help="cap the event list")
 
     run = sub.add_parser("run", help="extract the prose fields of one rights type")
     run.add_argument("--rights", choices=sorted(RIGHTS), default="R1")
@@ -130,6 +143,11 @@ def _cmd_fields() -> int:
     print(f"schema version: {SCHEMA_VERSION}")
     for spec in sorted(FIELDS.values(), key=lambda s: s.number):
         print(f"{spec.number:>2}. [{spec.rights}] {spec.key:<28} {spec.name}")
+        print(f"     본문 위치: {spec.location}")
+        print(f"     gate     : {spec.gate}")
+    print("본문-label tier (deterministic, 0 calls):")
+    for spec in sorted(LABEL_SPECS.values(), key=lambda s: (s.rights, s.key)):
+        print(f"  · [{spec.rights}] {spec.key:<28} {spec.name}")
         print(f"     본문 위치: {spec.location}")
         print(f"     gate     : {spec.gate}")
     return 0
@@ -285,6 +303,17 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_summary(args)
     if args.command == "relocate":
         report = relocate_spans(_factory(args), log=log)
+        print("\n" + report.render())
+        _dump(report, args.report)
+        return 0
+    if args.command == "labels":
+        report = read_label_fields(
+            _factory(args),
+            rights=args.rights,
+            current_only=args.current_only,
+            limit=args.limit,
+            log=log,
+        )
         print("\n" + report.render())
         _dump(report, args.report)
         return 0

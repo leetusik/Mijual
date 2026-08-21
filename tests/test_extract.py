@@ -20,6 +20,7 @@ from mijual.db.models import Base, Extraction, RightsType
 from mijual.db.repository import ensure_corp, ensure_event, ensure_version
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION, TASKS, response_schema
 from mijual.extract.inputs import build_input
+from mijual.extract.labelfields import LABEL_SPECS, read_document
 from mijual.extract.locate import QuoteLocator
 from mijual.extract.runner import check_against_items, recheck_corrections
 from mijual.extract.store import upsert_extraction
@@ -40,6 +41,10 @@ def test_registry_is_exactly_the_ten_prose_targets_and_never_a_label_field():
     paying an LLM for a ``본문-label`` row is the phase's explicit anti-rule."""
     assert sorted(s.number for s in FIELDS.values()) == list(range(1, 11))
     assert not set(FIELDS) & set(LABEL_FIELDS.values())
+    # The label tier is the other side of the same rule, and the two never
+    # overlap: a key is read by the model **or** parsed for free, never both.
+    assert not set(FIELDS) & set(LABEL_SPECS)
+    assert all(spec.label_field in LABEL_FIELDS.values() for spec in LABEL_SPECS.values())
     for spec in FIELDS.values():
         assert spec.schema["required"] == ["present", "value", "quote", "note"]
         assert spec.gate  # P2.S5's specification travels with the field
@@ -84,6 +89,20 @@ def test_a_registration_statement_is_sliced_never_sent_whole():
     quote = document.text[400:460]
     found = QuoteLocator(document.flat, doc).locate(quote)
     assert found.resolved and doc.raw(found.span) and found.span.start >= document.span.start
+
+
+def test_a_label_tier_field_is_read_for_free_and_cites_the_cell_it_read():
+    """③ 매수예정가격 (D-15): a value with two deterministic witnesses is never
+    bought from a model — it is read out of the form cell, and its citation is
+    composed from the document's own text rather than asked for."""
+    spec = LABEL_SPECS["appraisal_price"]
+    reading = read_document(_doc("20260604000612"), spec)  # (주)휴온스 — 32,886
+    assert reading.status == "extracted" and reading.value == {"price": 32886}
+    assert reading.quote == "매수예정가격 32,886"
+    assert reading.located.resolved and reading.located.verified is True
+    # ``매수예정가격 -`` states no price: absent, never 0 and never a guess.
+    empty = read_document(_doc("20260129000274"), spec)  # (주)큐라클
+    assert empty.status == "absent" and empty.value is None and empty.located is None
 
 
 def test_storage_is_idempotent_and_leaves_the_gate_columns_to_p2_s5():

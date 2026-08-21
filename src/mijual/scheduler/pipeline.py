@@ -41,6 +41,7 @@ from mijual.db.models import Base
 from mijual.db.schema_sync import ensure_columns
 from mijual.db.session import create_all, make_engine, make_session_factory
 from mijual.extract.client import GeminiClient
+from mijual.extract.labelfields import read_label_fields
 from mijual.extract.runner import run_corrections, run_extraction
 from mijual.gates.runner import run_gates
 from mijual.scheduler.config import PipelineConfig
@@ -314,17 +315,34 @@ def stage_extract(config, factory, result: StageResult, *, settings=None, log=No
     what is genuinely new — usually a handful of calls, often zero. One
     :class:`GeminiClient` serves the whole stage, so ``extract_max_calls`` is a
     ceiling on the **run**, not on each sub-pass.
+
+    Layer 1's free half — the ``본문-label`` fields — runs first and is deliberately
+    **not** under that ceiling: it makes no call, so budgeting it could only ever
+    starve it.
     """
     settings = settings or load_settings()
+    pieces: list[str] = []
+    exhausted = False
+    detail: dict = {}
+
+    # The 본문-label tier first, and **outside every budget**: it spends nothing,
+    # so a newly collected ③ must never render its 반대의사 통지 기간 while its
+    # 매수예정가격 waits for a hand-run command (P5.S6 / D-15).
+    labels = read_label_fields(factory, log=None)
+    detail["label_fields"] = {
+        "events": labels.events,
+        "documents": labels.documents,
+        "rows": labels.rows,
+        "fields": {k: dict(v) for k, v in labels.per_field.items()},
+    }
+    pieces.append(f"label {labels.rows}row/0call")
+
     client = GeminiClient(
         settings=settings,
         max_calls=config.extract_max_calls,
         dry_run=config.offline,
         log=None,
     )
-    pieces: list[str] = []
-    exhausted = False
-    detail: dict = {}
 
     for rights in config.extract_rights:
         report = run_extraction(client, factory, rights=rights, log=None)

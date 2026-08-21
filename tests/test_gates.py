@@ -180,6 +180,29 @@ def test_gate_9_compares_against_the_api_row_and_refuses_to_guess():
     assert verdict.status == "not_evaluable" and verdict.exposable is False
 
 
+def test_the_label_tier_매수예정가격_is_gated_against_the_api_row():
+    """③ 매수예정가격 (D-15, ``P5.S6``) — two machine witnesses, and both must agree.
+
+    Not a §7 row: the value is a 본문 form cell, so the gate defends against the
+    wrong cell and against a filing that contradicts itself, never against a
+    hallucination.
+    """
+    row = _row("appraisal_price", {"price": 32886}, quote="매수예정가격 32,886")
+    agreeing = _ctx("20260604000612", aprskh_plnprc="32,886")  # (주)휴온스
+    assert evaluate_field(row, agreeing).status == "passed"
+
+    disagreeing = evaluate_field(row, _ctx("20260604000612", aprskh_plnprc="3,288"))
+    assert disagreeing.reason_code == "appraisal_price_mismatch"
+    assert disagreeing.exposable is False
+
+    # No API value → the cross-check is *skipped*, and the document's own number
+    # still stands on the citation. An empty cell never reaches the gate at all.
+    assert evaluate_field(row, _ctx("20260604000612", aprskh_plnprc="-")).status == "passed"
+    assert evaluate_field(
+        _row("appraisal_price", None, status="absent"), agreeing
+    ).reason_code == "field_absent"
+
+
 def test_the_withdrawal_detector_takes_the_real_rows_and_leaves_the_boilerplate():
     """썸에이지's real 정정사항 row, and the ③ text that a keyword test would eat."""
     withdrawn = [

@@ -49,6 +49,11 @@ __all__ = [
 #: The 10 stable numbered labels of field-matrix §1.3 / ``survey.py``'s ``LABELS``,
 #: mapped to the canonical field key this package exposes. Keys are the label text
 #: with whitespace removed; the leading ``N.`` / ``-`` marker is stripped first.
+#:
+#: ①'s labels were the founding set; ③'s ``13. 주식매수청구권에 관한 사항`` joined at
+#: ``P5.S6`` (D-15), because its ``매수예정가격`` sub-row is a form cell like any
+#: other — measured present in **95 of 95** stored ③ 본문 — and the phase's
+#: anti-rule is blunt: a label-readable value is never paid for with an LLM call.
 LABEL_FIELDS: dict[str, str] = {
     # --- the 10 measured 10/10 labels -----------------------------------
     "신주배정기준일": "allotment_record_date",
@@ -74,6 +79,11 @@ LABEL_FIELDS: dict[str, str] = {
     "신주권교부예정일": "share_delivery_date",
     "이사회결의일": "board_resolution_date",
     "증권신고서제출대상여부": "registration_required",
+    # --- ③ 합병 등 결정: one label, eight qualified sub-rows (P5.S6) -------
+    # ``매수예정가격`` / ``행사요건`` / ``행사절차, 방법, 기간, 장소`` / … all sit
+    # under 본문 ``13.`` and are told apart by :attr:`LabeledValue.qualifier`,
+    # exactly as ``11. 청약예정일``'s 대상자 rows are.
+    "주식매수청구권에관한사항": "appraisal_rights",
 }
 
 #: The 10 §1.3 labels, as canonical field keys — the completeness check.
@@ -259,7 +269,9 @@ def extract_labels(
     """Every ``N. 라벨 → 값`` row of a 주요사항보고서 본문, with spans.
 
     Works on any 주요사항보고서 form — the numbered-label + ``TE``/``TU`` shape is
-    the form family's, not ①'s — but :data:`LABEL_FIELDS` names ① fields only.
+    the form family's, not ①'s. :data:`LABEL_FIELDS` names ①'s labels plus ③'s
+    ``13. 주식매수청구권에 관한 사항``; every other row is still collected, with
+    ``field_key=None``.
     On a 증권신고서 pass a section span (see :mod:`mijual.bodydoc.sections`);
     never run it over a whole one.
 

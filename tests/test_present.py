@@ -17,6 +17,7 @@ import pytest
 from mijual.cb import ConvertibleFacts
 from mijual.estimate import EventInputs, LapseRow
 from mijual.extract.fields import FIELDS
+from mijual.extract.labelfields import LABEL_SPECS
 from mijual.gates.exposure import EventExposure, FieldView
 from mijual.present import (
     COUNTDOWN_LABELS_KO,
@@ -365,7 +366,9 @@ def test_offering_inputs_read_the_same_from_an_object_and_from_its_stored_json()
 # the two things this layer copies rather than imports, pinned to their source
 # ---------------------------------------------------------------------------
 def test_nothing_korean_here_has_drifted_from_the_code_that_owns_it() -> None:
-    assert FIELD_NAMES_KO == {key: spec.name for key, spec in FIELDS.items()}
+    assert FIELD_NAMES_KO == {
+        key: spec.name for key, spec in {**FIELDS, **LABEL_SPECS}.items()
+    }
     assert set(COUNTDOWN_LABELS_KO) == {"R1", "R2", "R3"}
 
 

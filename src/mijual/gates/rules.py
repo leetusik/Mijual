@@ -50,6 +50,12 @@ rows did (N45):
   finding: a 정정 whose 본문 ``최초제출일`` names an event this workspace never
   collected got attached to a *different* CB of the same corp, and the
   API-derived cross-check is the only layer that noticed.
+
+**One gate is not a §7 row.** ``P5.S6`` added ③'s 매수예정가격 (D-15) as a
+``본문-label`` field — read for free by :mod:`mijual.extract.labelfields`, judged
+here by :func:`gate_appraisal_price` against the ③ API row's ``aprskh_plnprc``.
+The registry below is therefore "every field the product may show", which is
+what :func:`evaluate_field` needs it to be, rather than "§7's ten".
 """
 
 from __future__ import annotations
@@ -79,6 +85,8 @@ FORFEIT_METHODS = {"일반공모", "대표주관회사인수", "미발행"}
 _PUBLIC_OFFER = ("일반공모", "일반투자자", "잔여주", "실권주", "고위험고수익")
 _RATIO_PER_SHARE = re.compile(r"1\s*주\s*당\s*([\d.]+)\s*주")
 _RATIO_PERCENT = re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%")
+#: The 원 amount inside a 매수예정가격 citation — the last number it prints.
+_PRICE_IN_QUOTE = re.compile(r"([\d][\d,]*(?:\.\d+)?)\s*원?\s*$")
 #: How far a filing's own 전매제한 해제일 may sit from ``납입일 + N개월`` before the
 #: gate calls it a different claim. A CB states 발행일 and 납입일 within a day or
 #: two of each other and the prose picks either; 3 days covers that and nothing
@@ -560,6 +568,82 @@ def gate_dissent_notice_procedure(row: Extraction, ctx: VersionContext) -> Outco
 
 
 # ---------------------------------------------------------------------------
+# ③ 매수예정가격 — a 본문-label field, not a §7 row (P5.S6 / D-15)
+# ---------------------------------------------------------------------------
+def gate_appraisal_price(row: Extraction, ctx: VersionContext) -> Outcome:
+    """본문 ``13. 매수예정가격`` == API ``aprskh_plnprc`` (D-15).
+
+    The same two-witness shape as gate #6 and #9, with one difference worth
+    stating: **both witnesses are machine-read here**, because the value is a
+    form cell rather than prose (:mod:`mijual.extract.labelfields`). So the gate
+    is not defending against a hallucination — it is defending against the two
+    things that can actually go wrong with a cell: reading the *wrong* cell, and
+    a filing whose own two statements of the price disagree. Measured before it
+    was written: **17 of 17** comparable current versions agree, 0 mismatches.
+
+    Absence is conservative in the established way. An empty cell never reaches
+    this gate at all (the reader records ``absent`` → ``field_absent``), and an
+    API row with ``-`` — or a superseded version, whose reference row belongs to
+    a newer filing (N2) — leaves the cross-check *skipped*, not passed. The
+    remaining checks are still substantive: the value is the document's own
+    number and the citation shows it.
+    """
+    checks = [citation_check(row, ctx)]
+    if not checks[0].ok:
+        return verdict(checks)
+
+    value = row.value if isinstance(row.value, dict) else {}
+    price = value.get("price")
+    if not isinstance(price, (int, float)) or isinstance(price, bool) or float(price) <= 0:
+        checks.append(check_failed("price_positive", "appraisal_price_out_of_range", str(price)))
+        return verdict(checks)
+    checks.append(check_passed("price_positive", f"{int(price):,}원"))
+
+    stated = _stated_price(row.quote)
+    if stated is None:
+        checks.append(check_skipped("price_vs_quote", "인용에 금액 표기 없음"))
+    elif abs(stated - float(price)) < 0.5:
+        checks.append(check_passed("price_vs_quote", f"{stated:,.0f}"))
+    else:
+        checks.append(
+            check_failed(
+                "price_vs_quote", "appraisal_price_quote_mismatch", f"{price} != 인용 {stated}"
+            )
+        )
+        return verdict(checks)
+
+    api_price = _api_number(ctx.api_value("aprskh_plnprc"))
+    if api_price is None:
+        checks.append(
+            check_skipped(
+                "price_vs_api",
+                f"{ctx.version.rcept_no}은 이전 버전" if not ctx.api_is_current
+                else "API 매수예정가격이 '-'",
+            )
+        )
+    elif abs(api_price - float(price)) < 0.5:
+        checks.append(check_passed("price_vs_api", f"{api_price:,.0f}"))
+    else:
+        checks.append(
+            check_failed(
+                "price_vs_api", "appraisal_price_mismatch", f"본문 {price} != API {api_price}"
+            )
+        )
+    return verdict(checks)
+
+
+def _stated_price(text: str | None) -> float | None:
+    """The 원 amount the citation itself prints (``매수예정가격 5,649`` → 5649)."""
+    match = _PRICE_IN_QUOTE.search(text or "")
+    if match is None:
+        return None
+    try:
+        return float(match.group(1).replace(",", ""))
+    except ValueError:  # pragma: no cover - the regex guarantees a number
+        return None
+
+
+# ---------------------------------------------------------------------------
 # 10 — 정정 해석
 # ---------------------------------------------------------------------------
 def gate_correction_interpretation(row: Extraction, ctx: VersionContext) -> Outcome:
@@ -622,6 +706,8 @@ GATES: dict[str, Callable[[Extraction, VersionContext], Outcome]] = {
     "lockup_release": gate_lockup_release,
     "dissent_notice_procedure": gate_dissent_notice_procedure,
     "correction_interpretation": gate_correction_interpretation,
+    # Not a §7 row: the 본문-label field ``P5.S6`` added for D-15.
+    "appraisal_price": gate_appraisal_price,
 }
 
 

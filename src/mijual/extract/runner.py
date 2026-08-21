@@ -24,6 +24,12 @@ asked only for prose no parser can read.
 is skipped unless ``refresh=True``, so the normal recovery from a budget stop —
 run again — spends only on what is missing (N34's rule, applied to money instead
 of quota).
+
+The layer's other half is :mod:`mijual.extract.labelfields`, which writes the
+same rows for the values a parser can read (③'s 매수예정가격 today). It spends
+nothing, so it is never budgeted and never skipped — and this module only has to
+know about it in two places: a label field's citation is relocated against the
+whole document, and a 정정 diff covers it like any other field.
 """
 
 from __future__ import annotations
@@ -53,6 +59,7 @@ from mijual.db.session import session_scope
 from mijual.extract.client import CallBudgetExceeded, CallResult, GeminiClient
 from mijual.extract.fields import FIELDS, SCHEMA_VERSION, TASKS, response_schema
 from mijual.extract.inputs import build_input
+from mijual.extract.labelfields import LABEL_SPECS, label_field_keys_for
 from mijual.extract.locate import QuoteLocator
 from mijual.extract.prompt import build_correction_prompt, build_field_prompt
 from mijual.extract.store import existing_fields, record_call, upsert_extraction
@@ -362,8 +369,15 @@ def relocate_spans(session_factory, *, log=None) -> ExtractionReport:
                 report.count(row.field_key, "unreadable")
                 continue
             spec = FIELDS.get(row.field_key)
-            document = build_input(doc, spec=spec)
-            locator = QuoteLocator(document.flat, doc)
+            if spec is None and row.field_key in LABEL_SPECS:
+                # A 본문-label field's citation is composed from the document's own
+                # cells (:mod:`mijual.extract.labelfields`), which may sit far
+                # past the head of a 180k-char 합병 본문 — so it is located against
+                # the **whole** document, never against a prompt-sized window.
+                locator = QuoteLocator(doc.flat, doc)
+            else:
+                document = build_input(doc, spec=spec)
+                locator = QuoteLocator(document.flat, doc)
 
             located = locator.locate(row.quote)
             before = (row.span_status, row.span_start, row.span_end)
@@ -641,7 +655,12 @@ def run_corrections(
 
                 items = _items_of(new_doc)
                 old_rows = existing_fields(session, previous.id, SCHEMA_VERSION)
-                moves = field_moves(old_rows, stored_new, prose_task.fields)
+                # The diff covers the rights type's **whole** field list, prose
+                # and 본문-label alike: a 정정 that revises ③'s 매수예정가격 moves a
+                # published number, and the 정정 story must say so (P5.S6).
+                moves = field_moves(
+                    old_rows, stored_new, prose_task.fields + label_field_keys_for(rights)
+                )
 
                 document = build_input(new_doc, spec=FIELDS["correction_interpretation"])
                 prompt = build_correction_prompt(
