@@ -54,6 +54,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
 __all__ = [
+    "Account",
+    "AuthSession",
     "Base",
     "Corp",
     "CorrectionKind",
@@ -62,6 +64,7 @@ __all__ = [
     "ExtractionCall",
     "FilingVersion",
     "OfferingInput",
+    "PasswordReset",
     "PerformanceReport",
     "RightsType",
     "Snapshot",
@@ -712,3 +715,144 @@ class OfferingInput(Base):
 
     def __repr__(self) -> str:
         return f"<OfferingInput event={self.event_id} {self.decision_rcept_no}>"
+
+
+# ---------------------------------------------------------------------------
+# P5.S7 — reader accounts (R5). The first tables that hold a *person*.
+# ---------------------------------------------------------------------------
+class Account(Base):
+    """One reader account. **Email + password hash, and nothing else.**
+
+    Every other table in this module records a *filing*; this one records a
+    person, so its column list is a security property rather than a modelling
+    choice (`security` — "Stored PII for a reader account is exactly: email +
+    password hash"). What is deliberately **absent**, and must stay absent
+    unless a new operator signoff says otherwise:
+
+    * no name, no phone, no brokerage or market identity;
+    * no admin flag — the operator door is a **separate credential** issued in
+      the deployment environment, with no join to this table (R7 §6.4), so
+      ``P5.S9`` must not add one here;
+    * no column that could ever join an account to a conversation. The AI 질문
+      anonymity promise is structural — "the 계정 ↔ 대화 join is absent at the
+      schema level" — and P6 owns the conversation storage. A ``session_hash``,
+      an ``anonymous_id`` or a "last seen from" column here would quietly turn
+      that promise back into a procedure;
+    * no login/activity trail. ``created_at`` is 가입일, which R7's 독자 계정
+      table renders; nothing else about *when a reader read* is stored, and the
+      session rows below carry no IP and no user agent.
+
+    **The FK seam ``P5.S8`` builds on.** Holdings, notification preferences and
+    the 챙긴 돈 marks hang off ``account.id`` with ``ondelete="CASCADE"`` and an
+    ORM-side ``cascade="all, delete-orphan"`` relationship — the same pair
+    :class:`AuthSession` uses below. Both halves are needed: SQLite (the test
+    engine) does not enforce foreign keys by default, and 계정 삭제 must wipe the
+    row *and* everything hanging off it in every environment.
+
+    Email is stored **normalized** (see :func:`mijual.web.auth.normalize_email`)
+    and only in that form: the address a reader typed is not additionally kept,
+    because two spellings of one identity are two things to leak.
+    """
+
+    __tablename__ = "account"
+    __table_args__ = (UniqueConstraint("email", name="uq_account_email"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    #: NFKC-normalized, stripped, case-folded. 254 = the RFC 5321 address limit.
+    email: Mapped[str] = mapped_column(String(254), nullable=False)
+    #: ``scrypt$n=…,r=…,p=…$<salt>$<key>`` — see :mod:`mijual.web.passwords`.
+    #: The plaintext never reaches this column, a log, or an error body.
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    #: 가입일 (R7's 독자 계정 table renders it).
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    #: Last credential change — a password reset or a rehash. Not an activity trail.
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    sessions: Mapped[list["AuthSession"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+    resets: Mapped[list["PasswordReset"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - never log the address itself
+        return f"<Account {self.id}>"
+
+
+class AuthSession(Base):
+    """One logged-in reader session — a **server-side** row, not a signed token.
+
+    The mechanism is a decision this slice made and recorded: logout is
+    immediate and 계정 삭제 must kill access *now*, and both are trivially true
+    when the session is a row (delete it / cascade it) and awkward when it is a
+    self-contained signed cookie (which needs a revocation list to be revocable,
+    i.e. this table anyway). The request path already loads the account from the
+    database on every authenticated request, so a stateless token would have
+    saved no query.
+
+    ``token_digest`` is a **digest of the cookie value, never the value**: a
+    database dump therefore contains nothing that can be replayed as a cookie.
+    It is keyed with ``MIJUAL_SESSION_SECRET`` when one is configured (see
+    :func:`mijual.web.auth.token_digest`), which is also why rotating that secret
+    logs every reader out — a property, not a bug.
+
+    No IP, no user agent, no "last used" column. The last one is not squeamish:
+    updating it would make an authenticated **GET write**, and this phase's HTTP
+    layer is built so a GET structurally cannot.
+    """
+
+    __tablename__ = "auth_session"
+    __table_args__ = (
+        UniqueConstraint("token_digest", name="uq_auth_session_token"),
+        Index("ix_auth_session_account", "account_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    token_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    #: Absolute expiry. Never extended on a read — see the class docstring.
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    account: Mapped[Account] = relationship(back_populates="sessions")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<AuthSession account={self.account_id} until={self.expires_at}>"
+
+
+class PasswordReset(Base):
+    """A single-use, expiring password-reset grant, addressed by email.
+
+    Stored the same way as a session: a **digest** of the token that travelled
+    in the link, so the row cannot be turned back into a working link. ``used_at``
+    is what makes it single-use, and it is set in the same transaction that
+    changes the password.
+
+    The *response* to a reset request never depends on whether the address
+    exists (가입 여부 비노출, R5) — so the branch that finds no account writes no
+    row and still answers exactly like the branch that does.
+    """
+
+    __tablename__ = "password_reset"
+    __table_args__ = (
+        UniqueConstraint("token_digest", name="uq_password_reset_token"),
+        Index("ix_password_reset_account", "account_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    token_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    account: Mapped[Account] = relationship(back_populates="resets")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<PasswordReset account={self.account_id} used={self.used_at is not None}>"

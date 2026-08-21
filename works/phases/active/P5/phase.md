@@ -779,6 +779,125 @@ OpenDART requests, 0 LLM calls**, and every rendered number is byte-identical be
    `fractional_shares`) are first-*header*-wins over one printed cell, not addends, and the
    corpus confirms it: all 262 single-cell figures state their own number exactly.
 
+### `P5.S7` — reader auth exists; the decisions, the seams, and the first writes
+
+`security`'s four open apply-phase questions (cookie name/flags, lifetime, session
+mechanism, CSRF) are **answered in code**. **0 new dependencies** (`pyproject` untouched),
+0 requests, 0 model calls, and **no existing route is gated** — every anonymous surface
+still answers 200 without a cookie.
+
+**Import map, so no slice goes looking:**
+
+| you need | import |
+|---|---|
+| the reader's identity on a gated **read** | `from mijual.web.auth import ReadAccount` → `def holdings(account: ReadAccount)` |
+| …on a gated **write** | `from mijual.web.auth import WriteAccount` (shares the request's write session) |
+| "who is this, if anyone" | `auth.current_account(db, request)` → `Account | None`, never raises |
+| a committing session | `from mijual.web.deps import WriteSession` |
+| the CSRF header name | `from mijual.web.csrf import CSRF_HEADER` (`X-Mijual-CSRF`) |
+| to send anything | `from mijual.mail import Mailer, Message` → `request.app.state.mailer` |
+| the account payload a surface renders | `auth.account_payload(account)` → `{email, created_at}` |
+
+**Endpoints** (no prefix, like the rest): `POST /auth/signup` (201) · `POST /auth/login` ·
+`POST /auth/logout` · `GET /auth/me` · `POST /auth/reset/request` ·
+`POST /auth/reset/confirm` · `DELETE /auth/account`. Structural codes only, no Korean:
+`email_taken` 409 · `invalid_credentials` 401 · `password_too_short` 400 ·
+`invalid_email` 400 · `invalid_reset_token` 400 · `unauthenticated` 401 ·
+`csrf_required` 403. **`P5.S15` renders the single body line (불일치 / 중복 가입 /
+8자 미만) from the code** — the API writes no failure copy, by S1 note 1's rule.
+
+1. **The session is a row, and that is the whole answer to "immediate".** `AuthSession`
+   holds a **digest** of the cookie token, never the token. 로그아웃 deletes the row;
+   계정 삭제 deletes the account and the ORM cascade takes the sessions and reset grants
+   with it. A signed stateless cookie would have needed a revocation list — i.e. this
+   table — and would have saved no query, because an authenticated request loads the
+   account anyway. **A cookie is worthless the instant its row is gone** (verified live).
+2. **The cookie, decided:** `mj_session`, `HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure`
+   from `MIJUAL_COOKIE_SECURE` (**off** locally on purpose — a `Secure` cookie on plain
+   http silently never arrives; **P4 must turn it on**), `Max-Age` 30 days. The ops door's
+   cookie name is **reserved as `mj_ops`** (`auth.OPS_COOKIE`) so `P5.S9` cannot collide
+   with the reader's — `security` requires it to be differently named.
+3. **Lifetime is 30 days, absolute, and never extended on a read** — a sliding window
+   would have to write during `GET /auth/me`, and a GET may not write. Renewal happens on
+   the next login, which is already a write. If a reader-retention argument ever wants
+   sliding sessions, it needs a `POST`-shaped refresh, not a quiet write on a probe.
+4. **CSRF is service-wide middleware, not a per-route dependency**
+   (`mijual.web.csrf.register_csrf_guard`): every `POST`/`PUT`/`PATCH`/`DELETE` must carry
+   **`X-Mijual-CSRF`** (any non-empty value) or it is refused with `403 csrf_required`
+   *before* the route runs. A cross-origin page cannot set a custom header without a CORS
+   preflight this service does not grant (no CORS is configured — `P5.S10` owns that), so
+   nothing has to be minted, stored or rotated. **`P5.S8`/`P5.S9`/`P5.S17` inherit this:
+   every mutation, including the admin login POST, needs the header, and `P5.S10`'s client
+   should set it once in the fetch wrapper.**
+5. **The first committing dependency, and the GET rule got *stronger*.**
+   `mijual.web.deps.WriteSession` commits on success and rolls back on any exception —
+   and **refuses a safe HTTP method outright** (`RuntimeError`), so a `GET` cannot even
+   acquire it. `DbSession` is untouched and still rollback-only. S1 note 4's guarantee is
+   now enforced from both ends; a test pins both halves.
+6. **scrypt, stdlib, and the parameter ceiling is the reason for the parameters.**
+   `n=2**14, r=8, p=1` — ~25 ms/hash measured, and the largest `n` that fits OpenSSL's
+   **default `maxmem`** (`n=2**15` raises "memory limit exceeded" unless a private knob is
+   turned up — a login endpoint one deployment away from raising). Hashes carry their own
+   parameters (`scrypt$n=16384,r=8,p=1$salt$key`), so an upgrade is: bump
+   `passwords.CURRENT`, and `needs_rehash` re-hashes each account at its next successful
+   **login** — never a mass reset, never a locked-out reader. Argon2id remains one branch
+   in `verify` away if a dependency ever becomes acceptable.
+7. **`MIJUAL_SESSION_SECRET` peppers, it does not sign** — HMAC-SHA256 over the token, so
+   a stolen database dump holds nothing replayable as a cookie or a reset link, and
+   rotating the key logs everyone out (the lever you want in that hour). Unset is a
+   **development** state: unkeyed SHA-256 plus one log warning, so local dev needs no
+   secret. `Settings.require_session_secret()` exists, unused in P5, for a **P4**
+   deployment that would rather fail than start unkeyed. New settings, all three:
+   `MIJUAL_SESSION_SECRET` · `MIJUAL_COOKIE_SECURE` · `MIJUAL_APP_BASE_URL`
+   (default `http://localhost:3000`, the reset link's origin).
+8. **The mailer seam carries data, not copy.** `mijual.mail.Message(to, kind, data)` — no
+   subject, no body: writing a Korean subject line in P5 would be **inventing product
+   copy**, and R5's signed mail spec is P4's item. `ConsoleMailer` prints
+   `[mail:password_reset] to=… url=… expires_at=…` to the server's stderr and sends
+   nothing. **P4 implements `Mailer.send` and passes it to `create_app(mailer=…)`; no
+   route changes.** The reset link is `MIJUAL_APP_BASE_URL` + `/auth/reset?token=…`
+   (`auth.RESET_PATH`) — **`P5.S15` owns that page**.
+9. **Two prohibitions are structural, and were verified live.** A login failure is one
+   code for a wrong password and for an address with no account, *and* the miss path burns
+   a scrypt verification against a dummy hash so the two do not differ in timing. A reset
+   request answers `{"requested": true}` for a known and an unknown address alike, and the
+   link never appears in an HTTP response — only in the server's own log.
+10. **The account table is deliberately barren, and `P5.S8`/`P5.S9` must keep it that
+    way.** `account` = `id · email · password_hash · created_at · updated_at`. No name, no
+    phone, **no admin flag** (R7's door is a separate credential), no activity trail, and
+    **nothing that could ever join to a conversation** — DECOMP note 5(b)'s promise is
+    trivially intact because there is nothing to join with. R7's 독자 계정 table wants
+    이메일 (here), 가입일 (`created_at`), 포트폴리오 종목 개수 · 알림 설정 · **샘플 로드
+    여부** — the last three belong on **`P5.S8`'s** tables, not on `account`.
+11. **The FK seam `P5.S8` builds on:** hang holdings/preferences/챙긴 돈 off `account.id`
+    with `ondelete="CASCADE"` **and** an ORM `cascade="all, delete-orphan"` relationship.
+    Both halves are needed — SQLite (the test engine) does not enforce foreign keys by
+    default, so relying on the DB alone would make 계정 삭제's completeness
+    environment-dependent. Verified in Postgres: deleting an account took its outstanding
+    reset grant with it.
+12. **Email is stored in exactly one spelling:** NFKC + strip + case-fold, whole address
+    (local part included — no consumer provider treats `A@x.kr` and `a@x.kr` as two
+    people, and honouring the distinction would only make 중복 가입 depend on the shift
+    key). Plus-tags are **kept** (`a+alerts@x.kr` is a deliverable address a reader may
+    want for D-day mail). The typed spelling is not additionally stored.
+13. **Anonymous is a result, not a 401.** `GET /auth/me` answers
+    `{"authenticated": false}` for a visitor with no cookie — the same shape `P5.S4` uses
+    for a search that found nothing, and the honest one for a product where every surface
+    but 내 포트폴리오 is anonymous. The chrome can call it on every page load without
+    filling a console with errors. It serves the **full** email; the 축약 (앞 4자 + … +
+    도메인 끝) is `P5.S11`/`P5.S16`'s rendering.
+14. **A password reset revokes every existing session** and then issues a fresh one (the
+    reader just proved mailbox control and chose the password, so bouncing them to the
+    login panel would be ceremony). A repeated 재설정 request **supersedes** the previous
+    unused grant rather than adding a second live key to the mailbox — so the *latest*
+    mail is the one that works.
+15. **Schema landing, for P4.** The three tables come from `create_all` (no Alembic, per
+    the phase rule). The **serving process creates no schema at startup** — it must answer
+    while Postgres is down — so they land via any pipeline entry point (all of which run
+    `create_all` + `ensure_columns`) or the explicit one-liner in this slice's
+    `result.md`. Deploying the API alone against a fresh database would otherwise 500 on
+    the first signup.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -1019,6 +1138,70 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   re-derivation and are byte-identical (718.1억/548.7억 · 51,253,956/365,527,824 · 0.1402 ·
   488 = 50/422/16 · 33 · 57 · 4 · 15 · 69 · 퓨쳐켐 2026-09-04), with `estimate report`
   diffing empty line for line.
+
+- (`P5.S7`) **`security`** — the R5 auth model is **implemented**, and the four
+  apply-phase questions it left open are decided: session = a **server-side row**
+  (`auth_session`) behind cookie **`mj_session`** (`HttpOnly` · `SameSite=Lax` · `Path=/`
+  · `Secure` from `MIJUAL_COOKIE_SECURE`, **30 days absolute, never extended on a read**),
+  ops cookie reserved as **`mj_ops`**; **CSRF = `SameSite=Lax` + a required
+  `X-Mijual-CSRF` header on every unsafe method, enforced service-wide** (a cross-origin
+  page cannot set it without a CORS preflight this service does not grant); password
+  storage = **stdlib `hashlib.scrypt` `n=2**14,r=8,p=1`**, parameters carried inside the
+  hash so an upgrade re-hashes at the next login; the "reader session signing key"
+  (`MIJUAL_SESSION_SECRET`) **keys the stored token digest** rather than signing a cookie,
+  so a database dump holds nothing replayable, and rotating it logs every reader out.
+  Stored PII is exactly **email + password hash** (+ created/updated timestamps): no
+  admin flag, no activity trail, and no column that could join an account to a
+  conversation — the schema-level no-join promise is intact because there is nothing to
+  join. A login failure is **one code for both causes** (and the miss path burns a scrypt
+  verification so the timing matches); a reset request answers identically whether or not
+  the address exists and the link travels **only** through the mailer. 계정 삭제 wipes the
+  row immediately and the cascade takes sessions and reset grants with it. The checklist's
+  "Implement: password hashing, session cookies, … the no-join schema" line is now half
+  done (the constant-time admin failure is `P5.S9`'s). **`decisions`** — three stated
+  decisions worth their own record: session-as-a-row (immediacy beats statelessness when
+  the request path loads the account anyway), scrypt's parameters chosen at **OpenSSL's
+  default `maxmem` ceiling** (a parameter that only works with a private knob turned up is
+  a login endpoint one deployment away from raising), and **a 30-day absolute session
+  because a sliding one would have to write on a `GET`**. **`api`** — seven auth
+  endpoints (`POST /auth/signup` 201 · `/auth/login` · `/auth/logout` ·
+  `GET /auth/me` · `POST /auth/reset/request` · `/auth/reset/confirm` ·
+  `DELETE /auth/account`), their structural codes (`email_taken` 409 ·
+  `invalid_credentials` 401 · `password_too_short` · `invalid_email` ·
+  `invalid_reset_token` 400 · `unauthenticated` 401 · `csrf_required` 403, **none carrying
+  Korean** — the single body line is the client's), the account payload
+  `{email, created_at}`, and two contract-wide statements: **anonymous is a result, not a
+  401** (`GET /auth/me` → `{"authenticated": false}`, the same shape as `P5.S4`'s search
+  miss) and **every unsafe request must carry `X-Mijual-CSRF`**. **`backend`** — the HTTP
+  layer gained its first writes: `mijual.web.deps.WriteSession` (commits on success, rolls
+  back on any exception, and **refuses a safe method outright**, so "a GET never writes"
+  is now enforced from both ends), `mijual.web.auth` (accounts · sessions · reset grants ·
+  the `ReadAccount`/`WriteAccount` gates), `mijual.web.passwords` (scrypt, versioned
+  parameters, `needs_rehash`), `mijual.web.csrf`, `mijual.web.routers.auth`, and
+  **`mijual.mail`** — the mailer seam (`Message(to, kind, data)` carries **data, not
+  rendered copy**, because a Korean subject line would be invented product copy) with a
+  `ConsoleMailer` dev transport; `create_app(settings, mailer=…)` is where P4 plugs the
+  real one in. **Still no new dependency** — `pyproject` is untouched. Three new settings:
+  `MIJUAL_SESSION_SECRET` · `MIJUAL_COOKIE_SECURE` · `MIJUAL_APP_BASE_URL`. **`data`** —
+  three new tables via `create_all` (no Alembic): **`account`** (`email` unique +
+  NFKC/case-folded whole address, `password_hash`, `created_at` = 가입일, `updated_at`),
+  **`auth_session`** (a **digest** of the cookie token, `expires_at`; no IP, no user
+  agent, no last-used column — updating one would make an authenticated GET write) and
+  **`password_reset`** (single-use `used_at`, 1-hour `expires_at`). Both hang off
+  `account.id` with `ondelete="CASCADE"` **and** an ORM `cascade="all, delete-orphan"`,
+  which is the seam `P5.S8`'s holdings use. **`operations`** — the serving process creates
+  no schema at startup (it must answer while Postgres is down), so the auth tables land
+  through any pipeline entry point's `create_all` + `ensure_columns`, or the explicit
+  one-liner in `P5.S7`'s `result.md`; **P4 must set `MIJUAL_COOKIE_SECURE` and
+  `MIJUAL_SESSION_SECRET`** (unset = unkeyed digests plus one log warning, a development
+  state) and implement the real `Mailer`. No rate limiting was added: it needs shared
+  state P4 owns and `security` already says it has no UI copy. **`qa`** — suite baseline
+  93 → **99 tests**, ~1.6 s (scrypt is the extra 0.4 s), still no network/model/DB; the
+  flow was additionally curl-verified against live Postgres end to end (CSRF refusal
+  writes no row · identical 401 bodies for both login failures · identical reset-request
+  responses with the link only in the server log · single-use token · cascade delete
+  leaving `accounts/sessions/resets = 0/0/0`), and the anonymous surfaces
+  (`/board`, `/board/summary`, `/stocks`) still answer 200 uncookied.
 
 ## Open Questions
 

@@ -98,6 +98,24 @@ class Settings:
     #: derived from the beat schedule). The board never goes dark either way.
     stale_after_hours: int | None = None
 
+    # -- reader auth (P5.S7). See ``mijual.web.auth`` for what each one does.
+    #: ``MIJUAL_SESSION_SECRET`` — the reader session key `security` names. It
+    #: **keys the digest** of a session/reset token rather than signing a
+    #: self-contained cookie (the session is a row: see
+    #: :class:`mijual.db.models.AuthSession`), so a database dump alone holds
+    #: nothing replayable. Unset is a **development** state, not a production
+    #: one: the digest falls back to unkeyed SHA-256 and
+    #: :func:`mijual.web.auth.session_pepper` logs a warning once. Rotating it
+    #: logs every reader out, which is the intended emergency lever.
+    session_secret: str | None = None
+    #: ``MIJUAL_COOKIE_SECURE`` — send the session cookie only over HTTPS.
+    #: Defaults to **off** because local development is plain http; **P4 must
+    #: set it** in every deployed environment.
+    cookie_secure: bool = False
+    #: ``MIJUAL_APP_BASE_URL`` — the origin the *frontend* is served from, used
+    #: to build the password-reset link. The Next.js dev server's default.
+    app_base_url: str = "http://localhost:3000"
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -105,6 +123,21 @@ class Settings:
                 "Offline work against a cached response set needs no key."
             )
         return self.dart_api_key
+
+    def require_session_secret(self) -> str:
+        """The reader session key, for a caller that must not run without one.
+
+        Nothing in P5 calls this: the session digest degrades to unkeyed on
+        purpose so local development needs no secret at all (and the degradation
+        is announced, once, in the log). It exists for **P4**, which should fail
+        a deployment that forgot the key rather than serve peppered-by-nothing
+        cookies — the same "raises only on use" shape as the two API keys above.
+        """
+        if not self.session_secret:
+            raise MissingSecret(
+                "MIJUAL_SESSION_SECRET not found (repo-root .env or environment)."
+            )
+        return self.session_secret
 
     def require_gemini_api_key(self) -> str:
         # Reserved for P2.S4; absent today and must not crash anything until used.
@@ -122,11 +155,12 @@ class Settings:
             return "<set>" if value else "<unset>"
 
         return (
-            "Settings(dart_api_key={}, gemini_api_key={}, database_url={!r}, "
-            "redis_url={!r}, cache_dir={!r})"
+            "Settings(dart_api_key={}, gemini_api_key={}, session_secret={}, "
+            "database_url={!r}, redis_url={!r}, cache_dir={!r})"
         ).format(
             mark(self.dart_api_key),
             mark(self.gemini_api_key),
+            mark(self.session_secret),
             self.database_url,
             self.redis_url,
             str(self.cache_dir),
@@ -148,6 +182,7 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
     return Settings(
         dart_api_key=pick("DART_API_KEY"),
         gemini_api_key=pick("GEMINI_API_KEY"),
+        session_secret=pick("MIJUAL_SESSION_SECRET"),
         database_url=pick("DATABASE_URL") or DEFAULT_DATABASE_URL,
         redis_url=pick("REDIS_URL") or DEFAULT_REDIS_URL,
         cache_dir=Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR,
@@ -155,4 +190,10 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # A malformed value is ignored rather than crashing the service: a
         # mistyped ops env var must not take the board down.
         stale_after_hours=int(stale_after) if (stale_after or "").isdigit() else None,
+        # Off unless explicitly turned on: a truthy string is a decision, an
+        # empty or misspelled one is not. The failure direction matters —
+        # `secure` on a plain-http dev server makes the cookie silently vanish.
+        cookie_secure=(pick("MIJUAL_COOKIE_SECURE") or "").lower()
+        in ("1", "true", "yes", "on"),
+        app_base_url=(pick("MIJUAL_APP_BASE_URL") or "http://localhost:3000").rstrip("/"),
     )

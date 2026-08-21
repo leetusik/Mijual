@@ -30,15 +30,18 @@ from fastapi import FastAPI
 
 from mijual import __version__
 from mijual.config import Settings, load_settings
+from mijual.mail import ConsoleMailer, Mailer
+from mijual.web.csrf import register_csrf_guard
 from mijual.web.deps import dispose_engine
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import board, events, health, stocks
+from mijual.web.routers import auth, board, events, health, stocks
 
 __all__ = ["app", "create_app"]
 
 TITLE = "미주알 API"
 DESCRIPTION = (
-    "Read-only HTTP layer over the persisted pipeline output. "
+    "HTTP layer over the persisted pipeline output. Everything the product "
+    "shows is a read; the only writes are a reader's own account and holdings. "
     "No OpenDART call and no LLM call happens in a request path."
 )
 
@@ -55,8 +58,15 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     dispose_engine(app.state)
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
-    """A fully wired app. Pass ``settings`` to point one at another database."""
+def create_app(
+    settings: Settings | None = None, *, mailer: Mailer | None = None
+) -> FastAPI:
+    """A fully wired app. Pass ``settings`` to point one at another database.
+
+    ``mailer`` is the seam :mod:`mijual.mail` describes: P5 defaults to the
+    console transport, which prints a password-reset link server-side and sends
+    nothing, and **P4** passes a real transport here without touching a route.
+    """
     app = FastAPI(
         title=TITLE,
         description=DESCRIPTION,
@@ -66,12 +76,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings or load_settings()
     app.state.engine = None
     app.state.session_factory = None
+    app.state.mailer = mailer or ConsoleMailer()
 
     register_error_handlers(app)
+    register_csrf_guard(app)
     app.include_router(health.router)
     app.include_router(board.router)
     app.include_router(events.router)
     app.include_router(stocks.router)
+    app.include_router(auth.router)
     return app
 
 

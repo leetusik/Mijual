@@ -1,9 +1,14 @@
-"""The HTTP layer — the read-only service over what the pipeline persisted.
+"""The HTTP layer — the service over what the pipeline persisted, plus the
+reader's own rows.
 
 `P5.S1` created this package; `architecture` had deferred it ("there is no HTTP
-layer yet"). It is the *read* half of the product: every surface — board, event
-detail, 내 종목 조회, 포트폴리오, the ops panel — is served from rows the P2
-pipeline already wrote.
+layer yet"). Everything the product **shows** is a read: board, event detail,
+내 종목 조회, the ops panel are served from rows the P2 pipeline already wrote,
+and no request path derives a displayed number of its own. `P5.S7` added the only
+kind of write this layer does — **a reader's own data**: their account, their
+session, and (from `P5.S8`) their holdings. Those go through a separate
+committing dependency, and a safe HTTP method cannot acquire it, so "a GET never
+writes" stayed true when writes arrived.
 
 **The request-path rule (a boundary, not a guideline).**
 
@@ -25,12 +30,17 @@ P5 renders and never re-decides) and :mod:`mijual.db` (persisted rows).
 
 Layout::
 
-    mijual.web.app      — create_app() factory + the module-level uvicorn target
-    mijual.web.deps     — request-scoped, read-only DB session dependency
-    mijual.web.errors   — the one JSON error envelope for the whole service
-    mijual.web.clock    — the KST time policy every timestamp goes through
-    mijual.web.reads    — loading: persisted rows in, ``mijual.present`` shapes out
-    mijual.web.routers  — one module per surface (health · board · events)
+    mijual.web.app       — create_app() factory + the module-level uvicorn target
+    mijual.web.deps      — request-scoped DB sessions: reading (rollback-only)
+                           and writing (commits; refuses a safe method)
+    mijual.web.errors    — the one JSON error envelope for the whole service
+    mijual.web.csrf      — the required unsafe-method header, service-wide
+    mijual.web.clock     — the KST time policy every timestamp goes through
+    mijual.web.reads     — loading: persisted rows in, ``mijual.present`` shapes out
+    mijual.web.auth      — reader accounts, sessions, the reset grant (R5)
+    mijual.web.passwords — scrypt hashing, parameters carried in the hash
+    mijual.web.routers   — one module per surface (health · board · events ·
+                           stocks · auth)
 
 Routers stay transport-thin: they read settings, call :mod:`mijual.web.reads`, and
 serialize. Loading lives in ``reads``; meaning lives in :mod:`mijual.present`. An
