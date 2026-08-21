@@ -3,7 +3,7 @@
     "slug": "r3-field-absent",
     "title": "③ 아시아나항공 — 게이트 실패 필드는 그냥 없음",
     "what_to_notice": "An exposable ③ whose 반대의사 절차 field is `not_evaluable: field_absent`. It is absent from the card — no warning, no placeholder, no apology.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20260713000482",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",

@@ -3,7 +3,7 @@
     "slug": "r1-money-chain",
     "title": "① 한화솔루션 — 금액 환산 체인 전부 (▷206.4억원 최대 소멸 건)",
     "what_to_notice": "The worked money example for the 보유량 슬라이더 and the 놓친 돈 조회기: 확정발행가 → 할인율 → ▷증서 1주 가치 → 배정비율 → 소멸 결과, every link cited.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20260720000067",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
@@ -417,7 +417,7 @@
         "2026-07-10"
       ],
       "window_state": "closed",
-      "d_day_label": "D+42",
+      "d_day_label": "D+41",
       "source": "warrant_trading_period.end_date",
       "note": "D-day is computed at export time; recompute it at render time."
     },

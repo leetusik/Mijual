@@ -3,7 +3,7 @@
     "slug": "r1-lapse-mismatch",
     "title": "① 대한광통신 — 발행사 기재 불일치 (증권발행실적보고서)",
     "what_to_notice": "The issuer's own 실권주 cell disagrees with its own Ⅶ table. The product shows the literal string 발행사 기재 불일치 and never silently reconciles the two.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20260306000600",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.estimate.perf.parse_performance()",

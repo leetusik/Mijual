@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate",
+      "latest": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -19,11 +19,19 @@
           "source": "P2.REVIEW",
           "summary": "미주알 product truth after P2: the lapsed-warrant headline, the live rights board and the measured price of the trust gate",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added",
+          "path": "docs/versions/product/v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added.md",
+          "created_at": "2026-08-21T23:49:14+09:00",
+          "source": "P3.REVIEW",
+          "summary": "Product truth after the P3 design: the signed surface set and three-slot nav, the 「추정」 estimate mark, the anonymous-first boundary and what the design added",
+          "previous": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate"
         }
       ]
     },
     "experience": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -33,6 +41,14 @@
           "source": "bootstrap",
           "summary": "Initial experience doc",
           "previous": null
+        },
+        {
+          "id": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules",
+          "path": "docs/versions/experience/v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules.md",
+          "created_at": "2026-08-21T23:48:04+09:00",
+          "source": "P3.REVIEW",
+          "summary": "P3 signed surface map: 관제 현황판 landing, 내 종목 조회, event detail, 내 포트폴리오, AI 질문 and 운영 관제 — journeys, UX states and Korean copy rules",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -59,7 +75,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -69,6 +85,14 @@
           "source": "bootstrap",
           "summary": "Initial frontend doc",
           "previous": null
+        },
+        {
+          "id": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain",
+          "path": "docs/versions/frontend/v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain.md",
+          "created_at": "2026-08-21T23:47:12+09:00",
+          "source": "P3.REVIEW",
+          "summary": "P3 signed design system: tokens (light root + cosmos dark scope), type, motion, the trust primitives, and the design record with its supersession chain",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -131,7 +155,7 @@
       ]
     },
     "operations": {
-      "latest": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend",
+      "latest": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -157,11 +181,19 @@
           "source": "P2.REVIEW",
           "summary": "Pipeline operations: quota and request ceilings, beat schedule and budgets, the pipeline lock, and how to regenerate every artifact at zero spend",
           "previous": "v0002_challenge_submission_deliverables_deadlines_and_the_-grade_deploy_constraints"
+        },
+        {
+          "id": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes",
+          "path": "docs/versions/operations/v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes.md",
+          "created_at": "2026-08-21T23:51:38+09:00",
+          "source": "P3.REVIEW",
+          "summary": "P3 operations: the design grounding-pack export command at zero spend, and the observation-only operating rules the signed admin panel imposes",
+          "previous": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend"
         }
       ]
     },
     "security": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -171,6 +203,14 @@
           "source": "bootstrap",
           "summary": "Initial security doc",
           "previous": null
+        },
+        {
+          "id": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage",
+          "path": "docs/versions/security/v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage.md",
+          "created_at": "2026-08-21T23:50:02+09:00",
+          "source": "P3.REVIEW",
+          "summary": "Security model decided in the P3 design: email+password reader auth with minimal PII, the separate admin door, read-only ops surfaces and the anonymity promise for conversation storage",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
@@ -197,7 +237,7 @@
       ]
     },
     "decisions": {
-      "latest": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair",
+      "latest": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -223,9 +263,17 @@
           "source": "P2.REVIEW",
           "summary": "P2 decisions: data-backbone stack, per-task thinking level, cross-model evalset judging, and the conservative-default pair",
           "previous": "v0002_mvp_rights_scope_confirmed_domain_fact_sheet_and_deferred_purchase_application_llm"
+        },
+        {
+          "id": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin",
+          "path": "docs/versions/decisions/v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin.md",
+          "created_at": "2026-08-21T23:50:46+09:00",
+          "source": "P3.REVIEW",
+          "summary": "P3 design-gate decisions: design-only re-scope, FastAPI+Next.js, cosmos-dark pivot, 「추정」 everywhere, email+password auth, unlimited anonymous questions, read-only desktop-only admin",
+          "previous": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-21T23:41:43+09:00"
+  "last_rebuilt_at": "2026-08-21T23:52:15+09:00"
 }

@@ -3,7 +3,7 @@
     "slug": "r1-withdrawn",
     "title": "① 썸에이지 — 철회: 카운트다운 대신 철회 문구",
     "what_to_notice": "`state: withdrawn` → the board shows WITHDRAWN_NOTICE_KO['R1'] and nothing else, even though a field passed its gate and is still recorded.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20260805000454",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",

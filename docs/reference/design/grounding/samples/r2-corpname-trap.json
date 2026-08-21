@@ -3,7 +3,7 @@
     "slug": "r2-corpname-trap",
     "title": "② 풍전약품 / 에스씨엠생명과학 — corp_name 표시 함정",
     "what_to_notice": "`corp_name` is 풍전약품 (DART master) while the 본문 header says 에스씨엠생명과학. Display-only artifact: the numbers are unaffected, the label is not.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20250930000508",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
@@ -114,7 +114,7 @@
         "2028-09-02"
       ],
       "window_state": "upcoming",
-      "d_day_label": "D-42",
+      "d_day_label": "D-43",
       "source": "cvbdIsDecsn.cvrqpd_bgd",
       "note": "D-day is computed at export time; recompute it at render time."
     },

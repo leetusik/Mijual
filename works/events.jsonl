@@ -126,3 +126,11 @@
 {"ts": "2026-08-21T23:38:33+09:00", "type": "slice_status_changed", "slice": "P3.S8", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-21T23:39:35+09:00", "type": "slice_status_changed", "slice": "P3.REVIEW", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-21T23:40:55+09:00", "type": "phase_created", "phase": "P6"}
+{"ts": "2026-08-21T23:47:12+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:48:04+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:49:14+09:00", "type": "doc_version_created", "doc": "product", "version": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:50:02+09:00", "type": "doc_version_created", "doc": "security", "version": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:50:46+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:51:38+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes", "source": "P3.REVIEW"}
+{"ts": "2026-08-21T23:54:53+09:00", "type": "slice_status_changed", "slice": "P3.REVIEW", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-21T23:54:53+09:00", "type": "phase_reviewed", "phase": "P3", "verdict": "pass", "reviewer": "slice-executor-high"}

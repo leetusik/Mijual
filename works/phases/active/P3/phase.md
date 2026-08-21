@@ -489,6 +489,19 @@ the apply phase:
   scripts/export_design_grounding.py` regenerates `docs/reference/design/grounding/` from the local
   Postgres corpus at **0 OpenDART requests / 0 LLM calls**; idempotent, and it exits non-zero if a
   pinned sample has left the corpus.
+- `frontend` (added at P3.REVIEW, covering R1–R7) — the design system now exists and is durable
+  truth: `foundations/tokens.css` (66 light `:root` props + the `.cosmos` dark scope), Pretendard +
+  IBM Plex Mono, radius-0/hairline/fade-only, the trust primitives, and the record's location
+  (`docs/reference/design/`) with its binding rules and cross-round supersession chain.
+- `experience` (added at P3.REVIEW, covering R2–R7) — the signed surface map and journeys:
+  관제 현황판 landing · 내 종목 조회 · event detail (①②③ + trust states) · 내 포트폴리오 ·
+  AI 질문 · 운영 관제, with their UX states and the Korean copy rules.
+- `product` (added at P3.REVIEW, covering R2–R7) — product truth the design fixed: the three-slot
+  nav (내 종목 조회 · 관제 현황판 · AI 질문), the 「추정」 estimate mark replacing ▷ in the UI,
+  the anonymous-first / single-gated-surface boundary, and 매수예정가 deferred to the apply phase.
+- `security` (added at P3.REVIEW, covering R5–R7) — the auth and data-boundary model: email+password
+  reader auth with minimal PII, the separate admin credential unlinked from reader auth, read-only
+  admin surfaces, and the anonymity promise for anonymous conversation storage.
 
 ## Constraints
 
@@ -515,3 +528,44 @@ the apply phase:
   (vocky's own UI, triggered from the chrome — R2 places and styles the trigger point), and vocky
   **provides an API for observing collected feedback** — the admin panel (R7) includes a
   feedback-observation view backed by it; the apply phase integrates both.
+
+## P3.REVIEW — phase review (2026-08-21, `slice-executor-high`)
+
+**Verdict: `pass`.** Full record in `slices/P3.REVIEW/result.md`.
+
+**Validated:** `workflow validate` (twice, clean) · grounding-pack determinism (two runs into scratch
+dirs, `diff -r` byte-identical, exit 0, 0 GAP) · design-record integrity (7 rounds × handoff +
+`output/result.md` + `output/build-prompt.md`; SIGNOFF carries all seven literal approvals) ·
+**design-only constraint over `dcb6d0b..HEAD`: nothing outside `docs/`, `works/` and the one
+documentation tool — no `src/`, no HTTP layer, no frontend** · gate protocol (`events.jsonl` shows the
+`pending` gate on all seven rounds) · intent capture · spot checks (BLOCKING_FLAGS Korean verbatim;
+R7 arithmetic).
+
+**Judged:** all 12 inventory items map to a round (11 and 12 cross-cutting, carried by every handoff).
+Two inventory phrasings were changed *by the design*, correctly and on the record — the 보유량 슬라이더
+became a number input + preset chips (R4), and "not a chat UI as the default surface" was carried
+verbatim into the R6 handoff and answered with a corner launcher + nav slot that leaves the board as
+the default surface. Discrepancies were logged at each gate instead of being silently fixed, and every
+open item has an owner.
+
+**Notes for the phases that follow:**
+
+1. **Read `SIGNOFF.md` before any `build-prompt.md`.** The records are immutable, so R1 still describes
+   a light theme and a `▷` marker, and R2 still shows pre-R4 nav labels. The full supersession chain is
+   now a table in `docs/current/frontend.md` — the build's real entry point, since the cards never
+   left the Claude Design project.
+2. **"정정 이력" (button label) exits P3 unresolved** and is hereby carried to the apply phase; it is
+   recorded in `experience` v0002 and `product` v0003 so it cannot be lost. Same for the countdown
+   cut-off instant, the stale threshold, the 운영자 연락처 string and the vocky observation API shape.
+3. **Regenerating the grounding pack re-dates it.** The exporter is anchored on *today*, so a run on a
+   later day changes `measured_at` and every D-day label while the corpus figures stay identical.
+   Diff a re-run with `--out <scratch>`; overwriting the landed pack detaches it from the figures the
+   signed rounds cite. (This happened during the review and was restored — see `result.md` §4.2.)
+4. **Doc impact was incomplete** (2 notes for 7 signed rounds). The reviewer added `frontend`,
+   `experience`, `product` and `security` notes above before consolidating. A design round changes
+   durable truth even when it writes no code.
+
+**Doc versions created:** `frontend` v0002 · `experience` v0002 · `product` v0003 · `security` v0002 ·
+`decisions` v0004 (D-9 … D-15) · `operations` v0004.
+
+`explain: not written — run /explain for this phase.`

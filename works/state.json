@@ -1,8 +1,8 @@
 {
-  "current_phase": "P3",
-  "current_slice": "P3.REVIEW",
-  "next_slice": null,
+  "current_phase": "P5",
+  "current_slice": "P5.DECOMP",
+  "next_slice": "P5.REVIEW",
   "waiting_on_operator": null,
   "mode": "phase",
-  "updated_at": "2026-08-21T23:41:43+09:00"
+  "updated_at": "2026-08-21T23:54:53+09:00"
 }

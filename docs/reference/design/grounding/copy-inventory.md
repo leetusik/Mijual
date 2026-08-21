@@ -2,7 +2,7 @@
 
 # Korean state & copy inventory
 
-**Measured 2026-08-21 (KST).** Every string below is generated from the code that will produce it at runtime — it is the product's own copy, not a designer's paraphrase.
+**Measured 2026-08-20 (KST).** Every string below is generated from the code that will produce it at runtime — it is the product's own copy, not a designer's paraphrase.
 
 ```
 .venv/bin/python scripts/export_design_grounding.py

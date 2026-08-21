@@ -3,7 +3,7 @@
     "slug": "r2-incomplete-api",
     "title": "② 파이온엑스 — 비노출: 전환청구기간이 공시에 없음",
     "what_to_notice": "A 38 %대 오버행 whose 전환청구기간 the filing simply does not state. Conservative default: not shown, reason recorded — a blank window would be worse than absence.",
-    "measured_at": "2026-08-21",
+    "measured_at": "2026-08-20",
     "pinned_rcept_no": "20260722000285",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",

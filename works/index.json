@@ -28,13 +28,13 @@
       "id": "P3",
       "name": "Mijual Web Service (design only)",
       "objective": "Design the Korean-only 미주알 web service with Claude Design under operator gates: brand identity + foundations, landing 관제 현황판 + global chrome + vocky feedback touchpoint, event detail (3 rights types + trust states), 종목 검색 + 보유량 슬라이더 + 놓친 돈 조회기, 개인화 2층 (auth + portfolio + D-day + sample load), grounded 해설 panel, admin panel. Design only — re-scoped by the operator 2026-08-20; single-pass decomposition, seven co-work rounds one by one; the build moves to a later apply phase.",
-      "status": "planned",
+      "status": "done",
       "order": 3,
       "path": "works/phases/active/P3",
-      "review_status": "pending",
-      "current_slice": "P3.REVIEW",
+      "review_status": "pass",
+      "current_slice": null,
       "slice_count": 10,
-      "done_slice_count": 9
+      "done_slice_count": 10
     },
     {
       "id": "P5",
@@ -76,5 +76,5 @@
   "deferred_open_count": 4,
   "deferred_promoted_count": 0,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-21T23:41:43+09:00"
+  "last_rebuilt_at": "2026-08-21T23:54:53+09:00"
 }
