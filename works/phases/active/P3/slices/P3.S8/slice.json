@@ -3,7 +3,7 @@
   "phase_id": "P3",
   "name": "Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota)",
   "kind": "co-work",
-  "status": "in_progress",
+  "status": "pending",
   "order": 8,
   "depends_on": [
     "P3.S7"
