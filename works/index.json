@@ -37,6 +37,18 @@
       "done_slice_count": 8
     },
     {
+      "id": "P5",
+      "name": "Apply — build the signed design",
+      "objective": "Implement Mijual per P3's signed design records (R1–R7 build prompts): FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, citation-forced AI 질문 (SSE), admin panel, vocky integration — faithful under RESPECT THE DESIGN. Deployment/hosting stays in P4 (Ship & Submit).",
+      "status": "planned",
+      "order": 3.5,
+      "path": "works/phases/active/P5",
+      "review_status": "pending",
+      "current_slice": "P5.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
       "id": "P4",
       "name": "Ship & Submit",
       "objective": "Notifications (email first), production deploy to ssh h, smoke tests, presentation deck (주최사별 효용 매핑, AI-role architecture, 소멸 총액 opening number), demo video, and daker.ai submission before 2026-09-07 10:00.",
@@ -52,5 +64,5 @@
   "deferred_open_count": 4,
   "deferred_promoted_count": 0,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-21T22:46:55+09:00"
+  "last_rebuilt_at": "2026-08-21T23:08:28+09:00"
 }

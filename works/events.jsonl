@@ -121,3 +121,4 @@
 {"ts": "2026-08-21T22:42:39+09:00", "type": "slice_status_changed", "slice": "P3.S7", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-21T22:45:36+09:00", "type": "slice_status_changed", "slice": "P3.S8", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-21T22:46:55+09:00", "type": "slice_status_changed", "slice": "P3.S8", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-08-21T23:08:28+09:00", "type": "phase_created", "phase": "P5"}

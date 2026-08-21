@@ -10,7 +10,7 @@
 - Next slice: `P3.REVIEW`
 - Waiting on operator: `P3.S8`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T22:46:55+09:00`
+- Rebuilt at: `2026-08-21T23:08:28+09:00`
 
 ## Active Phases
 
@@ -19,6 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design only) | `P3.S8` | `works/phases/active/P3` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.DECOMP` | `works/phases/active/P5` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -65,6 +66,13 @@
 | [x] `P3.S7` | `done` | Design R6: grounded 해설 panel (citation-forced, SSE streaming states) | `co-work` | `works/phases/active/P3/slices/P3.S7` |
 | [~] `P3.S8` | `pending` | Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota) | `co-work` | `works/phases/active/P3/slices/P3.S8` |
 | [ ] `P3.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P3/slices/P3.REVIEW` |
+
+## Phase P5: Apply — build the signed design
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P5.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P5/slices/P5.DECOMP` |
+| [ ] `P5.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P5/slices/P5.REVIEW` |
 
 ## Phase P4: Ship & Submit
 
