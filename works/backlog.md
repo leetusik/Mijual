@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.S1`
-- Next slice: `P5.S2`
+- Current slice: `P5.S2`
+- Next slice: `P5.S3`
 - Waiting on operator: `none`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-22T00:18:54+09:00`
+- Rebuilt at: `2026-08-22T00:28:21+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S1` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S2` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -73,7 +73,7 @@
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
 | [x] `P5.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P5/slices/P5.DECOMP` |
-| [ ] `P5.S1` | `todo` | FastAPI service skeleton + read-layer foundations | `implementation` | `works/phases/active/P5/slices/P5.S1` |
+| [x] `P5.S1` | `done` | FastAPI service skeleton + read-layer foundations | `implementation` | `works/phases/active/P5/slices/P5.S1` |
 | [ ] `P5.S2` | `todo` | Presentation contract: countdowns, 환산 chain, lapse results, citations, 「추정」 tagging | `implementation` | `works/phases/active/P5/slices/P5.S2` |
 | [ ] `P5.S3` | `todo` | Board, summary and event-detail read endpoints (+ CorrectionStory version rail) | `implementation` | `works/phases/active/P5/slices/P5.S3` |
 | [ ] `P5.S4` | `todo` | 내 종목 조회 endpoints: stock resolution, live rights, 2026 놓친 돈 breakdown | `implementation` | `works/phases/active/P5/slices/P5.S4` |

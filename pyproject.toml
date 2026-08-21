@@ -20,10 +20,19 @@ dependencies = [
     # `python -m mijual.scheduler once` path needs neither to be running.
     "celery>=5.4",
     "redis>=5.0",
+    # P5.S1 — the HTTP layer (`mijual.web`). Only that package imports them; the
+    # pipeline, its CLIs and every other test run without either resolving.
+    # `uvicorn` is a runtime dependency rather than a dev one because serving IS
+    # the product in P5 and P4 deploys this same process.
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+# P5.S1 — `httpx` is what `fastapi.testclient.TestClient` transports over. It is
+# already present transitively via `google-genai`; declared here so the web smoke
+# test does not depend on that accident.
+dev = ["pytest>=8.0", "httpx>=0.27"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mijual"]

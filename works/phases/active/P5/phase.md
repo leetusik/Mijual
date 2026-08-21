@@ -189,6 +189,70 @@ appear nowhere in the package. They are P5's to derive, on top of `gates.exposur
   product in a browser.** Per `design-cowork`, faithful implementation and real-browser fidelity are
   separate slices; `P5.S19` is the latter.
 
+### `P5.S1` — the HTTP layer now exists; what every later slice inherits
+
+The skeleton is `src/mijual/web/`. Import paths, so no slice has to go looking:
+
+| you need | import |
+|---|---|
+| an app | `from mijual.web.app import create_app` (module-level `app` is only uvicorn's target) |
+| a DB session in an endpoint | `from mijual.web.deps import DbSession` → `def board(db: DbSession)` |
+| to fail a request | `from mijual.web.errors import ApiError, NotFound` |
+| any timestamp or date in a payload | `from mijual.web import clock` → `clock.iso(dt)` / `clock.iso_date(d)` / `clock.now()` |
+| a new surface | a module under `mijual.web.routers/`, included in `create_app` |
+
+Run it: `.venv/bin/uvicorn mijual.web.app:app --reload` (also in `compose.yaml`'s header). There is
+**no compose service for the web app** — deployment is P4's.
+
+1. **The error envelope is decided and it is the only error shape.**
+   `{"error": {"code", "message", "message_ko"?, "fields"?}}`. `code` is a stable English
+   `snake_case` token, `message` is English and **developer-facing — never rendered to a user**,
+   `fields` is 422-only. **`message_ko` is present only when the product already owns that Korean
+   string** (e.g. `WITHDRAWN_NOTICE_KO`) and is **omitted, not null**, otherwise. Reasoning, so a
+   later slice does not "fix" it: the signed design writes **no HTTP-error copy at all** — it writes
+   *state* copy (철회 / 추후결정 / 발행사 기재 불일치), which reaches the user in a normal 200 payload.
+   Inventing Korean error copy would be a design change. **A slice that needs user-visible Korean for
+   a failure raises `ApiError(..., message_ko=<an existing string>)` or leaves it to the surface.**
+   Handlers cover `ApiError`, `HTTPException` (404/405), validation and bare `Exception`, so there is
+   no path back to FastAPI's `{"detail": …}`. The 500 handler logs the traceback and returns only the
+   code — **do not add exception text to an error body.**
+2. **`clock.py`, not `time.py`** (the plan said "or similar"; `mijual.web.time` reads as a stdlib
+   trap). `KST` is **re-exported from `mijual.calc`, never redefined** — the pipeline and the API must
+   agree on what "today" is. `clock.iso()` emits second-precision `+09:00`; `clock.iso_date()` emits a
+   bare `YYYY-MM-DD` **with no offset**, because 청약일 / 매매기간 / 전환청구 개시일 are calendar days
+   and pinning one to midnight+09:00 invites a client to shift it into the previous day. Both are
+   `None`-in-`None`-out and overloaded, so a non-optional call type-checks.
+3. **`/health` does not touch the database, and that is a rule, not an omission.** A liveness check
+   that flaps with Postgres turns one outage into two. Freshness (the landing 기준시각) is a fact
+   about the *corpus* and is **`P5.S3`'s summary endpoint**, not this probe. Do not "improve" health
+   by adding a DB ping.
+4. **The engine is lazy and sessions are rollback-only.** One engine per app, built on the **first
+   request that needs a row** (verified: `app.state.engine is None` until then) and cached on
+   `app.state`; `get_session` rolls back on the way out of *successful* requests too. This is
+   deliberately **not** `db.session.session_scope`, which commits — that is the pipeline's wrapper.
+   **P5's HTTP layer never writes through `DbSession`.** `P5.S7`/`P5.S8` introduce the first real
+   writes (accounts, holdings): they must add their own committing dependency rather than relaxing
+   this one, so a GET can never write.
+5. **The request-path rule is now enforced by the suite.** `tests/test_web_smoke.py` walks every
+   `.py` under `src/mijual/web/` with `ast` and fails if one imports `mijual.dart`, `mijual.collect`
+   or `mijual.extract`. If a slice trips it, the answer is never to relax the test. **Known
+   near-miss for `P5.S3`:** `mijual.gates.exposure.current_version` does a *function-local* import of
+   `mijual.extract.runner`, so importing `mijual.gates.exposure` from a router is fine by the scan
+   (the import is not in `web/`) but does pull the extractor's module tree in at call time. It makes
+   no LLM call, but S3 should check what `mijual.extract.runner` drags in at import before putting
+   `event_exposure()` on a hot request path — the SQL-filtered read over the persisted exposure
+   columns that S3 is specified to do avoids the question entirely.
+6. **Dependency facts.** `fastapi>=0.115` + `uvicorn>=0.30` are runtime deps; `httpx>=0.27` is a dev
+   extra for `TestClient`. Resolved today: fastapi 0.141.1 / **starlette 1.6.0** / uvicorn 0.52.4.
+   Starlette 1.6 emits one `StarletteDeprecationWarning` — "Using `httpx` with
+   `starlette.testclient` is deprecated; install `httpx2` instead". **Left as-is on purpose:** it is
+   the only warning in the suite, and swapping a test transport to a brand-new package for a cosmetic
+   line is a worse trade than carrying it. Revisit at `P5.S19`/P4 if it becomes an error.
+7. **Nothing speculative was added.** No CORS, no compression, no request-id middleware, no auth.
+   `P5.S10` owns the CORS/origin question (it creates the frontend that has an origin); `P5.S7` owns
+   the session cookie. Pool sizing / `pool_pre_ping` / read-replica routing are noted in `deps.py` as
+   **P4** deploy decisions.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -256,6 +320,19 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   substantially: `api` is still the bootstrap v0001 stub and `backend` is still the bootstrap v0001
   stub, and both become real at this phase, alongside `architecture` (the HTTP layer it explicitly
   defers to "P3"), `frontend`, `experience`, `security`, `operations` and `decisions`.
+- (`P5.S1`) **`architecture`** — the HTTP layer it deferred to "P3" now exists: `mijual.web`
+  (app factory · lazy one-engine/rollback-only session dependency · error envelope · KST time
+  policy · `routers/`), added to the module map and the stack table; the "no OpenDART/LLM call in a
+  request path" boundary is now **enforced by a test** (`tests/test_web_smoke.py` AST import scan),
+  not just structurally true. **`backend`** — first real content over the v0001 stub: the package
+  layout, `create_app`, `.venv/bin/uvicorn mijual.web.app:app --reload`, the read-only session
+  contract (P5's HTTP layer never commits), and `fastapi`/`uvicorn`/`httpx` in `pyproject`.
+  **`api`** — the service-wide **error envelope** `{"error": {code, message, message_ko?, fields?}}`
+  with `message_ko` present only where the product already owns the Korean string, plus the
+  **absolute-KST timestamp / bare-calendar-date serialization policy**, plus `GET /health`
+  (DB-independent by design). **`qa`** — suite baseline 59 → **62 tests**, still ~1 s, no network/
+  model/DB. **`operations`** — `/health` is a liveness probe that deliberately does not touch
+  Postgres ("stale, never dark"); data freshness is a separate corpus fact served by `P5.S3`.
 
 ## Open Questions
 

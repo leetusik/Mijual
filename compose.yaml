@@ -8,6 +8,13 @@
 #   .venv/bin/celery -A mijual.scheduler.app beat   -l info
 # and without it as `.venv/bin/python -m mijual.scheduler once` (same code path).
 #
+# The HTTP layer (P5.S1) is a plain process, deliberately NOT a compose service —
+# deployment is P4's, and a dev server that reloads on save should not be a
+# container:
+#   .venv/bin/uvicorn mijual.web.app:app --reload      # http://127.0.0.1:8000
+#   curl -s http://127.0.0.1:8000/health
+# `/health` needs only the process, not postgres: the board goes stale, never dark.
+#
 # Host port 5433 keeps a system/other-project Postgres on 5432 out of the way.
 # These credentials are local-dev only and are NOT secrets: real secrets
 # (DART_API_KEY, GEMINI_API_KEY) live in the gitignored repo-root .env.
