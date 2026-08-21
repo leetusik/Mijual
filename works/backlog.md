@@ -9,8 +9,8 @@
 - Current slice: `P5.S4`
 - Next slice: `P5.S5`
 - Waiting on operator: `none`
-- Open deferred jobs: `3`
-- Rebuilt at: `2026-08-22T01:33:01+09:00`
+- Open deferred jobs: `2`
+- Rebuilt at: `2026-08-22T01:33:25+09:00`
 
 ## Active Phases
 
@@ -79,6 +79,7 @@
 | [ ] `P5.S4` | `todo` | 내 종목 조회 endpoints: stock resolution, live rights, 2026 놓친 돈 breakdown | `implementation` | `works/phases/active/P5/slices/P5.S4` |
 | [ ] `P5.S5` | `todo` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채 | `implementation` | `works/phases/active/P5/slices/P5.S5` |
 | [ ] `P5.S6` | `todo` | ③ 매수예정가 backing (D-15): extraction target, gate, exposure | `implementation` | `works/phases/active/P5/slices/P5.S6` |
+| [ ] `P5.S20` | `todo` | Multi-span citations for multi-addend 실적보고서 figures | `implementation` | `works/phases/active/P5/slices/P5.S20` |
 | [ ] `P5.S7` | `todo` | Reader auth backend: accounts, password hashing, sessions, reset flow | `implementation` | `works/phases/active/P5/slices/P5.S7` |
 | [ ] `P5.S8` | `todo` | Portfolio backend: holdings, D-day list, 챙긴 돈, 알림 preferences, sample portfolio | `implementation` | `works/phases/active/P5/slices/P5.S8` |
 | [ ] `P5.S9` | `todo` | Admin backend: operator door + read-only ops endpoints + pipeline run log | `implementation` | `works/phases/active/P5/slices/P5.S9` |
