@@ -467,6 +467,96 @@ staleness against its own clock.
     verdict is not `exposable` even though `Event.exposure_state` said it was (a gate run that has not
     landed). The API renders what `gates.exposure` says — never its own reading.
 
+### `P5.S4` — 내 종목 조회 serves **factors, not products**; the route map and six decisions
+
+**The endpoint map** (no prefix, like the rest):
+
+| route | what it serves |
+|---|---|
+| `GET /stocks?q=<종목명\|종목코드>` | resolution **and**, on a hit, the whole page in one response: `{query, found, stock{corp_code,corp_name,stock_code}, reference, rights, lapse}`. A miss is **`200 {"query": …, "found": false}`** — nothing else, no reason code |
+| `GET /stocks/{corp_code}` | the same page by stable handle (R3's "내 보유량으로 환산 →" link-out). Unknown code → **404 envelope** |
+
+`rights` = `{count, rows[]}`, each row `EventView.payload()` + `offering` (①, the **full**
+`OfferingInputs`) + `convertible` (②, R3's six-value strip). `lapse` = `{coverage, totals, rows[],
+pending?}`, each row `{rights_type, lapse}` + the event-derived block when the 유상증자결정 is
+exposable (`event_id`, `rcept_no`, `countdown`, `warrant_trading_period`, `offering`) +
+`issuer_disagreement` when the filing contradicts itself.
+
+**`P5.S14` (and `P5.S10`'s client) inherit these:**
+
+| you need | use |
+|---|---|
+| 종목명/종목코드 → issuer | `mijual.web.reads.resolve_corp` (never guesses; see below) · `stock_by_code` |
+| the whole 종목 page | `reads.load_stock(session, corp, today=…)` — one load, both sections |
+| a subset total (Σ over *some* offerings) | `present.LapseTotals.payload()` — same fact/estimate split as `BoardSummary` |
+| "the same company, written differently" | `present.bare_name` (was private `_bare_name`) |
+| the coverage boundary | `reads.LAPSE_COVERAGE_START` / `CONVERTIBLE_COVERAGE_START` — **served**, never assumed client-side |
+
+1. **A search miss is a result; a bad link is an error.** `?q=` that resolves nothing returns
+   `200 {"query", "found": false}` — R4 renders its own locked 검색 불일치 sentence on the same
+   page, and a 404 envelope would carry an English `code` the surface would translate anyway. An
+   unknown `corp_code` on the second route **is** a 404. Neither says *why*: no candidate list, no
+   near-miss, no reason (404-not-explained).
+2. **Matching semantics — four tiers, each unique-or-decline:** 종목코드 exact (all digits,
+   zero-padded to 6) → 회사명 verbatim → 회사명 normalized (`bare_name` + casefold) → **unique**
+   normalized prefix. Ambiguity resolves to **nothing**. Measured 2026-08-22: 0/614 normalized-name
+   collisions, and **13 names are a strict prefix of another's** (금양/금양그린파워,
+   디와이/디와이디·씨·에이, 한창/한창제지 …) — which is precisely why the exact-normalized tier runs
+   before the prefix tier. `계양`, `계양 전기(주)`, `계양전기`, `012200` all reach 계양전기; `삼성전`
+   reaches neither 삼성전자 nor 삼성전기.
+3. **Unknown stock ≠ stock with no rights, structurally.** `found: false` vs `found: true` with
+   `rights.count == 0` and `totals {offerings: 0, valued: 0}` and **no money key at all**. Every
+   `Corp` row resolves: measured **614/614 corps have events** (`ensure_corp` only runs while
+   creating one), so "resolvable" and "in the corpus" coincide today; if that ever diverges the
+   reader gets the honest no-event empty state rather than 검색 불일치. Live example of the
+   empty state: 고려아연 (226 of 614 corps have nothing renderable today). The 감시 중 count that
+   empty state also wants stays in `/board/summary` — it is not duplicated here.
+4. **Live-rights ranking (recorded):** upcoming (`days >= 0`) D-day ascending → **② 진행 중**
+   (opened, not closed) most-recently-opened first → **일정 추후결정** unranked, last. A deadline
+   still ahead outranks an open window with nothing to exercise (R4-4). Past ①/③ are absent — the
+   past ① reappears in 놓친 돈 with its 소멸 계산, the only honest place for it. Verified live on
+   유티아이: D-91 · D-280 · D-327 · **D+46 open last**.
+5. **The lookup ① row carries the detail-grade `offering`, not the board's slim extras cell.** R4
+   owns the N주 conversion (R3 shows per-unit only), so the row needs 배정비율 to ten decimals,
+   초과청약 비율, `unit_value` + floor and `final_price_date`. `price_confirmed` is on both shapes,
+   so a client reading only that key works against either. ⚠ **`P5.S14`: no live ① in today's
+   corpus has a 확정발행가** (33 priced offerings, all with 청약 already closed) — every live ① row
+   currently renders the `발행가 확정 전` state, and the 환산액 path is only exercisable against the
+   놓친 돈 rows until a new offering confirms its price.
+6. **A 놓친 돈 row's event-derived block is gated on `state == "exposable"`.** `event_id`,
+   `rcept_no`, `countdown` (the 매매기간 **D+n**, computed upstream) and the 매매기간 `Citation`
+   appear only when the 유상증자결정 is renderable. Two corpus rows (한솔테크닉스, 트리니티항공) hang
+   off *flagged* events: they keep their 소멸 계산 — a lapse is a fact the 실적보고서 attests — and
+   lose the 기간 line, the quote and a "상세 보기" link that would 404. `lapse` still carries
+   배정비율 + `unit_value`, so the N주 math survives the degraded row. This is stricter than the
+   plan's wording and follows "the exposure contract is not re-decidable".
+7. **Coverage is served, not assumed:** `{start: "2026-01-01", end: <today KST>,
+   convertible_start: "2025-06-01"}` — the corpus's own collection windows (`estimate collect
+   --bgn 20260101`, `collect --bgn 20250601`), which is what R4-3's line states. Membership is the
+   offering's **청약 종료일** (fallback: the 실적보고서's 접수일 — a guard, not a path: all 32 stored
+   `lapse` rows carry one, 2026-01-23 … 2026-08-06). Outside it a row is **absent**, never 0.
+8. **`pending` is the same definition the landing counts 15건 with** — `_pending_lapses` now takes
+   `corp_code=` rather than growing a second query. It answers R4's "…청약 종료({date}) 후
+   집계됩니다" line: `{count, subscription_end}` for the soonest. ⚠ **Known gap, no signed state:**
+   an ① whose 청약 has *closed* but whose 증권발행실적보고서 has not been filed yet (코이즈, 센서뷰,
+   클로봇 — the report's "청약 종료 — 증권발행실적보고서 미제출" bucket) is in **neither** section
+   and gets no line: `pending` would render the wrong copy (its 청약 is over) and a 놓친 돈 row
+   would be an invented figure. `P5.S14`/`P5.S19` should look at it; it is a design gap, not a bug.
+9. **D4 was not re-triggered.** Verified live that SKC's and 한화솔루션's 청약 counts come back with
+   `rcept_no` and **no quote** (S3's `_cited_count` guard), while 대한광통신's two counts do carry
+   quotes and its row carries `issuer_disagreement` with both readings and both spans —
+   `ui-traps` #2 is a payload rule, not a detail-page rule, so it rides on the breakdown row too.
+10. **Live cross-check (2026-08-22, local Postgres).** 한화솔루션 3,734,925주 · 22,100원 · 증서
+    **5,525원** · **20,635,460,625원 = 206.4억원** ✓ (배정비율 `0.2465120994` — R4's own caption
+    example); 에스에너지 1,990,157주 · 14.22% · 7.2억원 ✓; 대한광통신 2,083,302주 · 16.2억원 ✓;
+    계양전기 pending 2026-09-04 ✓. Payloads **1.1–5.7 KB in 8–24 ms**.
+11. **Two additions outside `mijual.web`**, both to keep "all numbers through `present`" true:
+    `LapseTotals.payload()` (a per-stock total is still a presentation shape, and it emits **no
+    zero** — a stock with no 소멸 has no `value` key) and `bare_name` made public. Also
+    `_countdown_rows` → **`_field_rows(session, ids, fields)`**: the stock page loads four field
+    keys (`STOCK_FIELDS` = the two countdown fields + `issue_price_formula` + `excess_subscription`)
+    instead of all of them, the same "load what the surface renders" rule the board follows.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -595,6 +685,29 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   **stale after 18 h**, overridable. **`qa`** — suite baseline 75 → **83 tests**, still ~1 s, no
   network/model/DB; the endpoints were additionally curl-verified against the live corpus
   (718.1억원 / 548.7억원 / 51,253,956 / 365,527,824 / 14.02% / 15건 / 69건 all reproduce).
+- (`P5.S4`) **`api`** — 내 종목 조회 is now a contract: `GET /stocks?q=<종목명|종목코드>` (resolution
+  **plus** the whole page on a hit; a miss is `200 {"query", "found": false}` — a search that finds
+  nothing is a **result**, not an error, and names no reason) and `GET /stocks/{corp_code}` (the
+  stable-handle link-out; unknown code → 404 envelope). The page shape is
+  `{stock, reference, rights{count,rows}, lapse{coverage,totals,rows,pending?}}`, where a rights row
+  is the event view plus **the detail-grade `offering`** on ① (R4 does the N주 conversion, so the row
+  carries 배정비율 to ten decimals · 초과청약 비율 · `unit_value` + floor · `final_price_date`) and
+  R3's six-value `convertible` strip on ②; a 놓친 돈 row is `lapse_result` plus the 매매기간
+  countdown/citation/factors **only when the 유상증자결정 is exposable**, plus `issuer_disagreement`
+  where the filing contradicts itself. Two contract-wide statements: these endpoints serve
+  **factors, never products** — no holding count is accepted on any path and no per-holding number
+  appears in any payload — and the **coverage boundary is served**
+  (`{start: 2026-01-01, end: <today KST>, convertible_start: 2025-06-01}`), with anything outside it
+  **absent rather than zero**. **`backend`** — `mijual.web.routers.stocks` + `reads.resolve_corp`
+  (four unique-or-decline tiers: 종목코드 → 회사명 → normalized 회사명 → unique normalized prefix;
+  ambiguity resolves to nothing) · `reads.load_stock` (one load, both sections) ·
+  `reads.STOCK_FIELDS` / `LAPSE_COVERAGE_START` / `CONVERTIBLE_COVERAGE_START`; `present` gains
+  `LapseTotals.payload()` (a **subset** total, emitting no zero) and the now-public `bare_name` —
+  one definition of "the same company, written differently", shared by 종목 resolution and the 본문
+  identity check. **`qa`** — suite baseline 83 → **87 tests**, still ~1 s, no network/model/DB; the
+  endpoints were additionally curl-verified against the live corpus (한화솔루션 206.4억원 / 증서
+  5,525원 / 배정비율 0.2465120994, 에스에너지 7.2억원, 대한광통신 16.2억원 + 발행사 기재 불일치,
+  계양전기 청약 마감 2026-09-04, 1.1–5.7 KB in 8–24 ms).
 
 ## Open Questions
 

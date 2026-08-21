@@ -58,6 +58,7 @@ __all__ = [
     "EventView",
     "FieldPayload",
     "Identity",
+    "bare_name",
     "countdown_of",
     "event_view",
     "field_payloads",
@@ -110,8 +111,15 @@ RENDERABLE_STATES = frozenset({"exposable", "withdrawn"})
 _LEGAL_FORMS = ("주식회사", "(주)", "㈜", "(株)")
 
 
-def _bare_name(name: str | None) -> str:
-    """A company name without its legal-form suffix or spacing, for comparison."""
+def bare_name(name: str | None) -> str:
+    """A company name without its legal-form suffix or spacing, for comparison.
+
+    The one definition of *the same company, written differently*: it is what
+    :func:`identity_of` compares a 본문 header against, and what
+    :func:`mijual.web.reads.resolve_corp` matches a reader's 종목명 against, so
+    ``한화솔루션(주)``, ``한화솔루션`` and ``한화 솔루션`` cannot mean one company in
+    one place and three in another.
+    """
     bare = name or ""
     for form in _LEGAL_FORMS:
         bare = bare.replace(form, "")
@@ -160,7 +168,7 @@ def identity_of(exposure: "EventExposure", corp_name_in_body: str | None = None)
         corp_name=exposure.corp_name,
         corp_name_in_body=corp_name_in_body,
         corp_name_agrees_with_body=(
-            _bare_name(exposure.corp_name) == _bare_name(corp_name_in_body)
+            bare_name(exposure.corp_name) == bare_name(corp_name_in_body)
         ),
     )
 

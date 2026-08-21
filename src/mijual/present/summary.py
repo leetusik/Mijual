@@ -297,6 +297,28 @@ class LapseTotals:
     offerings: int = 0
     valued: int = 0
 
+    def payload(self) -> dict[str, Any]:
+        """JSON — the same fact/estimate split :class:`BoardSummary` makes.
+
+        Used where a *subset* of the corpus is added up (``P5.S4``'s per-stock
+        2026 놓친 돈 total). ``offerings``/``valued`` are always present because a
+        count of rows is never in doubt; every **figure** is omitted when there is
+        nothing to state, so a stock with no 소멸 has no ``value`` key rather than
+        ``0원`` — outside the coverage boundary a number is *unstated*, never zero
+        (R4-3), and inside it a 0 would still be a claim this product has not
+        earned.
+        """
+        out: dict[str, Any] = {"offerings": self.offerings, "valued": self.valued}
+        figures = {
+            "lapsed": Figure.fact(self.lapsed),
+            "issued": Figure.fact(self.issued),
+            "lapse_rate": Figure.fact(decimal_str(_rate(self.lapsed, self.issued))),
+            "value": Figure.estimate(decimal_str(self.value)),
+            "value_floor": Figure.estimate(decimal_str(self.value_floor)),
+        }
+        out.update({key: fig.payload() for key, fig in figures.items() if fig is not None})
+        return out
+
 
 def lapse_totals(rows: Sequence[Mapping[str, Any]]) -> LapseTotals:
     """Add up stored ``LapseRow`` mappings (``PerformanceReport.lapse``).
