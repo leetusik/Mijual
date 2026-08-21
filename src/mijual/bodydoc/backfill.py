@@ -29,7 +29,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -39,8 +39,16 @@ from mijual.bodydoc.document import BodyDocument
 from mijual.bodydoc.labels import extract_labels
 from mijual.collect.filters import WARRANT_BEARING_IC_MTHN
 from mijual.dart import CacheMiss, DartClient, DartError, RequestBudgetExceeded
-from mijual.db.models import CorrectionKind, Event, FilingVersion, RightsType, Snapshot
-from mijual.db.repository import ensure_snapshot
+from mijual.db.models import (
+    CorrectionKind,
+    Event,
+    Extraction,
+    ExtractionCall,
+    FilingVersion,
+    RightsType,
+    Snapshot,
+)
+from mijual.db.repository import ensure_event, ensure_snapshot
 from mijual.db.session import session_scope
 
 __all__ = [
@@ -57,6 +65,42 @@ NO_WARRANT_REASON = "no_warrant_bodymun"
 
 #: The ① 본문 filter's own verdict flags — re-derived, never accumulated.
 WARRANT_FLAGS = ("warrant_confirmed", "warrant_conflict", "warrant_unverified")
+
+# ---------------------------------------------------------------------------
+# P5.S5 (promoted D1) — identity-scoping the hint. See N62/N63/N31/N81.
+# ---------------------------------------------------------------------------
+#: How far the declared 최초제출일 may sit from the **attached** event's own
+#: 접수일 and still be read as 접수일/결의일 skew rather than another 사채's
+#: document. N31 measured ~half of all mismatches inside ±7 days and judged the
+#: pairing "almost certainly right" there; this window keeps every one of them —
+#: including ①'s — exactly where it is.
+HINT_SKEW_DAYS = 7
+#: How far it may sit from **another** event's key and still be read as naming
+#: that event. Tight on purpose, because this window *moves* a version: measured
+#: over the corpus the gap is exactly 1 day in 146 of the 155 near cases (DART's
+#: 접수일 is the next business day for an after-hours 제출), the 2–3 day buckets
+#: hold 8 rows, and no hint has two events within 3 days of it.
+HINT_NEAR_DAYS = 1
+#: Exposure states whose events the reader actually renders. The split is scoped
+#: to them: a foreign 본문 on a rendered event is another 사채's numbers on a
+#: page, which is the defect D1 exists for; on a suppressed/flagged placeholder
+#: the record already says "identity unconfirmed" and moving it buys nothing.
+#: Read from the persisted verdict (``P2.S5``'s column), so this layer does not
+#: import the gate layer it runs before.
+RENDERABLE_STATES = frozenset({"exposable", "withdrawn"})
+#: Suppression reason of a chain head minted by the split. Deliberately **not**
+#: ``unpaired_correction``: that reason is healed by
+#: :func:`mijual.collect.runner.retire_superseded_unpaired` whenever any other
+#: event holds the same ``rcept_no``, and N21's residue (840 of 3,024
+#: ``rcept_no`` sit under 2+ keys) would retire a head the moment it was minted.
+#: A plain new ``VARCHAR`` value, like every other reason code — no migration.
+FOREIGN_HEAD_REASON = "foreign_correction_head"
+#: The head's own flag, so the admin worklist can find these without parsing a note.
+FOREIGN_HEAD_FLAG = "hint_foreign_split"
+#: ``hint_status`` values a later pass must not relabel: they record a **move**,
+#: and the note beside them names where the version came from. That audit line is
+#: the only trace of the move once the version sits on its new event.
+STICKY_HINT_STATUSES = frozenset({"reattached", "split"})
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +172,10 @@ class BackfillReport:
     reattached: list[str] = field(default_factory=list)
     retired: list[str] = field(default_factory=list)
     split_evidence: list[str] = field(default_factory=list)
+    #: ``P5.S5``: versions moved onto a minted chain head of their own declared
+    #: original, and the heads that were minted for them.
+    split_off: list[str] = field(default_factory=list)
+    heads_minted: list[str] = field(default_factory=list)
     items_parsed: int = 0
     requests: int = 0
     budget_exhausted: bool = False
@@ -152,6 +200,11 @@ class BackfillReport:
         ]
         if self.reattached:
             lines.append(f"reattached : {len(self.reattached)} {self.reattached[:6]}")
+        if self.split_off:
+            lines.append(
+                f"split      : {len(self.split_off)} foreign 정정 version(s) moved onto "
+                f"{len(self.heads_minted)} own chain head(s) {self.split_off[:6]}"
+            )
         if self.retired:
             lines.append(f"retired    : {len(self.retired)} placeholder(s) superseded_by_pairing")
         if self.split_evidence:
@@ -193,6 +246,98 @@ def _worklist_counts(session: Session) -> tuple[int, int, int, int, int]:
     return (ambiguous, len(unpaired), identified, collisions, conflicts)
 
 
+def _names_own_filing(event: Event, hint: date) -> bool:
+    """The declared date is one this event already holds — the strongest evidence.
+
+    ``rcept_no[:8]`` is the **제출일**, ``rcept_dt`` the 접수일, and they differ for
+    an after-hours filing (알파AI ``20250731000550`` is dated 2025-08-01). A hint
+    that matches either is naming a filing on this very chain, so nothing moves.
+    """
+    stamp = hint.strftime("%Y%m%d")
+    return any(v.rcept_no[:8] == stamp or v.rcept_dt == hint for v in event.versions)
+
+
+def _own_skew(event: Event, hint: date) -> bool:
+    """The declared date is within :data:`HINT_SKEW_DAYS` of this event's key."""
+    return (
+        event.original_rcept_dt is not None
+        and abs((hint - event.original_rcept_dt).days) <= HINT_SKEW_DAYS
+    )
+
+
+def _hint_identifies(event: Event, hint: date) -> bool:
+    """This event is what the hint names — exactly, by its own filings, or by skew."""
+    return (
+        event.original_rcept_dt == hint or _names_own_filing(event, hint) or _own_skew(event, hint)
+    )
+
+
+def _near_event(session: Session, event: Event, hint: date) -> Event | None:
+    """The one *other* event of this corp+subtype the hint names within a day.
+
+    Unique-or-decline: two candidates in the window resolve to **nothing**, the
+    same conservative default the rest of this layer uses. A hit is the corp's
+    own earlier 사채 whose 접수일 is one day off the filer's declared 제출일.
+    """
+    rows = session.scalars(
+        select(Event).where(
+            Event.corp_code == event.corp_code,
+            Event.report_subtype == event.report_subtype,
+            Event.id != event.id,
+            Event.original_rcept_dt >= hint - timedelta(days=HINT_NEAR_DAYS),
+            Event.original_rcept_dt <= hint + timedelta(days=HINT_NEAR_DAYS),
+        )
+    ).all()
+    return rows[0] if len(rows) == 1 else None
+
+
+def _move_derived_rows(session: Session, version: FilingVersion, event: Event) -> None:
+    """Extractions and their calls follow their version to its new event.
+
+    Both tables carry ``event_id`` beside ``filing_version_id``; leaving it behind
+    would hide the rows from :func:`mijual.gates.runner.gate_event` (it selects by
+    event) and freeze their verdicts at whatever the old event's document said.
+    """
+    for model in (Extraction, ExtractionCall):
+        for row in session.scalars(
+            select(model).where(model.filing_version_id == version.id)
+        ).all():
+            row.event_id = event.id
+
+
+def _split_head(
+    session: Session, event: Event, hint: date, report: BackfillReport
+) -> Event:
+    """Get-or-create the chain head for a declared original we never collected.
+
+    Keyed on the **declared** 접수일, so the head *is* the N2 event key of the
+    real 사채: if a later run ever collects that original, ``ensure_event`` finds
+    this record, ``persist`` clears the suppression and the chain heals itself
+    with no second placeholder. Suppressed on arrival for the same reason
+    ``P2.S2`` suppresses an ``unpaired_correction``: with no original and (for ②)
+    no detail row, the identity is stated, not verified — and an unverified event
+    is never exposed.
+    """
+    head = ensure_event(
+        session,
+        corp_code=event.corp_code,
+        report_subtype=event.report_subtype,
+        original_rcept_dt=hint,
+        rights_type=event.rights_type,
+        report_nm=event.report_nm,
+    )
+    key = f"{head.corp_code}/{head.report_subtype}/{head.original_rcept_dt}"
+    if head.suppressed_reason != FOREIGN_HEAD_REASON:
+        head.suppress(
+            FOREIGN_HEAD_REASON,
+            f"본문 <CORRECTION> 최초제출일 {hint}을 원본으로 선언한 정정만으로 만든 체인 헤드 — "
+            f"원본 공시는 수집 범위 밖이고 상세 API 행도 없어 이벤트 동일성은 미검증 (P5.S5)",
+        )
+        report.heads_minted.append(key)
+    head.add_flag(FOREIGN_HEAD_FLAG)
+    return head
+
+
 def _apply_hint(
     session: Session, version: FilingVersion, block: CorrectionBlock, report: BackfillReport
 ) -> str:
@@ -207,12 +352,12 @@ def _apply_hint(
 
     hint = block.declared_original_dt
     version.declared_original_dt = hint
+    if version.hint_status in STICKY_HINT_STATUSES and _hint_identifies(event, hint):
+        # Sticky: a version an earlier pass *moved* keeps saying so, and keeps the
+        # note naming where it came from. A later pass must not quietly relabel
+        # the move as a plain confirmation — that is the audit trail.
+        return version.hint_status
     if event.original_rcept_dt == hint:
-        if version.hint_status == "reattached":
-            # Sticky: a version this job *moved* keeps saying so, and keeps the
-            # note naming where it came from. A later pass must not quietly
-            # relabel the move as a plain confirmation — that is the audit trail.
-            return "reattached"
         version.note_pairing(
             "confirmed", f"본문 최초제출일 {hint} = 이벤트 원본 접수일 ({version.pairing_method})"
         )
@@ -226,6 +371,24 @@ def _apply_hint(
             Event.id != event.id,
         )
     )
+    foreign = (
+        twin is None
+        and event.exposure_state in RENDERABLE_STATES
+        and not _names_own_filing(event, hint)
+        and not _own_skew(event, hint)
+    )
+    if foreign:
+        # ``P5.S5`` (D1 / N62): the hint names an original this corpus does not
+        # hold, and nearest-earlier pairing has parked the 정정 on a *different*
+        # 사채 of the same corp — whose page then renders this document's 조기상환
+        # schedule and 보호예수 date. Gate 7/8 caught 3 of these because an
+        # API-backed gate is also an identity check; the rest are invisible.
+        # Either the corp's own event sits one 접수일 away (then this is that
+        # event's document and it goes home), or the original is genuinely
+        # outside the corpus (then the 정정 becomes the head of its own chain).
+        twin = _near_event(session, event, hint)
+        if twin is None:
+            twin = _split_head(session, event, hint, report)
     if twin is None:
         # The hint is filer-entered and sometimes years stale (N3 /
         # ``20260429000902`` declares 2022-08-01), so a hint that names nothing we
@@ -269,23 +432,51 @@ def _apply_hint(
 
     was = event
     version.event_id = twin.id
+    _move_derived_rows(session, version, twin)
+    head = twin.suppressed_reason == FOREIGN_HEAD_REASON
+    status = "split" if head else "reattached"
+    what = "분리 (선언된 원본의 자체 체인 헤드, P5.S5" if head else "재부착 (P2.S2"
     version.note_pairing(
-        "reattached",
+        status,
         f"본문 최초제출일 {hint} 기준으로 {was.original_rcept_dt} -> {twin.original_rcept_dt} "
-        f"이벤트로 재부착 (P2.S2 pairing_method={version.pairing_method})",
+        f"이벤트로 {what} pairing_method={version.pairing_method})",
     )
     session.flush()
-    report.reattached.append(f"{version.rcept_no}:{was.original_rcept_dt}->{hint}")
+    # The move is a column write, so both events' loaded ``versions`` collections
+    # are now stale; every later reader (this function included) must see the new
+    # truth rather than the one it happened to load first.
+    session.expire(was, ["versions"])
+    session.expire(twin, ["versions"])
+    moved = f"{version.rcept_no}:{was.original_rcept_dt}->{hint}"
+    (report.split_off if head else report.reattached).append(moved)
     if was.suppressed_reason != "unpaired_correction":
         # A real event lost a version: this is the N20(b) mis-merge being undone.
         was.add_flag("hint_split")
-    return "reattached"
+    if not any(
+        v.hint_status == "mismatch" for v in was.versions if v.id != version.id
+    ):
+        # Re-derived, not deleted (S3's ``drop_flags`` pattern): the flag says
+        # "a version here declares an original we cannot match", and after the
+        # move no version here does. The moved version keeps its own note.
+        was.drop_flags("hint_mismatch")
+    return status
 
 
 def _retire_emptied(session: Session, report: BackfillReport) -> None:
-    """A placeholder whose every version moved away is relabelled, not deleted."""
+    """An event whose every version moved away is relabelled, not deleted.
+
+    Two shapes reach this: ``P2.S3``'s ``unpaired_correction`` placeholder whose
+    versions found their real event, and (``P5.S5``) an event whose whole chain
+    turned out to be another 사채's — 캔버스엔 ``cvbdIsDecsn/2025-01-20`` held
+    three 정정 and no original of its own, and its 철회 notice was a *different*
+    bond's. An event with no versions has no filing number and cannot be cited,
+    so it must not stay renderable.
+    """
     for event in session.scalars(
-        select(Event).where(Event.suppressed_reason == "unpaired_correction")
+        select(Event).where(
+            (Event.suppressed_reason == "unpaired_correction")
+            | (Event.suppressed_reason.is_(None))
+        )
     ).all():
         if event.versions:
             continue
@@ -401,6 +592,10 @@ def backfill_corrections(
             if log and report.parsed % 100 == 0:
                 log(f"  parsed {report.parsed}/{len(candidates)} …")
 
+        # Moves are made by writing ``FilingVersion.event_id``; the two passes
+        # below read ``Event.versions``, which a flush does not re-load.
+        session.flush()
+        session.expire_all()
         _retire_emptied(session, report)
         _flag_split_evidence(session, report)
         session.flush()

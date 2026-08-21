@@ -557,6 +557,94 @@ exposable (`event_id`, `rcept_no`, `countdown`, `warrant_trading_period`, `offer
     keys (`STOCK_FIELDS` = the two countdown fields + `issue_price_formula` + `excess_subscription`)
     instead of all of them, the same "load what the surface renders" rule the board follows.
 
+### `P5.S5` — the pairing is identity-scoped now; the rule, the numbers, and what it did *not* fix
+
+D1 is **closed**. The 본문 `<CORRECTION>` 최초제출일 is now an identity check as well as evidence, and
+the whole repair was offline: **0 OpenDART requests, 0 model calls**, `var/preP5S5.dump` is the
+pre-run corpus.
+
+**The rule** (`mijual.bodydoc.backfill._apply_hint`; the three constants are named and commented
+there). When the hint names no event of this corp+subtype:
+
+1. **Self-evidence wins.** The hint matches a filing the event already holds (`rcept_no[:8]` **or**
+   `rcept_dt`), or is within **`HINT_SKEW_DAYS = 7`** of the event's key → nothing moves, the version
+   stays `mismatch`. This is what keeps N31's ±7-day skew — and every ① row — untouched.
+2. **Only on a *rendered* event** (`exposure_state in {exposable, withdrawn}`): a **unique** other
+   event within **`HINT_NEAR_DAYS = 1`** → **reattach** there; nothing at all → **split** onto
+   `ensure_event(corp, subtype, hint)`, suppressed **`foreign_correction_head`**, flagged
+   `hint_foreign_split`, `hint_status='split'` (sticky, and `pairing_is_resolved`).
+3. Everything else is P2.S3's behaviour unchanged.
+
+1. **Measured: the defect is wider than N62's 3 filings and far narrower than `hint_mismatch`.**
+   653 mismatches, but **201 are a 1-day 접수일/제출일 skew** (DART accepts an after-hours 제출 the
+   next day — 알파AI's original `20250731000550` is *dated* 2025-08-01), **111 name a filing the
+   event already holds**, and only **46 sat on an event the product renders**. Of those 46, **22 were
+   the corp's own earlier 사채 one 접수일 away** (알파AI 2025-05-07→2025-05-08, 차AI헬스케어
+   2025-03-27→03-28, 아리바이오홀딩스 2025-04-29→04-30) — mis-*attachments*, not unknown originals.
+   Splitting those (the plan's single shape) would have minted duplicate events, i.e. manufactured
+   D2/N81's disease. Hence the two arms. **No hint anywhere in the corpus has two events within 3
+   days of it**, so unique-or-decline never had to decline.
+2. **Before → after, and the 488 is the same 488.** ② gate failures on exposable events **6 → 1**
+   (the survivor is 에이럭스 `20250908000110` `span_unresolved` — a citation defect, not pairing);
+   exposable **488 = 50/422/16 unchanged**; ranked rows 389 · ② 진행 중 57 · 추후결정 4 · 30일 이내 33 ·
+   소멸 앞둔 15 · 실적보고서 69 · 718.1억/548.7억/0.1402 · 퓨쳐켐 2026-09-04 — **all identical**; ①
+   gate rows **261 passed / 4 tbd / 4 failed unchanged** and ① renderable field instances unchanged
+   (the plan's "42 passing + 2 tbd" is N63's P2-era ① board; today's equivalent is 48 + 2 = 50).
+   Versions **3,990** and extractions **649** unchanged — **0 rows added, 0 removed, 49 re-parented**.
+   New: **+14 events**, every one a suppressed chain head (12 ② + 2 ①). `hint_status`: mismatch
+   653→593, reattached 76→98, duplicate 364→375, **split 27**.
+3. **Two ② 철회 pages went away, and that is the finding.** 드래곤플라이 `cvbdIsDecsn/2025-03-20` and
+   캔버스엔 `cvbdIsDecsn/2025-01-20` held **no original and no detail row of their own** — every
+   version was another bond's 정정, so the 「이 사채 발행은 철회되었습니다」 they rendered was a
+   different 사채's withdrawal. The versions (and the 철회 evidence, re-derived by `gates run`) now
+   sit on the head events. `_retire_emptied` was widened to relabel any event whose every version
+   left: an event with no version has no filing number and cannot be cited, so it must not render.
+   `R2:withdrawn` 8 → 6 is exactly these two.
+4. **The heads are suppressed on purpose, and they self-heal.** Keyed on the *declared* 접수일, so a
+   later run that ever collects that original hits the same N2 key — `ensure_event` finds the head
+   and `persist` clears the suppression. A distinct reason code (**not** `unpaired_correction`) is
+   deliberate: `retire_superseded_unpaired` retires an `unpaired_correction` event as soon as *any*
+   other event holds one of its `rcept_no`, and with N21's residue (840 of 3,024 `rcept_no` under 2+
+   keys) that would have retired a head the moment it was minted. **`P5.S9`/`P5.S17`: the admin
+   suppression list gains `foreign_correction_head`** — raw English, like every other reason code.
+5. **The repair converges in two passes and is idempotent from the third.** Each minted head becomes
+   an *exact* target for other versions naming the same date, so pass 2 moved one more version
+   (케이이엠텍) and pass 3 moved none. **Re-run order after any collect:
+   `bodydoc backfill` → `gates run` → `estimate snapshot`.**
+6. **The collector can no longer undo it.** `collect.runner.persist` skips a `rcept_no` whose
+   identity a hint has settled on another event (`_identity_owner`, reported as `identity :` in the
+   run render) and writes that run's `list`/detail snapshot **onto the owning version instead** —
+   evidence follows the filing, and this is the one path by which a split head can ever acquire the
+   `cvbdIsDecsn` row that would let it render on its own. Without the guard, N78(a)'s proposed
+   full-2026 re-collect would nearest-earlier-pair those filings back onto the wrong 사채, spend
+   requests re-fetching their 본문, and then hit the head's unique constraint. **Any later
+   re-collection must keep this.**
+7. **What this rule cannot fix, by construction: D2.** The two `hint_duplicate` events
+   (코이즈 `20260122000058`, 사토시홀딩스 `20251219000402`) still carry a version whose hint names a
+   *different, existing* event — that is a duplicate record, not a foreign document, and the fix is
+   still the corpus-mutating merge P5.DECOMP note 2 describes. Verified as an invariant after the
+   run: those 2 are the **only** foreign-hint versions left on a renderable event, and **0**
+   extraction rows on any of the 488 cite a filing their event does not hold.
+8. **Scope knob, for whoever wants it later.** The literal "no collected original" test fires on
+   **398** versions corpus-wide; 352 of them sit on suppressed placeholders and
+   `superseded_by_pairing` residue that no surface reads. They are excluded on purpose —
+   restructuring ~200 dead records buys nothing and could clear `hint_split_evidence` (a **blocking**
+   flag) on events whose exposure has never been measured. Widening the scope is a correctness
+   change, not a cleanup: measure the exposable count on both sides of it (N81's rule).
+9. **Gotcha for any job that re-parents a version:** the move is a column write, so both events'
+   loaded `versions` collections go stale — `_apply_hint` expires them explicitly and
+   `backfill_corrections` calls `expire_all()` before the retire/split-evidence passes. A test caught
+   this, not review.
+10. **`P5.S13` note:** an exposable ② event can have **no readable version at all** (엑시큐어하이트론
+    751 now does — its original carries only `list` + `cvbdIsDecsn`, no 본문). Its 정정 rail then marks
+    **no** row `is_current_readable`. This is not new and not rare: **239 of the 422** exposable ②
+    events have no 본문 anywhere, which is why ②'s arm of the exposure contract requires the API row
+    and not a document (N6). The card renders from the API strip; the 본문 fields are absent, not null.
+11. **Freshness caveat for `P5.S9`/P4:** `ensure_event` bumps `Event.last_seen_at`, so an **offline**
+    maintenance run moves the landing's 기준시각 (`max(last_seen_at)`) to "just now" without a single
+    OpenDART call. Harmless here (hours), but a freshness signal that a repair job can reset is worth
+    knowing before it is used as an alert.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -708,6 +796,27 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   endpoints were additionally curl-verified against the live corpus (한화솔루션 206.4억원 / 증서
   5,525원 / 배정비율 0.2465120994, 에스에너지 7.2억원, 대한광통신 16.2억원 + 발행사 기재 불일치,
   계양전기 청약 마감 2026-09-04, 1.1–5.7 KB in 8–24 ms).
+- (`P5.S5`) **`data`** — the 정정 pairing rule is now **identity-scoped**: a 본문 `<CORRECTION>`
+  최초제출일 that names no event of the corp is read as skew (own filing's `rcept_no[:8]`/`rcept_dt`,
+  or ±7 days of the event's key — nothing moves), as the corp's own event one 접수일 away (unique
+  within ±1 day — the version is **reattached**), or as a foreign document (the version is **split**
+  onto a chain head keyed on the declared date). New suppression reason
+  **`foreign_correction_head`** + review flag `hint_foreign_split` + `hint_status` value **`split`**
+  (sticky, counts as `pairing_is_resolved`); an event whose every version left is relabelled
+  `superseded_by_pairing`; and `collect.persist` will not re-place a `rcept_no` whose identity a hint
+  has settled elsewhere — it stores that run's snapshots on the owning version instead. Corpus effect: 49 versions re-parented (0 added, 0 removed), **+14 suppressed
+  chain heads**, exposable **488 = 50/422/16 unchanged**, ② withdrawn 8 → 6.
+  **`qa`** — the *Known Fragile Areas* row "② 정정 filings paired to the wrong 사채 → deferred **D1**"
+  **closes**: ② gate failures on exposable events 6 → 1 (the survivor is 에이럭스
+  `20250908000110` `span_unresolved`, a citation defect). New invariant worth stating there: **0**
+  extraction rows on any of the 488 exposable events cite a filing their event does not hold. D2's
+  row stays — its two `hint_duplicate` events are the only foreign-hint versions left on a renderable
+  event, and that defect is a duplicate record, not a foreign document. Suite baseline 87 → **89
+  tests**, still ~1.2 s, no network/model/DB. **`operations`** — the repair sequence after any
+  collection is **`bodydoc backfill` → `gates run` → `estimate snapshot`**, all offline (0 requests,
+  0 model calls); the backfill converges in two passes and is a no-op from the third. Caveat:
+  `ensure_event` bumps `last_seen_at`, so an offline repair moves the landing's 기준시각
+  (`max(last_seen_at)`) without any OpenDART call.
 
 ## Open Questions
 

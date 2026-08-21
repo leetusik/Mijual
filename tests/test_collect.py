@@ -1,21 +1,28 @@
-"""The four things the collector must not get wrong (P2.S2).
+"""The four things the collector must not get wrong (P2.S2), plus the identity
+rule ``P5.S5`` added on top of them (promoted D1).
 
 Everything runs against the P1 response cache with the client offline — no key,
-no network, no invented JSON.
+no network, no invented JSON — or against an in-memory SQLite corpus.
 """
 
 from __future__ import annotations
 
-import pytest
-from sqlalchemy import func, select
+from datetime import date
 
+import pytest
+from sqlalchemy import create_engine, func, select
+from sqlalchemy.orm import sessionmaker
+
+from mijual.bodydoc.backfill import BackfillReport, _apply_hint
+from mijual.bodydoc.correction import CorrectionBlock
 from mijual.collect import chunk_windows, collect_window, parse_report_nm
 from mijual.collect.filters import evaluate
 from mijual.collect.pairing import FilingIndex, pair_correction
 from mijual.config import SPIKE_CACHE_DIR
 from mijual.dart import DartClient
 from mijual.db import Event, FilingVersion, make_engine, make_session_factory, session_scope
-from mijual.db.models import Base, CorrectionKind
+from mijual.db.models import Base, CorrectionKind, RightsType
+from mijual.db.repository import ensure_corp, ensure_event, ensure_version
 
 pytestmark = pytest.mark.filterwarnings("ignore::DeprecationWarning")
 
@@ -136,3 +143,73 @@ def test_offline_window_collects_the_fixture_event_and_re_runs_clean(tmp_path):
     assert (first.events_planned, first.versions_planned) == (
         second.events_planned, second.versions_planned
     )
+
+
+# ---------------------------------------------------------------------------
+# P5.S5 (promoted D1 / N62): the 본문 hint is also an identity check
+# ---------------------------------------------------------------------------
+def _corpus(*versions):
+    """A corp with one ② event per ``(key, [(rcept_no, hint)])`` pair."""
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    session = sessionmaker(bind=engine)()
+    ensure_corp(session, "00000001", corp_name="테스트")
+    events = []
+    for key, rows in versions:
+        event = ensure_event(
+            session,
+            corp_code="00000001",
+            report_subtype="cvbdIsDecsn",
+            original_rcept_dt=key,
+            rights_type=RightsType.CONVERTIBLE_OVERHANG,
+        )
+        event.exposure_state = "exposable"
+        for rcept_no, kind in rows:
+            ensure_version(session, event, rcept_no=rcept_no, rcept_dt=rcept_no[:8],
+                           correction_kind=kind, pairing_method="earlier")
+        events.append(event)
+    session.flush()
+    return session, events
+
+
+def _hint(session, event, rcept_no, declared):
+    version = next(v for v in event.versions if v.rcept_no == rcept_no)
+    block = CorrectionBlock(present=True, declared_original_dt=date.fromisoformat(declared))
+    return _apply_hint(session, version, block, BackfillReport()), version
+
+
+def test_a_correction_declaring_an_original_we_never_collected_leaves_the_wrong_bond():
+    """D1/N62: nearest-earlier pairing parked 엑시큐어하이트론's 2024-09-06 정정 on a
+    2025 CB, so that page rendered another 사채's 조기상환 schedule. The 정정 now
+    heads its own chain, keyed on the date it declares, and is suppressed there —
+    an event with no original and no detail row is stated, never exposed."""
+    session, (event,) = _corpus(
+        ("20250910", [("20250910000482", CorrectionKind.ORIGINAL),
+                      ("20260630000509", CorrectionKind.DISCLOSURE)]),
+    )
+    outcome, version = _hint(session, event, "20260630000509", "2024-09-06")
+    session.flush()
+    head = session.scalar(select(Event).where(Event.original_rcept_dt == date(2024, 9, 6)))
+    assert outcome == "split" and version.event_id == head.id
+    assert head.suppressed_reason == "foreign_correction_head"
+    assert [v.rcept_no for v in event.versions] == ["20250910000482"]
+    assert "hint_mismatch" not in event.flags  # re-derived: nothing here mismatches now
+
+
+def test_a_declared_date_a_day_off_is_접수일_skew_and_never_splits_a_pairing():
+    """N31's ±7-day skew is the *majority* of mismatches and every one of those
+    pairings is right. The only thing a near date may do is send a version to the
+    corp's own event one 접수일 away (알파AI's 2025-05-07 CB) — never mint a twin."""
+    session, (older, newer) = _corpus(
+        ("20250508", [("20250508000111", CorrectionKind.ORIGINAL)]),
+        ("20250801", [("20250731000550", CorrectionKind.ORIGINAL),
+                      ("20250930000580", CorrectionKind.DISCLOSURE),
+                      ("20250812000843", CorrectionKind.DISCLOSURE)]),
+    )
+    # (a) the hint names the newer event's own original, one day off its 접수일
+    assert _hint(session, newer, "20250812000843", "2025-07-31")[0] == "mismatch"
+    assert session.get(Event, newer.id).versions[-1].event_id == newer.id
+    # (b) the hint names the corp's *other* CB, one day off its key → it goes home
+    outcome, version = _hint(session, newer, "20250930000580", "2025-05-07")
+    assert (outcome, version.event_id) == ("reattached", older.id)
+    assert session.scalar(select(func.count()).select_from(Event)) == 2  # no twin minted

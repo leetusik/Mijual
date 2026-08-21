@@ -324,6 +324,9 @@ class FilingVersion(Base):
     #: attached event's 접수일), ``reattached`` (hint named a different existing
     #: event of the same corp+subtype and this version was moved there),
     #: ``duplicate`` (that event already holds this ``rcept_no`` — N21's residue),
+    #: ``split`` (``P5.S5``: the hint named an original this corpus does not hold,
+    #: so the version was moved onto a chain head of its own instead of staying on
+    #: the different 사채 nearest-earlier pairing had picked),
     #: ``mismatch`` (hint names no event we know), ``absent`` (a ``<CORRECTION>``
     #: block with no 최초제출일), ``no_correction_block``, ``no_document``,
     #: ``unparsed``. Plain ``VARCHAR``: a new value never costs a migration.
@@ -357,7 +360,7 @@ class FilingVersion(Base):
     @property
     def pairing_is_resolved(self) -> bool:
         """The 본문 ``<CORRECTION>`` hint confirmed or corrected this attachment."""
-        return self.hint_status in ("confirmed", "reattached")
+        return self.hint_status in ("confirmed", "reattached", "split")
 
     def note_pairing(self, status: str, note: str | None = None) -> None:
         self.hint_status = status

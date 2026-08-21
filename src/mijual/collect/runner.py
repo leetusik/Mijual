@@ -130,6 +130,9 @@ class CollectionReport:
     detail_missing: int = 0
     key_collisions: list[str] = field(default_factory=list)
     retired_unpaired: list[str] = field(default_factory=list)
+    #: Rows this run declined to re-place because a 본문 hint already settled
+    #: their identity on another event (``P5.S5``).
+    identity_claimed: list[str] = field(default_factory=list)
     documents_fetched: int = 0
     documents_skipped_attachment: int = 0
     documents_skipped_suppressed: int = 0
@@ -177,6 +180,11 @@ class CollectionReport:
             lines.append(
                 f"retired    : {len(self.retired_unpaired)} placeholder event(s) "
                 "superseded_by_pairing"
+            )
+        if self.identity_claimed:
+            lines.append(
+                f"identity   : {len(self.identity_claimed)} row(s) left where the 본문 hint "
+                f"put them {self.identity_claimed[:4]}"
             )
         if self.key_collisions:
             lines.append(
@@ -487,7 +495,31 @@ def retire_superseded_unpaired(session) -> list[str]:
     return retired
 
 
-def persist(session, plan: dict) -> None:
+def _identity_owner(session, event, rcept_no: str):
+    """The version elsewhere that already owns this ``rcept_no`` by its own 본문.
+
+    This module pairs from ``list.json`` alone and cannot see a 본문, so a re-run
+    over an old window re-derives the same nearest-earlier guess the 본문 hint has
+    since overruled (``P5.S5``/D1). Re-placing the row would put a second copy of
+    the filing back under the wrong 사채 — N21's residue, manufactured on purpose.
+    A version whose ``hint_status`` records a **move** is a settled identity and
+    wins; every other pairing is left exactly as it was.
+    """
+    return session.scalar(
+        select(FilingVersion)
+        .join(Event, FilingVersion.event_id == Event.id)
+        .where(
+            Event.corp_code == event.corp_code,
+            Event.report_subtype == event.report_subtype,
+            Event.id != event.id,
+            FilingVersion.rcept_no == rcept_no,
+            FilingVersion.hint_status.in_(("reattached", "split")),
+        )
+        .limit(1)
+    )
+
+
+def persist(session, plan: dict, *, report: CollectionReport | None = None) -> None:
     for event_plan in sorted(plan.values(), key=lambda e: e.key):
         corp_row = event_plan.corp_row
         ensure_corp(
@@ -516,6 +548,26 @@ def persist(session, plan: dict) -> None:
             event.suppressed_reason = event.suppressed_note = event.suppressed_at = None
 
         for planned in sorted(event_plan.versions.values(), key=lambda v: v.rcept_no):
+            owner = _identity_owner(session, event, planned.rcept_no)
+            if owner is not None:
+                # The pairing is not re-decided, but the evidence is never
+                # dropped: the row this run fetched belongs to the filing, so it
+                # is stored on the filing — wherever the 본문 says the filing
+                # lives. That is how a split chain head can still acquire the
+                # detail row its own gates need.
+                if planned.list_row is not None:
+                    ensure_snapshot(session, owner, source="list", payload_json=planned.list_row)
+                if planned.detail_row is not None:
+                    ensure_snapshot(
+                        session, owner, source=event_plan.endpoint,
+                        payload_json=planned.detail_row,
+                    )
+                if report is not None:
+                    report.identity_claimed.append(
+                        f"{planned.rcept_no}: {event.original_rcept_dt} -> "
+                        f"{owner.event.original_rcept_dt} (본문 최초제출일)"
+                    )
+                continue
             version = ensure_version(
                 session,
                 event,
@@ -655,7 +707,7 @@ def collect_window(
 
         with session_scope(session_factory) as session:
             report.db_before = _counts(session)
-            persist(session, plan)
+            persist(session, plan, report=report)
             report.retired_unpaired = retire_superseded_unpaired(session)
         if with_documents:
             with session_scope(session_factory) as session:
