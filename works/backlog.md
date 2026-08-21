@@ -10,7 +10,7 @@
 - Next slice: `P3.S7`
 - Waiting on operator: `none`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T11:58:25+09:00`
+- Rebuilt at: `2026-08-21T11:59:17+09:00`
 
 ## Active Phases
 
@@ -61,7 +61,7 @@
 | [x] `P3.S3` | `done` | Design R2: landing 관제 현황판 + global chrome + vocky feedback touchpoint | `co-work` | `works/phases/active/P3/slices/P3.S3` |
 | [x] `P3.S4` | `done` | Design R3: event detail for ①②③ + citation display + 철회/추후결정/불일치 states | `co-work` | `works/phases/active/P3/slices/P3.S4` |
 | [x] `P3.S5` | `done` | Design R4: 종목 검색 + 보유량 슬라이더 + 놓친 돈 조회기 (anonymous 금액 환산) | `co-work` | `works/phases/active/P3/slices/P3.S5` |
-| [ ] `P3.S6` | `todo` | Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load | `co-work` | `works/phases/active/P3/slices/P3.S6` |
+| [ ] `P3.S6` | `in_progress` | Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load | `co-work` | `works/phases/active/P3/slices/P3.S6` |
 | [ ] `P3.S7` | `todo` | Design R6: grounded 해설 panel (citation-forced, SSE streaming states) | `co-work` | `works/phases/active/P3/slices/P3.S7` |
 | [ ] `P3.S8` | `todo` | Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota) | `co-work` | `works/phases/active/P3/slices/P3.S8` |
 | [ ] `P3.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P3/slices/P3.REVIEW` |
