@@ -3,7 +3,7 @@
     "slug": "r2-option-schedule",
     "title": "② 대동기어 — option_schedule: 콜·풋 두 건, 날짜 표기 관행 함정",
     "what_to_notice": "`start_date`/`end_date` here are the *청구 가능 개시/종료* dates the filing states in prose; without a `date_basis` marker they must not be rendered as a plain 기간.",
-    "measured_at": "2026-08-20",
+    "measured_at": "2026-08-21",
     "pinned_rcept_no": "20251016000315",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
@@ -109,7 +109,7 @@
         "2030-09-24"
       ],
       "window_state": "upcoming",
-      "d_day_label": "D-65",
+      "d_day_label": "D-64",
       "source": "cvbdIsDecsn.cvrqpd_bgd",
       "note": "D-day is computed at export time; recompute it at render time."
     },

@@ -10,7 +10,7 @@
 - Next slice: `none`
 - Waiting on operator: `none`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T23:38:33+09:00`
+- Rebuilt at: `2026-08-21T23:41:43+09:00`
 
 ## Active Phases
 
@@ -20,6 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [ ] `P3` | `planned` | `pending` | Mijual Web Service (design only) | `P3.REVIEW` | `works/phases/active/P3` |
 | [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.DECOMP` | `works/phases/active/P5` |
+| [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -65,7 +66,7 @@
 | [x] `P3.S6` | `done` | Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load | `co-work` | `works/phases/active/P3/slices/P3.S6` |
 | [x] `P3.S7` | `done` | Design R6: grounded 해설 panel (citation-forced, SSE streaming states) | `co-work` | `works/phases/active/P3/slices/P3.S7` |
 | [x] `P3.S8` | `done` | Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota) | `co-work` | `works/phases/active/P3/slices/P3.S8` |
-| [ ] `P3.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P3/slices/P3.REVIEW` |
+| [ ] `P3.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P3/slices/P3.REVIEW` |
 
 ## Phase P5: Apply — build the signed design
 
@@ -73,6 +74,13 @@
 |---|---|---|---|---|
 | [ ] `P5.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P5/slices/P5.DECOMP` |
 | [ ] `P5.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P5/slices/P5.REVIEW` |
+
+## Phase P6: Apply — AI 질문 agent
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P6.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P6/slices/P6.DECOMP` |
+| [ ] `P6.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P6/slices/P6.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

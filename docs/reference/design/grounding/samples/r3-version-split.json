@@ -3,7 +3,7 @@
     "slug": "r3-version-split",
     "title": "③ 세기상사 — 정정공시 버전 분리 (superseded_api_reference)",
     "what_to_notice": "The same field is `passed` on the current version and `superseded_api_reference` on the one it replaced. The product only ever reads the current version.",
-    "measured_at": "2026-08-20",
+    "measured_at": "2026-08-21",
     "pinned_rcept_no": "20260713000345",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
@@ -226,7 +226,7 @@
         "2026-07-06"
       ],
       "window_state": "closed",
-      "d_day_label": "D+45",
+      "d_day_label": "D+46",
       "source": "dissent_notice_procedure.notice_end_date",
       "note": "D-day is computed at export time; recompute it at render time."
     },

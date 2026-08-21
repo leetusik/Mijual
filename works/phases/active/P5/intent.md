@@ -7,14 +7,22 @@
 
 > and before the review slice, we need to /create-phase for the apply.
 
+> and note that split agent and other building. other first, agent part later
+
+> split phase
+
 ## Confirmed Intent (refined + clarified)
 
 Create the **apply phase** of the P3 design/apply split now — before `P3.REVIEW`
 runs — as a `planned` phase. It implements Mijual per P3's signed design records
-(the R1–R7 `build-prompt.md` contracts): a FastAPI backend over the P2 exposure
-contract, a Next.js frontend faithful to the signed design under **RESPECT THE
-DESIGN**, the auth + portfolio layer, the citation-forced AI 질문 surface (SSE),
-the admin panel, and the vocky integration (script widget + observation API).
+(the R1–R7 `build-prompt.md` contracts) **except the AI 질문 agent feature,
+which is split out to P6 (operator, 2026-08-22: "other first, agent part
+later" / "split phase")**: a FastAPI backend over the P2 exposure contract, a
+Next.js frontend faithful to the signed design under **RESPECT THE DESIGN**,
+the auth + portfolio layer, the admin panel, and the vocky integration (script
+widget + observation API). The whole AI 질문 feature — agent backend,
+conversation storage, widget + page surfaces — is **P6**, ordered after this
+phase.
 
 Deployment/hosting — including the 결격-grade "web reachable unattended
 2026-09-07 → 09-11" requirement — is **out of scope**: it stays in the existing
@@ -37,6 +45,11 @@ apply phase, are considered for promotion at that decomposition.
   implementation.
 - Q: Confirm name/objective and creating it now, `planned`, decomposed only
   after P3 review passes? — A: "Confirmed — create it."
+- Q (2026-08-22): "split agent and other building" — within P5 as ordered slice
+  groups, or two phases? — A: "Two phases", reconfirmed verbatim "split phase" →
+  the AI 질문 agent feature moved out to **P6** (order 3.7); P5 = everything
+  else. Boundary note: the admin panel's 대화 로그 / 익명 세션 views depend on
+  P6's conversation storage — P5's DECOMP decides frames-now vs move-to-P6.
 
 ## Notes
 

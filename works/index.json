@@ -39,12 +39,24 @@
     {
       "id": "P5",
       "name": "Apply — build the signed design",
-      "objective": "Implement Mijual per P3's signed design records (R1–R7 build prompts): FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, citation-forced AI 질문 (SSE), admin panel, vocky integration — faithful under RESPECT THE DESIGN. Deployment/hosting stays in P4 (Ship & Submit).",
+      "objective": "Implement Mijual per P3's signed design records (R1–R7 build prompts) except the AI 질문 agent feature (split to P6): FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, admin panel, vocky integration — faithful under RESPECT THE DESIGN. AI 질문 agent → P6; deployment/hosting → P4 (Ship & Submit).",
       "status": "planned",
       "order": 3.5,
       "path": "works/phases/active/P5",
       "review_status": "pending",
       "current_slice": "P5.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
+      "id": "P6",
+      "name": "Apply — AI 질문 agent",
+      "objective": "Implement the AI 질문 feature per R6's signed build prompt, after P5 lands the rest: the citation-forced agent backend (SSE, tools search_events/get_event/get_portfolio/save_feedback/get_contact, refusal families, server-side anonymous conversation storage) and its widget + dedicated page surfaces. RESPECT THE DESIGN.",
+      "status": "planned",
+      "order": 3.7,
+      "path": "works/phases/active/P6",
+      "review_status": "pending",
+      "current_slice": "P6.DECOMP",
       "slice_count": 2,
       "done_slice_count": 0
     },
@@ -64,5 +76,5 @@
   "deferred_open_count": 4,
   "deferred_promoted_count": 0,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-21T23:38:33+09:00"
+  "last_rebuilt_at": "2026-08-21T23:41:43+09:00"
 }

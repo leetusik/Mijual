@@ -2,7 +2,7 @@
 
 # Headline numbers (소멸가치)
 
-**Measured 2026-08-20 (KST).** 0 OpenDART requests, 0 LLM calls — every figure is re-derived from the stored corpus, so two runs on the same corpus agree byte for byte.
+**Measured 2026-08-21 (KST).** 0 OpenDART requests, 0 LLM calls — every figure is re-derived from the stored corpus, so two runs on the same corpus agree byte for byte.
 
 ```
 # regenerate this whole file
@@ -35,7 +35,7 @@
 The 발표용 문장 block at the end is **the Korean copy source for the landing headline** — R2 may re-cut it, but the numbers and the `▷` markers are locked.
 
 ```
-today      : 2026-08-20 (KST)
+today      : 2026-08-21 (KST)
 stored     : 69 증권발행실적보고서 read, 32 with a 신주인수권증서 table
 offerings  : 32 ① 주주배정 유증 with a 청약 결과 (29 valued, 3 counted only), 23 still open
 

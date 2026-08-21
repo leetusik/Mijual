@@ -4,7 +4,7 @@ _Intent: see [intent.md](intent.md)._
 
 ## Objective
 
-Implement Mijual per P3's signed design records (R1–R7 build prompts): FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, citation-forced AI 질문 (SSE), admin panel, vocky integration — faithful under RESPECT THE DESIGN. Deployment/hosting stays in P4 (Ship & Submit).
+Implement Mijual per P3's signed design records (R1–R7 build prompts) **except the AI 질문 agent feature (split to P6)**: FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, admin panel, vocky integration — faithful under RESPECT THE DESIGN. AI 질문 agent → P6; deployment/hosting → P4 (Ship & Submit).
 
 ## Context
 

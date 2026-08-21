@@ -3,7 +3,7 @@
     "slug": "r1-flagged-detail-conflict",
     "title": "① 한솔테크닉스 — 비노출: 6개 필드가 게이트를 통과했는데도 보이지 않음",
     "what_to_notice": "The trust claim at its most expensive: a conflicting event is never published, so six perfectly gated fields render nowhere. Admin-panel material (R7).",
-    "measured_at": "2026-08-20",
+    "measured_at": "2026-08-21",
     "pinned_rcept_no": "20260709000212",
     "regenerate": ".venv/bin/python scripts/export_design_grounding.py",
     "source": "mijual.gates.exposure.event_exposure() — the persisted P2 → P3 contract",
@@ -351,7 +351,7 @@
         "2026-07-02"
       ],
       "window_state": "closed",
-      "d_day_label": "D+49",
+      "d_day_label": "D+50",
       "source": "warrant_trading_period.end_date",
       "note": "D-day is computed at export time; recompute it at render time."
     },
