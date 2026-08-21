@@ -1,0 +1,62 @@
+/* VENDORED — do not edit, do not reformat, do not rename a token.
+   Source: docs/reference/design/rounds/02-landing-chrome/output/tokens.css
+   (the landed R2 record: R1's 66-property light :root plus R2.1's .cosmos scope).
+   The design record is read-only; a change here is a design change. Copied
+   verbatim by P5.S10 — only this provenance header was added. */
+/* 미주알 R1 foundations — direction C "terminal-light", light theme only */
+:root{
+/* surfaces */
+--paper:#f2f3f2;--surface-card:#ffffff;--surface-raised:#fafbfa;--surface-inset:#eef0ee;
+/* borders — hairlines carry all elevation; no drop shadows */
+--border-strong:#c9cec9;--border-soft:#e3e6e3;
+/* ink */
+--ink-1:#15201d;--ink-2:#5a655f;--ink-3:#8b948e;
+/* brand — charcoal wordmark; color is reserved for data (green alive · red loss · ink facts) */
+--brand:#1f2926;--brand-tint:#e9ebe9;
+--brand-sky:var(--brand);--brand-sky-tint:var(--brand-tint); /* deprecated aliases */
+/* live / derived (estimates ▷, live counters, citations) */
+--live:#0d5c48;--live-tint:#e6efe9;
+/* urgency (alert) */
+--alert:#c53030;--alert-tint:#f9e7e7;
+/* rights types — subtle hue per type */
+--r1:#2b5aa0;--r1-tint:#e9eff8;   /* ① 유상증자 신주인수권 */
+--r2:#96610f;--r2-tint:#f7efdd;   /* ② 전환사채 오버행 */
+--r3:#6d3a5d;--r3-tint:#f4e9f0;   /* ③ 주식매수청구권 */
+/* urgency scale: 30일 초과 → ≤30d → ≤7d → D-DAY(filled) */
+--urgency-far:var(--ink-2);--urgency-near:var(--ink-1);--urgency-soon:var(--alert);--urgency-now-bg:var(--alert);--urgency-now-fg:#ffffff;
+/* semantic aliases */
+--surface-page:var(--paper);--text-body:var(--ink-1);--text-secondary:var(--ink-2);--text-faint:var(--ink-3);
+--text-est:var(--live);--text-urgent:var(--alert);--focus-ring:var(--r1);
+/* type */
+--font-sans:"Pretendard Variable",Pretendard,-apple-system,"Malgun Gothic",sans-serif;
+--font-mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+--text-xs:11px;--text-sm:12px;--text-base:13.5px;--text-md:15px;--text-lg:17px;--text-xl:20px;--text-2xl:24px;--text-3xl:32px;--text-hero:44px;
+--leading-tight:1.25;--leading-base:1.55;
+--tracking-tight:-0.02em;--tracking-wordmark:0.22em;
+/* spacing (4px base) */
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-12:48px;--space-16:64px;
+/* radius — square system; chips/badges included */
+--radius-0:0;--radius-card:0;--radius-chip:0;
+/* motion */
+--dur-fast:120ms; /* @kind other */
+--dur-base:200ms; /* @kind other */
+--dur-slow:320ms; /* @kind other */
+--ease:cubic-bezier(.2,0,.2,1); /* @kind other */
+/* breakpoints (reference values; used in media queries by hand) */
+--bp-sm:480px;--bp-md:768px;--bp-lg:1120px;
+}
+/* cosmos dark scope — R2 revision: app surfaces run the continuous cosmos theme with aerospace-craft panels.
+   Put class="cosmos" on a dark page/section root; every token remaps so bundled components adapt unchanged. */
+.cosmos{
+--paper:#0a1310;--surface-card:rgba(13,25,20,.72);--surface-raised:rgba(255,255,255,.045);--surface-inset:rgba(255,255,255,.08);
+--border-strong:rgba(163,196,180,.32);--border-soft:rgba(163,196,180,.15);
+--ink-1:#eaf2ed;--ink-2:#9db3a8;--ink-3:#6d8378;
+--brand:#eaf2ed;--brand-tint:rgba(255,255,255,.06);
+--live:#5fd0a5;--live-tint:rgba(95,208,165,.14);
+--alert:#e0573f;--alert-tint:rgba(224,87,63,.15);
+--r1:#8fb2e8;--r1-tint:rgba(102,148,220,.16);--r2:#dcae5f;--r2-tint:rgba(200,150,60,.16);--r3:#cf95ba;--r3-tint:rgba(185,115,160,.16);
+--urgency-far:var(--ink-3);--urgency-near:var(--ink-1);--urgency-soon:var(--alert);--urgency-now-bg:var(--alert);--urgency-now-fg:#ffffff;
+/* craft panel details: corner brackets + top edge glow; solid actions use --live-solid (white text) */
+--panel-bracket:rgba(186,232,209,.75);--panel-glow:inset 0 1px 0 rgba(186,232,209,.14); /* @kind shadow */
+--live-solid:#0f6b50;
+}

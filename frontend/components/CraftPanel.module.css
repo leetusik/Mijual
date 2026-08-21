@@ -1,0 +1,57 @@
+/* Craft panel (R2.1) — translucent dark card, 1px --border-strong, top-edge glow,
+ * 9px corner brackets (2px L-shapes, --panel-bracket) at all four corners.
+ *
+ * Every value is a token, so the same markup renders correctly under the light
+ * `:root` too: there `--panel-glow` and `--panel-bracket` are undefined, the
+ * box-shadow resolves to nothing (R1: "no shadows — borders carry elevation")
+ * and the brackets fall back to the transparent-border case below.
+ */
+.panel {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--panel-glow);
+}
+
+/* The 소멸주의보 placard and R3's 발행사 기재 불일치 header take the alert border.
+ * Ink, not decoration: --alert is expiring/lost only. */
+.alert {
+  border-color: var(--alert);
+}
+
+.bracket {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 0 solid var(--panel-bracket, transparent);
+  pointer-events: none;
+}
+
+/* -1px so the 2px L sits over the hairline rather than inside it. */
+.tl {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.tr {
+  top: -1px;
+  right: -1px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+
+.bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+
+.br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}

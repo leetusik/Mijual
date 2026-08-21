@@ -1,0 +1,28 @@
+/* RightsChip (R1) — label only (no ①②③ numbering in the UI), 11px/600, type
+ * tint background + type colour text. Tinted chips only: the rights hue is never
+ * a fill, a border or a data colour anywhere else.
+ */
+.chip {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.r1 {
+  background: var(--r1-tint);
+  color: var(--r1);
+}
+
+.r2 {
+  background: var(--r2-tint);
+  color: var(--r2);
+}
+
+.r3 {
+  background: var(--r3-tint);
+  color: var(--r3);
+}

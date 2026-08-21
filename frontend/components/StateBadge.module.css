@@ -1,0 +1,42 @@
+/* StateBadge (R1) — the three states that ARE answers, not error handling.
+ *   추후결정        mono chip on --surface-inset, never with a date
+ *   철회            full-width centered notice replacing the card body,
+ *                   locked copy per rights type
+ *   발행사 기재 불일치  alert-tint chip
+ * A gate-failed field or event renders as NOTHING — there is no fourth variant,
+ * and adding one would be the placeholder `states-and-trust.md` §4 forbids.
+ */
+.tbd {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background: var(--surface-inset);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.mismatch {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background: var(--alert-tint);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--alert);
+  white-space: nowrap;
+}
+
+.withdrawn {
+  display: block;
+  width: 100%;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--ink-1);
+}

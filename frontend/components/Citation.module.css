@@ -1,0 +1,82 @@
+/* Citation (R1) — per-field [근거] chip → inset panel with the verbatim quote.
+ *   chip:  mono 11, --live, dotted underline
+ *   panel: inset panel, 2px left rule --live, quote pre-wrap, scroll > 180px,
+ *          link https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcept_no}
+ *   motion: 320ms height + fade (R1); reduced motion turns it into a cut via
+ *          shell.css, so nothing here needs a second media query.
+ */
+.chip {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* The 320ms height animation, done with grid rather than max-height so the panel
+ * opens to its own height instead of to a guessed one. */
+.wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-slow) var(--ease),
+    opacity var(--dur-slow) var(--ease);
+}
+
+.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.clip {
+  overflow: hidden;
+}
+
+/* `display: block` on spans throughout: a Citation sits inline inside a field
+ * row, so the whole subtree is phrasing content — a <div> or a <p> in there
+ * would be reparented by the HTML parser and break hydration. */
+.panel {
+  display: block;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border-left: 2px solid var(--live);
+}
+
+/* The filing's own words: never paraphrased, corrected or re-punctuated, so the
+ * whitespace it was filed with survives too. Quotes run from one line to 600
+ * characters, hence the scroll floor R1 fixes at 180px. */
+.quote {
+  display: block;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+/* A citation the filing printed as several cells that add up. Each addend is
+ * shown whole and separately — joining them would produce a sentence the
+ * document does not contain (P5.S20). */
+.part + .part {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--border-soft);
+}
+
+.link {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+}

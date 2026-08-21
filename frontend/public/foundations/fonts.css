@@ -1,0 +1,9 @@
+/* VENDORED — do not edit. Source: docs/reference/design/rounds/01-brand-foundations/output/fonts.css
+   (R2 landed no fonts.css: it is unchanged from R1). Copied verbatim by P5.S10 —
+   only this provenance header was added, and the relative path below is unchanged
+   because this file sits at public/foundations/ and the asset at public/assets/fonts/,
+   mirroring the design project's own foundations/ + assets/ layout.
+   PretendardVariable.woff2 is NOT in this repo yet — see public/assets/README.md. */
+/* 미주알 webfonts — Pretendard self-hosted (variable), IBM Plex Mono via CDN */
+@font-face{font-family:"Pretendard Variable";src:url("../assets/fonts/PretendardVariable.woff2") format("woff2-variations");font-weight:45 920;font-style:normal;font-display:swap}
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");

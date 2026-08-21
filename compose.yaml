@@ -15,6 +15,15 @@
 #   curl -s http://127.0.0.1:8000/health
 # `/health` needs only the process, not postgres: the board goes stale, never dark.
 #
+# The frontend (P5.S10) is the same kind of plain process — also not a compose
+# service, and also P4's to deploy:
+#   cd frontend && npm install && npm run dev      # http://127.0.0.1:3000
+#   curl -s http://127.0.0.1:3000/api/health       # proxied to uvicorn above
+# The browser only ever talks to the Next origin: `next.config.ts` rewrites
+# /api/* to MIJUAL_API_ORIGIN (default http://localhost:8000), so the API needs
+# no CORS and the session cookie stays same-origin. Run uvicorn first — with it
+# down, /api/* 502s while the app itself still serves.
+#
 # Host port 5433 keeps a system/other-project Postgres on 5432 out of the way.
 # These credentials are local-dev only and are NOT secrets: real secrets
 # (DART_API_KEY, GEMINI_API_KEY) live in the gitignored repo-root .env.

@@ -1,0 +1,75 @@
+/* 소멸주의보 strip — R1's confirmed sub-brand element, in R2's craft form.
+ *
+ * R1 (`brand/Subbrand.html`): white card, 1px --alert border + 4px left rule,
+ *   mono tag (white on --alert, 3px 9px, .08em), body 13.5 with mono numerals in
+ *   --alert.
+ * R2 (landing, cosmos): the same placard as a craft panel with the --alert border
+ *   and a **10px hazard stripe on the left edge** — repeating -45° --alert
+ *   stripes, 5px on / 5px off — plus the filled alert badge.
+ *
+ * Both forms are kept: `variant="craft"` is R2's (what the cosmos app renders),
+ * `variant="plain"` is R1's 4px left rule for a light/print surface.
+ */
+.strip {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  padding-inline-start: var(--space-6);
+}
+
+/* R1: 4px left rule. */
+.plain {
+  border-left: 4px solid var(--alert);
+}
+
+/* R1's non-craft form is a plain card, not a craft panel: 1px --alert border,
+ * no glow and no corner brackets (light/print surfaces have no craft ornament). */
+.plainCard {
+  background: var(--surface-card);
+  border: 1px solid var(--alert);
+}
+
+/* R2: 10px hazard stripe, -45°, 5px on / 5px off. */
+.craft::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 10px;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--alert) 0,
+    var(--alert) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+}
+
+.badge {
+  flex: none;
+  padding: 3px 9px;
+  background: var(--alert);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  /* White on alert — the one filled use of the alert hue besides D-DAY. */
+  color: var(--urgency-now-fg);
+  white-space: nowrap;
+}
+
+.body {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+/* R1: the strip's numerals are mono 600 in --alert. Compose the live numbers
+ * with <span class="mono num"> so 소멸 counts read as the loss they are. */
+.body .num {
+  font-weight: 600;
+  color: var(--alert);
+}

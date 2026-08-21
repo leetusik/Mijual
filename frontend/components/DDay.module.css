@@ -1,0 +1,50 @@
+/* DDay (R1) — mono 600 at ONE fixed size (17px); urgency changes colour only,
+ * never size:  >30d --urgency-far · ≤30d --urgency-near · ≤7d --urgency-soon ·
+ * D-DAY white on --alert (2px 10px). D+N stays unfilled and FAINT — R3 ("faint
+ * D+, history — never 종료-colored"), R4 ("faint chip 기간 지남 · D+{n}") and R5
+ * ("지나간 행 … alert 색 금지") all say so explicitly, and it is the right rule:
+ * a past ② is a window that is open right now, not something expiring.
+ */
+.dday {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: var(--leading-tight);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.far {
+  color: var(--urgency-far);
+}
+
+.near {
+  color: var(--urgency-near);
+}
+
+.soon {
+  color: var(--urgency-soon);
+}
+
+.now {
+  padding: 2px 10px;
+  background: var(--urgency-now-bg);
+  color: var(--urgency-now-fg);
+}
+
+.past {
+  color: var(--urgency-far);
+}
+
+.date {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}

@@ -1,0 +1,131 @@
+/* The 미주알 page shell — R1 foundations + R2.1's cosmos scope.
+ *
+ * This file owns only what is true of *every* surface: the cosmos page root, the
+ * 1120px content column, the type/shape floor, the focus ring, and the shared
+ * reduced-motion convention later slices hook into. It defines no component and
+ * no page: the starfield / glows / shooting stars are `P5.S12`'s (landing), the
+ * nav and footer are `P5.S11`'s.
+ *
+ * Tokens come from `/foundations/tokens.css` (vendored verbatim from the landed
+ * R2 record) and are never restated here — a literal colour in this file would be
+ * a second source of truth for a decision the design already made. The two
+ * literals that do appear (`0.95em` for numerals, the 480/768/1120 breakpoints)
+ * are R1's own numbers, and the breakpoints exist as `--bp-*` tokens only as
+ * reference values: a CSS custom property cannot be used in a media query.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* R1: 4px scale, square corners, hairline elevation. Nothing here sets a
+     radius or a shadow, and nothing downstream should either. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The cosmos page root (R2.1). `class="cosmos"` remaps every token — surfaces,
+ * ink, borders, semantics, rights tints, urgency — so the R1 components render
+ * correctly unchanged; `color` is set *here*, as the round specifies, so the
+ * remapped `--ink-1` is what the page inherits.
+ *
+ * `color-scheme: dark` is a rendering mechanism, not a style: it keeps the UA's
+ * own chrome (scrollbars, form controls, the canvas behind an overscroll) from
+ * flashing white on a #0a1310 page. It introduces no colour of its own.
+ */
+.cosmos {
+  color: var(--ink-1);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: var(--text-base); /* R1 body: 13.5 / 1.55 */
+  line-height: var(--leading-base);
+  /* A full-page fixed backdrop (`P5.S12`'s starfield, glows and shooting stars)
+     must be able to sit behind everything: no `overflow`, no `transform`, no
+     `filter` and no `contain` on this element or on `html`, because any of them
+     would turn `position: fixed` into a containing-block-relative position and
+     break the one continuous cosmos the round requires. */
+  min-height: 100dvh;
+}
+
+/* The content column (R2): max-width 1120px, mobile-first gutters. Card content
+ * runs ≈620px inside it (R1) — that is a per-surface width, not this one. */
+.content {
+  width: 100%;
+  max-width: var(--bp-lg);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .content {
+    padding-inline: var(--space-6);
+  }
+}
+
+/* The full-page backdrop slot. `P5.S12` fills it; the shell only guarantees that
+ * it is possible and that it never intercepts a click. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Every numeral is mono at ~0.95em of the surrounding sans (R1). Korean prose is
+ * never mono, so this is applied to the numeral, not to its row. */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* R1 / `frontend` v0002: focus ring 2px `--focus-ring`. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Reduced motion is a floor, not an option (`frontend` v0002).
+ *
+ * The convention every later slice uses, so nobody re-invents one:
+ *
+ *   data-motion="tick"    a repeating animation that must FREEZE where it is —
+ *                         the countdown colon blink, star twinkle, the orbit.
+ *   data-motion="ambient" a decorative layer that must HIDE — shooting stars.
+ *
+ * Anything not carrying an attribute is a fade, and a fade becomes a cut. The
+ * JS half (a tick that must stop re-rendering, not merely stop animating) is
+ * `lib/motion.ts`'s `useReducedMotion()`.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-motion="tick"],
+  [data-motion="tick"]::before,
+  [data-motion="tick"]::after {
+    animation: none !important;
+  }
+
+  [data-motion="ambient"] {
+    display: none !important;
+  }
+}

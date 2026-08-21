@@ -1176,6 +1176,138 @@ New structural codes: `invalid_credentials` 401 (the door) · `ops_unauthenticat
     a wrong password). **The deploy-time issuance/rotation stays P4's open question**, and
     so does the concrete route (`/ops` is the local choice, matching R7's own example).
 
+### `P5.S10` — the frontend foundation exists; the layout, the primitives, the client
+
+`frontend/` is a Next.js **16.3.2** app (App Router, Turbopack) on React **19.2.8** +
+TypeScript **5.9.3** and **nothing else** — no UI library, no CSS framework, no test
+framework, no linter. The design system is `tokens.css`; a framework theme would be a
+second source of truth for decisions R1 already made. **0 new Python dependencies, the
+Python suite untouched at 113.**
+
+**Where things are, so no slice goes looking:**
+
+| you need | use |
+|---|---|
+| a trust primitive | `import { DDay, Citation, … } from "@/components"` — the seven R1/R2 primitives |
+| to call the API | `import { getBoard, getEvent, … } from "@/lib/api"` — one function per route, paths hard-coded |
+| a payload type | `import type { EventView, Figure, … } from "@/lib/types"` |
+| a Korean string a primitive renders | `@/lib/copy` — every entry carries its source; **nothing there is invented** |
+| "is motion reduced" in JS | `import { useReducedMotion } from "@/lib/motion"` |
+| the page shell / column / numeral class | `app/shell.css` — `.content`, `.mono`, `.backdrop` |
+| the tokens | `public/foundations/tokens.css`, **vendored verbatim — do not edit** |
+| to run it | `cd frontend && npm run dev` (also in `compose.yaml`'s header), with uvicorn up on 8000 |
+
+1. **The CORS/origin question `P5.S1` note 7 left open is answered: there is no cross
+   origin.** The browser only ever talks to the Next origin; `next.config.ts` rewrites
+   `/api/*` → `MIJUAL_API_ORIGIN` (default `http://localhost:8000`). So the FastAPI service
+   still configures **no CORS middleware and grants no preflight** — which is exactly what
+   `P5.S7` note 4's CSRF design rests on — and `mj_session` (`SameSite=Lax`, `Path=/`) is
+   stored and returned same-origin with no `SameSite=None` and no `Secure`-on-http trap.
+   **Do not add CORS to this service.** Verified live: `/api/health` through the proxy
+   returned the API's own body byte for byte. The rewrite is the same seam under
+   `next start`; P4 repoints it with an env var, not a code change.
+2. **The foundations are vendored verbatim and needed no path edit at all.**
+   `public/foundations/tokens.css` = the landed R2 `tokens.css`, `public/foundations/fonts.css`
+   = the landed R1 `fonts.css`, both diffed byte-identical with only a provenance header
+   prepended. They are **served as static files, not bundled**, and the directory mirrors
+   the design project's own `foundations/` + `assets/`, so `fonts.css`'s
+   `url("../assets/fonts/PretendardVariable.woff2")` resolves correctly **unchanged**.
+   Serving also keeps the build green while the binary is missing (a bundled `url()` to a
+   non-existent file fails the build; a served one 404s and `font-display: swap` falls
+   through). **A change in either file is a design change.**
+3. **One apply-time to-do against a landed nit, record untouched.** `fonts.css` puts its
+   `@import url(…IBM+Plex+Mono…)` **after** the `@font-face` block, where CSS is invalid and
+   every browser drops it — so the mono face the design puts on *every numeral* would never
+   load. The same URL is linked from `app/layout.tsx` instead. Do not "fix" the vendored
+   file.
+4. **Two readings of the record `P5.S19` should check against the actual cards** (which stay
+   in the Claude Design project and are unreadable from here). Both went the way three later
+   rounds point:
+   (a) **The estimate tag renders `추정`, not `「추정」`.** 「」 is the documents' own quoting
+   notation — it also wraps 「예정」, 「진행 중」, 「실행 기록 없음」 and whole sentences that
+   cannot contain it — and the mark is specified as a *bordered* tag, so the border is the
+   enclosure. `[근거]` is the opposite case: written in square brackets every time, and it
+   has only a dotted underline, so its brackets **are** rendered. R2's footer sentence
+   spells the mark `[추정]` *in prose*; that is locked copy describing the mark and is
+   `P5.S11`'s to render verbatim — it does not respell the tag.
+   (b) **A past `D+n` is faint, never alert.** R1 only says "D+N stays unfilled", but R3
+   ("faint D+, 기한 지남 — never 종료-colored"), R4 ("faint chip 기간 지남 · D+{n}") and R5
+   ("지나간 행 … **alert 색 금지**") settle the colour. `DDay` maps `days < 0` to
+   `--urgency-far`. This also protects `ui-traps` #5: an open ② is 진행 중, and painting its
+   D+46 in the expiring/lost hue would say the opposite.
+5. **Sizes reconcile, they do not conflict.** R2's 10px estimate tag *is* R3's `0.56em`
+   (0.56 × ~17.9px), and the em form is what honours R1's "the component never sets its own
+   size". Implemented as `0.56em`. Same discipline everywhere: the primitives set colour and
+   weight, never a size that competes with the surface's.
+6. **The reduced-motion convention is fixed here — do not invent a second one.**
+   `data-motion="tick"` **freezes** (colon blink, twinkle, orbit); `data-motion="ambient"`
+   **hides** (shooting stars); everything else is a fade and a fade becomes a cut. The JS
+   half is `useReducedMotion()`, and `P5.S12` needs it: R2 requires "no animation, **static
+   value**" for the countdown, which means the interval must not run — CSS cannot stop a
+   `setInterval`.
+7. **The shell guarantees the cosmos backdrop is possible and builds none of it.** `body`
+   carries no `overflow`, `transform`, `filter` or `contain` — any of them would turn
+   `position: fixed` into a containing-block position and break the one continuous
+   starfield R2 requires. `.backdrop` (fixed, `inset: 0`, `z-index: -1`, no pointer events)
+   is the slot `P5.S12` fills.
+8. **`CraftPanel` has no ornament-free variant, on purpose.** R7's ops idiom strips exactly
+   what this component adds (glow, brackets, translucency), so it is a *different* panel and
+   `P5.S17` builds it — not a mode of this one. `tone="alert"` exists for 소멸주의보 and R3's
+   기재 불일치 header, and that is the only variant.
+9. **`EstimateMarker` refuses an untagged estimate the way `present.Figure` does.**
+   `estimated` is a required prop with no default plus a runtime guard, mirroring
+   `Figure.estimated` having no default on the server. `P5.S11`–`P5.S17`: pass
+   `figure.estimated` straight through — never a literal, and never omit it.
+10. **`Citation` handles exactly `P5.S20`'s three states and no fourth.** One `quote` →
+    one panel; `parts` → **every addend rendered verbatim and separately** (never joined —
+    the sum is printed in the filing nowhere, so a joined quote would fabricate a sentence);
+    neither → **no chip at all**, and the `rcept_no` link belongs to the row, not to this
+    primitive. It also accepts a `span` it deliberately does not render: offsets are
+    internal, like reason codes.
+11. **`lib/copy.ts` is the only place a Korean string enters the frontend, and every entry
+    cites its source** (`exposure.py`'s `TBD_DISPLAY_KO` / `WITHDRAWN_NOTICE_KO`,
+    `present.money.MISMATCH_LABEL_KO`, R1/R2/R3's build prompts, `copy-inventory.md`).
+    Surface copy — the hero, the footer, the ② strip, R4's 검색 불일치 line — belongs to the
+    slice that renders it, transcribed the same way. **A string with no citation does not
+    belong in the frontend.**
+12. **The typed client's shape rules, so a surface does not re-derive them.** Optional
+    (`?:`) means the key can be **absent**; `| null` appears only where the server genuinely
+    emits null (`countdown.date`/`dday`/`days`, `corp_name`, `rcept_no`, `freshness.as_of`,
+    a version row's `rcept_dt`/`correction_kind`). Money and ratios are typed `string` and
+    must never be `Number()`-parsed — 배정비율 keeps ten decimals and a ₩ total runs past
+    10^10. Compose the N주 math from the served factors with **one** implementation shared by
+    조회 and 포트폴리오 (`P5.S8` note 1); `⌊N × 배정비율⌋ × 증서 1주 이론가치` appears in no
+    payload, by design.
+13. **Server components get the client too**, and it bypasses the proxy: with no `window` it
+    calls `MIJUAL_API_ORIGIN` directly. A gated read from a server component must forward the
+    incoming `cookie` header itself — `credentials` is a browser concept and does nothing in
+    Node. `P5.S16` will meet this first.
+14. **The smoke check is two halves and stays that way.** `next build` prerenders
+    `app/page.tsx` through the shell and every primitive, so a broken component fails the
+    build; `node --test lib/*.test.ts` (3 cases, no framework, no fixtures) covers what a
+    render cannot show — the CSRF header on a mutation and not on a read, `credentials:
+    include`, and the envelope becoming an `ApiError`. Adding jest/vitest/jsdom here would be
+    the fixture sprawl the repo rule forbids.
+15. **`app/page.tsx` is `P5.S12`'s to replace.** It is the foundation proof, not a landing
+    draft: every string on it is verbatim from the landed record (the quote + span from
+    `grounding/samples/r1-live-healthy.json`, the figure from `headline-numbers.md`, the body
+    from that file's 발표용 문장 4) and the numbers are the pack's **dated 2026-08-20**
+    samples, not live data.
+16. **Two housekeeping facts.** TypeScript is pinned to **5.9.3**, not npm's `latest` 7.0.2
+    (which is the Go rewrite — a foundation nine slices inherit is the wrong place to be
+    first); revisit at P4. And `next dev` writes **`frontend/AGENTS.md` + `frontend/CLAUDE.md`**
+    itself (`node_modules/next/dist/server/lib/generate-agent-files.js`) warning that Next 16
+    differs from training data and pointing at the docs bundled under
+    `node_modules/next/dist/docs/` — deleting them only re-creates the change on the next
+    `next dev`. **Read those bundled docs before writing Next code in S11–S17.**
+17. **⚠ The binary design assets are still missing, and `P5.S11` is blocked on them.**
+    Re-verified: nothing matching `*wordmark*`, `*ring*.png`, `*Pretendard*` or `*.woff2`
+    exists in the checkout. The slots, the paths and a README listing every expected file are
+    in `frontend/public/assets/`; **nothing was substituted, generated or placeheld**, and
+    `P5.S11` must render the real file or nothing. The export list is in this slice's
+    `result.md` and in that README. Until they land, Pretendard falls back down its own stack
+    (`font-display: swap`, nothing blocks) and IBM Plex Mono is unaffected (CDN).
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -1629,6 +1761,60 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   gate-queue basis is now **710 stored rows / 691 distinct / 19 duplicates** (was 649/633/16
   — the 61 `appraisal_price` label rows from `P5.S6`).
 
+- (`P5.S10`) **`frontend`** — the doc's own "**No frontend code exists yet**" opening is
+  obsolete: `frontend/` is a Next.js **16.3.2** app (App Router, Turbopack) on React
+  **19.2.8** + TypeScript **5.9.3** with **no UI library, no CSS framework and no test
+  framework** — the design system is `tokens.css`, and a framework theme would be a second
+  source of truth for R1's decisions. Durable additions: the app layout (`app/` ·
+  `components/` · `lib/` · `public/foundations/`); **`tokens.css` and `fonts.css` are
+  vendored byte-verbatim from the landed records into `public/foundations/`, served rather
+  than bundled, and read-only** — the directory mirrors the design project's own
+  `foundations/` + `assets/`, so `fonts.css`'s relative font path needed **no edit at all**;
+  the `.cosmos` page shell (`<html lang="ko" class="cosmos">`, body `--paper`, the 1120px
+  content column, 480/768/1120, the `.mono` numeral rule and the 2px focus ring); the
+  **reduced-motion convention every later slice uses** (`data-motion="tick"` freezes,
+  `data-motion="ambient"` hides, everything else cuts, plus `useReducedMotion()` for a tick
+  that must stop re-rendering); and the **seven R1/R2 trust primitives** as faithful
+  implementations — `EstimateMarker` (「추정」, `▷` retired), `Citation` (`[근거]` → inset
+  panel, verbatim quote, **multi-part rendered part-by-part**, scroll > 180px, the DART
+  link), `StateBadge` (추후결정 · 철회 per-type locked notice · 발행사 기재 불일치, **and no
+  variant for a gate-blocked field**), `DDay` (mono 600 fixed 17px, colour-only urgency,
+  upstream values only), `RightsChip`, the 소멸주의보 strip (R1 + R2's craft/hazard form) and
+  the craft panel. Two readings of the record are now stated as durable truth: the estimate
+  tag renders **추정** (the 「」 are the record's quoting notation; the border is the
+  enclosure — unlike `[근거]`, whose brackets are literal), and a past **`D+n` is faint,
+  never alert** (R3/R4/R5 all say so; R1 only said "unfilled"). The Open Question "binary
+  assets live in the design project" **stands, and is now blocking `P5.S11`**: the slots,
+  paths and an export list exist under `frontend/public/assets/`, and nothing is substituted
+  or placeheld. The doc's other two Open Questions narrow: **data fetching is a typed
+  `fetch` wrapper** (`lib/api.ts`, no client library) and the **rendering strategy is per
+  surface**, still open — but the API seam is decided (below). **`architecture`** — the
+  frontend/API boundary is a **same-origin rewrite**: the browser talks only to the Next
+  origin and `next.config.ts` proxies `/api/*` to `MIJUAL_API_ORIGIN`, so `P5.S1` note 7's
+  CORS question is answered by **not having a cross origin** — the service keeps no CORS
+  middleware and grants no preflight, which is what `P5.S7`'s CSRF rule depends on, and the
+  session cookie needs no `SameSite=None`. **`api`** — nothing new on the wire; the contract
+  now has a typed client-side mirror whose rules are structural (an absent key is an optional
+  field, `| null` only where the server truly emits null, money/ratios stay **strings**, and
+  `estimated` is required on every value — `EstimateMarker` refuses to render without it, as
+  `present.Figure` refuses to construct). **`operations`** — `cd frontend && npm run dev`
+  (http://127.0.0.1:3000) is documented in `compose.yaml`'s header beside the uvicorn line;
+  like the API it is deliberately **not** a compose service, and P4 owns its deployment
+  (repointing `MIJUAL_API_ORIGIN` is an env change, not a code change). Exporting the
+  wordmark/ring PNGs and `PretendardVariable.woff2` out of the Claude Design project is an
+  **operator step**, now concrete: five files, each with a target path. **`decisions`** —
+  three worth recording: the frontend reaches the API through a **same-origin proxy rather
+  than CORS** (a cross-origin setup would have weakened a landed security decision to save a
+  proxy line); the 「추정」 mark **renders 추정**; and a past `D+n` renders **faint, never in
+  the expiring/lost hue**, which is also what keeps an open ② from reading as 종료. **`qa`** —
+  the frontend has its own check and it is deliberately framework-free: `npm run build`
+  (prerenders the proof page through the shell and every primitive, so a broken component
+  fails the build) + `npm run typecheck` (`tsc --noEmit`) + `npm run smoke`
+  (`node --test lib/*.test.ts`, **3 cases**, ~75 ms, no jest/vitest/jsdom, no fixtures) —
+  covering the CSRF header on a mutation and not on a read, `credentials: include`, and the
+  error envelope becoming an `ApiError`. The Python suite is **untouched at 113**; this slice
+  edited no Python file and added no Python dependency.
+
 ## Open Questions
 
 - **R7's 샘플 로드 여부 column has no backing fact** — *new, `P5.S9`*: R5's sample portfolio
@@ -1652,8 +1838,15 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   07:30/19:30 KST beat schedule. Operator may still choose another number.
 - **The "정정 이력" button label** — exited P3 unresolved and is carried here (`experience` v0002,
   `product` v0003); `P5.S13` needs it.
-- **Binary design assets** — who exports the wordmark/ring PNGs and `PretendardVariable.woff2` out of
-  the Claude Design project into the repo (`P5.S10`). Almost certainly an operator co-work step.
+- **Binary design assets** — *confirmed an operator co-work step, `P5.S10`, and now blocking
+  `P5.S11`*: re-verified that nothing matching `*wordmark*`, `*ring*.png`, `*Pretendard*` or
+  `*.woff2` exists anywhere in the checkout. `P5.S10` wired the paths, created the slots and
+  wrote the export list (five files with target paths) into
+  `frontend/public/assets/README.md` and its `result.md`, and **substituted nothing** — an
+  invented wordmark is a design violation; an empty slot with the path wired is honest. The
+  operator exports them out of "Mijual Design System". One detail needs their eye: the
+  landed record names only `assets/mijual-wordmark-charcoal.png` and *describes* a reversed
+  white version without naming its file, so `P5.S11` wires whatever name the export carries.
 - **The concrete admin route** (`/ops` is the example, not the decision) and how the operator
   credential is issued — `security` calls these **deploy** decisions (P4); `P5.S9`/`P5.S17` need a
   working local value in the meantime.

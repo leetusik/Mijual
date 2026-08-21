@@ -1,0 +1,31 @@
+/* EstimateMarker — R3's system-wide re-cut:
+ *   "value + bordered 「추정」 tag (sans, 0.56em of context, letter-spacing .08em,
+ *    border currentColor @42%)"
+ * and R2's landing spec, which is the same tag measured at that page's context:
+ *   "a bordered sans 10px 「추정」 tag beside the value (#5fd0a5 text + hairline)".
+ * 0.56em of R2's ~17.9px context is 10px, so one rule satisfies both — and the
+ * em unit is what keeps R1's law: the component never sets its own size.
+ */
+.marker {
+  /* The value and its tag are one unit and must not be split across lines. */
+  white-space: nowrap;
+}
+
+.tag {
+  display: inline-block;
+  margin-inline-start: var(--space-1);
+  padding: 1px 4px;
+  /* Sans, never mono: this is a word, not a numeral (R1 — Korean prose is never
+     mono, and 추정 is Korean prose). It inherits nothing but its scale. */
+  font-family: var(--font-sans);
+  font-size: 0.56em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  vertical-align: middle;
+  /* --live = 살아있는 가치: estimates, citations, live counts. In the cosmos
+     scope this resolves to #5fd0a5, which is R2's literal. */
+  color: var(--live);
+  border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
+  white-space: nowrap;
+}
