@@ -91,10 +91,12 @@ __all__ = [
     "LAPSE_COVERAGE_START",
     "STOCK_FIELDS",
     "Detail",
+    "HoldingEntry",
     "corpus_as_of",
     "countdown_target",
     "load_board",
     "load_detail",
+    "load_portfolio",
     "load_stock",
     "load_summary",
     "resolve_corp",
@@ -619,14 +621,59 @@ def resolve_corp(session: Session, query: str) -> Corp | None:
     return None
 
 
-def _stock_events(session: Session, corp_code: str) -> list[Event]:
+def _events_for_corps(session: Session, corp_codes: Sequence[str]) -> list[Event]:
+    """Every event of a set of issuers, in one query. Shared by 조회 and 포트폴리오."""
+    if not corp_codes:
+        return []
     return list(
         session.scalars(
             select(Event)
-            .where(Event.corp_code == corp_code)
+            .where(Event.corp_code.in_(tuple(dict.fromkeys(corp_codes))))
             .options(joinedload(Event.corp), selectinload(Event.versions))
         ).all()
     )
+
+
+def _stock_events(session: Session, corp_code: str) -> list[Event]:
+    return _events_for_corps(session, [corp_code])
+
+
+@dataclass(frozen=True)
+class _Loaded:
+    """One batched reading of a set of events — exposures, views and their extras."""
+
+    exposures: dict[int, EventExposure]
+    views: dict[int, EventView]
+    facts: dict[int, ConvertibleFacts]
+    offerings: dict[int, Mapping[str, Any]]
+
+
+def _load_views(session: Session, events: Sequence[Event], *, today: date) -> _Loaded:
+    """Batch the four per-event reads a rights surface needs, and derive once.
+
+    Shared by 내 종목 조회 and 내 포트폴리오 on purpose: a portfolio is N issuers'
+    rights, so if it loaded or derived them its own way the two surfaces would
+    eventually describe the same offering differently — the one thing R5 states
+    as a prohibition ("내 종목 조회와 수치 불일치 금지 — 같은 contract 소스").
+    """
+    versions = current_versions(session, events)
+    rows = _field_rows(session, [v.id for v in versions.values()], STOCK_FIELDS)
+    facts = _detail_facts(session, events)
+    offerings = _offering_inputs(session, events)
+
+    exposures: dict[int, EventExposure] = {}
+    views: dict[int, EventView] = {}
+    for event in events:
+        version = versions.get(event.id)
+        exposure = exposure_of(
+            event,
+            version=version,
+            rows=rows.get(version.id, []) if version is not None else [],
+            facts=facts.get(event.id),
+        )
+        exposures[event.id] = exposure
+        views[event.id] = event_view(exposure, facts=facts.get(event.id), today=today)
+    return _Loaded(exposures=exposures, views=views, facts=facts, offerings=offerings)
 
 
 def _rights_row(
@@ -867,23 +914,7 @@ def load_stock(session: Session, corp: Corp, *, today: date) -> dict[str, Any]:
     the 보유량 lives in ``sessionStorage``).
     """
     events = _stock_events(session, corp.corp_code)
-    versions = current_versions(session, events)
-    rows = _field_rows(session, [v.id for v in versions.values()], STOCK_FIELDS)
-    facts = _detail_facts(session, events)
-    offerings = _offering_inputs(session, events)
-
-    exposures: dict[int, EventExposure] = {}
-    views: dict[int, EventView] = {}
-    for event in events:
-        version = versions.get(event.id)
-        exposure = exposure_of(
-            event,
-            version=version,
-            rows=rows.get(version.id, []) if version is not None else [],
-            facts=facts.get(event.id),
-        )
-        exposures[event.id] = exposure
-        views[event.id] = event_view(exposure, facts=facts.get(event.id), today=today)
+    loaded = _load_views(session, events, today=today)
 
     return {
         "stock": {
@@ -892,13 +923,265 @@ def load_stock(session: Session, corp: Corp, *, today: date) -> dict[str, Any]:
             "stock_code": corp.stock_code,
         },
         "reference": today.isoformat(),
-        "rights": _live_rights(events, views, exposures, facts, offerings),
+        "rights": _live_rights(
+            events, loaded.views, loaded.exposures, loaded.facts, loaded.offerings
+        ),
         "lapse": _stock_lapse(
             session,
             corp,
             today=today,
-            views=views,
-            exposures=exposures,
-            offerings=offerings,
+            views=loaded.views,
+            exposures=loaded.exposures,
+            offerings=loaded.offerings,
         ),
     }
+
+
+# ---------------------------------------------------------------------------
+# 내 포트폴리오 (P5.S8)
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class HoldingEntry:
+    """One line of a portfolio: an issuer and a share count.
+
+    The same shape whether it came from the reader's own ``holding`` rows or from
+    the fixed sample composition, which is what lets both go through one
+    composition function and therefore produce one set of numbers.
+    """
+
+    corp_code: str
+    shares: int
+    #: The ``holding.id`` the 수정·삭제 actions address. ``None`` in sample mode —
+    #: a sample holding is the browser's, and the server stores none.
+    holding_id: int | None = None
+
+
+def _lapse_by_event(
+    session: Session, events: Sequence[Event], *, today: date
+) -> dict[int, tuple[PerformanceReport, Mapping[str, Any]]]:
+    """Each ① event's 소멸 outcome, when one has been filed and parsed.
+
+    Newest 실적보고서 per event, and **the same coverage membership 내 종목 조회
+    applies** (:func:`_closed_on` inside ``2026-01-01 … today``): a 소멸 row that
+    the breakdown would not count must not appear with a figure in the portfolio
+    either, or the two surfaces would disagree about what happened to the same
+    offering. Outside the boundary the row keeps its 기간 지남 chip and states no
+    money — unstated, never zero (R4-3).
+
+    A report whose ``event_id`` is ``NULL`` (its 유상증자결정 is not in the corpus,
+    or hangs off a flagged event) has **no row here at all**: 지나간 마감 is a list
+    of deadlines, and a report with no event has no 매매기간 to have passed. The
+    figure still reaches the reader through 조회's breakdown, which is keyed on
+    the issuer rather than on an event.
+    """
+    ids = [
+        event.id
+        for event in events
+        if event.rights_type is RightsType.SUBSCRIPTION_WARRANT
+    ]
+    if not ids:
+        return {}
+    found: dict[int, tuple[PerformanceReport, Mapping[str, Any]]] = {}
+    for report in session.scalars(
+        select(PerformanceReport).where(
+            PerformanceReport.event_id.in_(ids), PerformanceReport.lapse.is_not(None)
+        )
+    ).all():
+        lapse = report.lapse
+        if not isinstance(lapse, Mapping) or report.event_id is None:
+            continue
+        closed = _closed_on(lapse, report)
+        if closed is None or not (LAPSE_COVERAGE_START <= closed <= today):
+            continue
+        seen = found.get(report.event_id)
+        if seen is None or (report.rcept_no or "") > (seen[0].rcept_no or ""):
+            found[report.event_id] = (report, lapse)
+    return found
+
+
+def _portfolio_row(
+    entry: HoldingEntry,
+    view: EventView,
+    loaded: _Loaded,
+    lapse: tuple[PerformanceReport, Mapping[str, Any]] | None,
+    claims: frozenset[str] | None,
+) -> dict[str, Any]:
+    """One D-day row: the event exactly as 조회 serves it, plus this holding.
+
+    The event half is :func:`_rights_row` — the *same* function 내 종목 조회 uses,
+    not a portfolio-flavoured copy of it — so an ① carries the full factor set
+    (배정비율 to ten decimals · 초과청약 비율 · 증서 1주 이론가치 + 하한 ·
+    ``final_price_date``), an ② carries R3's six-value dilution strip and neither
+    ② nor ③ can carry a won amount, because :class:`mijual.present.OfferingInputs`
+    has no field for one on a type that has none.
+
+    What this adds is ``shares`` — a **stored count, not a derived number** — and,
+    on a past ① whose 실적보고서 has landed, the offering's ``lapse``. The row
+    still serves **factors, not products**: the 500주 기준 「추정」 amount R5 draws
+    is ⌊shares × 배정비율⌋ × 증서 1주 이론가치, composed in the browser by the same
+    client code 내 종목 조회 uses. Pre-multiplying here would put a second
+    multiplication site in the product for one number, which is exactly the
+    "두 divergent readouts for the same number" R4 names as the failure mode.
+    """
+    payload = _rights_row(
+        view,
+        loaded.exposures[view.event_id],
+        loaded.facts.get(view.event_id),
+        loaded.offerings.get(view.event_id),
+    )
+    payload["shares"] = entry.shares
+    if entry.holding_id is not None:
+        payload["holding_id"] = entry.holding_id
+    if lapse is not None:
+        report, mapping = lapse
+        facts = report.facts if isinstance(report.facts, Mapping) else {}
+        payload["lapse"] = lapse_result(mapping, facts=facts).payload()
+        if claims is not None:
+            # 챙긴 돈 (R5-8): the reader's own assertion about their own row.
+            # Absent — never ``false`` — when nobody is logged in, because a
+            # sample or anonymous reader keeps this mark in ``localStorage`` and
+            # a server-side ``false`` would be the product asserting something
+            # about a person it has no account for.
+            payload["claimed"] = report.rcept_no in claims
+    return payload
+
+
+def load_portfolio(
+    session: Session,
+    entries: Sequence[HoldingEntry],
+    *,
+    today: date,
+    claims: frozenset[str] | None = None,
+) -> dict[str, Any]:
+    """내 포트폴리오 홈: the holdings, 다가오는 마감 and 지나간 마감.
+
+    **Two sections, because R5 signs two** — and the placement rule inside them is
+    forced by the hard rules rather than chosen:
+
+    * **다가오는 마감**, D-day ascending, is every deadline still ahead. After
+      them, unranked by date, come the two populations that have no future
+      deadline but are not over: an ② whose 전환청구 has **opened and not closed**
+      (most recently opened first — 진행 중, *never* 종료, `ui-traps` #5, and it
+      ranks below every date still ahead because there is nothing to exercise
+      against a clock, R4-4), and 일정 추후결정, which cannot be ranked at all and
+      carries no date anywhere near it (`ui-traps` #4).
+    * **지나간 마감**, most recent first, is every anchor already behind the
+      reference day — a passed ① 매매 마감, a passed ③ 통지 마감, and an ② whose
+      window has fully closed. An *open* ② is never here: filing it under
+      "지나간" is the 종료 label R5 forbids, spelled as a section heading.
+
+    ``reference`` is the KST day every D-day was computed against — R5's
+    "기준 YYYY-MM-DD (KST)" line, served rather than computed in the browser.
+
+    ``claims`` is the set of 실적보고서 ``rcept_no`` this reader has marked
+    챙겼습니다; pass ``None`` for the anonymous sample, which carries no
+    ``claimed`` key at all. **No total is served anywhere in this payload**: R5-8
+    requires the 챙긴 돈 mark to stay out of every 집계·통계, and the surest way for
+    a user claim never to reach an aggregate is for the surface to have none.
+    """
+    events = _events_for_corps(session, [entry.corp_code for entry in entries])
+    loaded = _load_views(session, events, today=today)
+    lapses = _lapse_by_event(session, events, today=today)
+
+    by_corp: dict[str, list[Event]] = {}
+    for event in events:
+        by_corp.setdefault(event.corp_code, []).append(event)
+    codes = tuple(dict.fromkeys(entry.corp_code for entry in entries))
+    corps = (
+        {
+            corp.corp_code: corp
+            for corp in session.scalars(select(Corp).where(Corp.corp_code.in_(codes))).all()
+        }
+        if codes
+        else {}
+    )
+
+    holdings: list[dict[str, Any]] = []
+    upcoming: list[tuple[int, str, dict[str, Any]]] = []
+    open_now: list[tuple[int, str, dict[str, Any]]] = []
+    tbd: list[tuple[str, str, dict[str, Any]]] = []
+    past: list[tuple[int, str, dict[str, Any]]] = []
+
+    for entry in entries:
+        live: list[dict[str, Any]] = []
+        for event in by_corp.get(entry.corp_code, []):
+            view = loaded.views[event.id]
+            if view.state != "exposable":
+                continue
+            row = _portfolio_row(
+                entry, view, loaded, lapses.get(event.id), claims
+            )
+            countdown = view.countdown
+            key = view.rcept_no or ""
+            if countdown.date is None:
+                tbd.append((view.original_rcept_dt or "", key, row))
+                live.append(row)
+            elif countdown.days is not None and countdown.days >= 0:
+                upcoming.append((countdown.days, key, row))
+                live.append(row)
+            elif view.rights_type == "R2" and countdown.is_open:
+                open_now.append((-(countdown.days or 0), key, row))
+                live.append(row)
+            else:
+                past.append((-(countdown.days or 0), key, row))
+
+        corp = corps.get(entry.corp_code)
+        holding: dict[str, Any] = {
+            "corp_code": entry.corp_code,
+            "shares": entry.shares,
+            "rights": _rights_summary(live),
+        }
+        if entry.holding_id is not None:
+            holding["id"] = entry.holding_id
+        if corp is not None:
+            # A corp the corpus no longer knows keeps its holding and loses its
+            # name — an absent key, never a null or an invented placeholder.
+            holding["corp_name"] = corp.corp_name
+            if corp.stock_code:
+                holding["stock_code"] = corp.stock_code
+        holdings.append(holding)
+
+    upcoming.sort(key=lambda item: item[:2])
+    open_now.sort(key=lambda item: item[:2])
+    tbd.sort(key=lambda item: item[:2])
+    past.sort(key=lambda item: item[:2])
+
+    return {
+        "reference": today.isoformat(),
+        "holdings": holdings,
+        "upcoming": [row for *_, row in (*upcoming, *open_now, *tbd)],
+        "past": [row for *_, row in past],
+    }
+
+
+def _live_rank(row: Mapping[str, Any]) -> tuple[int, int, str]:
+    """The 다가오는 section's order, as a sort key: dated → open ② → 추후결정."""
+    countdown = row["countdown"]
+    days = countdown.get("days")
+    if countdown.get("date") is None:
+        return (2, 0, row.get("rcept_no") or "")
+    if days is not None and days >= 0:
+        return (0, days, row.get("rcept_no") or "")
+    return (1, -(days or 0), row.get("rcept_no") or "")
+
+
+def _rights_summary(live: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """R5's 진행 중인 권리 요약 for one holding row: how many, and the next one.
+
+    ``next`` points at a row this same payload already carries and reuses its
+    **already-serialized** countdown, so the chip on the 보유 row and the D-day row
+    it summarizes cannot say two different things about one deadline. Ranked by
+    :func:`_live_rank` — the same order the 다가오는 마감 section uses, because
+    "the next one" must mean the row a reader sees at the top of that list.
+    """
+    ordered = sorted(live, key=_live_rank)
+    summary: dict[str, Any] = {"count": len(ordered)}
+    if ordered:
+        head = ordered[0]
+        summary["next"] = {
+            "event_id": head["event_id"],
+            "rcept_no": head["rcept_no"],
+            "rights_type": head["rights_type"],
+            "countdown": head["countdown"],
+        }
+    return summary

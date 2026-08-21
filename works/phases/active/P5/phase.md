@@ -898,6 +898,156 @@ still answers 200 without a cookie.
     `result.md`. Deploying the API alone against a fresh database would otherwise 500 on
     the first signup.
 
+### `P5.S8` — 내 포트폴리오 exists; the endpoint map, and the decisions `P5.S15`/`P5.S16` inherit
+
+The product's **only gated surface** is built: holdings, the two-section D-day list, 챙긴 돈,
+알림 preferences and the anonymous sample. **0 requests, 0 model calls, 0 new dependencies.**
+
+**Import map**
+
+| you need | import |
+|---|---|
+| the reader's holdings as composition input | `from mijual.web.portfolio import entries_of` → `list[HoldingEntry]` |
+| the fixed R5-4 sample composition | `portfolio.sample_entries()` / `portfolio.SAMPLE_HOLDINGS` |
+| the whole home payload | `from mijual.web.reads import load_portfolio` (`entries`, `today=`, `claims=`) |
+| this reader's 챙긴 돈 marks | `portfolio.claimed_reports(db, account)` → `frozenset[str]` |
+| the 시점 칩 (defaults included) | `portfolio.lead_days_of` · `LEAD_DAY_CHOICES` · `DEFAULT_LEAD_DAYS` |
+| to change the 수신 주소 | `from mijual.web.auth import change_email` |
+
+**Endpoints** (no prefix, like the rest). Everything but the sample requires the owner:
+`GET /portfolio` · `POST /portfolio/holdings` (201) · `PATCH|DELETE /portfolio/holdings/{id}` ·
+`PUT|DELETE /portfolio/claims/{rcept_no}` · `GET|PUT /portfolio/notifications` ·
+**`GET /portfolio/sample` (anonymous)** · and `PATCH /auth/account` (수신 주소 변경).
+Structural codes, no Korean: `holding_exists` 409 · `invalid_shares` 400 ·
+`invalid_lead_days` 400 · `not_found` 404 · `unauthenticated` 401 · `csrf_required` 403 ·
+`email_taken` 409. **`P5.S16` renders R5's own copy from the code** — and note that R5 wrote
+**no** line for "이미 담긴 종목" (see note 3): the client, which holds the whole list, should
+route a repeat 담기 to the row's inline 수정 rather than need one.
+
+1. **The portfolio serves factors, not products — the same rule `P5.S4` records, and here it was
+   a real choice.** The server *does* know the holding count, so it could have pre-multiplied.
+   It does not: pre-multiplying would put a **second multiplication site** in the product for
+   one number (조회 composes client-side; 포트폴리오 would compose server-side), which is exactly
+   the "두 divergent readouts for the same number" R4 names as the failure mode, and R5 restates
+   as "내 종목 조회와 수치 불일치 금지 (같은 contract 소스)". Verified live: the 한화솔루션 row's
+   `lapse` block is **byte-identical** to the block `/stocks/00162461` serves for the same
+   offering, and `⌊500 × 0.2465120994⌋ = 123주 × 5,525원 =` **679,575원** — R5-4's own card
+   figure — appears **nowhere** in the payload. **`P5.S10` must own exactly one implementation
+   of ⌊N × 배정비율⌋ × 증서가치 and use it on both surfaces**; two would recreate the defect this
+   decision avoids.
+2. **One composition function, shared with 조회 at the row level.** A portfolio row *is*
+   `reads._rights_row` — the same function `/stocks` uses — plus `shares` (a stored count, not a
+   derived number), plus `lapse` on a past ①. `_load_views` / `_events_for_corps` were factored
+   out of `load_stock` so both surfaces batch and derive identically. If a row ever needs
+   something new, add it there, not in a portfolio-flavoured copy.
+3. **A duplicate 담기 is refused, never merged or replaced** (`holding_exists` 409, unique
+   `(account_id, corp_code)`). Merging invents a count the reader never typed; replacing
+   discards one they did; R5 already ships the honest way to change a 보유량 — the row's inline
+   수정. The 409 is a last-resort invariant (two tabs, one account), not a path a reader walks.
+4. **`holding.corp_code` is deliberately not a FK to `corp`.** The corp table is pipeline data —
+   re-collectable, reset outright when the schema changes (N16) — and a reader's portfolio must
+   survive that. A FK would make a corpus rebuild either delete a reader's rows or fail on them.
+   The reference is validated **on write** (`stock_by_code`), and a code that later resolves to
+   nothing degrades to a holding with **no `corp_name` key** and zero rights, never a 500.
+   `shares` is a `BigInteger` on purpose: Postgres `integer` tops out at 2.1 bn and 삼성전자 alone
+   has ~5.97 bn shares outstanding. Upper bound `MAX_SHARES = 10_000_000_000`.
+5. **The two sections, and where each population lands.** 다가오는 마감 = every dated deadline
+   still ahead (D-day ascending), then **② 진행 중** (opened, not closed; most recently opened
+   first), then **일정 추후결정** (unranked, no date near it). 지나간 마감 = every anchor already
+   behind the reference day, most recent first — a passed ① 매매 마감, a passed ③ 통지 마감, and
+   an ② whose window has **fully closed**. An *open* ② is never in 지나간: filing it there is the
+   종료 label R5 forbids, spelled as a section heading. The ordering inside 다가오는 is `P5.S4`'s
+   (`_live_rank`), because a deadline you can still act on outranks an open window with nothing
+   to exercise (R4-4).
+6. **`STOCK_FIELDS` is exactly the right subset here, and that is a rule, not a saving.** The
+   portfolio loads the four 조회 field keys, so a ③ row carries `dissent_notice_procedure` and
+   **not `appraisal_price`**. That is required: R5 says "②/③ → 금액 절대 없음" for this surface,
+   and 매수예정가격 (`P5.S6`) is a won figure. R3's **detail page** renders it — a different
+   surface with a different signed rule. **Do not "complete" the portfolio row by adding it.**
+   Conversely ②'s `convertible` strip (전환가액 · 권면총액 …) **stays**: R5 says "금액 = R4 계약
+   그대로" and names ②'s substitute as 희석 컨텍스트, which is that strip.
+7. **The 챙긴 돈 key is the 증권발행실적보고서's own `rcept_no`, and the alternatives were worse.**
+   The 유상증자결정's number *mutates* to its newest version (N2), so a mark keyed on it comes
+   unstuck the day a 정정 lands; an `event.id` is an autoincrement a corpus rebuild does not
+   preserve, and `P5.S5` re-parented 49 versions between events. The 실적보고서 is terminal, its
+   `rcept_no` is unique, and it is what makes the row exist at all. It is also what the payload
+   carries (`lapse.performance_rcept_no`), so the **localStorage** mark an anonymous/sample
+   reader keeps addresses the identical row. The table stores account + filing number +
+   timestamp — **no amount** — and **the payload has no total anywhere**, so R5-8's "집계·통계에
+   미반영" is structural rather than careful. A mark is validated against a real report with a
+   `lapse` (404 otherwise) but **not** against the caller's holdings: a reader may sell and their
+   claim about a past offering stays true.
+8. **`claimed` is absent — never `false` — when nobody is logged in.** The sample and any
+   anonymous composition pass `claims=None` and no row carries the key, because a server-side
+   `false` would be the product asserting something about a person it has no account for
+   (R5: 가짜 사용자 정체성 금지). Verified: `claimed` and `@` appear nowhere in the sample body.
+9. **알림 preferences default on **first read**, not at signup, and no row is written until the
+   reader saves one.** Creating a row at 가입 would have meant editing `auth.create_account` to
+   carry a preference it does not own, and would freeze today's default into every account ever
+   created. So **an absent row means the default (7일 + 1일), not "off"** — `P5.S9`/`P5.S17`'s
+   독자 계정 table must render it that way. **An empty list is a valid setting and means no mail**:
+   R5's mail footer promises "알림 설정에서 끌 수 있습니다" and deselecting every chip is the only
+   off switch the signed surface offers, so `[]` persists rather than falling back. Anything
+   outside `(7, 3, 1, 0)` is refused — a lead time the UI cannot express is one nobody could
+   turn off again. **No sending, no scheduler, no mail body: that is P4's item 1.**
+10. **수신 주소 = the account email, and 변경 edits the account** (`PATCH /auth/account`).
+    `security` fixes stored PII to email + password hash, so there is no second address column
+    and no `notification_pref.address`. Decisions inside it: a duplicate is `email_taken` (two
+    accounts cannot share a login identity); **outstanding unused reset grants are revoked**
+    (a grant was issued *to an address* that is no longer this account's, and leaving it live
+    keeps a working key in a mailbox the reader just moved away from); **sessions are not**
+    (the reader is the one doing this); and **no password is re-entered**. That last one is
+    worth stating out loud: R5's Notify row is a 수신 주소 with a 변경 affordance and nothing
+    else, `P5.S7` already established the precedent — 계정 삭제, strictly more destructive, takes
+    no password either — and adding a password field would be **inventing a control the signed
+    round does not have**. The consequence is honest and belongs in the review's field of view:
+    **a stolen live session can move the address**, i.e. escalate read access into a permanent
+    takeover. If the operator wants re-auth here it is a *design* change (a new control on the
+    Notify card), not an implementation detail — see the new Open Question.
+11. **A stranger's row is a 404, not a 403.** Every holding lookup carries `account_id` in its
+    `WHERE`, so a row that belongs to somebody else is indistinguishable from one that does not
+    exist. A 403 would confirm that it does. Same shape as `P5.S4`'s "a bad link is an error,
+    and it says nothing else".
+12. **KakaoTalk has no server field at all** — R5 draws the row with a 「예정」 chip and no working
+    control, so a stored flag for a channel that cannot be switched on would be exactly the
+    non-functional switch the round forbids. **`P5.S16` renders the row from nothing.**
+13. **No anonymous write exists, and that is the design.** `security`: "Anonymous state never
+    reaches the server … Migration into an account is offered, never automatic." The 세션 이월
+    (R5-3) and 샘플→계정 이전 (R5-4) flows are entirely the client's — when the reader accepts,
+    the browser makes the ordinary authenticated `POST /portfolio/holdings` calls; when they
+    decline, nothing is sent. **`P5.S16` must not ask for an anonymous endpoint; there is none
+    and there must not be one.**
+14. **Live sample composition, measured 2026-08-22 — all four pinned filings still resolve to
+    the event R5-4 named**, and the surface shows **one row R5's card does not**:
+    | R5 pin | resolves to | live row |
+    |---|---|---|
+    | 계양전기 `20260724000546` | ev3 `piicDecsn` 2026-05-08, exposable | ① **D-3 · 2026-08-25**, `price_confirmed: false` → **no money key** ✓ |
+    | 대동기어 `20251016000315` | ev724 `cvbdIsDecsn`, exposable | ② 전환청구 개시 **D-63 · 2026-10-24**, 오버행 6.68% ✓ |
+    | 한화솔루션 `20260720000067` | ev84 `piicDecsn`, exposable | ① 소멸 **D+43**, 20,635,460,625원 「추정」 ✓ |
+    | 세기상사 `20260713000345` | ev54 `cmpMgDecsn`, exposable | ③ 통지 마감 **D+47 · 2026-07-06** ✓ |
+    **New:** 대동기어 also holds an exposable ① (`pifricDecsn` 2026-04-22) that lapsed —
+    **D+45, 3,344,138,940원** — so the sample renders **5 rows, not 4**. This is live data, the
+    same class as `P5.S3` note 9's 퓨쳐켐 case: R5's card is a mockup of a composition, and the
+    build prompt says "실제 corpus 이벤트를 그대로 로드". **`P5.S16`/`P5.S19` will see it; it is
+    not a design deviation and must not be filtered out.** A pinned corp that ever stops
+    resolving is **omitted** from the composition rather than 500-ing the anonymous entry point,
+    and is never substituted with a different filing.
+15. **Two boundaries measured, both no-ops today but worth knowing.** (a) A past ① row carries
+    its 소멸 only when the 실적보고서 is inside **the same coverage window 조회 counts with**
+    (`2026-01-01 … today`) — outside it the row keeps its 기간 지남 chip and states nothing
+    (R4-3: unstated, never 0). Measured: **32 of 32** stored `lapse` rows are inside, so the
+    filter changes nothing today. (b) A report whose `event_id` is `NULL` gets **no portfolio
+    row** — 지나간 마감 is a list of deadlines and such a report has no 매매기간 to have passed;
+    the figure still reaches the reader through 조회's breakdown, which is keyed on the issuer.
+    Measured: **0** such rows today, but **2 of 32 hang off a *flagged* event** (한솔테크닉스
+    `20260722000448`, 트리니티항공 `20260319000351`) and those are skipped by the same
+    `state != "exposable"` gate `P5.S4` note 6 describes — a holder of either sees the 놓친 돈 in
+    조회 and no 지나간 마감 row. Honest, and the inverse of S4's rule rather than a new one.
+16. **Payload sizes / timings** (local Postgres, warm, 4 holdings): `GET /portfolio`
+    **18.3 KB in 37 ms**, `GET /portfolio/sample` **18.2 KB in 25 ms**. Nothing is paged and the
+    design pages nothing; a portfolio is a handful of issuers. 지나간 마감 grows without bound as
+    a reader's holdings age — if that ever matters it is a `P5.S16` decision, not a payload one.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -1203,8 +1353,72 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   leaving `accounts/sessions/resets = 0/0/0`), and the anonymous surfaces
   (`/board`, `/board/summary`, `/stocks`) still answer 200 uncookied.
 
+- (`P5.S8`) **`api`** — 내 포트폴리오 is now a contract, and it is the product's **only gated
+  surface**: `GET /portfolio` (one read: `holdings` — each with its 진행 중인 권리 요약 —
+  plus **`upcoming` / `past`**, the two sections R5 signs, and the KST `reference` day),
+  `POST /portfolio/holdings` (201) · `PATCH|DELETE /portfolio/holdings/{id}` ·
+  `PUT|DELETE /portfolio/claims/{rcept_no}` (챙긴 돈 check/uncheck) ·
+  `GET|PUT /portfolio/notifications` · **`GET /portfolio/sample`, anonymous and read-only**,
+  and `PATCH /auth/account` (수신 주소 = the account email). Contract-wide statements worth
+  their own lines: **the portfolio serves factors, never products** — the server knows the
+  holding count and still ships only 배정비율/증서 1주 이론가치/초과청약 비율, so there is exactly
+  one multiplication site in the product and 조회 and 포트폴리오 cannot disagree (verified: the
+  한화솔루션 `lapse` block is byte-identical to `/stocks`'s, and 500주 → 679,575원 exists
+  nowhere in the payload); **a ②/③ portfolio row carries no won amount at all**, which is why
+  the row loads `STOCK_FIELDS` and not `appraisal_price` (that is R3's detail-page field);
+  **an open ② is in `upcoming`, never in `past`**, because "지나간" is the 종료 label
+  `ui-traps` #5 forbids; **`claimed` is absent, never `false`, when there is no account**; and
+  **a stranger's row is a 404, not a 403**. New structural codes: `holding_exists` 409 ·
+  `invalid_shares` · `invalid_lead_days` 400. **`data`** — three new tables via `create_all`
+  (no Alembic), all hanging off `account.id` with `ondelete="CASCADE"` **and** an ORM
+  `cascade="all, delete-orphan"`: **`holding`** (`corp_code` + `shares` `BigInteger`, unique
+  per account+corp, `shares > 0`; **deliberately no FK to `corp`** — the corp table is
+  re-collectable pipeline data and a reader's portfolio must survive a rebuild, so the
+  reference is validated on write instead), **`notification_pref`** (`lead_days` JSON only —
+  **no address column**, because the 수신 주소 *is* the account email, and **no KakaoTalk
+  column**, because that row renders a 「예정」 chip and no working control) and
+  **`lapse_claim`** (`account_id` + the 증권발행실적보고서's `rcept_no`, **and no amount**).
+  The claim key is the 실적보고서's number on purpose: a 유상증자결정's `rcept_no` mutates (N2)
+  and an `event.id` does not survive a rebuild or a `P5.S5` re-parenting. **`security`** — the
+  R5 personalization layer's boundaries are implemented: 내 포트폴리오 is the only gated surface
+  and every other route still answers 200 uncookied (verified); **no anonymous write endpoint
+  exists at all**, so "anonymous state never reaches the server / migration is offered, never
+  automatic" is structural — the 세션 이월 and 샘플 이전 flows are client offers that produce
+  ordinary authenticated writes; a 챙긴 돈 mark is a **user assertion** that stores no amount
+  and reaches no aggregate (the payload has none); the **sample carries no account fact** —
+  no address, no 알림 설정, no `claimed` key, no fake identity; 계정 삭제 now cascades holdings,
+  claims and preferences too (verified 0/0/0/0/0/0 in Postgres). One nuance the checklist
+  should carry: **수신 주소 변경 (`PATCH /auth/account`) takes the session and no password** —
+  R5's Notify row has no re-auth control and `P5.S7`'s 계정 삭제 set the precedent, so a live
+  stolen session can move the address; adding a password prompt would be a **design** change
+  (see Open Questions). **`backend`** — `mijual.web.portfolio` (the decisions: holdings CRUD,
+  claims, 시점 칩 validation, the sample composition) + `mijual.web.routers.portfolio`
+  (transport) + `mijual.web.auth.change_email`; `reads` gains `HoldingEntry` /
+  `load_portfolio` and the factored-out `_events_for_corps` / `_load_views`, which
+  `load_stock` now shares — one batched reading and one derivation for both surfaces, so a
+  portfolio row *is* the 조회 row plus `shares`. Still **no new dependency**. **`product`** —
+  the 알림 boundary as built: preferences persist (시점 칩 7/3/1/0, default **7일+1일**, an
+  **empty selection is a valid "no mail"** because R5's mail footer promises an off switch and
+  deselecting every chip is the only one the signed surface has), and **nothing sends** — the
+  channel, schedule and body are P4's. An absent preference row means the default, not "off".
+  **`qa`** — suite baseline 99 → **104 tests**, 1.87 s, still no network/model/DB; the surface
+  was additionally curl-verified against live Postgres (owner-scoping 404s · CSRF refusal
+  before the route · the 한화솔루션 500주 basis reproducing R5-4's own 679,575원 from factors
+  only · the anonymous sample at 18.2 KB/25 ms with no `@` in the body · cascade delete). New
+  measured invariants: **32/32** stored `lapse` rows sit inside the 조회 coverage window (so the
+  portfolio's 소멸 rows are exactly 조회's), **0** carry a `NULL` `event_id`, and **2 of 32**
+  hang off a *flagged* event and therefore have no 지나간 마감 row (한솔테크닉스, 트리니티항공).
+  All four R5-4 pinned filings still resolve to the events R5 named; the sample renders **5
+  rows, not 4**, because 대동기어 also holds an exposable ① that lapsed (D+45, 33.4억원) — live
+  data, not a design deviation.
+
 ## Open Questions
 
+- **Re-authentication for 수신 주소 변경** — *new, `P5.S8`*: `PATCH /auth/account` accepts a live
+  session as authority, matching R5's Notify card (a 변경 affordance, no password field) and
+  `P5.S7`'s 계정 삭제 precedent. The consequence is that a stolen session can turn read access
+  into a permanent takeover. Requiring the current password would need a control the signed
+  round does not have, so it is an **operator/design** call, not an implementation one.
 - **The countdown cut-off instant** — *stated default landed, still the operator's call*: `P5.S3`
   serves R2's own assumption (end of the 청약 day, 00:00 KST of the next day) behind
   `MIJUAL_COUNTDOWN_CUTOFF_TIME`, so the real 접수 마감 시각 replaces it with no code change.

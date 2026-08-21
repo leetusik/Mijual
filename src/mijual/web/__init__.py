@@ -39,8 +39,9 @@ Layout::
     mijual.web.reads     — loading: persisted rows in, ``mijual.present`` shapes out
     mijual.web.auth      — reader accounts, sessions, the reset grant (R5)
     mijual.web.passwords — scrypt hashing, parameters carried in the hash
+    mijual.web.portfolio — 내 포트폴리오: holdings, 챙긴 돈 marks, 알림 preferences
     mijual.web.routers   — one module per surface (health · board · events ·
-                           stocks · auth)
+                           stocks · auth · portfolio)
 
 Routers stay transport-thin: they read settings, call :mod:`mijual.web.reads`, and
 serialize. Loading lives in ``reads``; meaning lives in :mod:`mijual.present`. An

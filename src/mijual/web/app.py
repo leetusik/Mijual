@@ -34,7 +34,7 @@ from mijual.mail import ConsoleMailer, Mailer
 from mijual.web.csrf import register_csrf_guard
 from mijual.web.deps import dispose_engine
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import auth, board, events, health, stocks
+from mijual.web.routers import auth, board, events, health, portfolio, stocks
 
 __all__ = ["app", "create_app"]
 
@@ -85,6 +85,7 @@ def create_app(
     app.include_router(events.router)
     app.include_router(stocks.router)
     app.include_router(auth.router)
+    app.include_router(portfolio.router)
     return app
 
 

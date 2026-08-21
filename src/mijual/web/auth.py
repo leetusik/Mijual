@@ -86,6 +86,7 @@ __all__ = [
     "WriteAccount",
     "account_payload",
     "authenticate",
+    "change_email",
     "clear_session_cookie",
     "confirm_reset",
     "create_account",
@@ -260,6 +261,47 @@ def authenticate(db: Session, *, email: str, password: str) -> Account:
         # The one moment the plaintext is legitimately in hand and the request is
         # already a write. See ``mijual.web.passwords`` for the upgrade path.
         account.password_hash = passwords.hash_password(password)
+    return account
+
+
+def change_email(db: Session, account: Account, *, email: str) -> Account:
+    """수신 주소 변경 (R5's 알림 설정 row) — which **is** the account's address.
+
+    `security` fixes stored PII to email + password hash, so the D-day mail has no
+    second address to go to: 변경 edits this account. The decisions, recorded here
+    because the surface asks a smaller question than the endpoint answers:
+
+    * **The session is the authority; no password is re-entered.** R5's signed
+      Notify row is a 수신 주소 with a 변경 affordance and nothing else, and
+      ``P5.S7`` already established the precedent by the same reasoning: 계정 삭제
+      — the strictly more destructive action, with the same signed shape — takes
+      no password either. Adding a password field would be inventing a control
+      the round does not have, and inventing UI is a design change.
+    * **A duplicate address is refused, not merged** — same code as 가입
+      (``email_taken``), because two accounts cannot share a login identity.
+    * **Outstanding reset links are revoked.** A grant was issued *to an address*
+      that is no longer this account's; leaving it live would keep a working key
+      to the account sitting in a mailbox the reader has just moved away from.
+      Sessions are **not** revoked: the reader is the one doing this.
+    """
+    address = _validated_email(email)
+    if address == account.email:
+        return account
+    if account_by_email(db, address) is not None:
+        raise ApiError("email_taken", "an account with this email exists", status_code=409)
+    account.email = address
+    db.execute(
+        delete(PasswordReset).where(
+            PasswordReset.account_id == account.id, PasswordReset.used_at.is_(None)
+        )
+    )
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise ApiError(
+            "email_taken", "an account with this email exists", status_code=409
+        ) from exc
     return account
 
 

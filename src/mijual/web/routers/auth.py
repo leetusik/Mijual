@@ -10,6 +10,7 @@ route map, so ``P5.S15``'s panel and ``P5.S10``'s client can hard-code it:
 ``GET  /auth/me``            who am I — ``{authenticated: bool, account?}``
 ``POST /auth/reset/request`` always the same answer (가입 여부 비노출)
 ``POST /auth/reset/confirm`` token + new password → new session
+``PATCH /auth/account``      수신 주소 변경 (``P5.S8``) — the email *is* the account
 ``DELETE /auth/account``     the email is gone now, and the session with it
 ===========================  ==============================================
 
@@ -158,6 +159,20 @@ def reset_confirm(
     )
     token = auth.start_session(db, account, settings)
     auth.set_session_cookie(response, token, settings)
+    return {"account": auth.account_payload(account)}
+
+
+@router.patch("/auth/account", summary="수신 주소(계정 이메일) 변경")
+def change_email(
+    db: WriteSession, account: auth.WriteAccount, body: Annotated[EmailOnly, Body()]
+) -> dict[str, Any]:
+    """R5's 알림 설정 "수신 주소 · 변경" — the address *is* the account.
+
+    ``P5.S8`` added this beside 계정 삭제 rather than under ``/portfolio`` because
+    it edits the account resource, not a portfolio row. See
+    :func:`mijual.web.auth.change_email` for what it revokes and what it does not.
+    """
+    auth.change_email(db, account, email=body.email)
     return {"account": auth.account_payload(account)}
 
 

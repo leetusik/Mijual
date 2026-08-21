@@ -35,6 +35,7 @@ import re
 from datetime import date, datetime, timezone
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Date,
@@ -63,6 +64,9 @@ __all__ = [
     "Extraction",
     "ExtractionCall",
     "FilingVersion",
+    "Holding",
+    "LapseClaim",
+    "NotificationPref",
     "OfferingInput",
     "PasswordReset",
     "PerformanceReport",
@@ -742,12 +746,13 @@ class Account(Base):
       table renders; nothing else about *when a reader read* is stored, and the
       session rows below carry no IP and no user agent.
 
-    **The FK seam ``P5.S8`` builds on.** Holdings, notification preferences and
-    the 챙긴 돈 marks hang off ``account.id`` with ``ondelete="CASCADE"`` and an
-    ORM-side ``cascade="all, delete-orphan"`` relationship — the same pair
-    :class:`AuthSession` uses below. Both halves are needed: SQLite (the test
-    engine) does not enforce foreign keys by default, and 계정 삭제 must wipe the
-    row *and* everything hanging off it in every environment.
+    **The FK seam ``P5.S8`` built on.** :class:`Holding`,
+    :class:`NotificationPref` and :class:`LapseClaim` hang off ``account.id``
+    with ``ondelete="CASCADE"`` and an ORM-side ``cascade="all, delete-orphan"``
+    relationship — the same pair :class:`AuthSession` uses below. Both halves are
+    needed: SQLite (the test engine) does not enforce foreign keys by default,
+    and 계정 삭제 must wipe the row *and* everything hanging off it in every
+    environment.
 
     Email is stored **normalized** (see :func:`mijual.web.auth.normalize_email`)
     and only in that form: the address a reader typed is not additionally kept,
@@ -775,6 +780,15 @@ class Account(Base):
     )
     resets: Mapped[list["PasswordReset"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
+    )
+    holdings: Mapped[list["Holding"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+    lapse_claims: Mapped[list["LapseClaim"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+    notification_pref: Mapped["NotificationPref | None"] = relationship(
+        back_populates="account", cascade="all, delete-orphan", uselist=False
     )
 
     def __repr__(self) -> str:  # pragma: no cover - never log the address itself
@@ -856,3 +870,156 @@ class PasswordReset(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<PasswordReset account={self.account_id} used={self.used_at is not None}>"
+
+
+# ---------------------------------------------------------------------------
+# P5.S8 — 내 포트폴리오 (R5). The reader's own rows, and only ever their own.
+# ---------------------------------------------------------------------------
+class Holding(Base):
+    """One 종목 the reader holds, and how many shares. **Nothing else.**
+
+    A holding is an issuer and a count — no cost basis, no broker, no purchase
+    date, no note. `security`'s PII boundary is about the *account*, but the same
+    reasoning governs here: every column is a thing that can leak, and the product
+    needs exactly two to compute a 마감 알림 and an N주 환산.
+
+    **``corp_code`` is deliberately not a foreign key to :class:`Corp`.** The corp
+    table is pipeline data — re-collectable, and reset outright when the schema
+    changes (N16) — while a holding is a reader's own row that must survive that.
+    A FK would make a corpus rebuild either delete a reader's portfolio or fail on
+    it. The reference is validated **on write** instead
+    (:func:`mijual.web.portfolio.add_holding` resolves the code through
+    :func:`mijual.web.reads.stock_by_code`, so a holding always names a real
+    issuer at the moment it is created), and a code that later resolves to nothing
+    degrades to a row with no 회사명 and no rights rather than to a 500.
+
+    **One row per (account, corp): a duplicate 담기 is refused, never merged.**
+    Merging would invent a share count the reader never typed and replacing would
+    discard one they did; R5 already ships the honest way to change a 보유량 — the
+    row's inline 수정. The client holds the whole list and routes a repeat 담기 to
+    that edit, so the constraint is a last-resort invariant (two tabs, one
+    account) rather than a path a reader walks.
+
+    ``shares`` is a :class:`~sqlalchemy.BigInteger` because Postgres ``integer``
+    tops out at 2.1 billion and 삼성전자 alone has ~5.97 billion shares
+    outstanding — a real holder of a real company must not overflow the column.
+    """
+
+    __tablename__ = "holding"
+    __table_args__ = (
+        UniqueConstraint("account_id", "corp_code", name="uq_holding_account_corp"),
+        CheckConstraint("shares > 0", name="ck_holding_shares_positive"),
+        Index("ix_holding_account", "account_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    #: The DART ``corp_code`` — the stable handle every reader surface links by.
+    corp_code: Mapped[str] = mapped_column(String(8), nullable=False)
+    shares: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    account: Mapped[Account] = relationship(back_populates="holdings")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<Holding account={self.account_id} {self.corp_code} {self.shares}>"
+
+
+class NotificationPref(Base):
+    """마감 임박 이메일 settings for one account — **when**, and nothing else.
+
+    R5's 알림 설정 has three rows and only one of them is stored here:
+
+    * **수신 주소** is the account's own email (`security`: stored PII is exactly
+      email + password hash), so there is no address column — "변경" edits
+      :attr:`Account.email` through :func:`mijual.web.auth.change_email`. A second
+      copy of the address would be a second thing to leak and a second thing to
+      keep in sync;
+    * **시점 칩** (7일 / 3일 / 1일 / 당일) are :attr:`lead_days`;
+    * **KakaoTalk** renders a 「예정」 chip and **no working control**, so it has
+      **no column at all**. A stored flag for a channel that cannot be turned on
+      would be a switch pretending to be wired up — the exact thing R5 forbids.
+
+    **A missing row means the default, not "off".** The row is written the first
+    time a reader changes the setting; until then
+    :data:`mijual.web.portfolio.DEFAULT_LEAD_DAYS` (7일 + 1일, R5's own default)
+    is what is served and what P4's sender must read. Creating a row at signup
+    would have meant editing the auth flow to carry a preference it does not own,
+    and would freeze today's default into every account ever created.
+
+    **An empty list is a valid setting: it means no mail.** R5's mail footer
+    promises "알림 설정에서 끌 수 있습니다" and deselecting every chip is the only
+    off switch the signed surface offers, so the empty list must persist rather
+    than fall back to the default.
+    """
+
+    __tablename__ = "notification_pref"
+    __table_args__ = (
+        UniqueConstraint("account_id", name="uq_notification_pref_account"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    #: Days before the governing 마감, as a sorted list out of ``(7, 3, 1, 0)``
+    #: — ``0`` is 당일. ``[]`` is "no mail"; the column is never ``NULL``.
+    lead_days: Mapped[dict | list | None] = mapped_column(JSONBody, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    account: Mapped[Account] = relationship(back_populates="notification_pref")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<NotificationPref account={self.account_id} {self.lead_days}>"
+
+
+class LapseClaim(Base):
+    """챙긴 돈 (R5-8) — the reader's own claim about one past ① offering.
+
+    "청약·매도로 챙겼습니다" is a **user assertion**, not disclosure data, and the
+    separation is structural rather than careful: this table stores an account,
+    a filing number and a timestamp — **no amount** — so a claim can re-label the
+    reader's own row and can never reach an aggregate, a statistic or anything
+    another reader sees. Nothing in :mod:`mijual.present` reads it.
+
+    **The key is the 증권발행실적보고서's own ``rcept_no``**, and the choice
+    matters. The 유상증자결정's number *mutates* to its newest version (N2), so a
+    mark keyed on it would come unstuck the day a 정정 lands; an ``event.id`` is an
+    internal autoincrement that a corpus rebuild does not preserve, and P5.S5
+    showed versions being re-parented between events. The 실적보고서 is terminal —
+    it is filed after the 청약 it reports — its ``rcept_no`` is unique
+    (:class:`PerformanceReport`) and it is exactly what makes the reader's row
+    exist at all: no report, no 소멸 row, no mark. It is also the key an anonymous
+    or sample reader stores in ``localStorage``, because it is what the payload
+    carries (``lapse.performance_rcept_no``), so both storages address one row the
+    same way.
+    """
+
+    __tablename__ = "lapse_claim"
+    __table_args__ = (
+        UniqueConstraint(
+            "account_id", "performance_rcept_no", name="uq_lapse_claim_account_report"
+        ),
+        Index("ix_lapse_claim_account", "account_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    #: :attr:`PerformanceReport.rcept_no` — see the class docstring.
+    performance_rcept_no: Mapped[str] = mapped_column(String(14), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    account: Mapped[Account] = relationship(back_populates="lapse_claims")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<LapseClaim account={self.account_id} {self.performance_rcept_no}>"
