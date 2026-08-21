@@ -7,8 +7,10 @@ overlap, and an explicit ceiling on every stage that spends.
 
 Three things it is, and one it is not.
 
-* **A job topology, not a service.** ``collect → bodydoc → extract → gates``, in
-  that order, because each stage consumes what the previous one persisted.
+* **A job topology, not a service.** ``collect → bodydoc → extract → gates →
+  reparse → snapshot``, in that order, because each stage consumes what the
+  previous one persisted. The last two (``P5.S9``) are the offline re-derivation
+  that keeps the serving precomputation from ageing behind the corpus.
 * **Bounded by construction.** ``DartClient(max_requests=…)`` and
   ``GeminiClient(max_calls=…)`` refuse the next unit past the ceiling, so a
   scheduled run cannot spend without a bound even if a window suddenly widens.
@@ -47,6 +49,8 @@ from mijual.scheduler.pipeline import (
     stage_collect,
     stage_extract,
     stage_gates,
+    stage_reparse,
+    stage_snapshot,
 )
 
 __all__ = [
@@ -66,5 +70,7 @@ __all__ = [
     "stage_collect",
     "stage_extract",
     "stage_gates",
+    "stage_reparse",
+    "stage_snapshot",
     "window_for",
 ]

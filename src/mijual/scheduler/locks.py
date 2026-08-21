@@ -32,8 +32,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from mijual.beat import LOCK_KEY_PREFIX
+
 __all__ = [
     "DEFAULT_TTL_S",
+    "KEY_PREFIX",
     "FileLock",
     "NullLock",
     "RedisLock",
@@ -42,8 +45,10 @@ __all__ = [
 
 #: How long a lock lives if the holder never releases it (crash, kill -9).
 DEFAULT_TTL_S = 3600
-#: Redis key prefix. One namespace for the whole workspace.
-KEY_PREFIX = "mijual:lock:"
+#: Redis key prefix. One namespace for the whole workspace — and re-exported from
+#: :mod:`mijual.beat` rather than spelled here, because the ops panel's lock chip
+#: reads the same key from a request path that must not import this package.
+KEY_PREFIX = LOCK_KEY_PREFIX
 
 
 def _now() -> float:

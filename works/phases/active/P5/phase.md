@@ -1048,6 +1048,134 @@ route a repeat 담기 to the row's inline 수정 rather than need one.
     design pages nothing; a portfolio is a handful of issuers. 지나간 마감 grows without bound as
     a reader's holdings age — if that ever matters it is a `P5.S16` decision, not a payload one.
 
+### `P5.S9` — 운영 관제's backend exists; the door, the endpoint map, the port, the run log
+
+The panel's whole backend: a **separate** operator credential, eleven routes of which nine
+are `GET`, the pipeline run log R7's 개요 tab requires, and the storage port that lets the
+three P6 tabs serve honest zeros. **0 requests, 0 model calls, 0 new dependencies.** The
+개요 tiles reproduce `python -m mijual.gates summary` byte for byte and the 정확도 markdown
+reproduces `python -m mijual.evalset report` byte for byte — both verified live.
+
+**Import map**
+
+| you need | import |
+|---|---|
+| the operator gate on a read | `from mijual.web.ops import OpsGate` → `def tab(db: DbSession, _: OpsGate)` |
+| "is this an operator", never raising | `ops.has_ops_session(db, request)` |
+| the ops cookie's name | `mijual.web.auth.OPS_COOKIE` (`mj_ops`) — reserved by `P5.S7` |
+| any ops number | `mijual.web.opsreads` — `gate_summary` · `beat_view` · `run_log` · `lock_state` · `gate_queue` · `gate_rows` · `accuracy` · `spend` · `reader_accounts` |
+| the 대화/세션/피드백 source | `mijual.web.conversations.Conversations` (P6 implements; P5 wires `EmptyConversations`) |
+| the beat schedule **or** the run-lock key from anywhere | `mijual.beat` — `BEAT_ENTRIES` · `TIMEZONE` · `lock_key()` · `DEFAULT_WINDOW_DAYS` |
+
+**Endpoints** (prefix `/ops`, all behind the operator session):
+`POST /ops/login` · `POST /ops/logout` · `GET /ops/session` ·
+`GET /ops/overview` · `GET /ops/gates` · `GET /ops/gates/rows` · `GET /ops/accuracy` ·
+`GET /ops/conversations` · `GET /ops/sessions` · `GET /ops/feedback` · `GET /ops/users`.
+New structural codes: `invalid_credentials` 401 (the door) · `ops_unauthenticated` 401
+(expiry → the client returns to the door and restores the tab). **No vocky route exists**
+— `P5.S18` decides its shape and a stub with invented field names is what §6.3 forbids.
+
+1. **The door is a credential with no row, and that is the no-join promise.**
+   `MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD` in the environment; **no operator account, no
+   admin flag, no signup, no reset**. `ops_session` has **no `account_id`, no FK and no
+   operator identifier at all** — a row means "somebody proved they hold the credential",
+   which is the whole fact. Cookie **`mj_ops`** (`HttpOnly` · `SameSite=Lax` · `Path=/` ·
+   `Secure` from `MIJUAL_COOKIE_SECURE`), **12 hours absolute, never extended on a read** —
+   a working day, deliberately not the reader's 30 days, because an operator console should
+   not still be open tomorrow morning. Token digests are keyed with the same
+   `MIJUAL_SESSION_SECRET`, so one rotation logs out readers *and* operators.
+2. **One failure, one cost, and "unset" is one of the causes.** Unknown ID, wrong password
+   and *no credential configured* return byte-identical 401 bodies (verified with `==` on
+   the raw content). The configured password is hashed once per process and **every** path
+   spends exactly one scrypt verification (the miss burns one against a dummy hash, S7's
+   shape); the ID goes through `hmac.compare_digest` and **both checks are always
+   evaluated** — a short-circuit would leak "the ID exists" in the timing the uniform body
+   exists to hide. `P5.S17` renders 「자격증명이 올바르지 않습니다」 from the code; the API
+   writes no Korean. **Attempt limiting is recorded, not built** (`security`: server
+   concern, no UI copy) — it needs cross-process state, which is **P4**'s, exactly as
+   `P5.S7` decided for the reader login.
+3. **Two import boundaries were closed by moving, not forking — do not undo either.**
+   (a) **`mijual/beat.py`** (new, stdlib-only) now holds `TIMEZONE`, the window constants,
+   `BEAT_ENTRIES` and the **run-lock key**. `mijual.scheduler.app` builds `BEAT_SCHEDULE`
+   from it, `mijual.scheduler.locks` re-exports `KEY_PREFIX` from it, and the ops panel
+   reads it — so there is **one** statement of when the pipeline runs and one spelling of
+   `mijual:lock:pipeline`. It had to move because `mijual.scheduler` pulls
+   `collect`/`extract`/`dart` through `pipeline.py`, and R7 requires the schedule to be
+   rendered *from the configuration* ("설정이 곧 진실"). (b) **`mijual/evalset/sample.py`'s
+   two `mijual.extract` imports are now function-local** (they belong to the corpus-*draw*
+   half; the *artifact* half — `EvalSample`/`load_sample` — is pure JSON and is what a
+   request path reads). Measured after both: `import mijual.web.app` still pulls **none** of
+   `dart`/`collect`/`extract`/`estimate`/`scheduler`/`evalset` and no Celery.
+4. **The gate-queue denominator is now 691, not 633** — `710` stored rows, **19**
+   duplicates (was 649/633/16). It moved because `P5.S6` added 61 `appraisal_price` label
+   rows. **Both numbers are served** (`basis.stored_rows` / `basis.distinct_rows` /
+   `basis.duplicates` / `basis.key`) and every reason carries `count` (stored) **and**
+   `distinct_count` + `rate` (distinct basis), so no percentage's denominator is ever
+   implicit. `method_not_enumerated` is the visible duplicate case: 4 stored, 2 distinct.
+5. **The run log is opened at the start of a run and closed at the end.** `pipeline_run`:
+   label · trigger (`beat` from the beat entries' own kwargs, else `manual`) · started/
+   finished · seconds · window · config line · lock kind · ok · requests · calls · cost ·
+   **`spend_line` verbatim** · `stages` (each `StageResult.as_dict()`, `detail` included) ·
+   notes. Opening it early is why an in-flight or crashed run is visible **and** why the
+   lock chip has an honest 시작 시각: the Redis lock value is an owner token with no start
+   time, so deriving one from its TTL would be an invented number. **A skipped run writes
+   no row** — it did nothing, and the lock chip is where contention shows. A run-log failure
+   is swallowed into a run note: a log that can kill a pipeline is worse than no log.
+6. **`▷` is stored and served verbatim.** `PipelineResult.spend_line` is now a property so
+   `render()` and the stored row cannot drift; a test asserts the row carries `▷` and does
+   **not** carry 「추정」. Same rule in `spend()`'s `cost_line`. Everywhere outside the ops
+   panel, 「추정」 remains the only estimate mark — the boundary is the source.
+7. **S3's deviation is closed: `reparse` + `snapshot` are beat stages now.**
+   `STAGES = (collect, bodydoc, extract, gates, reparse, snapshot)`. Both are offline
+   (0 requests, 0 calls) so scheduling them costs nothing, and until they ran on the
+   schedule the ① extras and the landing headline could age silently while 기준시각 said the
+   corpus was fresh. Order is a data dependency: `reparse` rewrites `facts`, `snapshot`
+   builds `LapseRow` from them. `tests/test_scheduler.py` was updated deliberately and now
+   pins the ordering, not just the membership. Measured on the live corpus: `reparse 69/69,
+   **0 with changed facts**`, `snapshot ① inputs 545 / 소멸 rows 32`, and `/board/summary`
+   **identical** before → after.
+8. **⚠ R7's 사용자 tab asks for a column P5 has no fact for: 샘플 로드 여부.** R5's sample is
+   anonymous end to end (`P5.S8` note 13 — there is no anonymous write endpoint, and a
+   샘플→계정 이전 is the client making ordinary authenticated `POST /portfolio/holdings`
+   calls), so **nothing server-side ever learns that a reader loaded it**. The payload
+   therefore carries **no `sample_loaded` key** rather than an invented `false`, and
+   `P5.S17` must render it as an honest absent. Building the backing would mean a new
+   holding-provenance column plus a client-visible parameter — a change to `P5.S8`'s signed
+   contract *and* a new behavioural fact about a reader, against `security`'s minimal
+   disclosure. **New Open Question below; `P5.REVIEW`'s call.** The other four columns are
+   real: 이메일 · 가입일 · 포트폴리오 종목 **개수** (count only — never contents) · 알림 설정
+   with `stored: false` meaning the 7일+1일 default rather than "off" (`P5.S8` note 9).
+9. **The conversation port's three rules are P6's to inherit, not to re-decide.**
+   `Conversations` offers `conversations()` / `sessions()` / `feedback()`, each returning a
+   `Page(rows, total, next_cursor)`; **no method takes an account, email, IP or UA filter**,
+   nothing writes, and pagination is an opaque cursor, newest first. P5 wires
+   `EmptyConversations` through `create_app(conversations=…)` — the same seam shape as
+   `P5.S7`'s mailer, so **P6 changes no route**. The tabs serve `{"count": 0, "rows": []}`:
+   honest, because this build genuinely stores no conversations, and **no 「준비 중」 string
+   was invented**.
+10. **`P5.S17` inherits three rendering obligations the payloads are shaped for.**
+    (a) The 「실행 기록 없음」 alert row is the **client's join** of `beat.entries[].due`
+    (every instant an entry was due in the last 3 days, computed from the declaration) with
+    `runs.rows` — the backend serves both facts and fabricates no row. (b) A blocked gate row
+    has **no `quote`/`span` key** (verified live on a `field_absent` row); render 「없음」 as a
+    state, never a placeholder. (c) The 정확도 tab gets `evalset.markdown` (the CLI's exact
+    output) *and* a structured mirror derived from the same object — quote from either, but
+    never a rate without the decomposition sitting beside it (`over_blocked_estimate` now
+    lives **inside** the `blocked` bucket for exactly that reason).
+11. **Live measurements (2026-08-22, local Postgres + Redis).** 개요 5.8 KB / 67 ms ·
+    게이트 대기열 10 KB / 189 ms · 정확도 29 KB / 35 ms · 행 검사 ~5 KB. The expensive one is
+    `gate_summary`'s renderable-field count, which walks the 488 exposable events the same
+    way `/board` does (batched `current_versions`, one extraction query). Redis pointed at a
+    dead port: **200 in 0.13 s** with `lock.state = "unknown"` + the reason, and the rest of
+    the tab intact — a broker that is down is a fact the operator wants, not a reason to
+    fail the page.
+12. **Local dev needs one operator step, and it was deliberately not taken for them.**
+    Add `MIJUAL_OPS_ID=…` and `MIJUAL_OPS_PASSWORD=…` to the gitignored repo-root `.env`.
+    Nothing was written into that file: choosing a credential in the operator's own
+    environment is theirs. Until it is set the door never opens (and says so identically to
+    a wrong password). **The deploy-time issuance/rotation stays P4's open question**, and
+    so does the concrete route (`/ops` is the local choice, matching R7's own example).
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -1412,8 +1540,105 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   rows, not 4**, because 대동기어 also holds an exposable ① that lapsed (D+45, 33.4억원) — live
   data, not a design deviation.
 
+- (`P5.S9`) **`security`** — the R7 §6.4 operator door is **implemented**, and its half of
+  the checklist line "constant-time admin failure" closes: a **separate credential from the
+  environment** (`MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD`, masked in `Settings.__repr__`),
+  with **no operator account row, no admin flag, no signup and no reset** — and therefore
+  nothing to join to a reader account. Session = its own **`ops_session`** row keyed by the
+  same peppered digest as the reader's, carrying **no `account_id`, no FK and no operator
+  identifier at all**, behind cookie **`mj_ops`** (`HttpOnly` · `SameSite=Lax` · `Path=/` ·
+  `Secure` from `MIJUAL_COOKIE_SECURE`), **12 hours absolute, never extended on a read** —
+  shorter than the reader's 30 days because an operator console should not still be open the
+  next morning. **The failure is uniform in body *and* in cost for three causes, not two**:
+  unknown ID, wrong password, and *no credential configured* return byte-identical 401
+  bodies, the ID goes through `hmac.compare_digest`, both checks are always evaluated (no
+  short-circuit, which would leak existence in the timing), and every path spends exactly one
+  scrypt verification. Expiry answers **401 `ops_unauthenticated`** so the client returns to
+  the door and restores the tab. Attempt limiting stays **P4**'s (cross-process state, no UI
+  copy). The panel's read-only property is now structural: **nine of eleven ops routes are
+  `GET`** and the two `POST`s touch only the operator's own session row — a test asserts the
+  documented OpenAPI surface carries no other unsafe method under `/ops`, and that no reader
+  payload mentions the path. The 계정↔대화 no-join promise is likewise structural in the
+  serving layer: `/ops/users` is **two independent reads** and no query touches both. One
+  honest gap worth the checklist: R7's **샘플 로드 여부** column has no server-side fact (see
+  Open Questions) and is served as an **absent key**, never a `false`. **`operations`** — the
+  scheduled pipeline gains **two offline stages, `reparse` and `snapshot`**
+  (`STAGES = collect → bodydoc → extract → gates → reparse → snapshot`, 0 requests / 0 model
+  calls), which closes `P5.S3`'s standing caveat that the serving precomputation was
+  hand-run and could age silently while 기준시각 said the corpus was fresh; and **every run
+  now writes itself down** (`pipeline_run`, opened before the first stage and closed after
+  the last, so an in-flight or crashed run is visible as a row with no `finished_at`, while a
+  **skipped** run writes none). The **beat schedule and the run-lock key now have exactly one
+  declaration** (`mijual.beat`), read by both the Celery app and the ops panel, so the panel
+  can never render a schedule the worker is not running. New CLI flags
+  `--trigger` / `--no-run-log`; new dev settings `MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD`
+  (deploy-time issuance and the concrete route stay P4's). Redis is **optional at request
+  time**: the lock chip degrades to `state: "unknown"` with a reason and the tab still
+  answers 200. **`api`** — 운영 관제 is now a contract: eleven `/ops` routes (door ·
+  개요 · 게이트 대기열 + 행 검사 · 정확도·비용 · 대화 로그 · 익명 세션 · 피드백 · 사용자),
+  **operator-only**, and contract-wide statements worth their own lines: **every number is
+  re-read from the source that already owns it** (the 개요 tiles reproduce `gates summary`
+  byte for byte; the 정확도 block ships `mijual.evalset report`'s **exact markdown** beside a
+  structured mirror derived from the same object); **a reason/suppression code travels raw
+  English and carries `reason_ko` only when the gate layer itself owns that Korean** — never
+  a fallback phrase; **`▷` is served verbatim and never becomes 「추정」** inside this panel
+  (the boundary is the source); **every rate ships its own denominator** — gate-queue counts
+  are over stored rows while rates are over **distinct `(rcept_no, field_key)`**, both served
+  with `basis`, and each accuracy rate carries its n, interval and corpus denominator; and
+  **spend windows are labelled** (LLM `cumulative` with `since`/`until`, OpenDART `daily`
+  against the operator-stated 20,000/day). A blocked gate row omits `quote`/`span` entirely.
+  **`data`** — two new tables via `create_all` (additive, no Alembic): **`ops_session`**
+  (token digest + expiry, **no relation to any other table** — the no-join promise as schema)
+  and **`pipeline_run`** (one row per run: label · trigger · started/finished · seconds ·
+  window · config line · lock kind · ok · requests · calls · ▷ cost · the run's **verbatim**
+  spend line · per-stage `StageResult` JSON · notes). **P5 creates no conversation table**:
+  the 대화 로그 / 익명 세션 / 피드백 tabs read a storage-agnostic port whose P5 implementation
+  returns empty pages, so the schema-level 계정↔대화 absence stays trivially intact and P6
+  owns the storage. **`backend`** — `mijual.beat` (the Celery-free beat + lock-key
+  declaration both the worker and the panel read), `mijual.web.ops` (the door),
+  `mijual.web.opsreads` (every ops number), `mijual.web.conversations` (the P6 port, wired
+  through `create_app(conversations=…)` exactly like the mailer seam),
+  `mijual.web.routers.ops`; `mijual.scheduler.pipeline` gains `stage_reparse` /
+  `stage_snapshot` / `open_run_row` / `close_run_row` and `PipelineResult.spend_line` (a
+  property, so the printed line and the stored one cannot drift); `auth._new_token` became
+  public `auth.new_token` (one definition of "unguessable" for both credentials). **Still no
+  new dependency** — `pyproject` untouched. **`architecture`** — the request-path boundary
+  held under a surface that legitimately needs pipeline configuration: rather than importing
+  `mijual.scheduler` (which pulls `collect`/`extract`/`dart`) or `mijual.evalset` as it was
+  (which pulled `extract`), both were fixed **by moving, not forking** — the beat/lock
+  declaration moved down into a stdlib-only `mijual.beat`, and `evalset/sample.py`'s two
+  extractor imports moved into the corpus-*draw* functions that own them, leaving the
+  frozen-artifact half pure. Measured after: `import mijual.web.app` still pulls **none** of
+  `dart`/`collect`/`extract`/`estimate`/`scheduler`/`evalset`, and no Celery. **`decisions`**
+  — three worth recording: the ops session is **12 hours absolute** (a working day, not the
+  reader's 30) because an operator console should not outlive the shift; the run log's
+  **start-then-close** write is what makes a crashed run visible *and* gives the lock chip an
+  honest 시작 시각 (the Redis lock holds an owner token and no start time, so deriving one
+  from the TTL would be an invented number); and the OpenDART quota bar's denominator is
+  served with its **provenance** (`operator (decisions O-1)`) because 20,000/day is an
+  operator statement, not something this service can measure. **`qa`** — suite baseline 104 →
+  **113 tests**, 2.49 s, still no network/model/DB; new cases cover the door's three-way
+  uniform failure (byte-identical bodies), both cookie-rejection directions, the ops surface
+  carrying no mutation route (asserted over the OpenAPI paths) and no reader payload
+  mentioning it, the port's honest zeros, the distinct-basis rate arithmetic, the beat
+  declaration's Celery-vs-Python weekday mapping, and a run-log round trip including the
+  ▷ line and the skipped-run-writes-nothing rule. Live cross-checks: 개요 reproduces
+  `gates summary` exactly (628 considered / 488 exposable / 418 renderable, 추후결정 2+2) and
+  정확도's markdown equals `evalset report`'s output **byte for byte** (98.6% · 213/216 ·
+  과차단 100% 19/19 · 재현율 88.7%, `judged_by` present). New measured constant: the
+  gate-queue basis is now **710 stored rows / 691 distinct / 19 duplicates** (was 649/633/16
+  — the 61 `appraisal_price` label rows from `P5.S6`).
+
 ## Open Questions
 
+- **R7's 샘플 로드 여부 column has no backing fact** — *new, `P5.S9`*: R5's sample portfolio
+  is anonymous end to end and `P5.S8` deliberately built **no anonymous write endpoint**, so
+  a 샘플→계정 이전 arrives as ordinary authenticated holdings and nothing server-side records
+  that the sample was ever loaded. `/ops/users` therefore serves the other four 독자 계정
+  columns and **omits this one** rather than asserting `false`. Building the backing means a
+  holding-provenance column plus a client-visible parameter — a change to `P5.S8`'s signed
+  contract and a new behavioural fact about a reader, which `security`'s minimal-disclosure
+  rule argues against. **Operator/review call**, not an implementation one.
 - **Re-authentication for 수신 주소 변경** — *new, `P5.S8`*: `PATCH /auth/account` accepts a live
   session as authority, matching R5's Notify card (a 변경 affordance, no password field) and
   `P5.S7`'s 계정 삭제 precedent. The consequence is that a stolen session can turn read access

@@ -51,9 +51,16 @@ from sqlalchemy.orm import Session
 from mijual.bodydoc import BodyDocument, Span, normalize
 from mijual.config import ROOT
 from mijual.db.models import Corp, Event, Extraction, FilingVersion, PerformanceReport, Snapshot
-from mijual.extract.fields import FIELDS
-from mijual.extract.store import summarize_value
 from mijual.gates.outcome import REASON_LABELS_KO
+
+# ``mijual.extract`` is imported **inside** the two draw functions that need it,
+# never at module level. Both halves of this module used to sit behind that one
+# import: the corpus *draw* (which legitimately needs the field registry) and the
+# *artifact* half (:class:`EvalSample` / :func:`load_sample`, pure JSON), which
+# ``P5.S9``'s 정확도 tab reads from a request path. Importing this module must not
+# drag the extractor's module tree into the serving process — the `architecture`
+# boundary that ``tests/test_web_smoke.py`` enforces for ``mijual.web``. Drawing a
+# sample is a CLI pass against the database and pays the import there.
 
 __all__ = [
     "CORRECTION_FIELD",
@@ -341,6 +348,8 @@ def _rendered_value(row: Extraction) -> str:
     sub-fields are all ``null`` because the filing suspended the schedule. Both
     are judgements the operator must judge; an empty cell would hide them.
     """
+    from mijual.extract.store import summarize_value  # draw-half only; see the imports
+
     rendered = _squash(summarize_value(row.value, limit=900))
     if rendered:
         return rendered
@@ -375,6 +384,8 @@ def collect_rows(session: Session) -> tuple[list[Row], int]:
 
 
 def _extraction_rows(session: Session) -> list[Row]:
+    from mijual.extract.fields import FIELDS  # draw-half only; see the imports
+
     records = session.execute(
         select(Extraction, FilingVersion, Event, Corp)
         .join(FilingVersion, Extraction.filing_version_id == FilingVersion.id)

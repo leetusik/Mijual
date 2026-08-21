@@ -43,15 +43,13 @@ from __future__ import annotations
 from celery import Celery
 from celery.schedules import crontab
 
+from mijual.beat import BEAT_ENTRIES, TIMEZONE, BeatEntry
 from mijual.config import load_settings
-from mijual.scheduler.config import (
-    DEFAULT_WINDOW_DAYS,
-    RESYNC_WINDOW_DAYS,
-    PipelineConfig,
-)
+from mijual.scheduler.config import PipelineConfig
 from mijual.scheduler.pipeline import run_pipeline
 
 __all__ = [
+    "BEAT_ENTRIES",
     "BEAT_SCHEDULE",
     "TIMEZONE",
     "app",
@@ -63,42 +61,28 @@ __all__ = [
     "make_app",
 ]
 
-#: Korean market time. Not a default — a decision (see the module docstring).
-TIMEZONE = "Asia/Seoul"
 
-#: The periodic jobs. Times are KST.
-#:
-#: * **07:30** — before the market opens: yesterday evening's filings are in, so
-#:   the board is current for the day that matters to a 청약 deadline.
-#: * **19:30** — after 공시 접수 closes (18:00) plus a margin: the day's filings
-#:   and 정정 land the same evening instead of waiting until the next morning.
-#: * **Sunday 04:30** — the straggler pass over a 90-day window: corrections
-#:   whose original sits outside the daily window, and events whose corp-scoped
-#:   pairing query only resolves once more filings exist.
+def _crontab(entry: BeatEntry):
+    """One :class:`~mijual.beat.BeatEntry` as the ``crontab`` beat fires it."""
+    if entry.day_of_week is None:
+        return crontab(hour=entry.hour, minute=entry.minute)
+    return crontab(hour=entry.hour, minute=entry.minute, day_of_week=entry.day_of_week)
+
+
+#: The periodic jobs, built from :data:`mijual.beat.BEAT_ENTRIES` — the one
+#: declaration of when this pipeline runs. It lives outside this module because
+#: R7's 개요 tab renders the schedule ("설정이 곧 진실") and a request path may not
+#: import this package: :mod:`mijual.scheduler.pipeline` pulls the collector and
+#: the extractor, and nothing in a request path may reach a spending module. Add
+#: or move an entry in :mod:`mijual.beat` and both the worker and the ops panel
+#: change together.
 BEAT_SCHEDULE: dict[str, dict] = {
-    "daily-pipeline-morning": {
-        "task": "mijual.daily_pipeline",
-        "schedule": crontab(hour=7, minute=30),
-        "kwargs": {"window_days": DEFAULT_WINDOW_DAYS, "label": "daily-morning"},
-    },
-    "daily-pipeline-evening": {
-        "task": "mijual.daily_pipeline",
-        "schedule": crontab(hour=19, minute=30),
-        "kwargs": {"window_days": DEFAULT_WINDOW_DAYS, "label": "daily-evening"},
-    },
-    "weekly-resync": {
-        "task": "mijual.daily_pipeline",
-        "schedule": crontab(hour=4, minute=30, day_of_week=0),
-        "kwargs": {
-            "window_days": RESYNC_WINDOW_DAYS,
-            "label": "weekly-resync",
-            # A quarter of filings costs more discovery + detail calls than two
-            # weeks does; still ~10% of one day's 20,000-request quota (O-1).
-            "collect_max_requests": 1500,
-            "bodydoc_max_requests": 600,
-            "collect_max_documents": 400,
-        },
-    },
+    entry.name: {
+        "task": entry.task,
+        "schedule": _crontab(entry),
+        "kwargs": dict(entry.kwargs),
+    }
+    for entry in BEAT_ENTRIES
 }
 
 

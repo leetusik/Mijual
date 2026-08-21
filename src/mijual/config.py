@@ -116,6 +116,21 @@ class Settings:
     #: to build the password-reset link. The Next.js dev server's default.
     app_base_url: str = "http://localhost:3000"
 
+    # -- the operator door (P5.S9, R7 §6.4). See ``mijual.web.ops``.
+    #: ``MIJUAL_OPS_ID`` — the 운영자 ID. **A separate credential**, with no join
+    #: to the reader account table and no admin flag on a reader row: `security`
+    #: says it is issued and rotated in the deployment environment, so there is no
+    #: signup, no reset and no account row for it anywhere.
+    ops_id: str | None = None
+    #: ``MIJUAL_OPS_PASSWORD`` — the 운영자 비밀번호, in plaintext, exactly as the
+    #: deployment secret store hands it over. It is never compared with ``==``:
+    #: :mod:`mijual.web.ops` hashes it once per process and every login — hit,
+    #: wrong password, unknown ID, credential unset — spends exactly one scrypt
+    #: verification, so the four causes are indistinguishable in body *and* in
+    #: timing. **Unset means the door never opens**, which is the right default
+    #: for a surface with no signup.
+    ops_password: str | None = None
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -156,11 +171,14 @@ class Settings:
 
         return (
             "Settings(dart_api_key={}, gemini_api_key={}, session_secret={}, "
+            "ops_id={}, ops_password={}, "
             "database_url={!r}, redis_url={!r}, cache_dir={!r})"
         ).format(
             mark(self.dart_api_key),
             mark(self.gemini_api_key),
             mark(self.session_secret),
+            mark(self.ops_id),
+            mark(self.ops_password),
             self.database_url,
             self.redis_url,
             str(self.cache_dir),
@@ -196,4 +214,8 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         cookie_secure=(pick("MIJUAL_COOKIE_SECURE") or "").lower()
         in ("1", "true", "yes", "on"),
         app_base_url=(pick("MIJUAL_APP_BASE_URL") or "http://localhost:3000").rstrip("/"),
+        # No default and no fallback: an operator door with a built-in credential
+        # would be a back door. Unset simply never opens (`mijual.web.ops`).
+        ops_id=pick("MIJUAL_OPS_ID"),
+        ops_password=pick("MIJUAL_OPS_PASSWORD"),
     )

@@ -68,8 +68,10 @@ __all__ = [
     "LapseClaim",
     "NotificationPref",
     "OfferingInput",
+    "OpsSession",
     "PasswordReset",
     "PerformanceReport",
+    "PipelineRun",
     "RightsType",
     "Snapshot",
     "SnapshotSource",
@@ -1023,3 +1025,109 @@ class LapseClaim(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<LapseClaim account={self.account_id} {self.performance_rcept_no}>"
+
+
+# ---------------------------------------------------------------------------
+# P5.S9 — 운영 관제 (R7). The operator's door, and the pipeline's own record.
+# ---------------------------------------------------------------------------
+class OpsSession(Base):
+    """One logged-in **operator** session. Deliberately unrelated to everything.
+
+    R7 §6.4 and `security` require the operator credential to have *no join* to
+    the reader account table and no admin flag on a reader row. That promise is
+    kept the same way the 계정↔대화 promise is: **structurally**. This table has
+    no ``account_id``, no foreign key, and no operator identifier at all — the
+    credential lives in the deployment environment
+    (:attr:`mijual.config.Settings.ops_id`), so storing a copy of the ID here
+    would add an identifier that buys nothing and can leak. A row means "somebody
+    proved they hold the operator credential"; that is the whole fact.
+
+    ``token_digest`` is a digest of the cookie value, never the value, keyed with
+    ``MIJUAL_SESSION_SECRET`` exactly as :class:`AuthSession` is — so one rotation
+    of that key logs out readers *and* operators, which is the lever you want in
+    the hour you discover a database dump.
+
+    The cookie is **``mj_ops``**, not ``mj_session``: `security` requires the two
+    to be differently named, and ``P5.S7`` reserved the name so the two could not
+    collide by accident.
+    """
+
+    __tablename__ = "ops_session"
+    __table_args__ = (UniqueConstraint("token_digest", name="uq_ops_session_token"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    #: Absolute expiry, never extended on a read (the reader session's rule, and
+    #: for the same reason: extending it would make a GET write). An operator
+    #: session is deliberately much shorter than a reader's — see
+    #: :data:`mijual.web.ops.OPS_SESSION_LIFETIME`.
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<OpsSession until={self.expires_at}>"
+
+
+class PipelineRun(Base):
+    """One scheduled or hand-fired pipeline run — R7's 최근 실행 표, persisted.
+
+    R7's 개요 tab requires a 최근 실행 표 with per-stage counts, request/call spend
+    and the ▷ cost line, and "**스케줄된 beat가 안 돌았으면 「실행 기록 없음」 행을
+    alert 잉크로**". None of that was derivable before this table existed: a run
+    printed its summary to a worker log and the record died with the process. This
+    is backing work the design implies (D-15's rule), not a rendering choice.
+
+    Three properties worth stating, because each one is a decision:
+
+    * **The row is opened when the run starts and closed when it ends.** A run
+      that crashes therefore leaves a row with ``finished_at`` NULL rather than
+      no row at all — an unfinished run is exactly the thing an operator needs to
+      see, and it is also what gives the lock chip an honest 시작 시각 while a run
+      holds the lock.
+    * **Every number comes from the run's own report.** ``stages`` is
+      :meth:`mijual.scheduler.pipeline.StageResult.as_dict` verbatim and
+      ``spend_line`` is the very line ``PipelineResult.render()`` prints, ▷ and
+      all — R7: "▷는 파이프라인 출력 verbatim … admin에서 「추정」으로 바꿔치기
+      금지 (경계 = 출처)". Nothing here is re-derived from the corpus.
+    * **A skipped run writes no row.** A run that could not take the lock did
+      nothing; the lock chip is where contention shows up, and a row for it would
+      make the 최근 실행 표 count non-runs as runs.
+    """
+
+    __tablename__ = "pipeline_run"
+    __table_args__ = (Index("ix_pipeline_run_started", "started_at"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    #: ``daily-morning`` / ``weekly-resync`` / ``cli`` … — the run's own label.
+    label: Mapped[str | None] = mapped_column(String(60))
+    #: ``beat`` | ``manual`` — see :attr:`mijual.scheduler.config.PipelineConfig.trigger`.
+    trigger: Mapped[str | None] = mapped_column(String(20))
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    #: NULL while the run is in flight, and permanently NULL if it never finished.
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    seconds: Mapped[float | None] = mapped_column(Float)
+
+    window_bgn: Mapped[str | None] = mapped_column(String(8))
+    window_end: Mapped[str | None] = mapped_column(String(8))
+    #: ``PipelineConfig.describe()`` — counts and ceilings, never a URL (N-secret).
+    config_line: Mapped[str | None] = mapped_column(Text)
+    #: ``redis`` | ``file`` | ``none``.
+    lock: Mapped[str | None] = mapped_column(String(20))
+    ok: Mapped[bool | None] = mapped_column(Boolean)
+
+    requests: Mapped[int | None] = mapped_column(Integer)
+    calls: Mapped[int | None] = mapped_column(Integer)
+    #: ▷ estimate, summed from the run's stages — the same figure the CLI prints.
+    cost_usd: Mapped[float | None] = mapped_column(Float)
+    #: The run's own spend line, verbatim (``spend     : … ▷ $0.0000 estimated``).
+    spend_line: Mapped[str | None] = mapped_column(Text)
+
+    #: One entry per stage: name, status, summary, requests, calls, cost, seconds,
+    #: and the stage's own ``detail`` counts.
+    stages: Mapped[dict | list | None] = mapped_column(JSONBody)
+    notes: Mapped[dict | list | None] = mapped_column(JSONBody)
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<PipelineRun {self.label} {self.started_at} ok={self.ok}>"

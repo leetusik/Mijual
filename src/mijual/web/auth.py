@@ -93,6 +93,7 @@ __all__ = [
     "current_account",
     "delete_account",
     "end_session",
+    "new_token",
     "normalize_email",
     "request_reset",
     "revoke_sessions",
@@ -219,7 +220,12 @@ def token_digest(token: str, settings: Settings) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _new_token() -> str:
+def new_token() -> str:
+    """A cookie/link value: 256 bits of ``secrets`` randomness, URL-safe.
+
+    Public because ``P5.S9``'s operator session mints one the same way — one
+    definition of "unguessable" for every credential this service hands out.
+    """
     return secrets.token_urlsafe(_TOKEN_BYTES)
 
 
@@ -329,7 +335,7 @@ def start_session(db: Session, account: Account, settings: Settings) -> str:
             AuthSession.account_id == account.id, AuthSession.expires_at <= now
         )
     )
-    token = _new_token()
+    token = new_token()
     db.add(
         AuthSession(
             account_id=account.id,
@@ -423,7 +429,7 @@ def request_reset(
             PasswordReset.account_id == account.id, PasswordReset.used_at.is_(None)
         )
     )
-    token = _new_token()
+    token = new_token()
     expires_at = now + RESET_LIFETIME
     db.add(
         PasswordReset(

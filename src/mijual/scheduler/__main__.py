@@ -61,6 +61,18 @@ def build_parser() -> argparse.ArgumentParser:
     once.add_argument("--no-lock", action="store_true", help="run without the overlap lock")
     once.add_argument("--lock-name", default="pipeline")
     once.add_argument("--label", default="cli")
+    once.add_argument(
+        "--trigger",
+        default="manual",
+        help="what fired this run, for the ops 최근 실행 표 (default: manual; beat "
+        "entries carry 'beat')",
+    )
+    once.add_argument(
+        "--no-run-log",
+        action="store_true",
+        help="do not write a pipeline_run row (an inspection run that must leave "
+        "the operator's log untouched)",
+    )
     once.add_argument("--report", default=None, help="also write the run's record as JSON here")
     once.add_argument("--quiet", action="store_true")
 
@@ -86,6 +98,8 @@ def _config(args) -> PipelineConfig:
         use_lock=not args.no_lock,
         lock_name=args.lock_name,
         label=args.label,
+        trigger=args.trigger,
+        write_run_log=not args.no_run_log,
     )
 
 

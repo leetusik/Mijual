@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 
+from mijual.beat import DEFAULT_WINDOW_DAYS, RESYNC_WINDOW_DAYS
 from mijual.calc import today_kst
 from mijual.collect.discovery import DEFAULT_MARKETS
 from mijual.collect.targets import DEFAULT_ENDPOINTS
@@ -38,12 +39,18 @@ __all__ = [
     "window_for",
 ]
 
-#: Rolling discovery window of the daily run, in days back from today (KST).
-DEFAULT_WINDOW_DAYS = 14
-#: The weekly straggler pass. Wide enough to re-reach a quarter of filings.
-RESYNC_WINDOW_DAYS = 90
 #: Stage order. Each stage consumes what the previous one persisted.
-STAGES = ("collect", "bodydoc", "extract", "gates")
+#:
+#: ``reparse`` and ``snapshot`` were added by ``P5.S9``. They are the offline
+#: re-derivation the phase notes already prescribe after any collection
+#: (``bodydoc backfill`` → ``gates run`` → ``estimate reparse`` → ``estimate
+#: snapshot``), and until they ran on the schedule the ① extras and the landing
+#: headline aged silently while 기준시각 said the corpus was fresh. Both spend
+#: **0 requests and 0 model calls**, so putting them on the beat costs nothing
+#: and closes the one way this corpus could serve a stale number without saying
+#: so. ``reparse`` precedes ``snapshot`` because ``LapseRow`` is built from
+#: ``facts``.
+STAGES = ("collect", "bodydoc", "extract", "gates", "reparse", "snapshot")
 
 #: Rights types whose prose fields are read by the scheduled extraction. ② is
 #: **deliberately absent**: it is collected by the same ``collect`` stage as
@@ -103,6 +110,15 @@ class PipelineConfig:
     #: Where the file-lock fallback lives when no broker answers (default ``var/locks``).
     lock_dir: str | None = None
     label: str = "daily"
+    #: What fired this run — ``beat`` when the schedule did (every entry in
+    #: :data:`mijual.beat.BEAT_ENTRIES` carries it in its kwargs), ``manual``
+    #: otherwise. It is the 트리거 column of R7's 최근 실행 표, and the default is
+    #: ``manual`` on purpose: a run that does not say the schedule fired it did
+    #: not, and a panel that guessed would make a missed beat look like a run.
+    trigger: str = "manual"
+    #: Write one :class:`~mijual.db.models.PipelineRun` row per run. Off only for
+    #: a test or an inspection run that must leave the operator's log untouched.
+    write_run_log: bool = True
     notes: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:

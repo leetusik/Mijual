@@ -1,4 +1,4 @@
-"""The four stages, in order, under one lock and explicit ceilings.
+"""The six stages, in order, under one lock and explicit ceilings.
 
 This module is the scheduler's whole behaviour, and it deliberately knows
 **nothing** about Celery: a task, the inline ``once`` CLI and a test all call the
@@ -6,13 +6,26 @@ same :func:`run_pipeline`. Celery only decides *when* it runs (``app.py``).
 
 Order is not a preference, it is a data dependency:
 
-``collect`` → ``bodydoc`` → ``extract`` → ``gates``
+``collect`` → ``bodydoc`` → ``extract`` → ``gates`` → ``reparse`` → ``snapshot``
 
 collection persists versions and 본문 snapshots; the 본문 layer parses those
 snapshots into hints, labels and the ① 증서 verdict; extraction reads only events
 the 본문 layer confirmed; and the gate layer judges only what extraction stored.
 Running them out of order would not crash — it would silently gate yesterday's
 corpus.
+
+The last two are ``P5.S9``'s addition and close a gap ``P5.S3``/``P5.S20``
+recorded rather than fixed: the serving precomputation the request path reads
+(``offering_input`` rows, ``performance_report.lapse``, and the ``facts`` a parser
+change rewrites) was refreshed **by hand**, so the ① extras and the landing
+headline could age silently while 기준시각 said the corpus was fresh. Both are
+offline — **0 OpenDART requests, 0 model calls** — so scheduling them costs
+nothing, and ``reparse`` precedes ``snapshot`` because ``LapseRow`` is built from
+``facts``.
+
+Every run also writes itself down (:class:`~mijual.db.models.PipelineRun`): R7's
+개요 tab renders 최근 실행 with per-stage counts, spend and the ▷ cost line, and
+before this the record died with the worker process.
 
 Three properties every stage keeps:
 
@@ -34,12 +47,15 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 
 from mijual.bodydoc.backfill import backfill_corrections, confirm_warrants
+from mijual.calc import today_kst
 from mijual.collect.runner import collect_window
 from mijual.config import Settings, load_settings
 from mijual.dart import DartClient
-from mijual.db.models import Base
+from mijual.db.models import Base, PipelineRun, utcnow
 from mijual.db.schema_sync import ensure_columns
-from mijual.db.session import create_all, make_engine, make_session_factory
+from mijual.db.session import create_all, make_engine, make_session_factory, session_scope
+from mijual.estimate.runner import reparse_performance
+from mijual.estimate.snapshot import refresh_serving_snapshot
 from mijual.extract.client import GeminiClient
 from mijual.extract.labelfields import read_label_fields
 from mijual.extract.runner import run_corrections, run_extraction
@@ -50,11 +66,15 @@ from mijual.scheduler.locks import NullLock, make_lock
 __all__ = [
     "PipelineResult",
     "StageResult",
+    "close_run_row",
+    "open_run_row",
     "run_pipeline",
     "stage_bodydoc",
     "stage_collect",
     "stage_extract",
     "stage_gates",
+    "stage_reparse",
+    "stage_snapshot",
     "session_factory_for",
 ]
 
@@ -112,6 +132,21 @@ class PipelineResult:
     def ok(self) -> bool:
         return not self.skipped and all(s.status != "error" for s in self.stages)
 
+    @property
+    def spend_line(self) -> str:
+        """The run's own spend sentence — the line ``render()`` prints, verbatim.
+
+        A property rather than an f-string inside :meth:`render` because R7's
+        최근 실행 표 stores and shows this line **verbatim**, ``▷`` included: in the
+        ops panel ``▷`` is quoted pipeline output, and the boundary is the source.
+        Two spellings of it would eventually disagree, and the one on the operator's
+        screen would be the wrong one.
+        """
+        return (
+            f"spend     : {self.requests} OpenDART request(s), {self.calls} LLM call(s), "
+            f"▷ ${self.cost_usd:.4f} estimated  |  {self.seconds:.1f}s total"
+        )
+
     def render(self) -> str:
         lines = [
             f"pipeline  : {self.label} {self.window[0]}~{self.window[1]} "
@@ -119,10 +154,7 @@ class PipelineResult:
             f"config    : {self.config_line}",
         ]
         lines.extend(s.line for s in self.stages)
-        lines.append(
-            f"spend     : {self.requests} OpenDART request(s), {self.calls} LLM call(s), "
-            f"▷ ${self.cost_usd:.4f} estimated  |  {self.seconds:.1f}s total"
-        )
+        lines.append(self.spend_line)
         lines.extend(f"note      : {n}" for n in self.notes)
         return "\n".join(lines)
 
@@ -431,12 +463,134 @@ def stage_gates(config, factory, result: StageResult, *, settings=None, log=None
     )
 
 
+# ---------------------------------------------------------------------------
+# stage 5 — reparse (offline: re-read the stored 실적보고서 bytes)
+# ---------------------------------------------------------------------------
+@_stage("reparse")
+def stage_reparse(config, factory, result: StageResult, *, settings=None, log=None) -> None:
+    """Re-derive every stored 증권발행실적보고서's ``facts`` from its own bytes.
+
+    **0 requests, 0 calls, idempotent.** ``facts`` is otherwise written only by
+    ``estimate collect``, which needs a client to *discover* filings — so without
+    this stage a parser change (``P5.S20``'s multi-addend citations, say) reaches
+    the corpus only when somebody remembers to run a command. It runs before
+    ``snapshot`` because ``LapseRow`` is built from ``facts``.
+    """
+    with session_scope(factory) as session:
+        report = reparse_performance(session)
+    result.detail = {
+        "reports": report.reports,
+        "reparsed": report.reparsed,
+        "changed": report.changed,
+        "no_bytes": report.no_bytes,
+        "errors": report.errors,
+    }
+    result.summary = (
+        f"{report.reparsed}/{report.reports} 실적보고서 re-read, "
+        f"{report.changed} with changed facts"
+        + (f", {report.no_bytes} without bytes" if report.no_bytes else "")
+        + (f", {report.errors} error(s)" if report.errors else "")
+    )
+
+
+# ---------------------------------------------------------------------------
+# stage 6 — snapshot (offline: the serving precomputation)
+# ---------------------------------------------------------------------------
+@_stage("snapshot")
+def stage_snapshot(config, factory, result: StageResult, *, settings=None, log=None) -> None:
+    """Refresh what a request path may not compute for itself (``P5.S3``).
+
+    **0 requests, 0 calls, idempotent.** ``mijual.estimate`` imports the three
+    spending modules, so the ① 발행가/할인율/배정비율 and the 소멸가치 cannot be
+    derived on a request — the worker computes and the request path reads. Until
+    this ran on the schedule, those numbers aged silently while the board's
+    기준시각 said the corpus was fresh, which is the one way this product could
+    serve a stale figure without saying so.
+    """
+    with session_scope(factory) as session:
+        written = refresh_serving_snapshot(session, today=today_kst())
+    result.detail = {
+        "offerings": written.offerings,
+        "priced": written.priced,
+        "upcoming": written.upcoming,
+        "lapse_rows": written.lapse_rows,
+        "valued": written.valued,
+        "notes": list(written.notes),
+    }
+    result.summary = (
+        f"① inputs {written.offerings} ({written.priced} priced, "
+        f"{written.upcoming} upcoming) | 소멸 rows {written.lapse_rows} "
+        f"({written.valued} valued)"
+    )
+
+
 STAGE_FUNCTIONS = {
     "collect": stage_collect,
     "bodydoc": stage_bodydoc,
     "extract": stage_extract,
     "gates": stage_gates,
+    "reparse": stage_reparse,
+    "snapshot": stage_snapshot,
 }
+
+
+# ---------------------------------------------------------------------------
+# the run log — R7's 최근 실행 표, written by the run itself
+# ---------------------------------------------------------------------------
+def open_run_row(factory, config: PipelineConfig, result: PipelineResult) -> int | None:
+    """Open this run's row **now**, before the first stage. Returns its id.
+
+    Opened at the start and closed at the end so a run that crashes leaves a row
+    with no ``finished_at`` rather than no row at all: an unfinished run is
+    precisely what an operator needs to see, and it is also what gives the ops
+    panel's lock chip an honest 시작 시각 while a run holds the lock.
+
+    Failure here is **swallowed** (reported as a note): a run log that can take a
+    pipeline down would be worse than no run log, and the pipeline's job is the
+    corpus, not the panel.
+    """
+    if not config.write_run_log:
+        return None
+    try:
+        with session_scope(factory) as session:
+            row = PipelineRun(
+                label=config.label,
+                trigger=config.trigger,
+                started_at=utcnow(),
+                window_bgn=result.window[0] or None,
+                window_end=result.window[1] or None,
+                config_line=result.config_line,
+                lock=result.lock,
+            )
+            session.add(row)
+            session.flush()
+            return row.id
+    except Exception as exc:  # noqa: BLE001 - the log must never fail the run
+        result.notes.append(f"run log not opened ({type(exc).__name__})")
+        return None
+
+
+def close_run_row(factory, run_id: int | None, result: PipelineResult) -> None:
+    """Close the row with what the run actually did — its own numbers, verbatim."""
+    if run_id is None:
+        return
+    try:
+        with session_scope(factory) as session:
+            row = session.get(PipelineRun, run_id)
+            if row is None:  # pragma: no cover - the row was just written
+                return
+            row.finished_at = utcnow()
+            row.seconds = round(result.seconds, 2)
+            row.ok = result.ok
+            row.requests = result.requests
+            row.calls = result.calls
+            row.cost_usd = round(result.cost_usd, 6)
+            # The pipeline's own sentence, ▷ and all (R7: 경계 = 출처).
+            row.spend_line = result.spend_line
+            row.stages = [s.as_dict() for s in result.stages]
+            row.notes = list(result.notes)
+    except Exception as exc:  # noqa: BLE001 - the log must never fail the run
+        result.notes.append(f"run log not closed ({type(exc).__name__})")
 
 
 # ---------------------------------------------------------------------------
@@ -492,10 +646,16 @@ def run_pipeline(
     if getattr(lock, "stolen", False):
         result.notes.append(f"stale {lock.kind} lock stolen (previous run left it behind)")
 
+    run_id: int | None = None
     try:
         if log:
             log(f"pipeline  : {config.describe()}")
         factory = factory or session_factory_for(config)
+        # Opened before the first stage so an in-flight (or crashed) run is
+        # visible, and **not** written at all for a skipped run: a run that could
+        # not take the lock did nothing, and the lock chip is where contention
+        # shows up. Counting non-runs as runs would make the 최근 실행 표 lie.
+        run_id = open_run_row(factory, config, result)
         for name in config.stages:
             result.stages.append(
                 STAGE_FUNCTIONS[name](config, factory, settings=settings, log=log)
@@ -503,4 +663,5 @@ def run_pipeline(
     finally:
         lock.release()
         result.seconds = time.monotonic() - started
+        close_run_row(factory, run_id, result)
     return result

@@ -8,7 +8,9 @@ and no request path derives a displayed number of its own. `P5.S7` added the onl
 kind of write this layer does — **a reader's own data**: their account, their
 session, and (from `P5.S8`) their holdings. Those go through a separate
 committing dependency, and a safe HTTP method cannot acquire it, so "a GET never
-writes" stayed true when writes arrived.
+writes" stayed true when writes arrived. `P5.S9`'s 운영 관제 adds no third kind:
+its two ``POST`` routes touch only the operator's own session row, and every other
+ops route is a ``GET`` **by rule** (R7 §6.5 — mutation 엔드포인트 없음).
 
 **The request-path rule (a boundary, not a guideline).**
 
@@ -40,8 +42,13 @@ Layout::
     mijual.web.auth      — reader accounts, sessions, the reset grant (R5)
     mijual.web.passwords — scrypt hashing, parameters carried in the hash
     mijual.web.portfolio — 내 포트폴리오: holdings, 챙긴 돈 marks, 알림 preferences
+    mijual.web.ops       — the operator door: a **separate** credential, a
+                           differently named cookie, one uniform failure (R7 §6.4)
+    mijual.web.opsreads  — 운영 관제's numbers, each re-read from the source that
+                           already owns it (발명 수치 금지)
+    mijual.web.conversations — the AI 질문 storage port: framed here, filled by P6
     mijual.web.routers   — one module per surface (health · board · events ·
-                           stocks · auth · portfolio)
+                           stocks · auth · portfolio · ops)
 
 Routers stay transport-thin: they read settings, call :mod:`mijual.web.reads`, and
 serialize. Loading lives in ``reads``; meaning lives in :mod:`mijual.present`. An

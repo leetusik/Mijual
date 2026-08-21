@@ -31,10 +31,11 @@ from fastapi import FastAPI
 from mijual import __version__
 from mijual.config import Settings, load_settings
 from mijual.mail import ConsoleMailer, Mailer
+from mijual.web.conversations import Conversations, EmptyConversations
 from mijual.web.csrf import register_csrf_guard
 from mijual.web.deps import dispose_engine
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import auth, board, events, health, portfolio, stocks
+from mijual.web.routers import auth, board, events, health, ops, portfolio, stocks
 
 __all__ = ["app", "create_app"]
 
@@ -59,13 +60,22 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app(
-    settings: Settings | None = None, *, mailer: Mailer | None = None
+    settings: Settings | None = None,
+    *,
+    mailer: Mailer | None = None,
+    conversations: Conversations | None = None,
 ) -> FastAPI:
     """A fully wired app. Pass ``settings`` to point one at another database.
 
     ``mailer`` is the seam :mod:`mijual.mail` describes: P5 defaults to the
     console transport, which prints a password-reset link server-side and sends
     nothing, and **P4** passes a real transport here without touching a route.
+
+    ``conversations`` is the same shape of seam for the AI 질문 agent's storage
+    (:mod:`mijual.web.conversations`): P5 defaults to
+    :class:`~mijual.web.conversations.EmptyConversations` — this build stores no
+    conversations, so the 대화 로그 / 익명 세션 / 피드백 tabs serve honest zeros —
+    and **P6** passes its own implementation here without touching a route.
     """
     app = FastAPI(
         title=TITLE,
@@ -77,6 +87,7 @@ def create_app(
     app.state.engine = None
     app.state.session_factory = None
     app.state.mailer = mailer or ConsoleMailer()
+    app.state.conversations = conversations or EmptyConversations()
 
     register_error_handlers(app)
     register_csrf_guard(app)
@@ -86,6 +97,9 @@ def create_app(
     app.include_router(stocks.router)
     app.include_router(auth.router)
     app.include_router(portfolio.router)
+    # 운영 관제 (R7). Behind its own credential and its own cookie, read-only
+    # everywhere but its two session routes, and linked from no reader surface.
+    app.include_router(ops.router)
     return app
 
 
