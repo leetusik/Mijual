@@ -445,6 +445,42 @@ eight this-session revisions. Binding on R7 and the apply phase:
 - Naming settled: nav = 내 종목 조회 · 관제 현황판 · **AI 질문** (the provisional 해설
   label is retired).
 
+## R7 landed design (P3.S8 — admin panel 운영 관제, signed 2026-08-22)
+
+Record: `docs/reference/design/rounds/07-admin/output/` (read-only). 7 full-page cards
+under `admin/` incl. the in-session operator-requested **`Users`** section. Binding on
+the apply phase:
+
+- **Ops idiom**: cosmos token scope kept, all ornament removed (no stars/glow/brackets;
+  opaque flat `#0e1a15` panels — the P3.S7 widget literal). Desktop-only (explicit
+  decision — no mobile layout, min-width allowed). Chrome labels Korean; codes/
+  identifiers/pipeline output raw English mono. Token delta: none.
+- **6-tab ops chrome** on every section (개요 · 게이트 대기열 · 정확도·비용 · 대화
+  로그 · 사용자 · 피드백) + lock chip + KST clock + logout; bottom status footer;
+  full pages, never component fragments. `Access` is the one chrome-less surface
+  (pre-auth door).
+- **Fully read-only (§6.5)** — no mutation endpoints; no action can silently override
+  a gate verdict (§3.6); exposure changes only via pipeline CLI.
+- **§6 resolutions (operator, in session)**: §6.1 suppression reasons = raw English
+  codes, no Korean invented (adding it later = new signed matter); §6.2 operator-only,
+  no judge view; §6.3 vocky observation API shape delegated to Claude Code at the
+  apply phase (cards ship a `?`-columned frame + 「API shape 확정 대기」); §6.4 admin
+  door = separate credential (no R5 join, no signup/reset, uniform constant-time
+  failure, unlinked from reader chrome); §6.5 pure observation, no status bits.
+- **Anonymity promise carried through**: 계정↔대화 join absent at schema level; log
+  viewer stores no account/email/IP/UA; `save_feedback` optional email is voluntary;
+  vocky view and agent queue separate (different privacy contracts, cross-links only).
+- **Honesty patterns**: un-run beats render as alert-ink 「실행 기록 없음」 rows;
+  judged_by provenance renders above the accuracy numbers (98.6% never without it);
+  cumulative quota bar labeled as not-daily; ▷ cost markers verbatim from pipeline
+  output (boundary = source, not surface); anatomy/composition-example rows labeled.
+- **Card discrepancies noted at the gate (contracts govern over cards)**: the
+  `small_scale_merger …` suppression chip in `GateQueue` is an invented code — real
+  code is `no_appraisal_right` (inventory also has `ic_mthn_unknown` /
+  `no_warrant_class`); build-prompt correctly says render actual DB codes verbatim.
+  Cosmetic: result.md's Overview bullet says "5개 섹션 탭" (6 is correct everywhere
+  else).
+
 ## Doc impact
 
 - `decisions` — P3 stack decision: **FastAPI + Next.js**, SSE used only for 해설 streaming; and P3
@@ -472,8 +508,9 @@ eight this-session revisions. Binding on R7 and the apply phase:
 
 - Whether the retrospective (소멸 총액) and the live board share one page or two — a design question for
   R2, posed back, never answered by us (carried over from `product` v0002).
-- The admin panel's audience boundary: operator-only, or also a judge-visible "how the gate works" view?
-  Posed at R7.
+- ~~The admin panel's audience boundary~~ **Resolved (operator, R7, 2026-08-21):** operator-only —
+  no judge-visible "how the gate works" view (§6.2). Suppression reason rendering also resolved:
+  raw English codes, no Korean copy invented (§6.1).
 - ~~vocky's embed shape~~ **Resolved (operator, 2026-08-20):** vocky embeds as a **script widget**
   (vocky's own UI, triggered from the chrome — R2 places and styles the trigger point), and vocky
   **provides an API for observing collected feedback** — the admin panel (R7) includes a

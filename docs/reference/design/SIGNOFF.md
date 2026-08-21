@@ -171,3 +171,50 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 9 R6 cards retire the round address
   (`⏳ P3.S7 · Explain` → `Explain`); paths and all content below line 1 unchanged
   (includes `explorations/widget-launcher-marks.html`, which carries the round group).
+
+## R7 — admin panel: 운영 관제 (`P3.S8`, round `07-admin`)
+
+- Closed: 2026-08-22
+- Authorization (operator's literal words): **"Signed off — close R7"** — given in the
+  orchestrator session against this summary: 7 full-page cards under `admin/`
+  (`Overview`, `GateQueue`, `Accuracy`, `Conversations`, `Users` — new, operator-
+  requested in session — `Feedback`, `Access`); ops idiom = cosmos tokens with all
+  ornament removed (no stars/glow/brackets, opaque flat `#0e1a15` panels); 6-tab ops
+  chrome (개요 · 게이트 대기열 · 정확도·비용 · 대화 로그 · 사용자 · 피드백); fully
+  read-only (§6.5 — no action can silently override a gate verdict); desktop-only by
+  explicit decision; every number real (operations/qa/copy-inventory/board-snapshot/
+  samples, dated 2026-08-20).
+- §6 questions resolved in session (operator form, 2026-08-21): **§6.1** suppression
+  reasons render as raw English codes — no Korean invented, adding Korean later is a
+  new signed matter; **§6.2** operator-only — no judge-visible gate view; **§6.3**
+  vocky observation API shape delegated to Claude Code at the apply phase — cards ship
+  a frame with `?`-marked proposed column names and 「API shape 확정 대기」;
+  **§6.4** admin door = separate credential (운영자 ID + 비밀번호, no R5 join, no
+  signup/reset, uniform constant-time failure copy, unlinked from reader chrome);
+  **§6.5** queues are pure observation — no status bits.
+- Verified at the gate: gate statistics internally consistent (566+4+14+65=649;
+  withdrawn 3+8=11 and flagged 2+58+1=61 match the blocked line); reason-code table
+  matches `copy-inventory.md` exactly; the four `BLOCKING_FLAGS` Korean strings match
+  `exposure.py` verbatim.
+- Discrepancies noted at the gate and signed as superseded-by-contract: **the
+  `small_scale_merger …` chip in `GateQueue`'s suppression panel is an invented code**
+  (the real 소규모합병 suppression code is `no_appraisal_right`; the code inventory
+  also includes `ic_mthn_unknown` / `no_warrant_class`, not shown) — the build-prompt
+  governs correctly (render actual codes from the DB, unknown codes verbatim, no
+  fallback copy); and a cosmetic "5개 섹션 탭" slip in `result.md`'s Overview bullet
+  (the revision and all cards carry 6 tabs).
+- Anonymity promise carried through: 계정↔대화 join absent at schema level (the
+  `Users` card's two-tables-no-join composition is the proof); log viewer stores no
+  account/email/IP/UA columns; `save_feedback` optional email is an explicit voluntary
+  value; vocky view and agent queue stay separate (different privacy contracts).
+- Open items carried to the apply phase: vocky observation API shape (Claude Code
+  decides, records it in the build-prompt's vocky section); admin route and credential
+  issuance are deploy decisions; 운영자 연락처 string for `get_contact` (from R6)
+  remains operator-provided.
+- Supersedes: nothing across rounds — composes R1–R6 as locked.
+- Token delta: **None** (ops variant uses existing cosmos tokens + the `#0e1a15`
+  literal that P3.S7's widget introduced).
+- Landed record: `rounds/07-admin/output/` (`result.md`, `build-prompt.md`) —
+  read-only. Cards stay in the Claude Design project.
+- Post-approval regroup: the 7 R7 cards retire the round address
+  (`⏳ P3.S8 · Admin` → `Admin`); paths and all content below line 1 unchanged.

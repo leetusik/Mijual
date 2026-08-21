@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P3`
-- Current slice: `P3.S8`
-- Next slice: `P3.REVIEW`
-- Waiting on operator: `P3.S8`
+- Current slice: `P3.REVIEW`
+- Next slice: `none`
+- Waiting on operator: `none`
 - Open deferred jobs: `4`
-- Rebuilt at: `2026-08-21T23:08:28+09:00`
+- Rebuilt at: `2026-08-21T23:38:33+09:00`
 
 ## Active Phases
 
@@ -18,7 +18,7 @@
 |---|---|---|---|---|---|
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
-| [ ] `P3` | `planned` | `pending` | Mijual Web Service (design only) | `P3.S8` | `works/phases/active/P3` |
+| [ ] `P3` | `planned` | `pending` | Mijual Web Service (design only) | `P3.REVIEW` | `works/phases/active/P3` |
 | [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.DECOMP` | `works/phases/active/P5` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -64,7 +64,7 @@
 | [x] `P3.S5` | `done` | Design R4: 종목 검색 + 보유량 슬라이더 + 놓친 돈 조회기 (anonymous 금액 환산) | `co-work` | `works/phases/active/P3/slices/P3.S5` |
 | [x] `P3.S6` | `done` | Design R5: 개인화 2층 — auth surfaces + portfolio 등록 + D-day list + sample load | `co-work` | `works/phases/active/P3/slices/P3.S6` |
 | [x] `P3.S7` | `done` | Design R6: grounded 해설 panel (citation-forced, SSE streaming states) | `co-work` | `works/phases/active/P3/slices/P3.S7` |
-| [~] `P3.S8` | `pending` | Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota) | `co-work` | `works/phases/active/P3/slices/P3.S8` |
+| [x] `P3.S8` | `done` | Design R7: admin panel (operator-facing pipeline, gate queue, accuracy, quota) | `co-work` | `works/phases/active/P3/slices/P3.S8` |
 | [ ] `P3.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P3/slices/P3.REVIEW` |
 
 ## Phase P5: Apply — build the signed design
