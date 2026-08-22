@@ -131,6 +131,21 @@ class Settings:
     #: for a surface with no signup.
     ops_password: str | None = None
 
+    # -- the vocky 관찰 뷰 (P5.S18, R7 §6.3). See ``mijual.web.vocky``.
+    #: ``MIJUAL_VOCKY_API_BASE`` — the origin of the operator's vocky service
+    #: (``https://vocky.hi2vi.com`` in production, a local stack in development).
+    #: The observation endpoint itself is fixed in :mod:`mijual.web.vocky`; only
+    #: the origin is configuration, because only the origin is deployment-specific.
+    vocky_api_base: str | None = None
+    #: ``MIJUAL_VOCKY_API_KEY`` — vocky's ``vk_``-prefixed ingest credential. It is
+    #: a **secret** with the same handling as the two API keys above: masked in
+    #: ``__repr__``, never logged, and it raises only when *used*
+    #: (:meth:`require_vocky_api_key`), so a build with no vocky wiring runs
+    #: normally and the panel simply reports 연결 전. Note that vocky has no
+    #: read-only key scope today — the same key could write — which is why
+    #: :mod:`mijual.web.vocky` issues ``GET`` and nothing else.
+    vocky_api_key: str | None = None
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -154,6 +169,20 @@ class Settings:
             )
         return self.session_secret
 
+    def require_vocky_api_key(self) -> str:
+        """The vocky ingest key, for a caller that must not run without one.
+
+        Nothing in P5 calls it: the 관찰 뷰 degrades to 연결 전 rather than
+        failing, which is what the design asks for. It exists so **P4** can fail a
+        deployment that meant to wire vocky and forgot — the same "raises only on
+        use" shape as :meth:`require_dart_api_key`.
+        """
+        if not self.vocky_api_key:
+            raise MissingSecret(
+                "MIJUAL_VOCKY_API_KEY not found (repo-root .env or environment)."
+            )
+        return self.vocky_api_key
+
     def require_gemini_api_key(self) -> str:
         # Reserved for P2.S4; absent today and must not crash anything until used.
         if not self.gemini_api_key:
@@ -171,7 +200,7 @@ class Settings:
 
         return (
             "Settings(dart_api_key={}, gemini_api_key={}, session_secret={}, "
-            "ops_id={}, ops_password={}, "
+            "ops_id={}, ops_password={}, vocky_api_key={}, "
             "database_url={!r}, redis_url={!r}, cache_dir={!r})"
         ).format(
             mark(self.dart_api_key),
@@ -179,6 +208,7 @@ class Settings:
             mark(self.session_secret),
             mark(self.ops_id),
             mark(self.ops_password),
+            mark(self.vocky_api_key),
             self.database_url,
             self.redis_url,
             str(self.cache_dir),
@@ -218,4 +248,8 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # would be a back door. Unset simply never opens (`mijual.web.ops`).
         ops_id=pick("MIJUAL_OPS_ID"),
         ops_password=pick("MIJUAL_OPS_PASSWORD"),
+        # Unset (either half) is the 연결 전 state, not an error: vocky is an
+        # external product and the panel says so rather than failing.
+        vocky_api_base=pick("MIJUAL_VOCKY_API_BASE"),
+        vocky_api_key=pick("MIJUAL_VOCKY_API_KEY"),
     )

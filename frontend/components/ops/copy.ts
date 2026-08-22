@@ -34,13 +34,16 @@ export const OPS_MARK = "MIJUAL OPS";
 /** Signed section labels (build-prompt §표면; result.md's copy list ends with
  * "섹션 라벨 (개요 · 게이트 대기열 · 정확도·비용 · 대화 로그 · 사용자 · 피드백)").
  * Six sections, in the round's own order. */
+export const LOG_SECTION_KO = "대화 로그";
+export const FEEDBACK_SECTION_KO = "피드백";
+
 export const OPS_TABS: { key: OpsRouteKey; label: string; href: string }[] = [
   { key: "overview", label: "개요", href: OPS_ROUTES.overview },
   { key: "gates", label: "게이트 대기열", href: OPS_ROUTES.gates },
   { key: "accuracy", label: "정확도·비용", href: OPS_ROUTES.accuracy },
-  { key: "conversations", label: "대화 로그", href: OPS_ROUTES.conversations },
+  { key: "conversations", label: LOG_SECTION_KO, href: OPS_ROUTES.conversations },
   { key: "users", label: "사용자", href: OPS_ROUTES.users },
-  { key: "feedback", label: "피드백", href: OPS_ROUTES.feedback },
+  { key: "feedback", label: FEEDBACK_SECTION_KO, href: OPS_ROUTES.feedback },
 ];
 
 /** result.md's copy list: 「운영자 전용」. The status footer states it on every
@@ -295,7 +298,40 @@ export const FEEDBACK_EMPTY_KO = "대기 0건 — save_feedback 호출이 아직
 /** "읽기 전용 — 처리 상태 비트 없음; 회신은 패널 밖 (메일 클라이언트)." */
 export const FEEDBACK_READ_ONLY_KO = "읽기 전용 — 처리 상태 비트 없음; 회신은 패널 밖";
 
-/** "**vocky 수집분과 병합 금지** — 상호 링크만." The vocky observation view
- * itself is `P5.S18`'s (§6.3 delegates its shape to the build), so this tab
- * carries the save_feedback queue and nothing else today. */
+/** "**vocky 수집분과 병합 금지** — 상호 링크만." Two collections, two privacy
+ * contracts, two sections: the queue rides with the 대화 로그 it came from and
+ * the vocky view is the 피드백 section (see `Vocky.tsx` for the record's own
+ * card→section mapping). The link between them is the 상호 링크 this line allows. */
 export const NO_VOCKY_MERGE_KO = "vocky 수집분과 병합 금지 — 상호 링크만";
+
+// ---------------------------------------------------------------------------
+// vocky 관찰 뷰 (build-prompt §vocky 관찰 뷰, R7 §6.3)
+// ---------------------------------------------------------------------------
+
+/** The section's own heading in the implementation contract: "## vocky 관찰 뷰". */
+export const VOCKY_VIEW_KO = "vocky 관찰 뷰";
+
+/**
+ * "연결 전 상태는 「API shape 확정 대기」 문구 + 스켈레톤" — signed copy
+ * (result.md's Proposed-copy list, closed by the operator's "Signed off — close
+ * R7"), rendered **only** in the 연결 전 state, which is what this build is in:
+ * no `vk_` credential is wired, so nothing has ever been read.
+ *
+ * ⚠ The literal is now slightly behind its own surface: `P5.S18` confirmed the
+ * shape, so what the view waits for is the credential, not the shape. Rewriting
+ * a signed line is a design change, so it is rendered **as signed** and the raw
+ * English `state` code beside it says which cause it is. Flagged for the review.
+ */
+export const API_SHAPE_PENDING_KO = "API shape 확정 대기";
+
+/**
+ * "shape와 무관한 고정 계약" — the three lines the round fixes regardless of what
+ * the API turned out to return, transcribed from the build prompt's own bullet.
+ * The fourth ("시각은 KST 표기") is not a sentence the panel prints: it is the
+ * `Stamp` on every instant in the table.
+ */
+export const VOCKY_CONTRACT_KO = [
+  "읽기 전용 (관찰 API의 정의 — vocky 상태 변경 없음)",
+  "agent 대기열과 별도 뷰",
+  "위젯 UI는 vocky 소유 (여긴 열람만)",
+];

@@ -695,3 +695,31 @@ export type OpsUsers = {
   /** The 익명 세션 half — **a second independent read**, never a join. */
   sessions: OpsPage;
 };
+
+/**
+ * vocky 관찰 뷰 — one page of the operator's vocky feedback, proxied server-side
+ * (`mijual.web.vocky`; the shape §6.3 delegated to the build and `P5.S18`
+ * decided against vocky's running product).
+ *
+ * **`fields` is served, not hard-coded here.** It is the decided field set in the
+ * table's own order — vocky's own English key names, which §6.1 signs as the
+ * honest rendering for identifiers on an operator surface — so widening it later
+ * needs no frontend change and this file invents no vocky field name.
+ *
+ * `count` is **this page's** row count. vocky's list surface returns a keyset
+ * page and no total, so there is no total to state and none is invented.
+ */
+export type OpsVocky = {
+  as_of: string;
+  /** `unconfigured` = 연결 전 (no base/key); `unreachable` = vocky did not
+   * answer — both render a state, never a fabricated row. */
+  state: "ok" | "unconfigured" | "unreachable";
+  source: { endpoint: string; base?: string };
+  fields: string[];
+  count: number;
+  rows: Record<string, unknown>[];
+  next_cursor?: string;
+  /** Raw English exception name, and the HTTP status when there was one. */
+  reason?: string;
+  status?: number;
+};

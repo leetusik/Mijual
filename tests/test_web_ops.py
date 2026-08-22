@@ -131,10 +131,15 @@ def test_the_panel_has_no_mutation_endpoint_and_no_reader_surface_links_it(clien
         "/ops/login": ["post"],
         "/ops/logout": ["post"],
     }
-    # §6.3: no vocky route is pre-implemented (P5.S18 decides its shape).
-    assert not any(path.startswith("/ops/vocky") for path in paths)
-
+    # §6.3: the vocky route exists now that `P5.S18` decided the shape — and it is
+    # a read like the rest (the `unsafe` map above already proves it has no other
+    # method). Unwired, it reports 연결 전 rather than failing the tab.
+    assert "/ops/vocky" in paths
     _open_the_door(client)
+    observation = client.get("/ops/vocky").json()
+    assert observation["state"] == "unconfigured" and observation["rows"] == []
+
+    client.post("/ops/logout")
     for path in ("/board/summary", "/board", "/stocks?q=none", "/portfolio/sample", "/health"):
         body = client.get(path).text
         assert "/ops" not in body, f"{path} mentions the ops path"

@@ -5,6 +5,7 @@ import {
   COUNT_UNIT_KO,
   FEEDBACK_EMPTY_KO,
   FEEDBACK_READ_ONLY_KO,
+  FEEDBACK_SECTION_KO,
   NO_VOCKY_MERGE_KO,
   TO_LOG_KO,
 } from "./copy";
@@ -27,10 +28,17 @@ import styles from "./Ops.module.css";
  * a mail client, outside the panel), the 답장 이메일 column carries a value only
  * where the reader volunteered one, and **vocky 수집분과 병합 금지 — 상호 링크만**.
  *
- * The vocky observation view itself is **not on this tab yet**: §6.3 delegates
- * its return shape to the build against vocky's real API and `P5.S18` owns that
- * decision, so shipping a frame with invented column names is precisely what the
- * round forbids. It lands beside this queue, unmerged, when the shape is known.
+ * ## Where this queue lives, and why it moved
+ *
+ * R7 draws it on the **Conversations** card ("… save_feedback 대기열 — 대기 0건
+ * (미배포 실제값) …"), not on the Feedback card, which is the vocky 관찰 뷰
+ * (`Vocky.tsx` has the full mapping). `P5.S17` had it on the 피드백 tab because
+ * the vocky view had no decided shape yet; `P5.S18` decided the shape and put
+ * both where the record draws them. The round's reasoning is the same one: the
+ * queue's privacy contract is the 익명 대화 로그's, so it belongs beside the log.
+ *
+ * The link to the vocky view is the 상호 링크 the no-merge line allows — nothing
+ * on this tab reads a vocky row, and nothing there reads one of these.
  */
 export function Feedback({ page }: { page: OpsPage }) {
   const extra = extraKeys(page.rows, FEEDBACK_COLUMNS);
@@ -84,11 +92,20 @@ export function Feedback({ page }: { page: OpsPage }) {
         </p>
       )}
 
+      {/* 상호 링크만 — the other collection, never merged into this table. */}
+      <p className={styles.panelNote}>
+        <Link className={styles.link} href={OPS_ROUTES.feedback}>
+          {FEEDBACK_SECTION_KO}
+        </Link>
+      </p>
+
       {page.next_cursor ? (
         <div className={styles.pager}>
           <Link
             className={styles.pageButton}
-            href={`${OPS_ROUTES.feedback}?cursor=${encodeURIComponent(page.next_cursor)}`}
+            /* Its own cursor name: the 대화 로그 on the same page owns `cursor`,
+               and two tables paging one query parameter would move together. */
+            href={`${OPS_ROUTES.conversations}?feedback_cursor=${encodeURIComponent(page.next_cursor)}`}
           >
             →
           </Link>

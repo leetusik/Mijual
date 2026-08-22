@@ -16,4 +16,5 @@ export { OpsChrome } from "./OpsChrome";
 export { Overview } from "./Overview";
 export { RowInspect, type RowFilterValues } from "./RowInspect";
 export { Users } from "./Users";
+export { Vocky } from "./Vocky";
 export { OPS_ROOT, OPS_ROUTES, conversationsForSession, isOpsPath } from "./routes";

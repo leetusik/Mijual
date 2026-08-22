@@ -1979,6 +1979,113 @@ Files: `app/portfolio/{page.tsx,notifications/page.tsx}`, `components/portfolio/
     removed), the reader cookie opening nothing, and six 1440-wide screenshots. No mobile pass —
     desktop-only is signed.
 
+### `P5.S18` — vocky's shape is decided; the endpoint, the allowlist, and where the view lives
+
+§6.3's delegation is closed. The shape was decided against **vocky's running product**
+(the operator's own repo at `~/projects/personal/vocky`, read-only, plus a throwaway local
+stack) and written back into `rounds/07-admin/output/build-prompt.md` §vocky 관찰 뷰 as a
+dated subsection — **59 lines added, 0 changed** (`git diff` shows no `-` line in that file).
+**0 new dependencies**; Python suite **114 → 118**, frontend smoke unchanged at 11.
+
+| you need | use |
+|---|---|
+| the observation itself | `mijual.web.vocky` — `observe(settings, limit=, cursor=)` → `Observation.payload()` |
+| the decided field set | `mijual.web.vocky.ROW_FIELDS`, **also served as `payload.fields`** |
+| the route | `GET /ops/vocky?limit=&cursor=` (`/ops` is **thirteen** routes now, all read-only) |
+| the settings | `MIJUAL_VOCKY_API_BASE` + `MIJUAL_VOCKY_API_KEY` (`Settings.vocky_api_base` / `.vocky_api_key`, `require_vocky_api_key()`) |
+| the surface | `frontend/components/ops/Vocky.tsx`, rendered by `app/ops/feedback/page.tsx` |
+
+1. **The endpoint is `GET {base}/api/project/feedback`** — vocky's **Project Feedback API
+   v2**, whose own contract names this exact use ("an external service's own admin panel /
+   operator page … reading and managing its project's feedback directly by API"), authed by
+   `Authorization: Bearer vk_…` with the scope implicit in the key (there is no project
+   parameter on that surface). The other three read surfaces were rejected on the record:
+   `GET /api/feedback` is one product *user's* self-read (needs a `user_id`), `/app/feedback`
+   wants a human session token, and `/api/project/usage` returns the org's **credentials** —
+   key metadata a different product's panel must not render (최소 열람).
+2. **Granularity = one feedback event per row; pagination = keyset cursor, newest first.**
+   `limit` default 50, **max 100 — vocky's own ceiling** (`limit must be between 1 and 100`,
+   measured), not this panel's usual 200. `next_cursor` is vocky's opaque string, passed
+   through untouched and **absent, never null**, at the end. **There is no total**: vocky
+   returns none, so `count` is *this page's* row count and no total is invented.
+3. **The fields are an allowlist, and the client names none of them.** Sixteen keys, in the
+   table's order, using **vocky's own English names** (§6.1/§6.2 sign raw English identifiers
+   here): `ingested_at · message · feedback_value · trigger_type · trigger_message ·
+   target_type · target_id · target_text · channel · recorded_by · source_product ·
+   source_integration · comment · tags · id · project_id`(org keys only). Excluded on
+   purpose: `user_id` · `session_id` · `conversation_id` (correlation handles — 사용자 추적
+   용도 금지), `messages` · `used_context` · `source_metadata` · `attributes` ·
+   `trigger_metadata` (free-form blobs), `target_role` · `event_at`. The set travels in
+   `payload.fields` and the table renders **those** headers, so widening it later is a
+   backend one-liner with **no frontend change** — and the card's `?` headers are gone.
+4. **The 피드백 section *is* the vocky view — `P5.S17`'s placement was inverted, and this
+   slice corrected it.** R7's seven cards map 1:1 onto the six signed tabs *in order*, and
+   the record is explicit: `result.md` — "**Feedback** — vocky 관찰 뷰 프레임 (§6.3)", while
+   the `save_feedback` 대기열 is drawn on the **Conversations** card; `handoff.md` §5 says
+   the same (`admin/Feedback.html` = the vocky observation view; `admin/Conversations.html` =
+   the log viewer **+ agent feedback queue**). So the queue moved to `/ops/conversations`
+   (its own `?feedback_cursor=`, so the two tables page independently) and `/ops/feedback`
+   became the vocky view. **A seventh tab was rejected** — it would break the signed 6-tab
+   nav. The round's reasoning agrees: 병합하면 "익명 대화 로그"와 "자발 이메일 동반 의견"의
+   서로 다른 프라이버시 계약이 섞임 — the queue's rows come out of the anonymous
+   conversations, vocky's from a different collection path. **상호 링크만**: vocky →
+   「대화 로그 →」, queue → 「피드백」, and neither table reads the other's rows.
+5. **⚠ vocky ships no embeddable widget script — R2/S11's assumption does not hold.**
+   `data-vocky-trigger` / `embed.js` / `widget.js` appear **nowhere** in the repository,
+   `web/public/` holds only `install.sh` and `SKILL.md`, and vocky's README lists
+   "Browser-direct unauthenticated ingestion" under **What The First MVP Will Not Do**; every
+   "widget" mention there is an example of a *kind of surface* whose feedback you capture.
+   So **`NEXT_PUBLIC_VOCKY_SRC` has no real value to set today**. Nothing is dropped: the
+   three triggers and the seam stay exactly as `P5.S11` built them (unset ⇒ no script tag,
+   triggers still render), and the rows this view observes will arrive from whatever capture
+   path the operator wires — a server-to-server `POST /api/feedback`, not a browser widget.
+   **Do not build one here** (R7: 위젯 UI는 vocky 소유).
+6. **Read-only is structural, because vocky cannot make it a property of the key.** vocky has
+   **no read-scoped credential** — "one `vk_` key does capture **and** full read+manage across
+   its whole scope" — so the key Mijual holds could write. `mijual.web.vocky` therefore issues
+   `GET` and has no code path that could issue another method, and a new test asserts that
+   **only `web/vocky.py` may import an HTTP client** (`urllib`/`http.client`/`socket`/
+   `requests`/`httpx`) so a later slice cannot quietly put a second external dependency on a
+   request path. `tests/test_web_ops.py`'s "no vocky route is pre-implemented" guard
+   (`P5.S9`'s, for the pre-decision period) was inverted deliberately: the route exists and
+   reports 연결 전 when unwired.
+7. **Transport decisions, each one a rule.** stdlib **`urllib.request`** (no dependency added;
+   `httpx` is a dev extra) on a sync endpoint, so FastAPI's threadpool absorbs the block;
+   **3 s timeout, no retries**; **redirects refused** — `urllib` re-sends `Authorization` to
+   the redirect target, so a redirected base URL would hand the `vk_` key to whatever
+   answered; a non-`http(s)` scheme refused for the same class of reason. The key is masked in
+   `Settings.__repr__`, raises only on use, travels in a header, and **neither it, the
+   response body, nor the exception text is ever logged** — vocky's error text is not echoed
+   onto this panel.
+8. **Degraded honestly, measured.** Three states (`ok` · `unconfigured` · `unreachable`), the
+   `P5.S9` Redis precedent, **never a 500 and never a fabricated row**. Live: dead port →
+   `URLError` in **12 ms**; wrong key against a live vocky → `HTTPError` + `status 401` in
+   **33 ms**; blackholed host → **3.03 s**, i.e. the timeout bound holds and the tab cannot
+   hang the panel. Unconfigured renders R7's signed 「API shape 확정 대기」 over **48 skeleton
+   cells carrying the decided column names**.
+9. **⚠ The 연결 전 literal is now half a step stale, and was left as signed.** The shape is
+   confirmed, so what the view waits for is the **credential**, not the shape. Rewriting a
+   signed line is a design change, so it renders as signed and the raw English `state` code
+   beside it says which cause it is. **`P5.REVIEW`/operator call** whether 「API shape 확정
+   대기」 gets re-cut — new Open Question below.
+10. **The live pass, for the record (2026-08-22).** A throwaway vocky stack from its own repo
+    under its **own compose project** (`-p mijual-s18-vocky`, ports 8010/55433/56380 — no
+    collision with Mijual's 5433/6380), migrated **inside the container** so the local
+    `uv.lock` was never touched, driven entirely over REST (no CLI install): account +
+    `"default"` project + a project `vk_` key, **3 captured rows** with Mijual-shaped context,
+    then `GET /ops/vocky` and the rendered tab — title, the three contract lines, `state ok`,
+    the real headers, `2026-08-22 16:33 KST`, the Korean text, `3건`, the cross-link, and
+    cursor page 2. 대화 로그 re-checked: the queue's signed empty state and **no vocky row or
+    column on it**. Everything stopped, volumes and images removed;
+    `git -C ~/projects/personal/vocky status` **clean before and after**, and
+    **`vocky.hi2vi.com` was never contacted** — no account there, no request of any kind.
+11. **What P4 must supply** (nothing else is needed to light this up):
+    `MIJUAL_VOCKY_API_BASE=https://vocky.hi2vi.com` and `MIJUAL_VOCKY_API_KEY=vk_…` minted by
+    the operator in their own vocky org (org- or project-scoped both work; a project key's
+    rows carry no `project_id`, an org key's do). **https matters** — the key travels in a
+    header. `NEXT_PUBLIC_VOCKY_SRC` stays **unset** until a widget script exists (note 5), and
+    it is inlined at build time, so setting it will mean a rebuild (`P5.S11` note 6).
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2842,9 +2949,55 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   endpoint and a **real Redis lock set and released** to exercise the chip's held state. Reader
   regression: all six reader surfaces and the 404-inside-chrome behaviour unchanged. No mobile pass
   — desktop-only is signed.
+- (`P5.S18`) **`api`** — the panel gains its thirteenth route and the one read that leaves this
+  service: `GET /ops/vocky?limit=&cursor=` proxies vocky's **`GET /api/project/feedback`**
+  server-side and serves `{as_of, state, source{endpoint, base?}, fields[], count, rows[],
+  next_cursor?, reason?, status?}` — **one feedback event per row**, newest-first **keyset cursor**
+  (limit default 50, **max 100 = vocky's own ceiling**), `next_cursor` absent-not-null, and **no
+  total, because vocky returns none**. The sixteen served fields are **vocky's own English key
+  names**, carried in `fields` so a client names none of them, and `ingested_at` is converted to
+  absolute KST like every other instant this API emits. `state` is `ok | unconfigured |
+  unreachable` — the whole degradation contract, with `reason` a raw English exception name.
+  **`security`** — the vocky auth model was an open unknown and is now settled: a `vk_`-prefixed
+  key in `Authorization: Bearer`, project- or org-scoped, held **only** by the backend
+  (`MIJUAL_VOCKY_API_KEY`, masked repr · raises only on use · never logged · never in a URL) and
+  never by the browser. Three findings belong to this doc: vocky has **no read-scoped credential**
+  (the same key can write), so read-only is enforced Mijual-side by issuing `GET` and nothing else
+  and by a test that lets **only `web/vocky.py` import an HTTP client**; **redirects are refused**
+  because `urllib` re-sends `Authorization` to the redirect target; and vocky's error body is never
+  echoed onto the panel. **`operations`** — the observation view is live behind two settings
+  (`MIJUAL_VOCKY_API_BASE` + `MIJUAL_VOCKY_API_KEY`), degrades in **3 s** with no retries and never
+  takes the tab down (dead port 12 ms · wrong key `HTTPError 401` 33 ms · blackholed host 3.03 s),
+  and P4's wiring list is exactly those two values over **https** — plus the finding that
+  **vocky ships no embeddable widget script today**, so `NEXT_PUBLIC_VOCKY_SRC` stays unset and
+  the three `data-vocky-trigger` elements stay as built. **`frontend`** — 피드백 **is** the vocky
+  관찰 뷰 (R7's card→section mapping) and the `save_feedback` 대기열 now sits on 대화 로그 with its
+  own `?feedback_cursor=`, the two linked and never merged; the table's headers are the served
+  field names in mono (the card's `?` columns are gone), and the 연결 전 state renders the signed
+  「API shape 확정 대기」 over a static skeleton carrying those same column names. **`decisions`** —
+  §6.3's delegation is **closed**: the shape is recorded in the landed record's own section
+  (2026-08-22, additive, nothing else in that file touched). **`qa`** — Python suite **114 → 118**
+  (four terse cases: the 연결 전 path, the mapping of a **captured real** vocky payload, the
+  degraded path, and the one-HTTP-client scan); frontend `build`/`typecheck`/`smoke` (11) green;
+  live end-to-end pass against a throwaway local vocky stack with the repo left byte-identical and
+  the hosted service never contacted.
 
 ## Open Questions
 
+- **「API shape 확정 대기」 now reads half a step behind its own surface** — *new, `P5.S18`*:
+  the line is signed copy for the vocky view's 연결 전 state, but §6.3's delegation is closed —
+  the shape **is** confirmed, and what the view waits for is the `vk_` credential. Rewriting a
+  signed line is a design change, so it renders **as signed** and the raw English `state` code
+  (`unconfigured`) beside it says which cause it is. Re-cutting the sentence would be a new
+  signoff item; leaving it is a small stale literal on an operator-only surface. **Operator /
+  `P5.REVIEW` call**, the same shape as the other copy questions here.
+- **Is there a capture path into vocky at all?** — *new, `P5.S18`*: vocky ships **no embeddable
+  widget script** (its README puts "Browser-direct unauthenticated ingestion" under what the MVP
+  will not do), so the three signed `data-vocky-trigger` elements have nothing to bind to and the
+  observation view will observe an empty list until the operator wires a server-to-server capture
+  call. Nothing was built for it here — R7 signs 위젯 UI는 vocky 소유, and inventing a capture
+  endpoint would be this build deciding another product's surface. **Operator call** (their own
+  product), with P4 as the natural place if the answer is "wire one".
 - **The 계정 이전 offer has a body but no signed heading** — *new, `P5.S16`*: R5-4 writes the
   offer's own sentence and names the flow ("샘플 → 계정 이전 제안"), but no heading for the inset
   row, so the surface labels it **계정 이전** — composed from the round's own phrase rather than

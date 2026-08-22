@@ -267,6 +267,18 @@
   color: var(--ink-3);
 }
 
+/* 스켈레톤 — the vocky 관찰 뷰's 연결 전 state (build-prompt §vocky: 「API shape
+ * 확정 대기」 문구 + 스켈레톤). A cell that shows the table's shape and holds no
+ * value: the row's hairline and a flat bar, never a placeholder glyph (§게이트
+ * 대기열 forbids one where a value would be) and never an animation (장식 금지 —
+ * a pulsing bar would be the only moving ornament on the surface). */
+.skeleton {
+  display: block;
+  height: 8px;
+  max-width: 120px;
+  background: var(--border-strong);
+}
+
 .ko {
   color: var(--ink-2);
 }

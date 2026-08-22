@@ -105,6 +105,65 @@ ops 변형은 기존 cosmos 스코프 토큰 + 리터럴 `#0e1a15` (P3.S7 위젯
   agent 대기열과 별도 뷰 · 위젯 UI는 vocky 소유 (여긴 열람만) · 시각은 KST 표기 ·
   연결 전 상태는 「API shape 확정 대기」 문구 + 스켈레톤.
 
+### 확정된 shape — 2026-08-22, Claude Code 결정 (위 위임 조항에 따른 기록 · `P5.S18`)
+
+vocky 실물(운영자 소유 제품, 리포지터리 + 로컬 스택 실측)에 맞춰 결정하고, 이 절을
+갱신한다. 이 절 밖은 건드리지 않음.
+
+- **엔드포인트: `GET {base}/api/project/feedback`** (Project Feedback API v2).
+  vocky 자신의 계약이 이 용도를 명시함 — "an external service's own admin panel /
+  operator page … reading and managing its project's feedback directly by API".
+  나머지 세 읽기면은 배제: `GET /api/feedback`은 제품 사용자 1인의 self-read
+  (`user_id` 필요), `/app/feedback`은 사람 세션 토큰용, `/api/project/usage`는 조직의
+  **credential 목록**을 반환 — 남의 키 메타데이터는 이 패널이 볼 것이 아님 (최소 열람).
+- **인증: `Authorization: Bearer vk_…`** (project 또는 org 스코프). 스코프는 키에
+  내재 — project 파라미터가 없고 보내지도 않음. ⚠ vocky에는 **읽기 전용 키 스코프가
+  아직 없다** (같은 키로 PATCH·DELETE 가능). 그래서 읽기 전용은 Mijual 쪽에서 구조로
+  강제한다: 프록시는 `GET`만 발행하고 다른 메서드를 낼 코드 경로가 없음.
+- **granularity: 피드백 이벤트 1건 = 1행.** 집계·롤업 없음 (vocky가 말하지 않은 수를
+  만들지 않음).
+- **pagination: keyset 커서, 최신순.** `limit` (기본 50, **상한 100 — vocky 자신의
+  상한**) + 불투명 `cursor`. `next_cursor`는 vocky 것을 그대로 통과시키고, 마지막
+  페이지에서는 **키 자체가 없음** (null 아님). **총계는 없음** — vocky가 total을
+  반환하지 않으므로 발명하지 않는다; `count`는 이 페이지의 행 수.
+- **필드 (결정된 열, 이 순서 — vocky 자신의 영문 키 이름, §6.1/§6.2의 raw 영문 표기)**:
+  `ingested_at` · `message` · `feedback_value` · `trigger_type` · `trigger_message` ·
+  `target_type` · `target_id` · `target_text` · `channel` · `recorded_by` ·
+  `source_product` · `source_integration` · `comment` · `tags` · `id` ·
+  `project_id`(org 키일 때만 vocky가 실어 보냄). 카드의 `?` 열 이름은 이 목록으로
+  대체된다. 열 목록은 **서버가 payload의 `fields`로 실어 보냄** — 나중에 넓혀도
+  프런트 변경이 없고, 프런트는 vocky 필드명을 한 개도 적지 않는다.
+- **제외한 필드와 이유 (통과시키지 않음 — 허용목록 방식)**: `user_id` ·
+  `session_id` · `conversation_id` (상관 식별자 — 사용자 추적 용도 금지, 최소 열람) ·
+  `messages` · `used_context` · `source_metadata` · `attributes` · `trigger_metadata`
+  (자유 형식 블롭 — 관찰에 필요 없고 남의 제품 데이터를 이 패널에 옮겨 담게 됨) ·
+  `target_role` · `event_at` (호출자 임의 값). 넓힐 때는 필드 단위로 의도적으로.
+- **시각: `ingested_at`을 절대 KST(`+09:00`)로 변환해 제공.** vocky는 UTC(`…Z`,
+  마이크로초)로 직렬화하므로 변환은 서버가 한다 — ops `Stamp`는 문자열을 잘라 쓸 뿐
+  `Date` 파싱을 하지 않기 때문. 파싱 불가한 값은 **생략** (근사치를 만들지 않음).
+- **상태 (payload의 `state`, raw 영문)**: `ok` · `unconfigured` (base/키 미설정 =
+  연결 전) · `unreachable` (타임아웃·DNS·401·리다이렉트·이상 응답 — `reason`에 예외
+  이름, HTTP 상태가 있으면 `status`). **500 없음, 지어낸 행 없음** (lock 칩이 죽은
+  Redis를 보고하는 것과 같은 전례). 타임아웃 3초·재시도 없음·**리다이렉트 거부**
+  (urllib이 리다이렉트 대상에 `Authorization`을 다시 보내므로 키가 새어 나감).
+- **섹션 배치: vocky 관찰 뷰 = 「피드백」 섹션.** 이 라운드의 카드 7종이 6탭에
+  순서대로 대응하고, 기록이 명시함 — result.md "**Feedback** — vocky 관찰 뷰 프레임
+  (§6.3)", 그리고 `save_feedback` 대기열은 **Conversations** 카드에 그려져 있음
+  (handoff §5도 동일: `admin/Feedback.html` = the vocky observation view,
+  `admin/Conversations.html` = the log viewer **+ agent feedback queue**). 7번째 탭을
+  만들면 서명된 6탭 내비가 깨진다. 두 수집분은 서로 다른 프라이버시 계약이므로
+  (result.md의 분리 근거) 섹션이 다르고, **상호 링크만** 둔다.
+- **⚠ 연결 전 문구:** shape가 확정된 지금 「API shape 확정 대기」의 문자 뜻은
+  반보 뒤처진다 — 기다리는 대상은 shape가 아니라 `vk_` 자격증명이다. 서명된 카피를
+  고쳐 쓰는 것은 설계 변경이므로 **서명된 그대로 렌더**하고, 원인은 옆의 raw 영문
+  `state` 코드가 말한다. 문구 교체가 필요하면 새 서명 사안.
+- **위젯 (R2/§6.3의 전제 점검):** vocky는 오늘 **임베드 가능한 스크립트 위젯을 제공하지
+  않는다** — 캡처는 서버-투-서버 REST/MCP뿐이고, "Browser-direct unauthenticated
+  ingestion"은 vocky 자신이 MVP 비목표로 명시함. Mijual의 `data-vocky-trigger` 3개와
+  `NEXT_PUBLIC_VOCKY_SRC` seam은 그대로 두되(스크립트가 없으면 태그도 없고 트리거는
+  그냥 렌더된다), 이 뷰가 관찰하는 행은 위젯이 아니라 **운영자가 붙일 캡처 경로**에서
+  들어온다. 이는 발견 사항이지 이 라운드에서 만들 것이 아님.
+
 ## Hard rules (restated)
 
 게이트 판정을 바꾸는 액션 — 금지 (읽기 전용 전면). 미검증 데이터가 독자에 닿는

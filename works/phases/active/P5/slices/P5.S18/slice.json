@@ -3,15 +3,15 @@
   "phase_id": "P5",
   "name": "vocky integration: observation API shape decision + admin vocky view",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 18,
   "depends_on": [
     "P5.S11",
     "P5.S17"
   ],
   "created_at": "2026-08-22T00:14:48+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-22T16:24:43+09:00",
+  "completed_at": "2026-08-22T16:51:18+09:00",
   "risk": "high",
   "source": {
     "type": "manual",

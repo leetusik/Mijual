@@ -17,6 +17,7 @@ hard-code it:
 ``GET  /ops/sessions``               익명 세션 (the P6 port)
 ``GET  /ops/feedback``               save_feedback 대기열 (the P6 port)
 ``GET  /ops/users``                  사용자: 독자 계정 **and** 익명 세션, unjoined
+``GET  /ops/vocky``                  vocky 관찰 뷰 (§6.3, ``P5.S18``'s decision)
 ===================================  ==========================================
 
 **Everything but the door is a ``GET``, and that is the security property.**
@@ -31,10 +32,14 @@ footer, account menu, sitemap. Nothing under ``/ops`` appears in a reader payloa
 and no reader router mentions it; ``tests/test_web_ops.py`` asserts the backend
 half of that, and ``P5.S17``/``P5.S19`` own the frontend half.
 
-**There is no vocky route.** §6.3 delegates the observation API's shape to the
-build and ``P5.S18`` owns that decision, so this slice ships **no stub** for it:
-an endpoint with an invented field set would be exactly the 필드명 선구현 the round
-forbids.
+**The vocky route is the one call outside this service.** §6.3 delegated the
+observation API's shape to the build; ``P5.S18`` decided it against vocky's
+running product and wrote it back into that section of the landed record, so
+``GET /ops/vocky`` reads vocky's own ``/api/project/feedback`` server-side
+(:mod:`mijual.web.vocky`) instead of inventing a field set. It is read-only, it is
+not merged with the ``save_feedback`` queue (§save_feedback: vocky 수집분과 병합
+금지 — 상호 링크만), and it degrades to a state rather than a 500 when vocky is
+unconfigured or does not answer.
 """
 
 from __future__ import annotations
@@ -45,7 +50,7 @@ from fastapi import APIRouter, Body, Query, Request, Response
 from pydantic import BaseModel, Field
 
 from mijual.config import Settings
-from mijual.web import clock, ops, opsreads
+from mijual.web import clock, ops, opsreads, vocky
 from mijual.web.conversations import Conversations
 from mijual.web.deps import DbSession, WriteSession
 
@@ -244,6 +249,32 @@ def feedback(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ) -> dict[str, Any]:
     return _conversations(request).feedback(cursor=cursor, limit=limit).payload()
+
+
+# ---------------------------------------------------------------------------
+# vocky 관찰 뷰 — the one read that leaves this service
+# ---------------------------------------------------------------------------
+@router.get("/vocky", summary="vocky 관찰 뷰 — 수집된 피드백 (읽기 전용)")
+def vocky_observation(
+    request: Request,
+    _: ops.OpsGate,
+    cursor: str | None = None,
+    limit: Annotated[int, Query(ge=1, le=vocky.MAX_LIMIT)] = vocky.DEFAULT_LIMIT,
+) -> dict[str, Any]:
+    """One page of vocky's collected feedback, read server-side and never merged.
+
+    The ceiling is **vocky's own** (100), not this panel's usual 200: forwarding a
+    larger limit would earn a 400 from vocky rather than more rows. ``cursor`` is
+    vocky's opaque keyset cursor, carried through in both directions untouched.
+
+    This route takes no ``DbSession`` of its own — :data:`~mijual.web.ops.OpsGate`
+    already opens one to check the operator session, and the observation itself is
+    a fact about **vocky's** store, not this one. Nothing is cached and nothing is
+    written: a page of it is what vocky said when the operator asked.
+    """
+    return {"as_of": clock.iso(clock.now())} | vocky.observe(
+        _settings(request), limit=limit, cursor=cursor
+    ).payload()
 
 
 # ---------------------------------------------------------------------------

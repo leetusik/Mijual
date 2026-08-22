@@ -43,6 +43,7 @@ import type {
   OpsOverview,
   OpsPage,
   OpsUsers,
+  OpsVocky,
   Portfolio,
   RightsType,
   StockLookup,
@@ -338,6 +339,18 @@ export const getOpsFeedback = (
   params: { cursor?: string; limit?: number } = {},
   init?: RequestInitLike,
 ) => request<OpsPage>(`/ops/feedback${opsQuery(params)}`, init);
+
+/**
+ * vocky 관찰 뷰 — the operator's vocky feedback, read **through the service**.
+ *
+ * The browser never talks to vocky: the `vk_` key is a server secret, and a
+ * key that reached a client would be a key anyone could capture (or write) with.
+ * The ceiling is vocky's own 100, not this panel's usual 200.
+ */
+export const getOpsVocky = (
+  params: { cursor?: string; limit?: number } = {},
+  init?: RequestInitLike,
+) => request<OpsVocky>(`/ops/vocky${opsQuery(params)}`, init);
 
 /** 사용자 — 독자 계정 **and** 익명 세션 in one response and **two independent
  * reads**: there is no key in either block that could be matched against the

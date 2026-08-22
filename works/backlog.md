@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.S18`
-- Next slice: `P5.S19`
+- Current slice: `P5.S19`
+- Next slice: `P5.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T16:24:00+09:00`
+- Rebuilt at: `2026-08-22T16:51:18+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S18` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S19` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -91,7 +91,7 @@
 | [x] `P5.S15` | `done` | Auth surfaces + conversion offers + sample entry | `implementation` | `works/phases/active/P5/slices/P5.S15` |
 | [x] `P5.S16` | `done` | 내 포트폴리오: holdings, D-day list, 챙긴 돈, 알림 설정, sample mode, account menu | `implementation` | `works/phases/active/P5/slices/P5.S16` |
 | [x] `P5.S17` | `done` | 운영 관제 admin panel: door + six sections | `implementation` | `works/phases/active/P5/slices/P5.S17` |
-| [ ] `P5.S18` | `todo` | vocky integration: observation API shape decision + admin vocky view | `implementation` | `works/phases/active/P5/slices/P5.S18` |
+| [x] `P5.S18` | `done` | vocky integration: observation API shape decision + admin vocky view | `implementation` | `works/phases/active/P5/slices/P5.S18` |
 | [ ] `P5.S19` | `todo` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P5/slices/P5.S19` |
 | [ ] `P5.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P5/slices/P5.REVIEW` |
 
