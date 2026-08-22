@@ -565,6 +565,92 @@ also the true build order.
       **No live model call was made from the endpoint in this slice** — S3 proved the client live,
       and `P6.S5`/`P6.S7` exercise the whole wire in a browser.
 
+22. **`P6.S5` landed the desktop surface — the store API `P6.S6` builds on, the
+    sessionStorage keys, the rendering decisions, and three contract pinches.**
+    New: **`frontend/lib/ask.ts`** (the store) · **`frontend/components/ask/`**
+    (copy · links · hooks · provider · surface · launcher · widget · answer ·
+    citation · composer + two CSS modules) · `lib/api.ts` gained `ASK_PATH` /
+    `streamAsk()` / `decodeSse()` · `lib/ask.test.ts` (4 cases). Edited: only
+    `components/chrome/SiteChrome.tsx`. **No backend file changed** (pytest still
+    **136 passed**); `frontend/app/ask/page.tsx` is still P5's bare shell.
+    - **The store is module-scoped, and that is the architecture.** R6's
+      「스트리밍 중 이동/전환에도 끊김 없음」 rules out owning the fetch in a page,
+      so the thread lives in `lib/ask.ts` (no React import) and `AskProvider`,
+      mounted once in `SiteChrome` (the client half of the persistent root
+      layout), only hands it out through context. The provider holds **no state**,
+      so a frame mid-stream re-renders the subscribed views and never the pages.
+      **`P6.S6`'s page is a second view over the same store — do not build a
+      second one, and do not lift state into the page.**
+    - **The store API, verbatim** (`AskStore` in `lib/ask.ts`): `subscribe` ·
+      `getSnapshot` · `getServerSnapshot` · `hydrate()` · `open()` · `close()` ·
+      `toggle()` · **`setPageScope(scope|null)`** (a page's ambient 범위, applied
+      **at open** and never over a 범위 the reader chose) · **`setScope(scope)`**
+      (what the 질문 스트립 calls) · `clearScope()` · **`ask(question)`** ·
+      **`stop()`** (= abort; there is no stop endpoint) · **`retry(turnId)`**.
+      Hooks: `useAskState()` (a `useSyncExternalStore` snapshot), `useAskStore()`,
+      `useDesktop()` (`min-width: 481px`, false until mount). State shape:
+      `{open, hydrated, scope, scopeChosen, sessionHash, turns}` where a `turn` is
+      `{id, question, scope, blocks, chips, links, footer, status, answer}` and
+      `status ∈ pending|streaming|done|aborted|error`. A `scope` is
+      `{rcept_no, name}` — **the 종목 name is required**, because the signed chip is
+      `범위: {종목} · {rcept_no}`, so S6's strip must pass it.
+    - **sessionStorage: one key, `mijual.ask.thread`** (`THREAD_KEY`), `{v: 1,
+      scope, scopeChosen, sessionHash, turns}`. **`open` is deliberately not
+      persisted** (a widget that reopened itself on reload is unsigned behaviour);
+      a restored `pending`/`streaming` turn is settled to **`aborted`**, because
+      the fetch died with the page and that *is* 「연결이 끊겼습니다」. Never
+      `localStorage`, never a cookie. **S6 reads this key through the store and
+      writes nothing of its own.**
+    - **Pre-stream failure rendering, decided (S4's open point).** A `429
+      rate_limited` / `invalid_question` / dead-service failure ends the turn with
+      **no blocks** and shows R6's one 중단 inset row 「연결이 끊겼습니다 — 답변이
+      여기서 중단되었습니다.」 + 「재시도」. No code, no English, no invented
+      sentence — and **no quota copy anywhere**, so a limit that is not shown is
+      never implied. The same state renders a reader's 중지, a stream cut without a
+      terminal, and a typed `error` terminal: R6 writes exactly one sentence for
+      「중단/오류」.
+    - **의견 확인 — the surface prints it, not the agent** (the plan assumed
+      otherwise). `save_feedback` returns `{"saved": true}` + the row 「의견 저장 →
+      운영자 검토 대기열」 and its docstring assigns the confirmation to the surface;
+      so `Answer.tsx` prints 「의견을 저장했습니다 — 운영자가 확인합니다.」 after a
+      **successful** `save_feedback` row, off the tool's own `ok`. A failed save
+      adds nothing — the row already **is** 「의견 저장 → 재시도」.
+    - **⚠ Three contract pinches for `P6.S6`/`P6.S7` (no backend was patched).**
+      (1) **필드로 이동** is a signed footer context link with **no link kind on the
+      wire** (`_links` serves `dart` · `event` · `board` · `stocks` only) and no
+      field anchor on the detail page — not rendered, not invented. (2) A footer
+      can carry **up to 8 links** (3 filings × dart+event, + board, + stocks): the
+      answer turn measured here rendered 5, which is a busy row for a signed
+      `근거 N건 · {rcept_no} · {시각}` footer — a fidelity call for S7. (3) The
+      footer's signed format names **one** `{rcept_no}`; several 근거 are printed
+      with the format's own `·` separator rather than dropping any.
+    - **Two strings R6 does not write, reused and flagged** (phase rule: reuse the
+      nearest signed one): the composer's idle button = R6-2's 「직접 질문 입력 →」,
+      and the question field's + the panel's accessible name = 「AI 질문」.
+      `P6.S7`/`P6.REVIEW` should confirm both against the record. Everything else
+      is transcribed with provenance in `components/ask/copy.ts`; the agent's own
+      words (도구 행, the five refusal sentences) are rendered **verbatim from the
+      wire** and never restated on this side.
+    - **Launcher fidelity notes.** The two half-rings share one `ringdrift` with
+      the DOM order the fix requires (top half → planet → bottom half); the band
+      and both rings carry `data-motion="tick"` so `shell.css` freezes them, and
+      the module adds its own reduced-motion block for the **transitions and the
+      hover scale**, which that convention cannot express. **The 열림 상태 exists**
+      (mark fades, 16px × appears, `inert`) and sits *behind* the opaque widget,
+      which covers that corner exactly — that is how both 「런처는 열리면 숨음」 and
+      §런처 마크's open state are honoured at once. Offsets are
+      `right/bottom: var(--space-6)` for both the launcher and the widget (the
+      record fixes the corner, not the inset).
+    - **Verified against the real wire, spend-free.** S4's
+      `create_app(agent_client=lambda: ScriptedModel(…))` produced the actual SSE
+      bytes for an answer turn and a 철회 refusal; feeding them through the client
+      **in 3-byte chunks** (splitting frames *and* multi-byte Korean) reproduced
+      the chips, the 도구 행, ①②③, the API-tier citation and the footer exactly.
+      `decodeSse` is a pure buffer-in/buffer-out function for this reason.
+    - **Nothing new is `position: fixed`** except the launcher + widget
+      (`app/shell.css`'s `.backdrop` is P5's), and both are `right/bottom`-anchored
+      so neither can widen the document. Real-browser fidelity is `P6.S7`'s.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -682,3 +768,15 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   agent spend is logged as a **▷ server-log line only** (no signed ops panel row); and
   `create_app(agent_client=…)` is the new seam (a per-turn factory), with `GEMINI_API_KEY` still
   required neither to import nor to build an app. Suite 130 → **136 passed**.
+- (`P6.S5`) **`frontend`** · **`experience`** (+ a line in **`product`**): the desktop AI 질문
+  surface exists — a bottom-right 68×50 launcher (the product's **one sanctioned motion
+  exception**) opening a fixed 440×620 opaque widget that streams `POST /ask` over a
+  **module-scoped conversation store** (`frontend/lib/ask.ts`, provided once in `SiteChrome` so a
+  turn survives 위젯↔페이지 navigation; sessionStorage key `mijual.ask.thread`, never
+  localStorage, never a cookie), rendering 도구 행 verbatim, numbered inline citation chips with
+  in-place quote blocks (including the API-tier variant), the 답변 푸터, refusals as ordinary
+  prose in the signed 3-part order, and R6's four SSE states as **text replacement plus one
+  7×15 caret** — no spinner, no typing dots, no quota copy, no history UI; `lib/api.ts` gains the
+  API's first streaming client (`streamAsk` + `decodeSse`, CSRF-guarded, `session` frame first,
+  중지 = abort). Nothing renders at ≤480px, on `/ask`, or under `/ops`. Backend untouched
+  (pytest **136 passed**); frontend `build` · `typecheck` · `smoke` green (smoke 11 → **15**).

@@ -1,0 +1,212 @@
+/* 런처 (R6 §Surfaces 「런처 (클릭 전)」 + §런처 마크, 개정 ⑤/⑧).
+ *
+ * Every number in this file is the record's own and is **literal**: 68×50 frame,
+ * 11×11 tail at right 12 / bottom −6 rotated 45°, a 22×22 Saturn inside it, the
+ * 4.5s band loop, the 14s ring drift, hover 1.35 / active 1.15 on the mark only.
+ * The three colours the round writes as hex (`#0e1a15` frame, `#122219` hover,
+ * `#dfe9e4` planet) and the two it writes as rgba (the ring's
+ * `rgba(95,208,165,.9)`, the hover border's `rgba(95,208,165,.7)`) are literals
+ * for the same reason: they are stated by the design, not derived from a token.
+ *
+ * **This is the product's one sanctioned motion exception** (operator note, R6
+ * §런처 마크: 「R1의 "no spinners/no ambient motion"은 데이터 표면 규칙 — 브랜드
+ * 런처 마크에만 예외 … 데이터 표면으로 번지지 말 것」). Nothing in here is reused
+ * anywhere else, and the widget's own states are text replacement plus one caret.
+ */
+
+.launcher {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 50px;
+  padding: 0;
+  background: #0e1a15;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--panel-glow);
+  cursor: pointer;
+  transition:
+    background var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease);
+}
+
+/* 우하단 꼬리 11×11 (45° 회전, right 12 / bottom −6). It carries the frame's own
+ * fill so it covers the bottom hairline where the two meet, and the frame's own
+ * border on the two edges that stay outside — which is what makes the whole
+ * thing read as one chat-message box rather than a box with a triangle. */
+.tail {
+  position: absolute;
+  right: 12px;
+  bottom: -6px;
+  width: 11px;
+  height: 11px;
+  background: #0e1a15;
+  border-right: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  transform: rotate(45deg);
+  transition:
+    background var(--dur-base) var(--ease),
+    border-color var(--dur-base) var(--ease);
+}
+
+/* hover: 프레임은 고정, 마크만 확대 — the frame keeps its 68×50 and only changes
+ * ink; 꼬리도 함께, or the corner would come apart on hover. */
+.launcher:hover {
+  background: #122219;
+  border-color: rgba(95, 208, 165, 0.7);
+}
+
+.launcher:hover .tail {
+  background: #122219;
+  border-color: rgba(95, 208, 165, 0.7);
+}
+
+.launcher:hover .mark {
+  transform: scale(1.35);
+}
+
+.launcher:active .mark {
+  transform: scale(1.15);
+}
+
+/* 마크 = 22×22 토성. */
+.mark {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  transition:
+    transform var(--dur-base) var(--ease),
+    opacity var(--dur-base) var(--ease);
+}
+
+/* 행성: 22px 원, `#dfe9e4`, overflow hidden so the band stays on the sphere. */
+.planet {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #dfe9e4;
+  border-radius: 50%;
+}
+
+/* 자전 밴드 — the record's gradient verbatim, looping one 14px tile over 4.5s. */
+.band {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(30, 52, 42, 0.34) 0 2px,
+    transparent 2px 7px
+  );
+  background-size: 14px 100%;
+  animation: bandspin 4.5s linear infinite;
+}
+
+@keyframes bandspin {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -14px 0;
+  }
+}
+
+/* 링은 **두 반쪽** (개정 ⑧). Two identical boxes sharing one `ringdrift`, one
+ * clipped to the bottom half and painted in front of the planet (DOM 뒤), one
+ * clipped to the top half and painted behind it (DOM 앞). A single ring laid on
+ * one side of the planet reads as a flat sticker — the bug this round already
+ * paid for, recorded in `phase.md` note 11. Do not "simplify" these into one. */
+.ring {
+  position: absolute;
+  left: -9px;
+  top: 5px;
+  width: 40px;
+  height: 13px;
+  border: 1.5px solid rgba(95, 208, 165, 0.9);
+  border-radius: 50%;
+  animation: ringdrift 14s ease-in-out infinite;
+}
+
+/* 뒤 (DOM 앞) — 위 절반. */
+.ringBehind {
+  clip-path: polygon(0 0, 100% 0, 100% 49%, 0 49%);
+}
+
+/* 앞 (DOM 뒤) — 아래 절반. */
+.ringFront {
+  clip-path: polygon(0 49%, 100% 49%, 100% 100%, 0 100%);
+}
+
+@keyframes ringdrift {
+  0%,
+  100% {
+    transform: rotate(-19deg) scaleX(0.94);
+  }
+  50% {
+    transform: rotate(-13deg) scaleX(0.94);
+  }
+}
+
+/* 열림 상태: 마크 페이드아웃 + × (16px, 1.5px 바 ±45°). The widget is opaque and
+ * covers this corner exactly, which is 「런처는 열리면 숨음」; the launcher is also
+ * made inert by the component, so the widget's own × is the only close control. */
+.close {
+  position: absolute;
+  /* Centred by offsets rather than by the grid's `place-items`, because an
+     absolutely positioned grid child's static position is a subtler rule than
+     this element deserves. */
+  top: calc(50% - 8px);
+  left: calc(50% - 8px);
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease);
+}
+
+.close::before,
+.close::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 0.75px);
+  left: 0;
+  width: 16px;
+  height: 1.5px;
+  background: #dfe9e4;
+}
+
+.close::before {
+  transform: rotate(45deg);
+}
+
+.close::after {
+  transform: rotate(-45deg);
+}
+
+.launcher[data-open="true"] .mark {
+  opacity: 0;
+}
+
+.launcher[data-open="true"] .close {
+  opacity: 1;
+}
+
+/* 「prefers-reduced-motion: 밴드·드리프트·전환·hover 확대 전부 정지.」
+ *
+ * The band and the drift carry `data-motion="tick"`, which `app/shell.css`
+ * already freezes app-wide; the two things that convention cannot express are a
+ * *hover* transform and this element's own transitions, so they are stopped here. */
+@media (prefers-reduced-motion: reduce) {
+  .launcher,
+  .tail,
+  .mark,
+  .close {
+    transition: none;
+  }
+
+  .launcher:hover .mark,
+  .launcher:active .mark {
+    transform: none;
+  }
+}

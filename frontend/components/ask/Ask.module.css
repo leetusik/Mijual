@@ -1,0 +1,415 @@
+/* 위젯 챗룸 (R6 §Surfaces 개정 ①·②·⑥, §Agent 도구 행, §인라인 인용, §SSE, §거절).
+ *
+ * The literals here are the record's own: **440×620** (화면 폭 ≈1/3), the opaque
+ * `#0e1a15` background (개정 ① — 코스모스 본문이 비치면 읽기 방해), 28px square
+ * header icons, the citation chip's mono **10px** and its
+ * `rgba(95,208,165,.4)` border, and the caret's **7×15px**. Everything else is a
+ * token, because everything else the round states in token terms.
+ *
+ * **No backdrop and no dim** (개정 ①): the widget is an overlay in the corner and
+ * 「랜딩 포함 모든 페이지 레이아웃 불변」, so nothing here touches the page under it.
+ *
+ * **Motion is fades and one caret.** R6 §SSE: 「모션: 페이드만. 버블 슬라이드·
+ * 타이핑 점·스피너 금지」 — state changes are text replacement. The launcher's
+ * Saturn is the one exception and it lives in `Launcher.module.css`.
+ */
+
+.widget {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: 440px;
+  height: 620px;
+  /* Guards, not a redesign: they bite only on a window narrower or shorter than
+     the signed panel plus its margins, where the alternative is a widget that
+     runs off the screen. A desktop window renders 440×620 exactly. */
+  max-width: calc(100vw - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  background: #0e1a15;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--panel-glow);
+}
+
+/* --- 헤더: 범위 칩 · external-link · × ---------------------------------- */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* 헤더 칩 `범위: {종목} · {rcept_no}` — a filing number is a numeral, so the chip
+   is mono; the × beside it releases 범위 to 전체 공시. */
+.scope {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+
+.scopeText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scopeClear {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.scopeClear:hover {
+  color: var(--ink-1);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+/* 「각 28px 정사각」. */
+.icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: color var(--dur-base) var(--ease);
+}
+
+.icon:hover {
+  color: var(--ink-1);
+}
+
+.iconGlyph {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+/* --- 스레드 -------------------------------------------------------------- */
+
+.thread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.introText {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* 「완전 익명 — … 대화는 익명으로 저장됩니다 (품질 점검용)」 — a standing fact
+   about the surface, in the quietest ink the system has. */
+.anonymity {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+}
+
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 「답변은 메시지 버블」. The reader's question is filled and right-hung; the
+   answer keeps the hairline and the full width, because it carries tool rows,
+   citation blocks and a footer that must not be squeezed into a speech bubble. */
+.question {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-soft);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+  white-space: pre-wrap;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-soft);
+}
+
+/* 중단/오류: 「부분 답변 유지 — 지우기 금지, `--ink-2`로 감쇠」. */
+.answer[data-dim="true"] .prose {
+  color: var(--ink-2);
+}
+
+/* 도구 행: mono `--text-xs` `--ink-3`, 좌측 2px `--border-soft` hairline —
+   「모바일에서도 생략 금지」. The string is the tool's own and is printed verbatim;
+   the surface composes nothing. */
+.toolRow {
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+  word-break: break-all;
+}
+
+/* 거절도 같은 프로즈 경로 — alert 색·아이콘 금지 (R6 §거절). */
+.prose {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+.sentence + .sentence {
+  margin-left: 0.25em;
+}
+
+/* 캐럿 7×15px `--live`, 1s steps(1) 블링크. `data-motion="tick"` freezes it under
+   reduced motion, and it freezes **visible** because the keyframe hides it. */
+.caret {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--live);
+  animation: caretblink 1s steps(1) infinite;
+}
+
+@keyframes caretblink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* --- 인라인 인용 (R6-4) -------------------------------------------------- */
+
+/* 번호 칩: mono 10px, `--live` 잉크, 1px rgba(95,208,165,.4) 테두리. */
+.chip {
+  display: inline;
+  margin-left: 3px;
+  padding: 0 3px;
+  background: none;
+  border: 1px solid rgba(95, 208, 165, 0.4);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--live);
+  cursor: pointer;
+}
+
+/* 제자리 인용 블록 — the Citation primitive's own anatomy and timing, shared as
+   R6-4 asks (「Citation 프리미티브의 인라인형 — 블록형과 스타일 공유」): a grid
+   height animation so the panel opens to its own height, everything phrasing
+   content so it may sit inside a paragraph. */
+.quoteWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--dur-slow) var(--ease),
+    opacity var(--dur-slow) var(--ease);
+}
+
+.quoteOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.quoteClip {
+  overflow: hidden;
+}
+
+.quotePanel {
+  display: block;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border-left: 2px solid var(--live);
+}
+
+.quote {
+  display: block;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+/* API-tier 사실: 「원문 스팬 없음, 접수번호가 인용 핸들」 — the block says so in
+   the signed words instead of showing a quote it does not have. */
+.apiTier {
+  display: block;
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.quoteLink {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+}
+
+/* --- 푸터 · 갈 곳 · 중단 행 --------------------------------------------- */
+
+/* 완료 → 「푸터 페이드 인, --dur-base」. Under reduced motion `app/shell.css`
+   turns the animation into a cut. */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+  animation: askfade var(--dur-base) var(--ease);
+}
+
+@keyframes askfade {
+  from {
+    opacity: 0;
+  }
+}
+
+.footerFacts {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.link {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+}
+
+.reask {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.reask:hover {
+  color: var(--ink-1);
+}
+
+/* 중단/오류: 「inset 행 "연결이 끊겼습니다 …" + 재시도」. Body ink, no alert
+   colour — a stopped answer is a state, not an alarm. */
+.stopped {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-inset);
+}
+
+.stoppedText {
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* --- 입력 --------------------------------------------------------------- */
+
+.composer {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--border-soft);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+  resize: none;
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+/* 「버튼 텍스트 교체 + disabled」 — one button, three texts, no spinner. */
+.send {
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  background: var(--live-solid);
+  border: 1px solid var(--live-solid);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-1);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.send:disabled {
+  cursor: default;
+  opacity: 0.72;
+}

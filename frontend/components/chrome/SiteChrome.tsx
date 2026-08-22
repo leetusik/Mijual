@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { AskProvider, AskSurface } from "@/components/ask";
 import { isOpsPath } from "@/components/ops/routes";
 import { SiteFooter } from "./Footer";
 import { SiteNav } from "./Nav";
@@ -23,7 +24,19 @@ import styles from "./SiteChrome.module.css";
  * nothing occupies a corner. R2's §6-4 decision is "chrome-level but not
  * floating … No floating corner button", and P6's AI 질문 launcher lands in the
  * bottom-right ("런처·위젯은 vocky 트리거와 모서리 충돌 금지") — that corner is
- * left clear.
+ * left clear. **`P6.S5` took it**: `AskSurface` is the only fixed pair in the
+ * reader chrome, and it renders nothing at ≤480px, nothing on `/ask` and nothing
+ * under `/ops`.
+ *
+ * ## Why the ask store is provided here (`P6.S5`)
+ *
+ * R6 requires a conversation that keeps streaming while the reader moves between
+ * the widget and `/ask` (「스트리밍 중 이동/전환에도 끊김 없음」). The root layout
+ * persists across navigation and this component is its client half, so
+ * `AskProvider` wraps the whole reader tree from one place — the widget here and
+ * `P6.S6`'s page inside `children` are two views over one thread. It holds no
+ * state of its own (the store is module-scoped in `lib/ask.ts`), so a frame
+ * arriving mid-stream re-renders the views and never the pages.
  *
  * ## 운영 관제 gets none of it (`P5.S17`)
  *
@@ -45,11 +58,14 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   if (isOpsPath(pathname ?? "")) return <>{children}</>;
 
   return (
-    <div className={styles.frame}>
-      <SiteNav />
-      <div className={styles.page}>{children}</div>
-      <SiteFooter />
-      <VockyScript />
-    </div>
+    <AskProvider>
+      <div className={styles.frame}>
+        <SiteNav />
+        <div className={styles.page}>{children}</div>
+        <SiteFooter />
+        <VockyScript />
+        <AskSurface />
+      </div>
+    </AskProvider>
   );
 }

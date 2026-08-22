@@ -360,6 +360,147 @@ export const getOpsUsers = (
   init?: RequestInitLike,
 ) => request<OpsUsers>(`/ops/users${opsQuery(params)}`, init);
 
+// ---------------------------------------------------------------------------
+// AI 질문 (P6.S5) — the API's one streaming call
+// ---------------------------------------------------------------------------
+//
+// `POST /ask` answers `text/event-stream`, so it cannot go through `request()`:
+// that helper reads the whole body before it returns, which is the one thing a
+// stream must not do. What it *does* share is the three decisions at the top of
+// this file — the hard-coded path, the CSRF header on an unsafe method, and
+// `credentials: "include"` — so the ask call lives here beside every other one
+// rather than growing a second fetch seam in a component.
+//
+// The contract (`mijual.web.routers.ask`): frame one is **always** `event:
+// session` carrying the anonymous handle for `sessionStorage`; then the agent's
+// own events (`tool_row` · `citation` · `text` · `refusal` · `links` ·
+// `footer`); then **exactly one** terminal, `done` | `aborted` | `error`. A
+// failure *before* the stream opens is the ordinary error envelope (429
+// `rate_limited`, `invalid_question`, …) and therefore an `ApiError`; once the
+// stream is open the only failure is the typed `error` terminal.
+//
+// **중지 has no endpoint.** The reader aborts the fetch, the consumer stops
+// pulling, and the server's generator is closed — so the `AbortSignal` below is
+// the whole stop mechanism.
+
+/** `mijual.web.ask.ASK_PATH`. Hard-coded like every other path in this module. */
+export const ASK_PATH = "/ask";
+
+/** One earlier exchange, as prose. Chip numbering is per answer (R6-4), so
+ * history carries no citations — the server caps it at the newest 8 turns. */
+export type AskHistoryTurn = { question: string; answer: string };
+
+/** `mijual.web.routers.ask.AskIn`. Every field but `question` is optional. */
+export type AskBody = {
+  question: string;
+  /** 범위 = this event, as a 14-digit filing number. Junk is refused server-side
+   * rather than ignored, because ignoring it would answer a different question. */
+  scope_rcept_no?: string;
+  /** This tab's anonymous handle, from an earlier turn's `session` frame. A
+   * missing or malformed one is **replaced, not trusted** (`P6.S1`). */
+  session?: string;
+  history?: readonly AskHistoryTurn[];
+};
+
+/** One SSE frame: the `event:` name and its still-unparsed `data:` payload. */
+export type SseFrame = { event: string; data: string };
+
+/**
+ * Split whatever has arrived so far into complete frames plus the remainder.
+ *
+ * Pure and buffer-in/buffer-out so the incremental case is the only case: a
+ * chunk boundary can fall anywhere, including inside a Korean quote, and a
+ * decoder that assumed one chunk = one frame would paint half a sentence. The
+ * subset of the SSE grammar this implements is the subset the service writes
+ * (`mijual.web.ask.sse_frame`): `event:` + one or more `data:` lines, terminated
+ * by a blank line, with `\n` newlines and no ids or retry fields. A comment line
+ * (`:`) is skipped, and `\r\n` is tolerated because a proxy may rewrite it.
+ */
+export function decodeSse(buffer: string): { frames: SseFrame[]; rest: string } {
+  const text = buffer.replace(/\r\n/g, "\n");
+  const blocks = text.split("\n\n");
+  // The tail after the last blank line is by definition incomplete.
+  const rest = blocks.pop() ?? "";
+  const frames: SseFrame[] = [];
+
+  for (const block of blocks) {
+    let event = "message";
+    const data: string[] = [];
+    for (const line of block.split("\n")) {
+      if (line === "" || line.startsWith(":")) continue;
+      const colon = line.indexOf(":");
+      const field = colon === -1 ? line : line.slice(0, colon);
+      const value = colon === -1 ? "" : line.slice(colon + 1).replace(/^ /, "");
+      if (field === "event") event = value;
+      else if (field === "data") data.push(value);
+    }
+    if (data.length > 0) frames.push({ event, data: data.join("\n") });
+  }
+
+  return { frames, rest };
+}
+
+/**
+ * One question, streamed frame by frame.
+ *
+ * Throws an {@link ApiError} for a **pre-stream** refusal (the ordinary
+ * envelope) and yields nothing in that case; once the first frame is yielded the
+ * turn can only end in a terminal frame or in the caller aborting `signal`.
+ */
+export async function* streamAsk(
+  body: AskBody,
+  init: { signal?: AbortSignal } = {},
+): AsyncGenerator<SseFrame, void, undefined> {
+  const response = await fetch(resolve(ASK_PATH), {
+    method: "POST",
+    headers: {
+      Accept: "text/event-stream",
+      "Content-Type": "application/json",
+      [CSRF_HEADER]: CSRF_VALUE,
+    },
+    credentials: "include",
+    body: JSON.stringify(body),
+    signal: init.signal,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let envelope: Record<string, unknown> = {};
+    try {
+      const parsed: unknown = text ? JSON.parse(text) : null;
+      if (parsed && typeof parsed === "object" && "error" in parsed) {
+        envelope = (parsed as { error: Record<string, unknown> }).error;
+      }
+    } catch {
+      // A body that is not the envelope tells the surface nothing it may show:
+      // the design writes state copy, not error copy. The status is the fact.
+    }
+    throw new ApiError(response.status, envelope as ConstructorParameters<typeof ApiError>[1]);
+  }
+
+  if (!response.body) {
+    throw new ApiError(response.status, { code: "no_stream", message: "no response body" });
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const { frames, rest } = decodeSse(buffer);
+      buffer = rest;
+      for (const frame of frames) yield frame;
+    }
+  } finally {
+    // A consumer that stops pulling (중지, or a `break`) must not leave the
+    // socket open: cancelling the reader is what closes the server's generator.
+    await reader.cancel().catch(() => undefined);
+  }
+}
+
 /** `{a: 1, b: undefined}` → `"?a=1"`. An unset filter is not sent at all. */
 function opsQuery(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();

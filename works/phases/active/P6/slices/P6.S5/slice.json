@@ -3,14 +3,14 @@
   "phase_id": "P6",
   "name": "런처 + 위젯: the whole desktop AI 질문 surface (bubbles, tool rows, 인용, SSE states, 거절, scope, sessionStorage)",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 5,
   "depends_on": [
     "P6.S4"
   ],
   "created_at": "2026-08-22T19:21:29+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-22T20:58:29+09:00",
+  "completed_at": "2026-08-22T21:29:55+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
