@@ -212,3 +212,12 @@
 {"ts": "2026-08-22T18:21:11+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list", "source": "P5.REVIEW"}
 {"ts": "2026-08-22T18:27:10+09:00", "type": "slice_status_changed", "slice": "P5.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-22T18:27:10+09:00", "type": "phase_reviewed", "phase": "P5", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-22T19:16:01+09:00", "type": "slice_status_changed", "slice": "P6.DECOMP", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-22T19:21:23+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S1"}
+{"ts": "2026-08-22T19:21:23+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S2"}
+{"ts": "2026-08-22T19:21:28+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S3"}
+{"ts": "2026-08-22T19:21:28+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S4"}
+{"ts": "2026-08-22T19:21:29+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S5"}
+{"ts": "2026-08-22T19:21:32+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S6"}
+{"ts": "2026-08-22T19:21:32+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.S7"}
+{"ts": "2026-08-22T19:25:53+09:00", "type": "slice_status_changed", "slice": "P6.DECOMP", "old_status": "in_progress", "new_status": "done"}

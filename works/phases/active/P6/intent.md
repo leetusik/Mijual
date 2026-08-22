@@ -37,6 +37,15 @@ Faithful under **RESPECT THE DESIGN**; each phase gets its own review gate.
   phase's conversation storage — P5's DECOMP decides whether those admin views
   land in P5 as empty frames or move here.
 
+## Operator Additions (mid-phase)
+
+- 2026-08-22, at P6.DECOMP, verbatim: "we need to build a agent not just llm chain."
+  Read: the AI 질문 backend must be a **genuine agent** — the model runs an
+  autonomous tool-calling loop (it decides which of the five tools to call, in
+  what order, across multiple rounds if needed, and when it is ready to answer),
+  not a scripted retrieve→prompt→answer chain. Binding on the P6 architecture
+  and decomposition.
+
 ## Notes
 
 - Ordering: P3 (design, done pending review) → P5 (apply, everything else) →
