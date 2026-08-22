@@ -146,11 +146,18 @@
   color: var(--ink-2);
 }
 
+/* R3 §2: "governing label → `DDay` → **mono window/state line**". The window's
+ * two dates and the per-type state phrase are one line and one face; 조회
+ * already renders the same line that way (`Lookup.module.css .windowLine`).
+ * Fixed at `P5.S19`: the dates were mono through their own span while the
+ * phrase ("거래 가능 · 마감 D-3", "진행 중") inherited sans, so a D-day rendered
+ * outside the mono numeral rule. */
 .windowLine {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
   margin: 0;
+  font-family: var(--font-mono);
   font-size: var(--text-sm);
   color: var(--ink-3);
 }

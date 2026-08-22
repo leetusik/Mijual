@@ -87,8 +87,21 @@ body {
  * never mono, so this is applied to the numeral, not to its row. */
 .mono {
   font-family: var(--font-mono);
-  font-size: 0.95em;
   font-variant-numeric: tabular-nums;
+}
+
+/* The 0.95em is R1's *default relationship* ("mono … ~0.95em of surrounding
+ * sans"), not a size the shell imposes: where a surface states a size the
+ * record gives it — R2's 11px tab counts, R3's text-sm crumb, R4's 32px 놓친 돈
+ * total — that size governs. `:where()` gives this rule zero specificity, so a
+ * surface's own `font-size` beside `.mono` wins on the same element. Without it
+ * this global rule and a CSS-module class are both (0,1,0) and source order
+ * decides: measured in a real browser at `P5.S19`, this one won everywhere, and
+ * **every** `.mono` element that also carried a module size rendered at one
+ * flattened 12.825px — R4's 총액 headline included. Do not merge the two rules
+ * back together. */
+:where(.mono) {
+  font-size: 0.95em;
 }
 
 /* R1 / `frontend` v0002: focus ring 2px `--focus-ring`. */

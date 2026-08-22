@@ -32,12 +32,35 @@ import styles from "./EstimateMarker.module.css";
 export type EstimateMarkerProps = {
   /** Straight from the payload's `estimated`. No default, on purpose. */
   estimated: boolean;
+  /**
+   * Which of the record's two statements of the tag's scale applies here.
+   *
+   * - `"inherit"` (default) — R3's system-wide re-cut: *"sans, **0.56em of
+   *   context**, letter-spacing .08em, border currentColor @42%"*. R1's law
+   *   (the component never sets its own size) holds, and at R2's ~17.9px
+   *   context 0.56em **is** 10px, which is how one rule satisfies both.
+   * - `"landing"` — R2's own literal for its surfaces: *"Estimate mark
+   *   (landing surfaces): a bordered sans **10px** 「추정」 tag beside the
+   *   value"*. Use it where the surrounding context is far from ~17.9px and
+   *   0.56em would therefore contradict R2's measurement — the chrome footer
+   *   (a 12px sentence, where inheriting renders the tag at 6.72px) is the
+   *   case this exists for. **Never** a way to make a tag bigger for emphasis:
+   *   the value it carries keeps its own size either way, exactly as when the
+   *   surface supplies a 17px context instead (`landing/EstimateValue`).
+   *
+   * `states-and-trust.md` §1 is why this is a prop and not a local restyle:
+   * *"Every estimate carries the marker, always, **at every size**"* — a mark
+   * the reader cannot read is one step from an untagged estimate, and the fix
+   * for that belongs in the primitive with its citation
+   * (`components/index.ts`'s own rule).
+   */
+  size?: "inherit" | "landing";
   /** The already-formatted value. Numerals are the caller's `.mono` span. */
   children: ReactNode;
   className?: string;
 };
 
-export function EstimateMarker({ estimated, children, className }: EstimateMarkerProps) {
+export function EstimateMarker({ estimated, size = "inherit", children, className }: EstimateMarkerProps) {
   if (typeof estimated !== "boolean") {
     throw new Error(
       "EstimateMarker: `estimated` must be a boolean read from the payload. " +
@@ -47,10 +70,12 @@ export function EstimateMarker({ estimated, children, className }: EstimateMarke
     );
   }
 
+  const tagClass = size === "landing" ? `${styles.tag} ${styles.tagLanding}` : styles.tag;
+
   return (
     <span className={className ? `${styles.marker} ${className}` : styles.marker}>
       {children}
-      {estimated ? <span className={styles.tag}>{ESTIMATE_TAG_KO}</span> : null}
+      {estimated ? <span className={tagClass}>{ESTIMATE_TAG_KO}</span> : null}
     </span>
   );
 }

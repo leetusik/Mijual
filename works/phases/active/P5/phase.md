@@ -2086,6 +2086,99 @@ dated subsection — **59 lines added, 0 changed** (`git diff` shows no `-` line
     header. `NEXT_PUBLIC_VOCKY_SRC` stays **unset** until a widget script exists (note 5), and
     it is inlined at build time, so setting it will mean a rebuild (`P5.S11` note 6).
 
+### `P5.S19` — the fidelity pass ran in a real browser; five fixes, and what `P5.REVIEW` can trust
+
+1. **What was actually done.** `npm run build && npm run start` + uvicorn against the live corpus,
+   driven in headless Chrome over CDP: **~230 scripted checks across 11 stages**, at 1440 / 768 /
+   390 plus the intermediate widths (481/600/900/1024/1119/1120) the phase flagged, with 41
+   screenshots kept. Every signed surface was checked against **its own round's contract**, not
+   against a general sense of taste: R1 foundations swept across 12 pages, R2/R2.1 landing +
+   chrome, R3 on **11 real events** covering every state (①unpriced · ①lapsed · ②sparse · ②past ·
+   ③ · 추후결정 · 철회 · 기재 불일치 · 정정 이력), R4 with and without a holding count, R5 auth +
+   portfolio + sample + the conversion touchpoints, R7 all six tabs behind the door, and the
+   cross-cutting trust rules as their own stage. Full table in the slice's `result.md`.
+2. **Five faithful-implementation fixes landed** (code only — **no landed record was touched**,
+   no token file, no new value chosen anywhere):
+   - **The global `.mono` rule was overriding every surface's own font-size.** `app/shell.css`'s
+     `.mono {font-size: .95em}` and a CSS-module class are both specificity **(0,1,0)**, so source
+     order decided — and the global won **everywhere**: **23 classes** collapsed to one flat
+     **12.825px**, including R4's 놓친 돈 **총액 (should be 32px)**, 보유량 input and every
+     per-holding 금액 (20), R3's 청약 결과 inset (20) and crumb (12), R2's tab counts (11), the
+     meta/eyebrow lines (11). Fixed by splitting the rule: `.mono` keeps family + tabular-nums,
+     **`:where(.mono) {font-size:.95em}`** makes R1's ratio a *zero-specificity default* a stated
+     size beats. **Do not merge those two rules back together** — the comment in `shell.css` says
+     so at the site.
+   - **Footer 「추정」 was 6.72px** (`P5.S11` note 9): 0.56em of a 12px sentence against R2's own
+     "bordered sans **10px** tag". Fixed through the sanctioned route — a **named prop** with its
+     citation, `<EstimateMarker size="landing">` → 10px — not a local restyle. `P5.S12` note 5's
+     two readings now settle together: footer = R2's 10px literal; landing = 0.56em of the
+     surface's 17px context (9.52px).
+   - **R3 §2's "mono window/state line" rendered half sans** — the dates were mono, the state
+     phrase (`거래 가능 · 마감 D-3`, `진행 중`) inherited sans, so a **D-day numeral rendered
+     outside R1's mono rule**. `font-family: var(--font-mono)` on `.windowLine`.
+   - **41px of horizontal document overflow on the landing through the 768–830px band**: R2's
+     board grid `86px 1fr 300px 230px 96px` + four 12px gaps = 760px inside a 720px content
+     column. The two wide columns became `minmax(0, …)`: R2's widths wherever they fit, shrink
+     instead of scroll below that. **0 overflow at every width now**, nothing truncated.
+   - (the tab counts are the same defect as the first item; listed in `result.md` for completeness)
+3. **What `P5.REVIEW` can trust as measured, not asserted.** No off-token colour on any reader
+   surface (35 rendered colours, all tokens or R2 literals); **radius 0** except R2's own hero
+   ellipses; the only box-shadow is `--panel-glow`; motion only R1's durations/eases and the
+   named keyframes, with reduced-motion freezing the tick and hiding the ambient layer; **Korean
+   prose verifiably draws in Pretendard Variable** (`CSS.getPlatformFontsForNode`, not a
+   computed-style guess); every numeral mono after fix 3. **Trust rules all hold**: no untagged
+   estimate and no tagged fact, **no money before 확정발행가 on any of the three surfaces**, no
+   ②/③ per-holding won, **40 board D-days identical to the served `countdown.dday`** and the
+   countdown 0 s off the served absolute instant, past ② reads 진행 중 and never 종료, 추후결정
+   never beside a date, a gate-blocked field is **absent** and never placeheld, and 조회 and
+   포트폴리오 agree to the won (한화솔루션 500주 = 679,575원 on both).
+4. **`D2`'s trigger did not fire** (the decomposition's deferred duplicate-row/double-count
+   watch): **no two of the 389 rendered board rows share an `rcept_no`**, and 코이즈 — the
+   two-version case — serves `totals.offerings: 1` and renders one breakdown row.
+5. **Every `S19` mention in this file was swept** and given a disposition; the table is in
+   `result.md` §3. Nothing was left implicit: each item is either *verified as described*,
+   *fixed*, or *catalogued for the operator*.
+6. **The Korean-in-mono question is judged, not fixed.** Korean glyphs inside `--font-mono`
+   elements fall to the OS Korean face (macOS: Apple SD Gothic Neo). Every such element is one
+   the record **draws in mono** — `StateBadge 추후결정`, the 소멸주의보 badge, `[근거]`, R2's
+   positioning/stat/band lines, the mono chrome — and R1's rule is *"Korean **prose** never mono"*,
+   which holds. Making those glyphs a single cross-platform face means editing the landed
+   `tokens.css`, i.e. **a design change**. Left as built, catalogued.
+7. **19 operator questions are consolidated in `result.md` §4**, grouped as: copy the record does
+   not contain (English 404 · silent `invalid_reset_token` · the half-stale 「API shape 확정 대기」 ·
+   the 내 종목 연결 positioning line · five composed labels · the 4건 subline vs five live sample
+   rows), states the design never drew (closed 청약 with no 실적보고서 · R7's 샘플 로드 여부), type
+   and layout the cards must settle (the mono/Hangul face · `[근거]`+DART link under the 44px
+   mobile floor · the 340px chain-step gap · the hero H1's name · the two-line PII inset · the
+   메뉴 hairline · a three-line mobile ① row and the sans dates inside two signed R4 sentences),
+   and product decisions already standing (the dated 49.2억원 · no vocky widget script · the two
+   stated defaults · 수신 주소 변경 re-auth). **None is an implementation defect** — each needs a
+   new visual or operator decision, so none was decided here.
+8. **Deliberately not "fixed":** 조회's coverage caption and its `청약 {date} 종료` line render
+   their dates in sans while the boundary panel renders its dates in mono. The record gives those
+   as whole signed sentences, so splitting the type inside them is a typographic decision, not a
+   correction.
+9. **Two operational gotchas, worth more than they look.** (a) `npm run start` fails **silently
+   into `next.log` with `EADDRINUSE`** if an older `next start` still holds :3000 — the stale
+   server then serves a build manifest whose CSS chunks 500, which looks exactly like *"my fix did
+   nothing"*. Kill the listener (`lsof -nP -iTCP:3000 -sTCP:LISTEN`; `pkill -f next-server` does
+   **not** match it) and confirm a CSS chunk returns 200 before believing any measurement.
+   (b) A flattened-`innerText` proximity check produces confident false failures — four of this
+   pass's "FAIL" lines were probe artifacts (a verbatim 정정 요약 containing 원, a header date near
+   the 추후결정 badge, a frame line checked before a count was typed, a wrong `corp_code` measuring
+   a 404). Re-measure with a scoped selector before believing a failure.
+10. **Client storage, inventoried** (`P5.S16` note 3's deferral): localStorage `mijual.portfolio.sample`;
+    sessionStorage `mijual.lookup.holdings`, `mijual.convert.offer`, `mijual.auth.flash`. Nothing
+    anonymous reaches the server. One cross-tab observation, not signed and not fixed: a tab whose
+    chrome mounted before another tab loaded the sample can show the account slot while its body
+    renders the sample; **single-tab behaviour is correct**, including that logging in with a sample
+    loaded shows an **empty account portfolio + the 계정 이전 offer**, never the sample rows as the
+    account's.
+11. **Hygiene.** The four test accounts this pass created were deleted through the product's own
+    계정 삭제 (`/auth/me` back to anonymous); ops credentials were passed as **process env vars for
+    this run only** and the operator's `.env` was never opened; `NEXT_PUBLIC_VOCKY_SRC` stayed
+    unset so no third-party script loaded; both servers were stopped afterwards.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2981,9 +3074,53 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   degraded path, and the one-HTTP-client scan); frontend `build`/`typecheck`/`smoke` (11) green;
   live end-to-end pass against a throwaway local vocky stack with the repo left byte-identical and
   the hosted service never contacted.
+- (`P5.S19`) **`frontend`** — the fidelity pass corrected four contract-level defects, one of them
+  systemic: **`.mono`'s `font-size` is now `:where(.mono)`**, a zero-specificity default, because a
+  global class rule and a CSS-module class rule are both **(0,1,0)** and source order was silently
+  flattening **23 surface-stated sizes to one 12.825px** (R4's 32px 놓친 돈 총액, the 20px 금액 /
+  청약 결과 inset, R3's 12px crumb, R2's 11px tab counts). The rule to record in the doc: **R1's
+  "mono ≈0.95em of the surrounding sans" is a default relationship, and a size the record states
+  for a surface governs over it.** Also: `EstimateMarker` gains a **named `size` prop**
+  (`"inherit" | "landing"`) so the footer's 「추정」 renders R2's literal **10px** instead of 6.72px —
+  the primitives are extended by named, record-cited props, never by a local restyle; R3's
+  "mono window/state line" is now mono for the **whole** line, so no D-day numeral renders in sans;
+  and the board's desktop grid uses `minmax(0, …)` for R2's two wide columns, which keeps R2's exact
+  widths wherever they fit and removes **41px of horizontal document overflow in the 768–830px band**
+  without truncating a value. **`experience`** — the whole signed product was verified against its
+  rounds in a real browser and the **trust rules are now measured, not asserted**: no untagged
+  estimate / no tagged fact, **no derived money before 확정발행가 on detail, 조회 or the portfolio**,
+  no ②/③ per-holding won, **40 board D-days byte-identical to the served `countdown.dday`** and the
+  countdown 0 s off the served instant, past ② reads 진행 중, 추후결정 never beside a date, a
+  gate-blocked field is absent rather than placeheld, and 조회 ↔ 포트폴리오 agree to the won.
+  Korean prose draws in Pretendard on every surface (measured via platform fonts, not computed
+  style), and **Korean inside a mono element is the record's own choice of face** — a
+  cross-platform Hangul mono would be a token edit, i.e. a design change. **`qa`** — the durable
+  method: `build` + `start` + uvicorn driven over CDP, **~230 checks / 11 stages** at 1440/768/390
+  plus 481–1120, screenshots per surface, and two traps that cost real time — a stale `next start`
+  holding :3000 fails **silently** into the log with `EADDRINUSE` and then serves 500ing CSS chunks
+  (looks exactly like a fix that did nothing), and flattened-`innerText` proximity checks yield
+  confident false failures that must be re-measured with scoped selectors. Suite state unchanged
+  and green: `pytest` **118 passed**, `smoke` **11/11**, `build` + `typecheck` clean.
 
 ## Open Questions
 
+- **The consolidated operator catalogue lives in `slices/P5.S19/result.md` §4** — *new, `P5.S19`*:
+  the fidelity pass swept every surface and every deferred `S19` item and produced **19 questions,
+  none of them an implementation defect**. Many are the entries already below (the English 404, the
+  silent `invalid_reset_token`, 「API shape 확정 대기」, 내 종목 연결, R7's 샘플 로드 여부, the closed
+  청약 with no 실적보고서, the dated 49.2억원, the two stated defaults, 수신 주소 변경 re-auth, the
+  vocky capture path, 계정 이전's composed heading). **New there and not repeated here:** Korean
+  glyphs inside `--font-mono` elements fall to the OS Korean face — every one of those elements is
+  drawn in mono *because the record says so*, and changing it means editing the landed `tokens.css`;
+  `[근거]` (14px) and its DART link (17px) sit under the mobile **44px** hit floor inside a signed row
+  anatomy; the ① 환산 chain's 할인율 step fills its 340px citation cap, widening the gap before the
+  arrow; the hero H1 renders **내 종목 조회** where R2's literal says 내 종목 연결; the PII inset
+  renders **2 lines** where R5's copy list says 3행; the 메뉴 button's hairline is this build's
+  reading of "button"; the sample's signed **4건** subline sits above **five** live D-day rows; and
+  two signed R4 sentences render their dates in **sans** while the boundary panel renders its dates
+  in mono. Also noted, no decision needed: the app has **no favicon** (the ring PNG is 2178×346 and
+  re-encoding a delivered asset is not an implementation call). **`P5.REVIEW` / operator call**, one
+  pass over that section.
 - **「API shape 확정 대기」 now reads half a step behind its own surface** — *new, `P5.S18`*:
   the line is signed copy for the vocky view's 연결 전 state, but §6.3's delegation is closed —
   the shape **is** confirmed, and what the view waits for is the `vk_` credential. Rewriting a

@@ -29,3 +29,14 @@
   border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
   white-space: nowrap;
 }
+
+/* `size="landing"` — R2's literal, for a surface whose context is far from the
+ * ~17.9px at which 0.56em and 10px coincide: "Estimate mark (landing surfaces):
+ * a bordered sans 10px 「추정」 tag beside the value". The chrome footer's
+ * sentence is 12px, where inheriting renders 6.72px — a mark that small is one
+ * step from an untagged estimate (`states-and-trust.md` §1: the marker is
+ * carried "at every size"). Only the tag is pinned; the value keeps its own
+ * size, so R1's "urgency/emphasis is colour, never size" is untouched. */
+.tagLanding {
+  font-size: 10px;
+}

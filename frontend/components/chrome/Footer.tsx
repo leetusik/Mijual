@@ -62,7 +62,13 @@ export function SiteFooter() {
                 pack rather than from a payload: `/board/summary` serves no
                 gate-cost figure, and the contract will not invent one. See the
                 note in `P5.S11`'s `result.md`. */}
-            <EstimateMarker estimated={true}>
+            {/* `size="landing"` renders the tag at R2's own 10px literal
+                ("Estimate mark (landing surfaces): a bordered sans 10px 「추정」
+                tag beside the value"). Inheriting 0.56em from this 12px
+                sentence gave 6.72px — the nit `P5.S11` note 9 flagged for
+                `P5.S19`, fixed in the primitive with its citation rather than
+                by restyling here or resizing the signed sentence. */}
+            <EstimateMarker estimated={true} size="landing">
               <span className="mono">{GATE_COST_VALUE_KO}</span>
             </EstimateMarker>
             {GATE_COST_TAIL_KO}

@@ -298,7 +298,14 @@
 @media (min-width: 768px) {
   .row {
     display: grid;
-    grid-template-columns: 86px minmax(0, 1fr) 300px 230px 96px;
+    /* R2's own columns: `86px 1fr 300px 230px 96px`. The two wide ones are
+     * `minmax(0, …)` so they are the widths R2 gives wherever the content
+     * column can pay for them and shrink instead of pushing the page into a
+     * horizontal scrollbar in the 768–830px band, where 86+300+230+96 plus four
+     * 12px gaps (760px) exceeds the padded content width. Measured at
+     * `P5.S19`: exactly 41px of document overflow at 768px before this, 0
+     * after, with the row wrapping rather than truncating any value. */
+    grid-template-columns: 86px minmax(0, 1fr) minmax(0, 300px) minmax(0, 230px) 96px;
     align-items: baseline;
     gap: var(--space-3);
     padding-block: 9px; /* R2: 9px v-pad */
