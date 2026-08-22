@@ -31,9 +31,10 @@ from fastapi import FastAPI
 from mijual import __version__
 from mijual.config import Settings, load_settings
 from mijual.mail import ConsoleMailer, Mailer
-from mijual.web.conversations import Conversations, EmptyConversations
+from mijual.web.conversations import Conversations
+from mijual.web.conversationstore import DbConversations
 from mijual.web.csrf import register_csrf_guard
-from mijual.web.deps import dispose_engine
+from mijual.web.deps import dispose_engine, session_factory
 from mijual.web.errors import register_error_handlers
 from mijual.web.routers import auth, board, events, health, ops, portfolio, stocks
 
@@ -72,10 +73,15 @@ def create_app(
     nothing, and **P4** passes a real transport here without touching a route.
 
     ``conversations`` is the same shape of seam for the AI 질문 agent's storage
-    (:mod:`mijual.web.conversations`): P5 defaults to
-    :class:`~mijual.web.conversations.EmptyConversations` — this build stores no
-    conversations, so the 대화 로그 / 익명 세션 / 피드백 tabs serve honest zeros —
-    and **P6** passes its own implementation here without touching a route.
+    (:mod:`mijual.web.conversations`). P5 defaulted it to
+    :class:`~mijual.web.conversations.EmptyConversations` because that build
+    stored no conversations; **`P6.S1` filled the seam**, so the default is now
+    :class:`~mijual.web.conversationstore.DbConversations` over the anonymous
+    conversation tables — and the 대화 로그 / 익명 세션 / 피드백 tabs serve real
+    rows **with no route change**, which is the whole point of the seam.
+    ``EmptyConversations`` remains for a caller that wants a source with nothing
+    in it. The factory below builds on the app's own lazy engine, so constructing
+    an app still opens no connection.
     """
     app = FastAPI(
         title=TITLE,
@@ -87,7 +93,9 @@ def create_app(
     app.state.engine = None
     app.state.session_factory = None
     app.state.mailer = mailer or ConsoleMailer()
-    app.state.conversations = conversations or EmptyConversations()
+    app.state.conversations = conversations or DbConversations(
+        lambda: session_factory(app.state)()
+    )
 
     register_error_handlers(app)
     register_csrf_guard(app)

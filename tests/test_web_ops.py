@@ -19,6 +19,12 @@ from mijual.config import Settings
 from mijual.db.models import Base, Extraction, ExtractionCall, PipelineRun, utcnow
 from mijual.web.app import create_app
 from mijual.web.auth import OPS_COOKIE, SESSION_COOKIE
+from mijual.web.conversationstore import (
+    DbConversations,
+    new_session_hash,
+    record_feedback,
+    record_turn,
+)
 from mijual.web.csrf import CSRF_HEADER
 from mijual.web.deps import get_session, get_write_session
 from mijual.web.opsreads import open_decisions
@@ -32,7 +38,8 @@ def client():
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     Base.metadata.create_all(engine)
-    session = sessionmaker(bind=engine)()
+    factory = sessionmaker(bind=engine)
+    session = factory()
 
     app = create_app(
         Settings(
@@ -41,7 +48,10 @@ def client():
             ops_password=OPS_PASSWORD,
             # No broker in a test: the lock chip must degrade, not fail.
             redis_url="",
-        )
+        ),
+        # `P6.S1`'s real port over the same in-memory database — the panel is
+        # exercised against what it will actually serve, not against a stub.
+        conversations=DbConversations(factory),
     )
     app.dependency_overrides[get_session] = lambda: session
 
@@ -146,7 +156,12 @@ def test_the_panel_has_no_mutation_endpoint_and_no_reader_surface_links_it(clien
 
 
 def test_the_conversation_port_serves_honest_zeros_and_no_join(client) -> None:
-    """P5 stores no conversations, so 0건 is true — not 「준비 중」, not a 404.
+    """An empty store answers 0건 — not 「준비 중」, not a 404 — and a full one answers rows.
+
+    `P6.S1` replaced ``EmptyConversations`` with a real implementation of the same
+    port, so the three tabs come alive **through no route change at all**: the
+    last block below writes two rows with the storage's write API and reads them
+    back through the very endpoints P5 shipped.
 
     And the 사용자 tab is two independent reads: nothing in either block can be
     matched against the other (계정↔대화 연결·조인·추정 매칭 금지).
@@ -169,6 +184,32 @@ def test_the_conversation_port_serves_honest_zeros_and_no_join(client) -> None:
     # R7's 샘플 로드 여부 has no server-side fact in P5 — absent, never a false.
     assert "sample_loaded" not in account
     assert users["sessions"] == {"count": 0, "rows": []}
+
+    # …and the same three routes, once the store holds a turn and a comment.
+    thread = new_session_hash()
+    record_turn(
+        client.db,
+        session_hash=thread,
+        question="증서 매매 언제 끝나나요?",
+        kind="answer",
+        answer="증서 매매기간은 2026-05-20까지입니다.",
+        scope_rcept_no="20260508000928",
+        evidence=["20260508000928"],
+        quotes=["신주인수권증서의 매매기간: 2026.05.14 ~ 2026.05.20"],
+    )
+    record_feedback(client.db, text="설명이 좋았어요", session_hash=thread)
+    client.db.commit()
+
+    log = client.get("/ops/conversations").json()
+    assert log["count"] == 1 and log["rows"][0]["session_hash"] == thread
+    assert log["rows"][0]["scope"] == "20260508000928"
+    assert log["rows"][0]["at"].endswith("+09:00")
+    assert client.get("/ops/sessions").json()["rows"][0]["questions"] == 1
+    assert client.get("/ops/feedback").json()["rows"][0]["text"] == "설명이 좋았어요"
+    # The 사용자 tab's second table is the same aggregate, still unjoined.
+    assert client.get("/ops/users").json()["sessions"]["count"] == 1
+    # 유형 filter, already wired by `P5.S9` — no refusal was stored.
+    assert client.get("/ops/conversations?kind=refusal").json() == {"count": 0, "rows": []}
 
 
 def test_the_overview_serves_both_halves_of_the_missing_beat_row_and_degrades(client) -> None:

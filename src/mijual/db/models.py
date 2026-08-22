@@ -58,6 +58,8 @@ __all__ = [
     "Account",
     "AuthSession",
     "Base",
+    "ConversationFeedback",
+    "ConversationTurn",
     "Corp",
     "CorrectionKind",
     "Event",
@@ -1131,3 +1133,126 @@ class PipelineRun(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<PipelineRun {self.label} {self.started_at} ok={self.ok}>"
+
+
+# ---------------------------------------------------------------------------
+# P6.S1 — 익명 대화 저장소 (R6-6 / R7 §대화 로그). Rows about a *conversation*,
+# never about a person: the two tables below are the implementation of
+# 「대화는 익명으로 저장됩니다 (품질 점검용)」.
+# ---------------------------------------------------------------------------
+class ConversationTurn(Base):
+    """One AI 질문 turn — the question, the reply, and what backed it.
+
+    **R7 §대화 로그 signs this column list**, so it is transcribed rather than
+    designed: *세션 = 익명 해시 · 시각 KST · 범위 (이벤트 rcept_no 또는 전체) ·
+    질문 · 답변/거절 · 거절 카테고리 (가족 5종) · 근거 rcept_no 목록 · 인용 칩
+    원문*. Nothing is dropped and nothing else is added.
+
+    **What is absent is the promise.** R7: 「계정·이메일·IP·UA 컬럼은 저장하지
+    않음 — 표시 정책이 아니라 스키마」, and 「계정↔대화 연결 컴럼·조인·추정 매칭
+    금지」. So this table has **no** ``account_id``, no foreign key of any kind, no
+    email, no IP, no user agent, and no column a later join could be built on —
+    the same structural absence :class:`OpsSession` uses for the operator door and
+    :class:`Account` refuses in the other direction.
+    ``tests/test_web_conversations.py`` walks these columns and asserts it, so the
+    promise is checked rather than remembered.
+
+    ``session_hash`` is an **opaque random handle** minted by
+    :func:`mijual.web.conversationstore.new_session_hash` — never derived from an
+    address, an agent string or an account, because hashing an identifier would
+    smuggle the forbidden join back in as a lookup. It groups turns into a thread
+    (R7's 익명 세션 집계면 is exactly a ``GROUP BY`` on it) and identifies nobody.
+
+    Three column choices worth stating:
+
+    * **``scope_rcept_no`` is NULL for 전체 공시**, and carries the event's
+      ``rcept_no`` when the reader asked inside one event. The panel renders the
+      signed 「전체 공시」 for the NULL case
+      (:data:`mijual.web.conversationstore.SCOPE_ALL_KO`); the column stores the
+      fact, not the copy.
+    * **``evidence`` and ``quotes`` are two lists, exactly as R7 lists them** —
+      근거 rcept_no 목록 and 인용 칩 원문. Quotes are stored **verbatim**: R6
+      forbids a reconstructed quote, and a stored summary would make the log's
+      대화 재생 a paraphrase of what the reader saw.
+    * **No portfolio/holdings column and no structured tool payload** (phase Open
+      Question 1). A turn keeps the prose the reader saw and nothing more.
+
+    ``kind`` is constrained at the database (``answer`` | ``refusal`` — the port's
+    own vocabulary). ``refusal_category`` is **not**: the five family names are
+    *signed Korean copy*, and copy can be re-signed, while these rows — unlike
+    every pipeline table (N16) — are not re-collectable. The vocabulary is
+    enforced on write instead
+    (:func:`mijual.web.conversationstore.record_turn`), so a re-signed family
+    never costs a destructive migration.
+    """
+
+    __tablename__ = "conversation_turn"
+    __table_args__ = (
+        CheckConstraint("kind IN ('answer', 'refusal')", name="ck_conversation_turn_kind"),
+        Index("ix_conversation_turn_created", "created_at"),
+        Index("ix_conversation_turn_session", "session_hash", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    #: The anonymous thread handle. Opaque, random, and a key to nothing else.
+    session_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    #: Stored UTC, rendered KST by :func:`mijual.web.clock.iso` like every instant.
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    #: 범위 — the event's ``rcept_no``, or NULL for 전체 공시.
+    scope_rcept_no: Mapped[str | None] = mapped_column(String(14))
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    #: ``answer`` | ``refusal`` (R7's 유형 filter, `P5.S9`'s query parameter).
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    #: The prose the reader saw — an answer, or the refusal's 3-part sentence.
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    #: One of the five signed families, and only on a refusal.
+    refusal_category: Mapped[str | None] = mapped_column(String(20))
+    #: 근거 rcept_no 목록 — the filings the reply rests on.
+    evidence: Mapped[dict | list | None] = mapped_column(JSONBody, nullable=False)
+    #: 인용 칩 원문 — verbatim spans, never reconstructed (R6).
+    quotes: Mapped[dict | list | None] = mapped_column(JSONBody, nullable=False)
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<ConversationTurn {self.session_hash} {self.kind} {self.created_at}>"
+
+
+class ConversationFeedback(Base):
+    """R7's ``save_feedback`` 대기열 row: 시각 · 의견 · 답장 이메일(선택) · 원 대화.
+
+    **``email`` is the one signed exception to "no email column"** and it earns it
+    by being nothing like an identity: R6 §의견 makes it 선택 입력 for a reply
+    (「선택 이메일 입력 (답장용)」) and R7 records it as 「사용자가 자발 입력한
+    경우에만 값 존재」. It lives on the feedback row, it joins to nothing — least
+    of all to :class:`Account`, which has its own email and must stay unreachable
+    from here — and an operator replies from a mail client, outside the panel.
+
+    ``session_hash`` is R7's 원 대화 링크: the same opaque handle
+    :class:`ConversationTurn` carries, so the queue can point at the conversation
+    a comment came from. It is nullable because a comment with no thread behind it
+    is still the operator's to read, and the panel then renders an empty 원 대화
+    cell rather than a fabricated one.
+
+    Read-only in the panel by rule (R7: 읽기 전용 — 처리 상태 비트 없음), which is
+    why there is no ``handled``/``status`` column to tempt one into existence, and
+    no merge with the vocky collection (§save_feedback: 병합 금지 — 상호 링크만).
+    """
+
+    __tablename__ = "conversation_feedback"
+    __table_args__ = (Index("ix_conversation_feedback_created", "created_at"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    #: 의견 텍스트, as the reader typed it.
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    #: 답장 이메일 — present only when volunteered. 254 = the RFC 5321 limit.
+    email: Mapped[str | None] = mapped_column(String(254))
+    #: 원 대화 링크 (세션 해시로). Not a foreign key — the turns are a log, not a
+    #: parent, and a comment must survive a thread it can no longer point at.
+    session_hash: Mapped[str | None] = mapped_column(String(64))
+
+    def __repr__(self) -> str:  # pragma: no cover - never log the comment itself
+        return f"<ConversationFeedback {self.id} {self.created_at}>"

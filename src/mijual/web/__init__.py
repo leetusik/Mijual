@@ -46,7 +46,10 @@ Layout::
                            differently named cookie, one uniform failure (R7 §6.4)
     mijual.web.opsreads  — 운영 관제's numbers, each re-read from the source that
                            already owns it (발명 수치 금지)
-    mijual.web.conversations — the AI 질문 storage port: framed here, filled by P6
+    mijual.web.conversations — the AI 질문 storage port: framed by P5
+    mijual.web.conversationstore — `P6.S1`'s implementation of it: the anonymous
+                           conversation/feedback tables, their write API, and the
+                           newest-first cursor reads the three ops tabs render
     mijual.web.routers   — one module per surface (health · board · events ·
                            stocks · auth · portfolio · ops)
 

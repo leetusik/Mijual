@@ -227,6 +227,62 @@ also the true build order.
     `components/chrome/copy.ts` already use. **Inventing a Korean sentence is a design change** —
     P5 shipped an English framework 404 rather than invent one.
 
+18. **`P6.S1` landed the storage — what S2/S4 import, and the decisions taken.**
+    Module: **`src/mijual/web/conversationstore.py`** (tables in
+    `src/mijual/db/models.py`: `ConversationTurn` / `conversation_turn` and
+    `ConversationFeedback` / `conversation_feedback`, at the bottom of the file).
+    - **Write API** (not on the port — the port stays read-only; both take the
+      caller's own session, `flush` but never `commit`):
+      `record_turn(session, *, session_hash, question, kind, answer, scope_rcept_no=None,
+      refusal_category=None, evidence=(), quotes=()) -> ConversationTurn` and
+      `record_feedback(session, *, text, email=None, session_hash=None) -> ConversationFeedback`.
+      `evidence` = 근거 rcept_no 목록, `quotes` = 인용 칩 원문 **verbatim** — both
+      plain `Sequence[str]`, stored as JSON lists. There is deliberately **no
+      quote↔rcept_no pairing column**: R7 signs two lists and that is what exists.
+      If `P6.S4` needs the pairing, add a nullable JSON column additively
+      (`ensure_columns`) rather than reshaping these — conversation rows, unlike
+      every pipeline table (N16), are **not re-collectable**.
+    - **Session handle**: `new_session_hash()` = `secrets.token_hex(16)` (32 lowercase
+      hex chars), **random, never derived** from IP/UA/account/email.
+      `is_session_hash(v)` accepts 16–64 lowercase hex; `session_hash_or_new(v)` is
+      S4's entry point — a missing/malformed client token is **replaced, not
+      trusted**, which is also what keeps an address out of the column. Both write
+      functions raise `ValueError` on a non-handle, so nothing client-controlled
+      reaches storage unchecked.
+    - **Cursor**: opaque `base64url(f"{epoch_micros}\x1f{tiebreaker}")`, no padding.
+      Keyset, newest first, `(created_at, id)` for the log and the queue,
+      `(max(created_at), session_hash)` for the sessions aggregate. An unreadable
+      cursor is `ApiError("invalid_cursor")` (400) — never a silent page 1.
+      `next_cursor` is omitted at the end (`Page.payload()`'s rule, unchanged).
+    - **Vocabulary**: `KIND_ANSWER`/`KIND_REFUSAL`, `REFUSAL_FAMILIES` (the five
+      signed Korean names, the exact strings the panel's filter sends), and
+      `SCOPE_ALL_KO = "전체 공시"` (R6 §범위 모델's own words). **Decision — an
+      unknown refusal family is rejected at the write** (`ValueError`), as is a
+      refusal without a family and a category on an answer: an invented family
+      would be a row the signed filter can never find. `kind` is additionally a DB
+      `CheckConstraint`; the five families are **not** in the schema, because copy
+      can be re-signed and these rows cannot be re-collected — a re-signed family
+      must not cost a destructive migration.
+    - **Open Question 1 — taken as stated**: the turn is stored as the reader saw
+      it; **no portfolio/holdings column, no structured tool payload**. Nothing
+      changed about the promise, so nothing was raised to the operator.
+    - **익명 세션 is derived, not materialized** (R7's 집계면): a `GROUP BY
+      session_hash` over the turn table + one follow-up query for each page's
+      마지막 범위. One place a session can be written, so nothing can drift.
+    - **Wiring**: `create_app(conversations=…)`'s **default is now
+      `DbConversations`** over the app's own lazy engine (`session_factory(app.state)`),
+      exactly the mailer's seam shape; no route changed. `EmptyConversations`
+      stays exported for a caller that wants an empty source. `DbConversations`
+      takes a **session factory** (`Callable[[], Session]`), opens one session per
+      read and rolls it back — `deps.get_session`'s rule, since the port's methods
+      take no session. `tests/test_web_ops.py`'s fixture now passes
+      `DbConversations(factory)` over its in-memory SQLite, so the three tabs are
+      exercised against the real implementation.
+    - **Anonymity is asserted, not remembered**:
+      `tests/test_web_conversations.py::test_no_conversation_column_can_name_a_person_and_none_joins_an_account`
+      walks both tables' columns and foreign keys. **Do not add a foreign key to
+      either table** (in either direction) — the test fails on any.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -297,3 +353,10 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   and the model-in-request-path boundary are both candidates. Note also `P5.REVIEW` note 8: the ops
   개요 tab **parses `docs/current/decisions.md` for `- **Open…` bullets**, so versioning that doc
   can move an operator surface — re-check the open-bullet count after any `decisions` rewrite.
+- (`P6.S1`) **`data`** · **`security`** · **`backend`** (+ a line in **`api`**): two anonymous
+  tables (`conversation_turn` · `conversation_feedback`) now exist with **no account/email/IP/UA
+  column and no foreign key** (feedback's voluntary 답장 이메일 the one signed exception), a
+  random-minted session handle, and `mijual.web.conversationstore.DbConversations` wired as
+  `create_app`'s default — so 「대화는 익명으로 저장됩니다」 moves from "trivially true, nothing
+  stored" to implemented-and-asserted, and `/ops/conversations` · `/ops/sessions` · `/ops/feedback`
+  serve real rows with **no route change**. Suite 118 → **121 passed**.

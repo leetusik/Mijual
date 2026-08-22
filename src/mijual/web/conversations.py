@@ -29,6 +29,11 @@ its own storage and passes it to
 3. **Cursor pagination, newest first.** R7 asks for 시간 역순 커서 페이지네이션 on
    the log; the cursor is an opaque string this layer never interprets.
 
+`P6.S1` filled the seam: :class:`mijual.web.conversationstore.DbConversations`
+implements this protocol over the anonymous conversation tables and is what
+:func:`mijual.web.app.create_app` now wires by default. This module did not
+change for it — that is what a seam is for.
+
 The dataclasses below are the *shape of the answer*, not of the storage: P6 owns
 the columns. A row is a plain mapping so P6 can serve the fields R7 lists
 (세션 해시 · 시각 KST · 범위 · 질문 · 답변/거절 · 거절 카테고리 · 근거 rcept_no ·
