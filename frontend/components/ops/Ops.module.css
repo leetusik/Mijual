@@ -1,0 +1,486 @@
+/* 운영 관제 — the ops idiom (R7 §6.6, delegated to the session and decided there).
+ *
+ * Two rules make this surface look like what it is, and both are subtractive:
+ *
+ *   1. **The cosmos token scope stays** (`class="cosmos"` is already on the page
+ *      root), so every colour, size and space here is the design system's.
+ *      Token delta for R7: none.
+ *   2. **All ornament is removed** — no starfield, no shooting star, no radial
+ *      glow, no corner brackets, no top-edge `--panel-glow`. A panel is opaque
+ *      flat `#0e1a15` + 1px `--border-strong`. "장식의 부재 자체가 '카운터 뒤'
+ *      표면 표시."
+ *
+ * `#0e1a15` is the one literal the round sanctions (P3.S7's widget introduced
+ * it), so it is stated once, here, as a local custom property — not added to the
+ * vendored token file, which is read-only design output.
+ *
+ * **Desktop-only, by explicit operator decision** (`frontend` v0002: "the one
+ * surface exempt from mobile-first"): there is not one media query in this file,
+ * and the root carries a fixed min-width instead. A narrow window scrolls
+ * sideways rather than reflowing into a layout nobody designed.
+ *
+ * Density is the round's: rows mono 11–12px with 8px vertical padding.
+ */
+
+.ops {
+  /* R7 §6.6's literal, and the only one in this file. */
+  --ops-panel: #0e1a15;
+  min-width: 1180px;
+  padding: var(--space-6) var(--space-6) var(--space-12);
+}
+
+/* ---------------------------------------------------------------- ops 바 */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  border-bottom: 1px solid var(--border-strong);
+  padding: var(--space-3) var(--space-6);
+  /* Not fixed: nothing on this surface floats, and the corner stays empty. */
+  background: var(--ops-panel);
+}
+
+.mark {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink-1);
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.tab {
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--ink-1);
+}
+
+/* R2's own active state, kept: 600 + a 2px underline. */
+.tabActive {
+  color: var(--ink-1);
+  font-weight: 600;
+  border-bottom-color: var(--ink-1);
+}
+
+.barRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The lock chip: state as a word, never a colour alone. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--border-strong);
+  padding: 2px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+
+.chipHeld {
+  color: var(--ink-1);
+  border-color: var(--ink-2);
+}
+
+.chipUnknown {
+  color: var(--ink-3);
+  border-style: dashed;
+}
+
+.logout {
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.logout:hover {
+  color: var(--ink-1);
+}
+
+/* ------------------------------------------------------------- 상태 푸터 */
+
+.statusFooter {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  border-top: 1px solid var(--border-strong);
+  margin-top: var(--space-8);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------- 패널 */
+
+.panel {
+  background: var(--ops-panel);
+  border: 1px solid var(--border-strong);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.panelTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  margin: 0;
+}
+
+.panelNote {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.columns > .panel {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------- 타일 */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.tileLabel {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  margin-bottom: var(--space-2);
+}
+
+.tileValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: var(--ink-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.tileUnit {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.tileLines {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------- 표 */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--border-strong);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  white-space: nowrap;
+}
+
+.table td {
+  border-bottom: 1px solid var(--border-soft);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  vertical-align: top;
+  color: var(--ink-1);
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Codes, identifiers and stage output: raw English, mono (§6.1/§6.2). */
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.codeWrap {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.faint {
+  color: var(--ink-3);
+}
+
+.ko {
+  color: var(--ink-2);
+}
+
+/* The one alert on this surface: a scheduled beat with no run (build-prompt
+ * §개요 — alert는 미실행에만; 예산 소진은 보고된 상태로, 실패 스타일 금지).
+ *
+ * Stated twice on purpose: `.table td` sets the cell ink and is one element
+ * more specific than a bare class, so the row that must be alert-coloured says
+ * so with the same specificity. (Measured in a browser — the class alone lost.)
+ */
+.alert,
+.table td.alert {
+  color: var(--alert);
+}
+
+.rowLink,
+.link {
+  color: var(--ink-2);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-strong);
+}
+
+.rowLink:hover,
+.link:hover {
+  color: var(--ink-1);
+}
+
+.expand {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid var(--border-strong);
+  padding: 1px var(--space-2);
+  cursor: pointer;
+}
+
+.expand:hover {
+  color: var(--ink-1);
+}
+
+.detail {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid var(--border-strong);
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.quote {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-1);
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow: auto;
+  border-left: 2px solid var(--border-strong);
+  padding-left: var(--space-3);
+}
+
+/* --------------------------------------------------------------- 필터 */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.input,
+.select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: var(--space-2);
+  min-width: 160px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.pageButton {
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 1px var(--space-3);
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  color: var(--ink-3);
+  border-color: var(--border-soft);
+  cursor: default;
+}
+
+/* ----------------------------------------------------------- quota 바 */
+
+.bar2 {
+  height: 10px;
+  border: 1px solid var(--border-strong);
+  margin: var(--space-2) 0;
+}
+
+.bar2Fill {
+  height: 100%;
+  background: var(--live);
+}
+
+/* --------------------------------------------------------------- 문 */
+
+/* 인증 전 표면이므로 ops 크롬 없음 — 빈 페이지 가운데 문 하나 (build-prompt §인증). */
+.door {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+.doorCard {
+  width: 380px;
+  background: #0e1a15;
+  border: 1px solid var(--border-strong);
+  padding: var(--space-6);
+}
+
+.doorMark {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink-1);
+  margin-bottom: var(--space-6);
+}
+
+.doorField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.doorLabel {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.doorInput {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-3);
+}
+
+.doorSubmit {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-1);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  margin-top: var(--space-2);
+}
+
+.doorSubmit:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* The failure line is body ink, never `--alert`: that hue means expiring/lost
+ * (`frontend` v0002), and `P5.S15` set the precedent on the reader's own door. */
+.doorError {
+  margin-top: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+.doorRules {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-soft);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  line-height: 1.7;
+}

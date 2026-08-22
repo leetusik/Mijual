@@ -363,3 +363,335 @@ export type Portfolio = {
  * an **absent** stored row means the 7일+1일 default, not "off". There is no
  * KakaoTalk key: that row renders a 「예정」 chip and no working control. */
 export type Notifications = { address: string; lead_days: number[] };
+
+// ---------------------------------------------------------------------------
+// 운영 관제 (P5.S9's `/ops` routes) — the operator's panel, R7
+// ---------------------------------------------------------------------------
+//
+// A different contract from everything above: this is the operator surface, and
+// what the reader contract hides is exactly what it serves. Three of its rules
+// are in the types rather than in prose:
+//
+// 1. **A reason/suppression code travels raw English** and carries `reason_ko`
+//    *only* where the gate layer itself owns that Korean (§6.1) — hence
+//    `reason_ko?:`, never a string with a fallback.
+// 2. **A rate never travels without its basis**: `distinct_count` + `rate` sit
+//    beside `count`, and the queue's own `basis` names the denominator.
+// 3. **`▷` is pipeline output quoted verbatim** (`spend_line`, `cost_line`) and
+//    must never be swapped for 「추정」 here — 경계 = 출처.
+
+/** One reason or suppression code as the panel renders it: the code raw. */
+export type OpsReason = {
+  /** Raw English, `""` for a row with no reason (the `passed` bucket). */
+  code: string;
+  count: number;
+  /** Only when the **code** owns that Korean. Absent is a rendering, not a gap. */
+  reason_ko?: string;
+  gate_status?: string;
+  distinct_count?: number;
+  /** An exact decimal string over the distinct basis, never a float. */
+  rate?: string;
+};
+
+export type OpsEvents = {
+  considered: number;
+  exposable: number;
+  suppressed: number;
+  /** `"R1:exposable"` → count, `gates summary`'s own by-state line. */
+  by_state: Record<string, number>;
+  blocked: OpsReason[];
+  suppressed_reasons: { code: string; count: number }[];
+  /** The four `BLOCKING_FLAGS`, with the Korean the **code** carries. */
+  blocking_flags: { code: string; reason_ko: string }[];
+};
+
+export type OpsFields = {
+  verdicts: Record<string, number>;
+  stored_rows: number;
+  renderable: {
+    total: number;
+    by_field: { field_key: string; korean_name?: string | null; count: number; tbd: number }[];
+  };
+};
+
+export type OpsGateSummary = {
+  events: OpsEvents;
+  fields: OpsFields;
+  /** When the gate layer last measured any of it — absent if it never has. */
+  measured_at?: string;
+};
+
+/** One periodic job as `mijual.beat` declares it, plus every instant it was due
+ * in the served window — the schedule's half of the 「실행 기록 없음」 join. */
+export type OpsBeatEntry = {
+  name: string;
+  task: string;
+  /** `"07:30 daily"` / `"04:30 Sun"` — configuration, so raw English mono. */
+  spec: string;
+  hour: number;
+  minute: number;
+  day_of_week: number | null;
+  kwargs: Record<string, unknown>;
+  due: string[];
+};
+
+export type OpsBeat = {
+  timezone: string;
+  as_of: string;
+  entries: OpsBeatEntry[];
+  due_since: string;
+};
+
+export type OpsStage = {
+  name: string;
+  status: string;
+  seconds?: number;
+  requests?: number;
+  calls?: number;
+  cost_usd?: number;
+  summary?: string;
+  detail?: Record<string, unknown>;
+};
+
+/** One row of the run log. A run **in flight** has no `finished_at`, no `ok` and
+ * no `spend_line`: it says so by omission rather than by a zero that would read
+ * as "cost nothing". */
+export type OpsRun = {
+  id: number;
+  label: string;
+  /** `beat` (the schedule fired it) or `manual`. */
+  trigger: string;
+  started_at: string;
+  window: [string | null, string | null];
+  lock: string | null;
+  requests: number;
+  calls: number;
+  stages: OpsStage[];
+  finished_at?: string;
+  seconds?: number;
+  ok?: boolean;
+  cost_usd?: number;
+  /** The pipeline's own sentence, `▷` included. Rendered verbatim. */
+  spend_line?: string;
+  config?: string;
+  notes?: string[];
+};
+
+export type OpsRunLog = { count: number; limit: number; rows: OpsRun[] };
+
+/** `mijual:lock:pipeline`, live from Redis. An unreachable broker is
+ * `state: "unknown"` **with its reason** — a fact the operator wants, not a
+ * failed page. `since` comes from the open run row, never from the lock's TTL. */
+export type OpsLock = {
+  name: string;
+  key: string;
+  source: string;
+  state: "free" | "held" | "unknown";
+  reason?: string;
+  holder?: string;
+  ttl_seconds?: number;
+  expires_at?: string;
+  since?: string;
+  run_id?: number;
+  as_of?: string;
+};
+
+/** 가동 전 미결 — the still-open bullets of `docs/current/decisions.md`,
+ * quoted. `available: false` when the doc is not on the service's disk. */
+export type OpsDecisions = {
+  available: boolean;
+  reason?: string;
+  doc?: string;
+  path?: string;
+  version?: string;
+  count?: number;
+  items?: { decision: string | null; title: string | null; text: string }[];
+};
+
+export type OpsOverview = {
+  as_of: string;
+  gates: OpsGateSummary;
+  beat: OpsBeat;
+  runs: OpsRunLog;
+  lock: OpsLock;
+  decisions: OpsDecisions;
+};
+
+/** One withheld field of an event: which field, and the reason code raw. */
+export type OpsBlockedField = {
+  field_key: string;
+  gate_status: string;
+  korean_name?: string;
+  reason_code?: string;
+  reason_ko?: string;
+};
+
+export type OpsWithdrawn = {
+  event_id: number;
+  corp_code: string;
+  corp_name: string | null;
+  rights_type: string;
+  rcept_no: string | null;
+  /** The product's own 철회 sentence for this rights type. */
+  notice_ko: string | null;
+  /** The evidence line the gate run wrote, verbatim. */
+  note: string | null;
+  /** Gate-passing fields that will never render: the notice replaces the body. */
+  gate_passed_unrendered: number;
+  blocked: OpsBlockedField[];
+  dart_url?: string;
+};
+
+export type OpsGateQueue = {
+  as_of: string;
+  basis: { stored_rows: number; distinct_rows: number; duplicates: number; key: string };
+  reasons: OpsReason[];
+  events: OpsEvents;
+  withdrawn: { count: number; rows: OpsWithdrawn[] };
+};
+
+/** One stored gate verdict. A blocked row usually carries **no** `quote` and no
+ * `span`: both keys are absent, and 「없음」 is the state the panel renders. */
+export type OpsGateRow = {
+  id: number;
+  rcept_no: string | null;
+  event_id: number;
+  rights_type: string | null;
+  corp_code: string;
+  corp_name: string | null;
+  field_key: string;
+  gate_status: string;
+  status: string | null;
+  span_status: string | null;
+  exposable: boolean;
+  korean_name?: string;
+  reason_code?: string;
+  reason_ko?: string;
+  gate_note?: string;
+  value_summary?: string;
+  quote?: string;
+  span?: [number, number];
+  dart_url?: string;
+};
+
+export type OpsGateRows = {
+  count: number;
+  limit: number;
+  offset: number;
+  rows: OpsGateRow[];
+};
+
+/** One judged bucket. Rates are exact decimal **strings** with their n beside
+ * them — R7 forbids a rate quoted without its decomposition. */
+export type OpsBucket = {
+  judged: number;
+  correct: number;
+  partial: number;
+  wrong: number;
+  skipped: number;
+  unlabelled: number;
+  strict?: string;
+  lenient?: string;
+  interval?: [string, string];
+  over_block_rate?: string;
+  /** A ▷ projection, served only beside the rate it came from. */
+  over_blocked_estimate?: string;
+};
+
+export type OpsFieldScore = {
+  field_key: string;
+  korean_name: string;
+  shown: OpsBucket;
+  blocked: OpsBucket;
+  corpus_total: number;
+  corpus_blocked: number;
+  corpus_reasons: OpsReason[];
+  block_rate?: string;
+};
+
+/** The evalset report, read from its **frozen JSON artifacts** (never the DB).
+ * `judged_by` is what R7 forbids rendering the headline without. */
+export type OpsEvalset =
+  | { available: false; reason: string }
+  | {
+      available: true;
+      sample: {
+        units: number;
+        rows: number;
+        seed: number;
+        generated_at: string;
+        labelled: number;
+        coverage: Record<string, number>;
+      };
+      shown: OpsBucket;
+      blocked: OpsBucket;
+      fields: OpsFieldScore[];
+      correction_recall: Record<string, number>;
+      hard_cases: {
+        hard_case: string;
+        corp_name: string;
+        rcept_no: string;
+        field_ko: string;
+        label: string;
+        dart_url: string;
+      }[];
+      /** `mijual.evalset report`'s exact output. */
+      markdown: string;
+      judged_by?: { judge: string; basis: string; imported_at: string };
+    };
+
+export type OpsSpend = {
+  llm: {
+    /** `"cumulative"` — labelled, because R7 forbids showing it as a daily figure. */
+    window: string;
+    calls: number;
+    failures: number;
+    tokens: number;
+    cost_usd: string;
+    /** `▷ $2.7897` — the pipeline's own format. */
+    cost_line: string;
+    by_model: { model: string; calls: number; tokens: number }[];
+    since?: string;
+    until?: string;
+  };
+  dart: {
+    window: string;
+    quota: { requests_per_day: number; source: string };
+    measured_from: string;
+    days: { date: string; requests: number; calls: number; runs: number }[];
+  };
+};
+
+export type OpsAccuracy = { as_of: string; evalset: OpsEvalset; spend: OpsSpend };
+
+/**
+ * One page from the conversation port (`mijual.web.conversations`).
+ *
+ * **P6 owns the row's columns**, so a row is an open mapping here rather than a
+ * shape this build invented for storage that does not exist yet (the same reason
+ * §6.3 forbids pre-implementing vocky's field names). `next_cursor` is absent —
+ * never null — at the end of the list.
+ */
+export type OpsPage = {
+  count: number;
+  rows: Record<string, unknown>[];
+  next_cursor?: string;
+};
+
+/** 독자 계정 — 최소 열람: a portfolio **count**, never its contents, and no
+ * mention of the password. `sample_loaded` has **no backing fact in P5** and is
+ * therefore absent rather than `false` (`P5.S9` note 8, an open question). */
+export type OpsAccount = {
+  id: number;
+  email: string;
+  created_at: string;
+  holdings: number;
+  notifications: { lead_days: number[]; stored: boolean };
+  sample_loaded?: boolean;
+};
+
+export type OpsUsers = {
+  accounts: { count: number; limit: number; offset: number; rows: OpsAccount[] };
+  /** The 익명 세션 half — **a second independent read**, never a join. */
+  sessions: OpsPage;
+};

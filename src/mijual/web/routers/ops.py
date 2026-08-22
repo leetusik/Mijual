@@ -8,7 +8,8 @@ hard-code it:
 ``POST /ops/login``                  운영자 ID + 비밀번호 → ``mj_ops`` cookie
 ``POST /ops/logout``                 immediate; the session row is deleted
 ``GET  /ops/session``                ``{authenticated: bool}`` — the door asks
-``GET  /ops/overview``               개요: tiles · beat · 최근 실행 · lock 칩
+``GET  /ops/overview``               개요: tiles · beat · 최근 실행 · lock · 미결
+``GET  /ops/lock``                   lock 칩만 — 모든 탭의 ops 바가 폴링한다
 ``GET  /ops/gates``                  게이트 대기열: reason 카운트 · 이벤트 상태 · 철회
 ``GET  /ops/gates/rows``             행 검사, filtered + paged
 ``GET  /ops/accuracy``               정확도·비용: evalset report + 스펜드 + quota
@@ -122,14 +123,35 @@ def overview(
 ) -> dict[str, Any]:
     """Every 개요 fact in one response — including the two the 「실행 기록 없음」
     row is derived from (the schedule's due times and the run log), which the
-    client joins. The backend never fabricates a run row for a gap."""
+    client joins. The backend never fabricates a run row for a gap.
+
+    ``decisions`` is the 가동 전 미결 panel's source, quoted from
+    ``docs/current/decisions.md`` (R7: decisions 문서에서 읽어 렌더 — 패널에 직접
+    쓰지 않음), added by ``P5.S17`` because the panel is signed and had no source.
+    """
     return {
         "as_of": clock.iso(clock.now()),
         "gates": opsreads.gate_summary(db),
         "beat": opsreads.beat_view(),
         "runs": opsreads.run_log(db, limit=runs),
         "lock": opsreads.lock_state(_settings(request), db),
+        "decisions": opsreads.open_decisions(),
     }
+
+
+@router.get("/lock", summary="lock 칩 — mijual:lock:pipeline 실시간 상태")
+def lock(request: Request, db: DbSession, _: ops.OpsGate) -> dict[str, Any]:
+    """The lock chip alone, so 실시간 costs one Redis read and one indexed row.
+
+    R7 puts the chip in the **ops bar**, i.e. on all six tabs and live. The whole
+    of ``/ops/overview`` would answer that too, but it walks every exposable event
+    to build the 개요 tiles — a poll nobody asked for. This is the same
+    :func:`~mijual.web.opsreads.lock_state` the 개요 tab shows, on its own.
+    Added by ``P5.S17``; it invents no number and stays read-only, like the rest.
+    An expired session answers the same ``401 ops_unauthenticated`` every tab
+    does, which is what sends the chip's client back to the door.
+    """
+    return {"as_of": clock.iso(clock.now())} | opsreads.lock_state(_settings(request), db)
 
 
 # ---------------------------------------------------------------------------

@@ -1901,6 +1901,84 @@ Files: `app/portfolio/{page.tsx,notifications/page.tsx}`, `components/portfolio/
     carries R4's market-wide "…총액에서 제외했습니다"); and measure a tap target on the enclosing
     `<label>`, not on the native checkbox.
 
+### `P5.S17` — 운영 관제 is live; the ops idiom `P5.S18` imports, and eight readings
+
+1. **The ops idiom is a module, not a style opinion — import it.** `frontend/components/ops/`
+   owns the whole surface: `Ops.module.css` states the idiom **once**
+   (`--ops-panel: #0e1a15` as a local custom property — the vendored token file stays read-only,
+   1px `--border-strong`, zero ornament, `min-width: 1180px` and **not one media query**), and
+   `atoms.tsx` exports the five primitives every tab is built from — `Panel` (title + mono note),
+   `Code` (raw English identifiers), `Num` (tabular), `Stamp` (**slices an instant string; never
+   `Date`-parses it** — the server already sends `+09:00`), `Absent` (「없음」 as a *state*), plus
+   `Rcept` (rcept_no + DART link) and `Quoted`. `P5.S18`'s vocky tab should import these, add its
+   route to `OPS_ROUTES` + `OPS_TABS` in `routes.ts`/`copy.ts`, and write **no new CSS idiom**.
+   `S10` note 8 held: **no `CraftPanel` here**, and none was reached for.
+2. **`components/ops/routes.ts` is deliberately not `lib/routes.ts`.** The ops path map lives
+   inside the ops module so no reader-chrome module can import an `/ops` href by accident. Verified
+   in a browser: six reader surfaces contain **no `/ops` href and no `/ops` substring at all**.
+3. **The tab-restore mechanism is "the door renders in place", not `?next=`.** `app/ops/layout.tsx`
+   probes `GET /ops/session`; unauthenticated it renders `<Door />` **at the requested URL** with no
+   redirect, and a successful login calls `router.refresh()`, which re-runs that same route. Nothing
+   is stored, no path travels in a query string, and an expiry mid-session returns the operator to
+   the tab they were on. Any future ops route gets this free.
+4. **Escaping the reader chrome cost exactly one reader-side edit.** `components/chrome/SiteChrome.tsx`
+   is now a **client** component that returns `children` bare when `isOpsPath(pathname)`. The
+   alternative — moving every reader route into a route group — would have changed which layout the
+   framework's 404 renders inside, i.e. behaviour `P5.S13` measured. Re-verified: a not-found event
+   still renders inside the reader chrome. The chrome markup itself is untouched.
+5. **Two signed R7 elements had no backing, so the backing was built** (D-15's rule; the Python
+   suite therefore moved **113 → 114**, which is a deliberate deviation from that slice's plan):
+   - `opsreads.open_decisions()` reads `docs/current/decisions.md` and quotes its `- **Open…`
+     bullets **verbatim** with the doc's own version (today: `v0004`, exactly one open item, D-4 —
+     which is R7's own card example). A missing file yields `{available: false, reason}`; nothing is
+     re-worded or summarised, because 가동 전 미결 is a quotation surface.
+   - `GET /ops/lock` — the lock chip lives in the bar on **all six tabs** and polls every 15 s;
+     `/ops/overview` walks 488 events, so polling it would have made the chip the most expensive
+     thing on the surface. The chip's endpoint returns `lock_state` + `as_of` and nothing else.
+     **`/ops` is now twelve routes**, all read-only, all behind the same `OpsGate`.
+6. **The absent-fact rendering decision (샘플 로드 여부), now measured:** the column is
+   **data-driven** — it renders iff a served row carries `sample_loaded`. No row does today, so
+   there is **no column and no cell** (verified with a real account present: 0 placeheld cells on
+   the tab). This is the one rendering that satisfies both R7 ("no placeholder where a value would
+   be") and `states-and-trust` §4 (never assert a fact the system does not hold), and it means
+   building the backing later needs **no frontend change**. The standing open question is unchanged.
+7. **The vocabularies `P6` will own are marked, not invented.** 거절 카테고리 filters send the five
+   **signed Korean** family names (철회 · 확정 전 · 공시에 없음 · 검증 미통과 폴백 · 계산 요청) —
+   not invented English tokens; `유형` sends `answer`/`refusal`, which are the API's own parameter
+   values. `log.ts` documents a **three-tier key convention**: keys the API already names
+   (`session_hash`, `kind`, `refusal_category`) are read directly, a small set of expected keys is
+   read defensively, and **any other served key renders raw** rather than being dropped. When P6
+   ships real rows, mismatches show up as raw keys instead of silent blanks.
+8. **Only one thing on this surface is derived client-side**, and it is the one R7 mandates:
+   `lib/opsRuns.ts` joins `beat.entries[].due` with `runs.rows` and emits an alert-ink
+   「실행 기록 없음」 row per uncovered due instant. It is a pure module so `npm run smoke` covers it
+   (**9 → 11** `node:test` cases): a beat run covers only its **own** due instant, and a manual run
+   or another entry's run is **not** cover. The KST clock is the only other client computation, and
+   it is display-only.
+9. **CSS gotcha, measured in a browser:** `.table td` (class **+** element) out-specifies a bare
+   `.alert` class, so the alert row silently rendered in body ink. The rule is now stated twice
+   (`.alert, .table td.alert`) and re-measured at `rgb(224, 87, 63)`. Any later ops cell colour must
+   match `.table td`'s specificity or lose to it.
+10. **The clock deliberately keeps ticking under `prefers-reduced-motion`.** It is a *readout of the
+    current time*, not an animation; freezing it would make the panel state a wrong fact. Recorded
+    because it is the one place on the product where a moving element is intentional.
+11. **Test-assertion traps from this slice** (three of the four browser "failures" were the checks,
+    not the product): a "no 가입/재설정" regex matched the door's own **rules panel** quoting
+    「가입·재설정 UI 없음」 — assert the control set instead (`["로그인"]`); an em-dash regex matched
+    signed copy 「가입 0건 — 미배포 상태의 실제값」 — count placeheld cells instead; and
+    `header nav a` matches the **always-in-DOM mobile sheet** (S11 note 7), so scope reader-chrome
+    nav assertions to the *first* `header nav` or you will count seven links.
+12. **The browser pass, for the record:** 104 scripted checks, 104 pass, over
+    `npm run build && npm run start` with the API launched as
+    `MIJUAL_OPS_ID=… MIJUAL_OPS_PASSWORD=… .venv/bin/uvicorn …` — **the operator's `.env` was never
+    opened**. Covered: the uniform door failure (wrong ID vs wrong password compared with `==`),
+    deep-tab door + restore, 개요 tiles equal to `python3 -m mijual.gates summary` (488/628 · 710 ·
+    418 · measured 2026-08-22 04:14 KST), six 실행-기록-없음 rows in alert ink, the 691 basis,
+    `evalset report`'s markdown byte-identical to the served artifact, honest `0건` on three tabs, a
+    live account row and its deletion, a **live held → free lock chip** (a real Redis key, set and
+    removed), the reader cookie opening nothing, and six 1440-wide screenshots. No mobile pass —
+    desktop-only is signed.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2705,6 +2783,65 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   engineering rule came out of it: **an inline `[]`/`{}` that reaches an effect's dependency list
   silently freezes the App Router** — refreshes stop committing and links stop navigating, with no
   warning — so shared frozen empties are the convention here.
+- (`P5.S17`) **`frontend`** — R7's **운영 관제** is built and is durable frontend truth: the `/ops`
+  route group (six request-time routes + a layout that is also the door), `components/ops/` and
+  `lib/opsRuns.ts`. The **ops idiom** is now a stated module, not a per-page style: the cosmos token
+  scope stays, **all ornament is removed** (no starfield, shooting star, radial glow, corner
+  brackets or panel-glow), a panel is opaque `#0e1a15` + 1px `--border-strong` — the literal is a
+  local custom property, never added to the read-only vendored token file — rows are mono 11–12px,
+  and the surface is **desktop-only by explicit operator decision**: not one media query, a fixed
+  `min-width: 1180px` instead. Chrome labels are Korean; codes, identifiers and stage output are
+  raw English mono; `▷` stays `▷` here and 「추정」 appears nowhere. The primitives `P5.S18` imports
+  are `Panel`/`Code`/`Num`/`Stamp`/`Absent`/`Rcept`/`Quoted` — and **`CraftPanel` is not used on
+  this surface at all**. Two durable route rules land with it: the ops path map lives in
+  `components/ops/routes.ts` and **not** in `lib/routes.ts`, so no reader-chrome module can import
+  an `/ops` href; and `SiteChrome` is now a **client** component that returns `children` bare on an
+  ops path — chosen over a route group because a route group would have changed which layout the
+  framework's 404 renders inside (`P5.S13`'s measured behaviour). The **only** client-side
+  derivation on the surface is the one R7 mandates — `lib/opsRuns.ts` joining the beat schedule with
+  the run log to emit 「실행 기록 없음」 — plus the display-only KST clock, which deliberately keeps
+  ticking under `prefers-reduced-motion` because it is a readout, not an animation.
+  **`api`** — `/ops` is now **twelve** read-only routes: `GET /ops/lock` is new (the bar's lock chip
+  polls every 15 s from all six tabs, and `/ops/overview` walks 488 events, so the chip got its own
+  cheap endpoint), and `GET /ops/overview` gained a **`decisions`** block. **`backend`** —
+  `mijual.web.opsreads.open_decisions()` reads `docs/current/decisions.md` and returns its still-open
+  bullets **verbatim** with the document's own version (`v0004` today), or `{available: false,
+  reason}` when the file is absent: 가동 전 미결 is a quotation surface, so nothing there is
+  re-worded, summarised or authored. **`security`** — the operator surface behaves as the doc
+  requires, measured rather than asserted: the door is an **empty page with one card** (no ops
+  chrome, no reader chrome), takes 운영자 ID + 비밀번호 and **nothing else**, has **no 가입 and no
+  재설정 affordance**, and answers a wrong ID and a wrong password with the **byte-identical** line
+  「자격증명이 올바르지 않습니다」; the session is its **own `mj_ops` cookie** — a reader `mj_session`
+  opens nothing — and expiry re-renders the door **in place at the same URL** (no `?next=`, nothing
+  stored) so the operator returns to the tab they were on; a service outage leaves the door silent
+  rather than claiming bad credentials. **The panel is linked from nowhere** — six reader surfaces
+  contain no `/ops` href **and no `/ops` substring at all** — and it is **read-only end to end**: the
+  only POSTs on the whole surface are login and logout, 행 검사 is a plain GET whose state lives in
+  the URL, and no tab carries an action control (피드백's only button is 로그아웃). Reader disclosure
+  stays minimal: 사용자 shows a **count** of portfolio holdings and never their contents, the two
+  tables are **not joined**, and 샘플 로드 여부 renders as an **absent fact** (the column exists iff a
+  served row carries `sample_loaded` — today no column, no placeheld cell) rather than asserting
+  `false`. **`operations`** — the panel is now the operator's actual console: 개요 renders
+  `gates summary` verbatim (488/628 exposable · 710 stored rows · 418 renderable · its measured-at
+  stamp), the beat schedule **from the served config**, the run log with per-stage counts and the
+  pipeline's own `▷` spend line, and — the one alert on the surface — an **alert-ink 「실행 기록
+  없음」 row per scheduled beat instant with no run** (budget exhaustion stays in reported style;
+  alert means *did not run*, nothing else). The **lock chip is live** (`free` / `held` + holder,
+  ttl and held-since / an honest `unknown`), 게이트 대기열 prints its **691 distinct
+  `(rcept_no, field_key)` / 710 stored · 19 duplicates** basis beside every rate, suppression codes
+  render **raw English with no fallback**, and 정확도·비용 puts **판정 출처 above every number**,
+  never shows a rate without its decomposition, renders `evalset report`'s markdown byte-identically,
+  and labels both spend windows with the quota's `20,000/day · operator (decisions O-1)` provenance.
+  **`qa`** — the frontend check now covers the operator surface: `npm run build` (**16 routes**; all
+  six `/ops` routes `ƒ`) + `typecheck` + `smoke` (**9 → 11** `node:test` cases, still no
+  jest/vitest/jsdom) all green, and the **Python suite moved 113 → 114** — one terse test for the two
+  additions above. The surface was driven in a real headless Chrome over `npm run build && npm run
+  start` with the API launched from **process env vars** (`MIJUAL_OPS_ID=… MIJUAL_OPS_PASSWORD=…
+  .venv/bin/uvicorn …`; the operator's `.env` was never opened): **104 scripted checks, all
+  passing**, including a live account row created and then deleted through the product's own
+  endpoint and a **real Redis lock set and released** to exercise the chip's held state. Reader
+  regression: all six reader surfaces and the 404-inside-chrome behaviour unchanged. No mobile pass
+  — desktop-only is signed.
 
 ## Open Questions
 
@@ -2727,7 +2864,10 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   columns and **omits this one** rather than asserting `false`. Building the backing means a
   holding-provenance column plus a client-visible parameter — a change to `P5.S8`'s signed
   contract and a new behavioural fact about a reader, which `security`'s minimal-disclosure
-  rule argues against. **Operator/review call**, not an implementation one.
+  rule argues against. **Operator/review call**, not an implementation one. *`P5.S17` renders it
+  the only way both records allow — the column is **data-driven**, appearing iff a served row
+  carries `sample_loaded`, so today there is no column and no placeheld cell, and building the
+  backing later needs no frontend change.*
 - **Re-authentication for 수신 주소 변경** — *new, `P5.S8`*: `PATCH /auth/account` accepts a live
   session as authority, matching R5's Notify card (a 변경 affordance, no password field) and
   `P5.S7`'s 계정 삭제 precedent. The consequence is that a stolen session can turn read access

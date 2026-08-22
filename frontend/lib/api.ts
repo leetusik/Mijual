@@ -36,6 +36,13 @@ import type {
   EventDetail,
   Holding,
   Notifications,
+  OpsAccuracy,
+  OpsGateQueue,
+  OpsGateRows,
+  OpsLock,
+  OpsOverview,
+  OpsPage,
+  OpsUsers,
   Portfolio,
   RightsType,
   StockLookup,
@@ -254,3 +261,98 @@ export const saveNotifications = (leadDays: number[]) =>
     method: "PUT",
     json: { lead_days: leadDays },
   });
+
+// ---------------------------------------------------------------------------
+// 운영 관제 (P5.S9) — the operator's own door and its read-only tabs
+// ---------------------------------------------------------------------------
+//
+// A second credential, not a second role: `mj_ops` is its own cookie and the
+// reader's `mj_session` cannot open any of this (nor the reverse). Nine of the
+// twelve routes are `GET` and the three that are not touch only the operator's
+// own session row — §6.5 전 화면 읽기 전용.
+//
+// **Nothing in the reader chrome may link to these.** They are called from
+// `app/ops/**` only, and `components/ops/routes.ts` is where the paths live so
+// a reader surface cannot pick one up from `lib/routes.ts` by accident.
+
+/** The door asks this on load: not authenticated is a **result**, not a 401. */
+export const getOpsSession = (init?: RequestInitLike) =>
+  request<{ authenticated: boolean }>("/ops/session", init);
+
+/** One failure for every cause — the 401 body says only `invalid_credentials`,
+ * and 「자격증명이 올바르지 않습니다」 is the client's own signed line. */
+export const opsLogin = (id: string, password: string) =>
+  request<{ authenticated: true }>("/ops/login", { method: "POST", json: { id, password } });
+
+export const opsLogout = () =>
+  request<{ authenticated: false }>("/ops/logout", { method: "POST" });
+
+/** 개요 — the tiles, the beat schedule, the run log, the lock and 가동 전 미결.
+ * The 「실행 기록 없음」 row is the **client's** join of `beat.entries[].due` with
+ * `runs.rows`: the backend states both facts and fabricates neither. */
+export const getOpsOverview = (init?: RequestInitLike) =>
+  request<OpsOverview>("/ops/overview", init);
+
+/** The lock chip alone, for the ops bar on every tab (`P5.S17`). */
+export const getOpsLock = (init?: RequestInitLike) => request<OpsLock>("/ops/lock", init);
+
+export const getOpsGates = (init?: RequestInitLike) =>
+  request<OpsGateQueue>("/ops/gates", init);
+
+/** 행 검사. Every filter is one the panel renders; there is no query surface
+ * beyond them. */
+export const getOpsGateRows = (
+  params: {
+    field_key?: string;
+    reason_code?: string;
+    gate_status?: string;
+    rcept_no?: string;
+    limit?: number;
+    offset?: number;
+  } = {},
+  init?: RequestInitLike,
+) => request<OpsGateRows>(`/ops/gates/rows${opsQuery(params)}`, init);
+
+export const getOpsAccuracy = (init?: RequestInitLike) =>
+  request<OpsAccuracy>("/ops/accuracy", init);
+
+/** 대화 로그. P5 stores no conversations, so this is an honest `0건` — not
+ * 「준비 중」 and not a 404; P6 fills the same port with no route change. */
+export const getOpsConversations = (
+  params: {
+    kind?: string;
+    refusal_category?: string;
+    session_hash?: string;
+    cursor?: string;
+    limit?: number;
+  } = {},
+  init?: RequestInitLike,
+) => request<OpsPage>(`/ops/conversations${opsQuery(params)}`, init);
+
+export const getOpsSessions = (
+  params: { cursor?: string; limit?: number } = {},
+  init?: RequestInitLike,
+) => request<OpsPage>(`/ops/sessions${opsQuery(params)}`, init);
+
+export const getOpsFeedback = (
+  params: { cursor?: string; limit?: number } = {},
+  init?: RequestInitLike,
+) => request<OpsPage>(`/ops/feedback${opsQuery(params)}`, init);
+
+/** 사용자 — 독자 계정 **and** 익명 세션 in one response and **two independent
+ * reads**: there is no key in either block that could be matched against the
+ * other (계정↔대화 연결·조인·추정 매칭 금지, kept at the schema level). */
+export const getOpsUsers = (
+  params: { limit?: number; offset?: number } = {},
+  init?: RequestInitLike,
+) => request<OpsUsers>(`/ops/users${opsQuery(params)}`, init);
+
+/** `{a: 1, b: undefined}` → `"?a=1"`. An unset filter is not sent at all. */
+function opsQuery(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") search.set(key, String(value));
+  }
+  const text = search.toString();
+  return text ? `?${text}` : "";
+}

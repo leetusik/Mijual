@@ -49,6 +49,7 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import func, select
@@ -75,6 +76,7 @@ from mijual.web.portfolio import DEFAULT_LEAD_DAYS, lead_days_of
 __all__ = [
     "DART_DAILY_QUOTA",
     "DART_VIEWER",
+    "DECISIONS_DOC",
     "EXPOSABLE_STATUSES",
     "RUN_LOG_LIMIT",
     "accuracy",
@@ -82,6 +84,7 @@ __all__ = [
     "gate_rows",
     "gate_summary",
     "lock_state",
+    "open_decisions",
     "reader_accounts",
     "run_log",
     "spend",
@@ -104,6 +107,84 @@ RUN_LOG_LIMIT = 40
 #: How far back :func:`beat_view` reports the schedule's due times. The 개요 tab
 #: derives R7's 「실행 기록 없음」 row by matching these against the run log.
 BEAT_LOOKBACK = timedelta(days=3)
+#: Where the 가동 전 미결 panel reads from. R7: 「가동 전 미결 (D-4 등)은 decisions
+#: 문서에서 읽어 렌더 — 패널에 직접 쓰지 않음」, so the source is the durable doc and
+#: this module quotes it rather than restating it. ``src/mijual/web/`` → repo root.
+DECISIONS_DOC = Path(__file__).resolve().parents[3] / "docs" / "current" / "decisions.md"
+
+
+# ---------------------------------------------------------------------------
+# 개요 — 가동 전 미결, quoted from the decisions document
+# ---------------------------------------------------------------------------
+def open_decisions(path: Path | None = None) -> dict[str, Any]:
+    """The still-open items of `docs/current/decisions.md`, **verbatim**.
+
+    R7 puts a 가동 전 미결 panel on 개요 and fixes where it comes from: the
+    decisions document, read — 패널에 직접 쓰지 않음. So this is a quotation, not a
+    restatement: it finds the doc's own convention for an unresolved item — a
+    decision bullet whose bold lead-in begins with **Open** (today: D-4's
+    "Open, and operationally load-bearing", the very item R7's card renders) —
+    and serves the bullet's own words under its decision heading. Nothing is
+    summarised, ranked or worded here, so a decision that closes disappears from
+    the panel by editing the doc, which is the only place it should be edited.
+
+    The doc is a repo file rather than a database row, so its absence is a state:
+    ``{"available": false}`` and the panel renders nothing rather than inventing a
+    sentence about it. **P4 note:** a deployment that ships `src/` without `docs/`
+    turns the panel off — package the doc, or point this constant at where it
+    lands.
+    """
+    source = path or DECISIONS_DOC
+    try:
+        text = source.read_text(encoding="utf-8")
+    except OSError as exc:
+        return {"available": False, "reason": type(exc).__name__}
+
+    version: str | None = None
+    decision = title = None
+    items: list[dict[str, Any]] = []
+    buffer: list[str] | None = None
+
+    def flush() -> None:
+        nonlocal buffer
+        if buffer is not None:
+            body = " ".join(line.strip() for line in buffer).strip()
+            items.append({"decision": decision, "title": title, "text": body})
+            buffer = None
+
+    for line in text.splitlines():
+        if version is None and line.startswith("version:"):
+            version = line.split(":", 1)[1].strip()
+        if line.startswith("### "):
+            flush()
+            heading = line[4:].strip()
+            decision, _, rest = heading.partition(" — ")
+            title = rest.strip() or None
+            continue
+        if line.startswith("- **"):
+            flush()
+            # The doc's own marker for an item that has not been decided yet.
+            if line.startswith("- **Open"):
+                buffer = [line[2:]]
+            continue
+        if buffer is not None:
+            if line.startswith("  ") and line.strip():
+                buffer.append(line)
+            else:
+                flush()
+    flush()
+
+    body: dict[str, Any] = {
+        "available": True,
+        "doc": "decisions",
+        # A relative path: it is a citation, not a filesystem fact to act on.
+        "path": "docs/current/decisions.md",
+        "count": len(items),
+        "items": items,
+    }
+    if version:
+        body["version"] = version
+    return body
 
 
 # ---------------------------------------------------------------------------

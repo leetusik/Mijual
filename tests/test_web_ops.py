@@ -21,6 +21,7 @@ from mijual.web.app import create_app
 from mijual.web.auth import OPS_COOKIE, SESSION_COOKIE
 from mijual.web.csrf import CSRF_HEADER
 from mijual.web.deps import get_session, get_write_session
+from mijual.web.opsreads import open_decisions
 
 OPS_ID, OPS_PASSWORD = "operator", "ops-password-1"
 
@@ -271,3 +272,46 @@ def test_the_spend_block_labels_its_window_and_never_shows_cumulative_as_daily(c
         "source": "operator (decisions O-1)",
     }
     assert spend["dart"]["days"][0]["requests"] == 41
+
+
+def test_the_open_decisions_panel_quotes_the_document_and_the_lock_chip_stands_alone(
+    client, tmp_path
+) -> None:
+    """P5.S17's two additions: 가동 전 미결's source, and the bar's own lock read.
+
+    R7 fixes both — 「decisions 문서에서 읽어 렌더 — 패널에 직접 쓰지 않음」 and a
+    lock chip that is live on every tab — so the panel quotes the doc's own
+    still-open bullets verbatim, and the chip has a read that does not walk the
+    corpus to answer.
+    """
+    _open_the_door(client)
+
+    doc = tmp_path / "decisions.md"
+    doc.write_text(
+        "version: v0009\n\n### D-4 — Application LLM\n\n"
+        "- **Status:** accepted\n"
+        "- **Open, and operationally load-bearing:** an unattended beat run would\n"
+        "  make that preset choice for a human.\n\n"
+        "### D-5 — Schedule\n\n- **Decision:** operator-owned\n",
+        encoding="utf-8",
+    )
+    quoted = open_decisions(doc)
+    assert quoted["available"] and quoted["version"] == "v0009" and quoted["count"] == 1
+    assert quoted["items"][0]["decision"] == "D-4"
+    # Verbatim: the doc's own sentence, wrapped lines rejoined and nothing else.
+    assert quoted["items"][0]["text"] == (
+        "**Open, and operationally load-bearing:** an unattended beat run would "
+        "make that preset choice for a human."
+    )
+    # A missing doc is a state, not a 500 — the panel then renders nothing.
+    assert open_decisions(tmp_path / "gone.md") == {
+        "available": False,
+        "reason": "FileNotFoundError",
+    }
+    # The live doc is the panel's real source, and it parses.
+    assert client.get("/ops/overview").json()["decisions"]["available"] is True
+
+    chip = client.get("/ops/lock").json()
+    assert chip["key"] == "mijual:lock:pipeline" and chip["state"] == "unknown"
+    client.cookies.delete(OPS_COOKIE)
+    assert client.get("/ops/lock").status_code == 401
