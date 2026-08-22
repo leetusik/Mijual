@@ -1,0 +1,679 @@
+/* 내 포트폴리오 (R5).
+ *
+ * The round states this layer as a plain list on the cosmos scope: no page
+ * 대제목 (개정 ③ — the nav is the location indicator), a holdings table whose
+ * action column swaps horizontally on a confirm (개정 ④), two D-day sections, and
+ * an inset banner in 샘플 모드. R5's token delta is **none**, so every value here
+ * is a token or one of the round's own numbers (48px sheet-grade rows, the 44px
+ * mobile floor from R1, the ≤480px single column from §Mobile).
+ *
+ * No colour is a literal: `--alert` means expiring/lost (놓친 돈) and `--live`
+ * means 살아있는 가치 (챙긴 돈, R5-8's own flip), and a past D-day chip is faint —
+ * "지나간 행 … alert 색 금지".
+ */
+
+/* The route's own column. There is no page 대제목 (개정 ③), so the surface opens
+   directly on its content. */
+.page {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--space-6) var(--space-16);
+}
+
+.surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.caption {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+/* The action vocabulary — 수정·삭제 / 저장·취소 / 담기·담지 않기 / 되돌리기 /
+   변경. One quiet text control, horizontal wherever two of them sit together. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.action:hover {
+  color: var(--ink-1);
+}
+
+.action:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* 계정 삭제, armed: the same control, stated as the one that is about to act. */
+.armed {
+  color: var(--alert);
+}
+
+.primary {
+  align-self: flex-start;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  background: var(--live-solid);
+  border: 1px solid var(--live-solid);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+.primary:disabled {
+  background: none;
+  border-color: var(--border-strong);
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------------------
+   샘플 배너 (R5-4) — inset, at the top of the 2층 surface
+   --------------------------------------------------------------------------- */
+
+.banner {
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   빈 상태 + 이월/이전 제안 (R5-3, R5-4)
+   --------------------------------------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.emptyBody {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.carry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
+}
+
+.carryLabel {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.carryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carryRow {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+.carryActions {
+  display: flex;
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------------------
+   보유 종목 (R5 §Portfolio)
+   --------------------------------------------------------------------------- */
+
+.holdings {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border-soft);
+}
+
+.holdingHead,
+.holdingRow,
+.undoRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.holdingHead {
+  display: none; /* ≤480px is a single column: the labels are the rows' own. */
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.holdingName {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.holdingMeta {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.sharesValue {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--ink-1);
+}
+
+.holdingRights {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.rightsLabel {
+  color: var(--ink-2);
+}
+
+.undoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+}
+
+.undoName {
+  color: var(--ink-1);
+}
+
+/* 보유량 input — R4's field, R5's caption (see `SharesInput.tsx`). */
+.sharesField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sharesLabel {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.sharesRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sharesInput {
+  width: 100%;
+  max-width: 180px;
+  height: 44px; /* R1/R4's mobile target floor. */
+  padding-inline: var(--space-2);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  font-size: var(--text-md);
+  color: var(--ink-1);
+  text-align: right;
+}
+
+.sharesUnit {
+  font-size: var(--text-base);
+  color: var(--ink-2);
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.preset {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  background: none;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.preset[aria-pressed="true"] {
+  border-color: var(--live);
+  color: var(--ink-1);
+}
+
+/* ---------------------------------------------------------------------------
+   종목 추가 (R5 §Mobile: 하단 패널)
+   --------------------------------------------------------------------------- */
+
+.add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.addTitle {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.addStock {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+/* The console row R2 designs for the hero and R4 reuses — the same shape here,
+   because it is the same resolver behind it. */
+.search {
+  display: flex;
+  width: 100%;
+  max-width: 480px;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding-inline: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  border-right: 0;
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+.searchInput::placeholder {
+  color: var(--ink-3);
+}
+
+.searchSubmit {
+  flex: none;
+  min-width: 72px;
+  height: 44px;
+  padding-inline: var(--space-3);
+  background: var(--live-solid);
+  border: 1px solid var(--live-solid);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+.noMatch {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   D-day 목록 (R5 §D-day 목록)
+   --------------------------------------------------------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.reference {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.rowHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rowIdentity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rowName {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.rowWhen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.whenLabel {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* 기간 지남 · D+n / 통지 마감 지남 · D+n — faint, never alert. */
+.pastChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
+  font-size: var(--text-sm);
+  color: var(--urgency-far);
+}
+
+.pastDate {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.dependency {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.lapsed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.lapsedLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.missedLabel,
+.claimedLabel {
+  font-size: var(--text-sm);
+}
+
+.missedLabel {
+  color: var(--alert);
+}
+
+.claimedLabel {
+  color: var(--live);
+}
+
+.basis {
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.missedValue {
+  color: var(--alert);
+}
+
+/* R5-8: 체크 → 금액 동일, 색 alert → live. The number does not move. */
+.claimedValue {
+  color: var(--live);
+}
+
+.detailLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.detailLink:hover {
+  color: var(--ink-1);
+}
+
+.claim {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.claimLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-size: var(--text-base);
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+.claimBox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--live);
+}
+
+/* ---------------------------------------------------------------------------
+   알림 설정 (R5-5, R5-7)
+   --------------------------------------------------------------------------- */
+
+.notify {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.notifyTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.notifyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-1);
+  border-top: 1px solid var(--border-soft);
+}
+
+.notifyLabel {
+  min-width: 92px;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.notifyValue {
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+.notifyNote {
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.emailInput {
+  flex: 1 1 220px;
+  min-width: 0;
+  height: 44px;
+  padding-inline: var(--space-2);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  background: none;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.chipOn {
+  background: var(--live-tint);
+  border-color: var(--live);
+  color: var(--ink-1);
+}
+
+/* 「예정」 — a state chip with no control beside it (R5-5). */
+.plannedChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   ≥480px — the table form R5 draws for the desktop cards. Mobile-first below it
+   is the single column §Mobile requires ("단일 컬럼, 타깃 ≥44px, 아코디언 없음").
+   --------------------------------------------------------------------------- */
+
+@media (min-width: 480px) {
+  .holdingHead,
+  .holdingRow {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.6fr auto;
+    align-items: start;
+    gap: var(--space-4);
+  }
+
+  .holdingHead {
+    padding-block: var(--space-2);
+  }
+
+  .row {
+    padding: var(--space-4) 0;
+  }
+
+  .rowHead {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+}
+
+/* ≤480px: 지나간 마감 is a summary row — "지나간 마감은 요약 행(칩 + 한 줄)"
+   (§Mobile). The chip and the line stay; so does the 챙긴 돈 control, which is an
+   affordance rather than detail. What collapses is the row's second date line,
+   which the chip already carries as `D+n`. */
+@media (max-width: 480px) {
+  .pastSection .pastDate {
+    display: none;
+  }
+
+  .pastSection .row {
+    gap: var(--space-1);
+  }
+}

@@ -51,6 +51,23 @@ export const ROUTES = {
   reset: "/auth/reset",
   /** 내 포트폴리오 — R5's 2층 (`P5.S16`). */
   portfolio: "/portfolio",
+  /**
+   * 알림 설정 — R5's second account-menu destination (§알림: 수신 주소 · 시점 칩 ·
+   * KakaoTalk 「예정」 행 · 로그아웃 · 계정 삭제).
+   *
+   * R5-6 makes it a **destination of its own** ("메뉴 구성: 내 포트폴리오 / 알림
+   * 설정 / 로그아웃" — three rows, two of them places), and the path is the API's
+   * own noun for the same settings (`GET|PUT /portfolio/notifications`), the same
+   * page-path-equals-contract-path rule `/stocks` and `/portfolio` follow. Living
+   * under `/portfolio` is also what keeps the nav honest: it is a surface of the
+   * 2층 and the layer is the only gated thing in the product, so one gate covers
+   * both. `isActiveRoute` treats it as inside 내 포트폴리오 for the same reason.
+   *
+   * It is **hidden entirely in 샘플 모드** (R5-4: "샘플에서 알림 설정 숨김" — there
+   * is no address to send to), which the account slot enforces by not rendering
+   * the menu at all while a sample is loaded.
+   */
+  notifications: "/portfolio/notifications",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

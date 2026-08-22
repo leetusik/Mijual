@@ -169,7 +169,7 @@ function RightsPanel({
  * conversion, and R5 later restates this very strip as ②'s substitute for it
  * ("금액 = R4 계약 그대로", `P5.S8` note 6). No holding is multiplied here.
  */
-function Dilution({ view }: { view: ConvertibleView }) {
+export function Dilution({ view }: { view: ConvertibleView }) {
   const cells: Array<{ label: string; value: string; estimated: boolean }> = [];
 
   if (view.overhang_pct) {

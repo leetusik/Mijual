@@ -1819,6 +1819,88 @@ panel).
     is why the hook lives in `components/auth/useAuthState.ts` and `lib/session.ts` imports no
     React at all. Keep that split.
 
+### `P5.S16` — 내 포트폴리오 is live; the storage keys, the chrome seam, and the trap that froze the router
+
+Files: `app/portfolio/{page.tsx,notifications/page.tsx}`, `components/portfolio/*` (11 files),
+`lib/sample.ts`, `lib/account.ts`, `components/chrome/{AccountSlot.tsx,useAccount.ts}` +
+`copy.ts`/`AccountSlot.module.css`, `lib/routes.ts`, `lib/session.ts`, and two exports added to
+`components/lookup/`. Full detail in the slice's `result.md`.
+
+1. **⚠ The trap that cost this slice hours — an inline `[]` will freeze the App Router.**
+   `sampleCorpCodes: sample?.holdings ?? []` fed a `useMemo` that fed an effect's dependency
+   list, and the effect called `setEntries([])`: two fresh identities per render, so
+   render → effect → state → render, forever. **React warns nothing** (passive effects, not
+   nested sync updates) and the page looks fine. What breaks is anything needing a React
+   transition to finish: `router.refresh()` fetched the new payload and never committed it, and
+   **every client navigation away from `/portfolio` did nothing** — nav links and the account
+   menu alike, with the RSC response arriving and then `net::ERR_ABORTED` as the next render
+   interrupted the transition. Measured `/portfolio → /` 0/4 before the fix, 4/4 after; the other
+   routes were 12/12 throughout. Fix: shared frozen empties + an identity-preserving functional
+   `setEntries`. **If a link or a refresh in this app ever "does nothing", look for an inline
+   `[]`/`{}` reaching a dependency list of an effect that sets state — not at Next.**
+2. **The write→re-read seam.** An account write is followed by this client's own
+   `getPortfolio()`, and the whole served payload replaces the one in state — the same endpoint
+   the page reads, so the rows, factors, placement and D-days are still composed once, on the
+   server. Not `router.refresh()`: same one request, but Next 16 answers a refresh by
+   re-prefetching every in-viewport `<Link>` too (vercel/next.js#93210). An edit is on screen
+   ~0.1 s after the write, and navigating away and back re-renders from the server anyway.
+3. **Storage keys, complete (S19 will inspect these).** localStorage: **`mijual.portfolio.sample`**
+   = `{v:1, holdings:[{corp_code, shares}], claims:[rcept_no]}` (the sample's edits and marks).
+   sessionStorage: **`mijual.portfolio.carry`** and **`mijual.portfolio.migrate`** = "this tab
+   declined that offer" flags — dismissal is a flag, never a deletion, so declining keeps the
+   browser's value and a new session may ask again. Plus S14's `mijual.lookup.holdings` (read)
+   and S15's `mijual.auth.flash` (written on 로그아웃). Nothing anonymous reaches the server.
+4. **`AccountSlot` is the whole chrome change, and it has exactly three renderings** — R2's
+   로그인 link untouched, the 축약 이메일 menu (mono, `앞 4자 + … + 도메인 끝`; 내 포트폴리오 /
+   알림 설정 / 로그아웃), and R5-4's 「샘플」 + 샘플 종료 pair, which **outranks both** (a loaded
+   sample is a browser fact and must be endable from anywhere). The slot renders **nothing** until
+   `GET /auth/me` answers — 로그인 for a frame to a signed-in reader is the wrong half of the
+   가짜 사용자 정체성 rule. The probe is shared through a module store (`components/chrome/useAccount.ts`)
+   and `lib/session.ts` now de-dupes in-flight probes. Nav links, the 52px bar, the underline, the
+   의견 slot and the footer are untouched.
+5. **로그아웃 · 계정 삭제 · 샘플 종료 leave through `window.location.assign`, deliberately.** The
+   session (or the sample) is gone, so every gated payload the client router cached is stale and a
+   Back press must not restore it — and a `router.push()` from these controls is dropped anyway,
+   because the control unmounts in the same commit. The one-time "로그아웃되었습니다" survives the
+   full load because S15's flash channel is `sessionStorage`; it rendered exactly once.
+6. **A repeat 담기 opens that row's 수정** rather than surfacing S8's `holding_exists` 409 — R5
+   wrote no "이미 담긴 종목" line and the client holds the whole list, so no Korean was invented.
+   Works from both entrances (the panel's 조회 and the `?add=` link), and it does not touch the
+   count. **`?add=` comes from the event detail one-liner** (S15's `DeadlineOffer`, rendered only
+   where the deadline is still ahead), resolved **server-side** through `GET /stocks/{corp_code}`;
+   an `add=` that resolves to nothing is simply absent.
+7. **계정 삭제 arms in place.** R5 signs "즉시" and forbids gate screens and forced modals, so the
+   confirm is the round's own vocabulary: the action column becomes 계정 삭제 · 취소 — 개정 ④'s
+   horizontal swap — and the second press deletes. No new copy, no overlay.
+8. **알림 설정 lives at `/portfolio/notifications`** behind the same gate. Deselecting every 시점
+   칩 saves `[]` — the round's only off switch, so it must not fall back to the served default. The
+   **KakaoTalk row renders no control at all** (label + 「예정」 + the signed sentence): structural,
+   since S8 built no server field for it.
+9. **조회 and 포트폴리오 render the same ②/③ components** — `Conversion`/`Dilution` are now exported
+   from `components/lookup` — so "수치 불일치 금지" holds structurally. Verified live: 한화솔루션
+   500주 → **679,575원** on both surfaces, 1,000주 → 1,359,150원. ②'s only 원 is 전환가액 15,552원,
+   R4's signed **per-share** context — when testing "no money on ②/③", test for the 보유량-기준
+   column (`놓친 돈`/`챙긴 돈`/`n주 기준`/`추정`), not for the character 원.
+10. **샘플 모드 has no 종목 추가, on purpose.** R5-4 signs the sample as a fixed composition that is
+    *editable* (보유량, 삭제, R5-8's mark) and endable; adding an arbitrary issuer would need the
+    client to compose that issuer's rows and place them into 다가오는/지나간 itself — a second
+    composition site for the rules S8 owns (a past ③ appears in no 조회 payload at all). The sample
+    serves **five** D-day rows for four issuers (S8 note 14), as the live data says.
+11. **Live pass (2026-08-22, headless Chrome over `npm run start` + uvicorn, plus a `next dev`
+    smoke): 107 checks, 107 pass** — 샘플 23, 계정 A 29, 계정 B 22, 계정 C 33. Covered signup →
+    empty state → 세션 이월 → 종목 추가 (name and 종목코드) → the D-day sections and the 조회
+    cross-check → inline edit → 삭제 + 되돌리기 + the window closing itself at 8 s → 챙긴 돈
+    (label/ink flip on the same figure, persists) → 알림 설정 (defaults, empty allowed, no Kakao
+    control, 주소 변경) → 로그아웃 (message once) → the gate (only `/portfolio*` redirects) →
+    re-login → 계정 삭제 → 샘플 모드 end to end → 계정 이전 → mobile 390×844 (0 px overflow, 0
+    fixed elements, every target ≥44 px — the 챙긴 돈 checkbox is a 16 px box inside a 194×44
+    **label**, which is what a tap activates). Test accounts deleted through the product's own
+    계정 삭제; all six reader tables back to **0**.
+12. **Test-assertion traps worth not repeating:** `document.body.innerText` in headless Chrome can
+    include the inline flight `<script>` — scope "no 합계/총액" checks to `main` (the **footer**
+    carries R4's market-wide "…총액에서 제외했습니다"); and measure a tap target on the enclosing
+    `<label>`, not on the native checkbox.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2584,9 +2666,55 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   the offer panel gone after 닫기 and not returning on another stock in the same session; **zero
   `position: fixed`** elements and **no horizontal overflow at 390×844** with every target ≥44px.
   Test data was removed afterwards (all six reader tables back to 0).
+- (`P5.S16`) **`frontend`** — R5's **내 포트폴리오** is built: `/portfolio` (the product's only
+  gated route; the gate is the API's own 401, and it is the only `redirect` to 로그인 in the app),
+  its **샘플 모드** at `?sample=1`, the `?add={corp_code}` handshake resolved server-side, and
+  **알림 설정** at `/portfolio/notifications`. The surface is one client orchestrator over the
+  served payload — **no page 대제목** (개정 ③), rows with an in-place 보유량 edit whose confirm is
+  the horizontal 수정·삭제 → 저장·취소 column swap (개정 ④), 삭제 = immediate + an 8-second
+  in-place 되돌리기 with no modal, and the two D-day sections in the server's order under the
+  served 기준 anchor. An account write is followed by a **re-read of the same endpoint** rather
+  than a local recomposition, so ② and ③ render 조회's **own** components (`Conversion`/`Dilution`,
+  now exported from `components/lookup`) and the two surfaces cannot disagree about a number.
+  The chrome gains exactly one thing — the `AccountSlot` seam with its three renderings (R2's
+  로그인, the 축약 이메일 menu, R5-4's 「샘플」 + 샘플 종료 pair) plus the mobile sheet's account
+  rows; nav links, the 52px bar and the footer are untouched. **`experience`** — the 2층 now
+  behaves as the round draws it: **offers are offers** (세션 이월 and 계정 이전 are inset rows with
+  담기 / 담지 않기, never automatic, and declining keeps the browser's value as a per-tab flag);
+  **챙긴 돈 (R5-8)** flips a past ① 소멸 row's label and ink 놓친 돈 → 챙긴 돈 on the *same* figure
+  and reaches **no aggregate**; a repeat 담기 opens that row's 수정 instead of an error the round
+  wrote no words for; 계정 삭제 confirms by **arming in place** (계정 삭제 · 취소), because "즉시"
+  plus "게이트 화면·강제 모달 금지" leaves no room for a dialog; and 로그아웃 is immediate with the
+  one-time message carried across a full document load. **`security`** — the gate and the sample
+  are honest at the same time: exactly one surface is gated and every other route still answers
+  anonymously; the sample is anonymous end to end (**no anonymous write endpoint is called or
+  needed**), shows no email and no account fact, and its edits plus the reader's 챙긴 돈 marks live
+  in **`localStorage` (`mijual.portfolio.sample`)** while the two "offer declined" flags live in
+  `sessionStorage`; migration is **offered, never automatic**, and 계정 삭제 removes the address
+  immediately (the cascade takes sessions, holdings, claims and preferences). Leaving a session —
+  로그아웃, 계정 삭제, 샘플 종료 — goes through a **fresh document load** so no gated payload
+  survives in a client cache and Back cannot restore a signed-in surface. **`qa`** — the frontend
+  check now covers the gated layer: `npm run build` (**10 routes**; `/portfolio` and
+  `/portfolio/notifications` both `ƒ`) + `typecheck` + `smoke` (**8 → 9** `node:test` cases, still
+  no jest/vitest/jsdom) all green with the **Python suite untouched at 113**, and the surface was
+  driven end to end in a real headless Chrome over `npm run start` **and** `next dev` —
+  **107 scripted checks, all passing** across 샘플 모드, the account lifecycle (signup → 이월 →
+  추가 → 편집 → 삭제/되돌리기 → 챙긴 돈 → 알림 → 로그아웃 → 재로그인 → 계정 삭제) and mobile
+  390×844 (0 px overflow, zero `position: fixed`, every tap target ≥44 px). Test accounts were
+  deleted through the product's own 계정 삭제 (all six reader tables back to 0). One durable
+  engineering rule came out of it: **an inline `[]`/`{}` that reaches an effect's dependency list
+  silently freezes the App Router** — refreshes stop committing and links stop navigating, with no
+  warning — so shared frozen empties are the convention here.
 
 ## Open Questions
 
+- **The 계정 이전 offer has a body but no signed heading** — *new, `P5.S16`*: R5-4 writes the
+  offer's own sentence and names the flow ("샘플 → 계정 이전 제안"), but no heading for the inset
+  row, so the surface labels it **계정 이전** — composed from the round's own phrase rather than
+  quoted from a signed line. The alternative was inventing a sentence or shipping an unlabelled
+  row. Flagged for `P5.S19`'s copy inspection / the operator, alongside the same slice's reading
+  that **샘플 모드 offers no 종목 추가** (R5-4 signs a fixed, editable composition; adding an
+  arbitrary issuer would need a second row-composition site for the placement rules `P5.S8` owns).
 - **An expired or spent 재설정 link has no signed sentence** — *new, `P5.S15`*: R5 signs three
   auth failure lines (불일치 / 중복 가입 / 8자 미만) and `invalid_reset_token` is not one of them,
   so the confirm page returns to idle and **states nothing**; the reader can request a fresh link

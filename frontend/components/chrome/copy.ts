@@ -63,6 +63,37 @@ export const NAV_LINKS = [
  * `P5.S16`'s, and `AccountSlot.tsx` is the one place it happens. */
 export const LOGIN_KO = "로그인";
 
+/**
+ * The logged-in slot R5 puts in 로그인's place (§Chrome, 개정 ⑤).
+ *
+ * > Desktop: links 불변(R2 삼분할) · 로그인 링크 → 축약 이메일 메뉴(mono, 앞 4자 +
+ * > … + 도메인 끝): **내 포트폴리오 / 알림 설정 / 로그아웃**.
+ * > Mobile 시트: 구분선 + 내 포트폴리오(이메일 병기) / 알림 설정 / 로그아웃.
+ *
+ * 내 포트폴리오 is the layer's own name (R5-6 개정, which also withdrew the fourth
+ * nav link: "내 포트폴리오는 links가 아니라 계정 메뉴(스택 리스트) 첫 행"), and
+ * 알림 설정 is the 알림 surface's — the round's own two menu rows. 로그아웃 is
+ * R5-1's ("로그아웃 즉시, 확인 다이얼로그 없음"). The three destinations are
+ * chrome labels, so they are transcribed here and the surfaces re-use them.
+ */
+export const PORTFOLIO_LABEL_KO = "내 포트폴리오";
+export const NOTIFICATIONS_LABEL_KO = "알림 설정";
+export const LOGOUT_KO = "로그아웃";
+
+/**
+ * The same slot while a 샘플 포트폴리오 is loaded (R5-4).
+ *
+ * > 로드 상태: 2층 표면에 inset 배너 + **nav 「샘플」 칩 + 샘플 종료 (로그인 슬롯
+ * > 대체 — 메뉴 자리)**.
+ *
+ * The chip renders **샘플** and its border is the enclosure — `P5.S10` note 4a's
+ * convention for the record's own 「」 quoting notation, the same reading the
+ * 「예정」 chip gets on the 알림 surface. 샘플 종료 is the round's own control
+ * label ("종료: 샘플·브라우저 저장분 삭제 후 로드 전 상태 복귀").
+ */
+export const SAMPLE_CHIP_KO = "샘플";
+export const SAMPLE_EXIT_KO = "샘플 종료";
+
 /** The mobile top bar's menu button (R2 §Page shell — "메뉴 button, mono, 44px
  * hit"). It keeps this label while the sheet is open; the open/closed state is
  * carried by `aria-expanded`, because a 닫기 label is copy nobody signed. */

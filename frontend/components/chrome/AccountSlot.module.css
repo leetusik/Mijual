@@ -23,3 +23,122 @@
   color: rgba(255, 255, 255, 0.68);
   text-decoration: none;
 }
+
+/* ---------------------------------------------------------------------------
+   The logged-in slot (R5 §Chrome) — an extension of the same quiet slot, never a
+   restyle of it: same size, same quiet ink, same place. R5-2's "nav 로그인 변경
+   금지" is about the anonymous state, and the menu that replaces it inherits its
+   voice rather than announcing itself.
+   --------------------------------------------------------------------------- */
+
+.slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* 축약 이메일 — mono, per the round ("축약 이메일 메뉴(mono, 앞 4자 + … + 도메인
+   끝)"). `.mono` (the shell's rule) carries the family and the 0.95em. */
+.account {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+}
+
+.account:hover,
+.account[aria-expanded="true"] {
+  color: var(--ink-1);
+}
+
+/* 스택 리스트 — a plain stacked list under the slot. Hairline elevation only:
+   the system has no shadows and no radii (R1). */
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  display: flex;
+  min-width: 160px;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+}
+
+.menuRow {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--ink-1);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menuRow + .menuRow {
+  border-top: 1px solid var(--border-soft);
+}
+
+.menuRow:hover {
+  background: var(--surface-raised);
+}
+
+.menuRow:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* 「샘플」 칩 — the tinted chip form the system already uses for a state word;
+   the border is the record's 「」 (`P5.S10` note 4a). */
+.sampleChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  background: var(--live-tint);
+  border: 1px solid var(--live);
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+  text-decoration: none;
+}
+
+.sampleExit {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+}
+
+.sampleExit:hover {
+  color: var(--ink-1);
+}
+
+/* Sheet rows (≥48px, R2 §Page shell mobile; R5: 구분선 + 계정 메뉴 영역). */
+.sheetAction {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.68);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sheetEmail {
+  margin-left: var(--space-2);
+  color: var(--ink-3);
+}

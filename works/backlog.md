@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.S16`
-- Next slice: `P5.S17`
+- Current slice: `P5.S17`
+- Next slice: `P5.S18`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T13:45:16+09:00`
+- Rebuilt at: `2026-08-22T15:30:51+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S16` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S17` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -89,7 +89,7 @@
 | [x] `P5.S13` | `done` | Event detail ①②③: header, 환산 블록, field rows, trust states, CorrectionStory | `implementation` | `works/phases/active/P5/slices/P5.S13` |
 | [x] `P5.S14` | `done` | 내 종목 조회 surface: search, 보유량, 진행 중인 권리, 놓친 돈 breakdown, empty states | `implementation` | `works/phases/active/P5/slices/P5.S14` |
 | [x] `P5.S15` | `done` | Auth surfaces + conversion offers + sample entry | `implementation` | `works/phases/active/P5/slices/P5.S15` |
-| [ ] `P5.S16` | `todo` | 내 포트폴리오: holdings, D-day list, 챙긴 돈, 알림 설정, sample mode, account menu | `implementation` | `works/phases/active/P5/slices/P5.S16` |
+| [x] `P5.S16` | `done` | 내 포트폴리오: holdings, D-day list, 챙긴 돈, 알림 설정, sample mode, account menu | `implementation` | `works/phases/active/P5/slices/P5.S16` |
 | [ ] `P5.S17` | `todo` | 운영 관제 admin panel: door + six sections | `implementation` | `works/phases/active/P5/slices/P5.S17` |
 | [ ] `P5.S18` | `todo` | vocky integration: observation API shape decision + admin vocky view | `implementation` | `works/phases/active/P5/slices/P5.S18` |
 | [ ] `P5.S19` | `todo` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P5/slices/P5.S19` |

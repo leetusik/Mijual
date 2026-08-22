@@ -12,3 +12,17 @@
  */
 export { LookupHeader } from "./LookupHeader";
 export { StockView } from "./StockView";
+
+/**
+ * The two type blocks R5 hands to 내 포트폴리오 as-is: "금액 = **R4 계약 그대로**
+ * … 내 종목 조회와 수치 불일치 금지 (같은 contract 소스)".
+ *
+ * `P5.S16` renders ① rows with `Conversion` and ② rows with `Dilution` rather
+ * than drawing its own — one composition on the server (`reads._rights_row`), one
+ * multiplication site in the browser (`lib/holding.ts`) and one rendering, so the
+ * two surfaces cannot disagree about a number or about how it is labelled. Making
+ * them public is the whole change: neither component moved and neither took a
+ * portfolio-shaped prop.
+ */
+export { Conversion } from "./Conversion";
+export { Dilution } from "./RightsSection";

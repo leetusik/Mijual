@@ -26,9 +26,15 @@
  * server module that pulls a hook into its graph fails the build. The hook lives
  * beside the components that call it.
  *
- * Nothing here caches. A session can end in another tab (로그아웃 deletes the
- * row, so a cookie is worthless the instant it is gone — `P5.S7` note 1), and a
- * stale "logged in" would render the wrong line rather than a slow one.
+ * Nothing here caches a *result*. A session can end in another tab (로그아웃
+ * deletes the row, so a cookie is worthless the instant it is gone — `P5.S7`
+ * note 1), and a stale "logged in" would render the wrong line rather than a
+ * slow one. What `fetchAuthState` does share is an **in-flight** request: two
+ * elements that mount together on one page load — `P5.S16`'s chrome slot and
+ * this slice's offer line — ask one question between them and both hear the same
+ * answer, which is what S15's own note asked S16 to do ("that probe should
+ * replace this one rather than sit beside it"). Once it resolves the promise is
+ * dropped, so the next ask is a fresh probe.
  */
 
 import { getAuthState } from "./api";
@@ -39,17 +45,23 @@ import type { AuthState } from "./types";
  * failed probe must degrade to anonymous, never to "logged in". */
 export const ANONYMOUS: AuthState = { authenticated: false };
 
+/** The probe currently on the wire, so simultaneous askers share one request. */
+let inFlight: Promise<AuthState> | null = null;
+
 /**
  * Ask the API who this browser is. **Never throws** — a network failure or a
  * service that is down is answered as anonymous, because every surface that asks
  * has an anonymous rendering and none of them has an error one.
  */
-export async function fetchAuthState(): Promise<AuthState> {
-  try {
-    return await getAuthState();
-  } catch {
-    return ANONYMOUS;
-  }
+export function fetchAuthState(): Promise<AuthState> {
+  if (inFlight) return inFlight;
+  const probe = getAuthState()
+    .catch(() => ANONYMOUS)
+    .finally(() => {
+      if (inFlight === probe) inFlight = null;
+    });
+  inFlight = probe;
+  return probe;
 }
 
 // ---------------------------------------------------------------------------
