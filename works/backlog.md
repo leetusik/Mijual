@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P7`
-- Current slice: `P7.S4`
-- Next slice: `P7.S5`
+- Current slice: `P7.S5`
+- Next slice: `P7.S6`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T07:47:30+09:00`
+- Rebuilt at: `2026-08-23T08:14:10+09:00`
 
 ## Active Phases
 
@@ -20,7 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
-| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S4` | `works/phases/active/P7` |
+| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S5` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -104,7 +104,7 @@
 | [x] `P7.S1` | `done` | dev origin unblock: hydration on 127.0.0.1/Tailscale — closes the dead 펼치기, static countdown, state-stomping reload, dead AI 질문 send and missing widget | `fix` | `works/phases/active/P7/slices/P7.S1` |
 | [x] `P7.S2` | `done` | login reachable: the chrome account slot answers in dev (StrictMode double-effect in useAccount) | `fix` | `works/phases/active/P7/slices/P7.S2` |
 | [x] `P7.S3` | `done` | board: a limited firm list at a time, with the signed 펼치기 disclosures working | `fix` | `works/phases/active/P7/slices/P7.S3` |
-| [ ] `P7.S4` | `todo` | 내 종목 조회 typeahead: candidate suggestions before submit (API route + search UI) | `fix` | `works/phases/active/P7/slices/P7.S4` |
+| [x] `P7.S4` | `done` | 내 종목 조회 typeahead: candidate suggestions before submit (API route + search UI) | `fix` | `works/phases/active/P7/slices/P7.S4` |
 | [ ] `P7.S5` | `todo` | focus treatment: the clipped blue ring off the inputs, keyboard focus kept | `fix` | `works/phases/active/P7/slices/P7.S5` |
 | [ ] `P7.S6` | `todo` | nav: drop the 내 종목 조회 slot (operator override of the signed three-slot nav) | `fix` | `works/phases/active/P7/slices/P7.S6` |
 | [ ] `P7.S7` | `todo` | copy sweep: remove self-narrating implementation copy across the reader surfaces | `fix` | `works/phases/active/P7/slices/P7.S7` |

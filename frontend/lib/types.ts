@@ -324,10 +324,28 @@ export type StockPage = {
 };
 
 /** A search that finds nothing is a **result**, not an error — and it names no
- * reason, no candidate and no near-miss. */
+ * reason and no near-miss. Candidates live on their own route, before the submit
+ * (`StockSuggestions`); this payload still offers none. */
 export type StockLookup =
   | ({ query: string; found: true } & StockPage)
   | { query: string; found: false };
+
+/**
+ * One candidate for a query still being typed (`GET /stocks/suggest`, `P7.S4`).
+ *
+ * The `corp_code` is the whole point: a chosen candidate is navigated by the
+ * **handle** (`stockPath`), never re-resolved from its name, which is what keeps
+ * "the system never silently opens a different company" true while still letting
+ * a reader choose one.
+ */
+export type StockSuggestion = {
+  corp_code: string;
+  corp_name: string | null;
+  stock_code: string | null;
+};
+
+/** At most eight candidates; nothing matching is an **empty list**, not a 404. */
+export type StockSuggestions = { query: string; candidates: StockSuggestion[] };
 
 export type Account = { email: string; created_at: string | null };
 

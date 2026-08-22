@@ -107,6 +107,7 @@ __all__ = [
     "resolve_event",
     "rights_of",
     "stock_by_code",
+    "suggest_corps",
 ]
 
 #: The one field each 본문-tier type counts down to. ② is absent because its
@@ -681,9 +682,14 @@ def resolve_corp(session: Session, query: str) -> Corp | None:
     exists.
 
     Ambiguity is a miss, not a pick: a lookup that silently opened a *different*
-    company's 놓친 돈 would be the one defect class this product cannot ship. A
-    miss carries no reason — the surface renders R4's locked 검색 불일치 copy, and
-    the payload says only that nothing matched.
+    company's 놓친 돈 would be the one defect class this product cannot ship. That
+    rule is about **this** function — what the system does with a query nobody
+    confirmed — and P7 left it exactly as it was. A reader who *chooses* 계양전기
+    out of the suggestion list (:func:`suggest_corps`, ``GET /stocks/suggest``) is
+    not being guessed at: the choice travels as a ``corp_code`` to
+    :func:`stock_by_code` and never comes back through this resolver. A miss still
+    carries no reason — the surface renders R4's locked 검색 불일치 copy, and the
+    payload says only that nothing matched.
 
     The corpus is the universe of resolvable 종목: a :class:`~mijual.db.models.Corp`
     row exists only because the collector saw a filing from that issuer
@@ -722,6 +728,84 @@ def resolve_corp(session: Session, query: str) -> Corp | None:
         if len(match) == 1:
             return session.get(Corp, match[0])
     return None
+
+
+def _corps_in_order(session: Session, corp_codes: Sequence[str]) -> list[Corp]:
+    """The ``Corp`` rows for a decided order of codes, in one query and that order."""
+    if not corp_codes:
+        return []
+    found = {
+        corp.corp_code: corp
+        for corp in session.scalars(select(Corp).where(Corp.corp_code.in_(tuple(corp_codes))))
+    }
+    return [found[code] for code in corp_codes if code in found]
+
+
+def suggest_corps(session: Session, query: str, *, limit: int = 8) -> list[Corp]:
+    """What a half-typed 종목 could be — the list a reader **chooses** from.
+
+    ``GET /stocks/suggest``'s reading (`P7.S4`, operator item 2). It looks like the
+    opposite of :func:`resolve_corp`'s unique-or-decline rule and is not: that rule
+    exists so that *the system* never silently opens a different company's 놓친 돈,
+    and a reader picking 계양전기 out of a list is the opposite of a silent guess.
+    What keeps it safe is the handle — every candidate carries its ``corp_code``,
+    the surface navigates to ``/stocks/{corp_code}``, and nothing a reader chose is
+    ever re-resolved from its name.
+
+    Tiers, **unioned** rather than first-wins — unlike :func:`find_corps`, which
+    answers R6's 「이벤트 목록/단건」 contract and stops at the first tier that
+    matches:
+
+    1. **All digits** → ``stock_code`` **prefix**, plus the zero-padded exact
+       (``12200`` → ``012200``), so a ticker :func:`resolve_corp` would resolve is
+       always in the list. Ordered by 종목코드.
+    2. **Otherwise** → normalized name (:func:`_name_key`), **prefix first and
+       substring after**, each group alphabetical **by the normalized name**, so a
+       legal form or a space cannot jump a row to the top of it. Prefix before
+       substring because 삼성전 means 삼성전자/삼성전기 before it means anything that merely contains
+       those syllables — and because every tier :func:`resolve_corp` can hit is a
+       prefix hit here, so the row a bare submit would land on is at the **top** of
+       the list rather than lost in the middle of it.
+
+    ``limit`` caps the list: a two-character query matches dozens, and a listbox a
+    reader has to scroll is not a shortlist. Nothing is filtered out of the corpus —
+    an issuer with no events still belongs here, because it has an honest "권리가
+    없습니다" page to land on. One narrow scan of ``(corp_code, corp_name,
+    stock_code)``, the same reading :func:`resolve_corp` does over the same ~614
+    rows, and the normalization is Python's for the same reason it is there.
+    """
+    text = (query or "").strip()
+    if not text:
+        return []
+
+    rows = session.execute(select(Corp.corp_code, Corp.corp_name, Corp.stock_code)).all()
+
+    digits = text.replace("-", "")
+    if digits.isdigit():
+        padded = digits.zfill(6) if len(digits) <= 6 else None
+        hits = sorted(
+            (
+                row
+                for row in rows
+                if row.stock_code
+                and (row.stock_code.startswith(digits) or row.stock_code == padded)
+            ),
+            key=lambda row: (row.stock_code or "", row.corp_name or ""),
+        )
+        return _corps_in_order(session, [row.corp_code for row in hits[:limit]])
+
+    key = _name_key(text)
+    if not key:
+        return []
+    keyed = sorted(
+        ((_name_key(name), code) for code, name, _ in rows),
+        key=lambda item: (item[0], item[1]),
+    )
+    ordered = [code for name_key, code in keyed if name_key.startswith(key)]
+    ordered += [
+        code for name_key, code in keyed if key in name_key and not name_key.startswith(key)
+    ]
+    return _corps_in_order(session, ordered[:limit])
 
 
 def find_corps(session: Session, query: str, *, limit: int = 5) -> list[Corp]:

@@ -48,6 +48,7 @@ import type {
   RightsType,
   StockLookup,
   StockPage,
+  StockSuggestions,
 } from "./types";
 
 /** The client-side base. Same origin by default; `next.config.ts` proxies it. */
@@ -181,6 +182,18 @@ export const lookupStock = (query: string, init?: RequestInitLike) =>
 /** The same page by stable handle. An unknown code **is** a 404. */
 export const getStock = (corpCode: string, init?: RequestInitLike) =>
   request<StockPage>(`/stocks/${corpCode}`, init);
+
+/**
+ * Candidates for a query still being typed (`P7.S4`, operator item 2).
+ *
+ * Read-only, anonymous, and **only `q`** — the same reason `lookupStock` takes no
+ * holding count. Nothing matching is `200 {candidates: []}`, so a caller branches
+ * on the list's length and never on a status. Pass `init.signal`: the typeahead
+ * aborts the previous keystroke's request on every new one, and an aborted
+ * `fetch` rejects with an `AbortError` the caller is expected to swallow.
+ */
+export const suggestStocks = (query: string, init?: RequestInitLike) =>
+  request<StockSuggestions>(`/stocks/suggest?q=${encodeURIComponent(query)}`, init);
 
 // ---------------------------------------------------------------------------
 // 계정 (P5.S7)

@@ -67,6 +67,17 @@ def _corpus(session, *, today: date) -> None:
     ensure_corp(session, SENERGY, corp_name="에스에너지", stock_code="095910")
     ensure_corp(session, QUIET, corp_name="조용한기업", stock_code="999999")
 
+    # Name-only issuers for the suggestion list (P7.S4). They carry no events on
+    # purpose — a suggestion is about who exists, not about what is happening to
+    # them. Nine 삼성* rows so the cap of eight has something to cut, and a 하이
+    # family where the query lands at the front of two names and inside a third.
+    for index, name in enumerate([
+        "삼성전자", "삼성전기", "삼성물산", "삼성화재", "삼성증권", "삼성카드",
+        "삼성중공업", "삼성생명", "삼성바이오로직스",
+        "하이록코리아", "하이스틸", "SK하이닉스",
+    ]):
+        ensure_corp(session, f"0090{index:04d}", corp_name=name, stock_code=f"0059{index:02d}")
+
     # ① live: 매매기간 closes in three days and the 발행가 is not fixed yet.
     _warrant(
         session, corp_code=KEYANG, subtype_day="20260508",
@@ -208,3 +219,29 @@ def test_a_stock_with_nothing_to_show_is_a_page_and_an_unknown_code_is_a_404(cli
     missing = client.get("/stocks/00000000")
     assert missing.status_code == 404 and missing.json()["error"]["code"] == "not_found"
     assert "message_ko" not in missing.json()["error"]
+
+
+def test_suggest_offers_candidates_a_reader_chooses_and_still_never_resolves_one(client) -> None:
+    def names(query: str) -> list[str]:
+        body = client.get("/stocks/suggest", params={"q": query}).json()
+        assert body["query"] == query
+        return [candidate["corp_name"] for candidate in body["candidates"]]
+
+    # Declared before /stocks/{corp_code}, or "suggest" would be read as a code.
+    hit = client.get("/stocks/suggest", params={"q": "계양"})
+    assert hit.status_code == 200
+    assert hit.json()["candidates"][0] == {
+        "corp_code": KEYANG, "corp_name": "계양전기", "stock_code": "012200"
+    }
+
+    assert names("012") == ["계양전기"]  # 종목코드 prefix
+    assert names("12200") == ["계양전기"]  # zero-padded, the way resolve_corp reads a ticker
+    assert names("삼성전") == ["삼성전기", "삼성전자"]  # the prefix resolve_corp declines
+    assert names("하이") == ["하이록코리아", "하이스틸", "SK하이닉스"]  # prefix, then substring
+    assert len(names("삼성")) == 8  # capped — a shortlist, not the corpus
+    assert names("없는종목") == []  # a result, not a 404
+
+    # Offering the choice does not make the resolver guess: 삼성전 still resolves
+    # to neither company on submit, and 계양 still resolves to exactly one.
+    assert client.get("/stocks", params={"q": "삼성전"}).json()["found"] is False
+    assert client.get("/stocks", params={"q": "계양"}).json()["stock"]["corp_code"] == KEYANG

@@ -11,6 +11,9 @@
  * multiplication site, shared with 내 포트폴리오 (`P5.S16`).
  */
 export { LookupHeader } from "./LookupHeader";
+/** The search row itself (`P7.S4`) — the landing hero renders the same one, so
+ * the two surfaces cannot drift into two behaviours. */
+export { SearchRow } from "./SearchRow";
 export { StockView } from "./StockView";
 
 /**

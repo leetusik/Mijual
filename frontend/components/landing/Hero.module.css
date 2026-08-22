@@ -8,9 +8,13 @@
   /* Mobile keeps the rings and the vertical room the 4px scale allows; the
      round's 110/160 is a desktop measurement. */
   padding-block: var(--space-16) var(--space-12);
-  /* The rings are wider than a phone, and clipping them at the viewport edge is
-     not shrinking them (R2.1 §3: never shrink the rings). */
-  overflow: hidden;
+  /* The clip that keeps the rings inside this box lives on `.orbits` below, not
+     here (`P7.S4`). It used to be `overflow: hidden` on the hero itself, which
+     clipped the rings correctly and also clipped the search row's candidate list
+     at the hero's bottom edge. `.orbits` is `inset: 0` of this box, so moving the
+     rule there clips exactly the same rectangle — R2.1 §3's "never shrink them,
+     let the hero's own overflow clip them" is unchanged — while a panel that
+     hangs off the search input can leave the hero. */
 }
 
 @media (min-width: 768px) {
@@ -40,6 +44,10 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* The rings are wider than a phone, and clipping them at the viewport edge is
+     not shrinking them (R2.1 §3: never shrink the rings). This box is the hero's
+     own rectangle, so the clip is the hero's own. */
+  overflow: hidden;
 }
 
 .stage {

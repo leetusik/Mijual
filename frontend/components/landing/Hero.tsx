@@ -1,6 +1,6 @@
-import { ROUTES } from "@/lib/routes";
 import { count, won } from "@/lib/format";
 import type { BoardSummary } from "@/lib/types";
+import { SearchRow } from "@/components/lookup/SearchRow";
 import { EstimateValue } from "./EstimateValue";
 import {
   HERO_STAT_VALUE_KO,
@@ -8,8 +8,6 @@ import {
   HERO_STAT_WITHIN_30D_KO,
   HERO_SUB_KO,
   HERO_TITLE_KO,
-  SEARCH_PLACEHOLDER_KO,
-  SEARCH_SUBMIT_KO,
 } from "./copy";
 import styles from "./Hero.module.css";
 
@@ -32,7 +30,10 @@ import styles from "./Hero.module.css";
  *   hero's own overflow, which is not the same thing as shrinking them.
  * - **The submit is a plain GET form** to `/stocks` with the API's own `q`
  *   parameter, so the hero works before any JavaScript does and the page path
- *   and the contract path stay one vocabulary (`P5.S11`'s route map).
+ *   and the contract path stay one vocabulary (`P5.S11`'s route map). `P7.S4`
+ *   moved that row into `lookup/SearchRow` — one component for this surface and
+ *   R4's header, adding the typeahead to both at once and leaving the GET
+ *   submit, the geometry and the classes exactly as the round signed them.
  *
  * The three stat numbers come from the **same** `/board/summary` object the
  * countdown/stats card reads, which is what stops one page from printing two
@@ -59,21 +60,17 @@ export function Hero({ summary }: { summary: BoardSummary }) {
         <h1 className={styles.title}>{HERO_TITLE_KO}</h1>
         <p className={styles.sub}>{HERO_SUB_KO}</p>
 
-        <form className={styles.search} action={ROUTES.stocks} method="get" role="search">
-          <input
-            className={styles.input}
-            type="text"
-            name="q"
-            /* The label is the surface's own signed name; the placeholder is R4's
-               "hero placeholder", and a placeholder alone is not a label. */
-            aria-label={HERO_TITLE_KO}
-            placeholder={SEARCH_PLACEHOLDER_KO}
-            autoComplete="off"
-          />
-          <button className={styles.submit} type="submit">
-            {SEARCH_SUBMIT_KO}
-          </button>
-        </form>
+        {/* The row itself is `P7.S4`'s shared client component — the same one R4's
+            header renders — so the two search rows cannot drift apart. It still
+            renders this surface's own form/input/button classes, and it is still
+            a plain GET to `/stocks`; the candidate list is the addition. The
+            label is the surface's own signed name; the placeholder is R4's "hero
+            placeholder", and a placeholder alone is not a label. */}
+        <SearchRow
+          label={HERO_TITLE_KO}
+          variant="hero"
+          classNames={{ form: styles.search, input: styles.input, submit: styles.submit }}
+        />
 
         <p className={styles.stats}>
           {/* A figure the summary does not carry has no segment at all — the

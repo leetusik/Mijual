@@ -499,6 +499,76 @@ origin and in an **isolated production build** on `:3100` (build pass, 16 routes
 4. **`/favicon.ico` 404 remains the only 4xx on a clean landing load**, before and after, at 1440
    (not at 390) — still nobody's item.
 
+### Item 2 closed — `P7.S4`: one search row, a chosen candidate, and the rule intact
+
+**The reading held.** Collision reading #4 said the "never a candidate list" rule survives if the
+suggestion is a *choice*, and the implementation is exactly that: a new read-only
+**`GET /stocks/suggest?q=`** (≤ 8 candidates, `200` + `[]` for nothing, `q` is its only parameter)
+feeds a listbox whose every option carries its 종목코드, and a chosen one navigates to
+**`/stocks/{corp_code}`** — the exact handle, never a second fuzzy resolve. Submitting **without**
+choosing is byte-for-byte yesterday's path: `?q=` → `resolve_corp`'s four unique-or-decline tiers
+→ 307 onto the handle on a hit, R4's locked 검색 불일치 sentence on an ambiguous prefix. Both rows
+still work with **JavaScript off** (measured with `Emulation.setScriptExecutionDisabled`: plain
+`<form action="/stocks" method="get">`, no listbox).
+
+**The two rows are now one component.** `components/lookup/SearchRow.tsx` (+ its module CSS) is
+rendered by *both* the hero and `LookupHeader`, each passing its **own** form/input/button classes,
+so R2's 560×52 row and R4's 48px row keep their signed geometry (measured unchanged, gap 0) and the
+two surfaces cannot drift into two behaviours. `suggest_corps` sits beside `resolve_corp` in
+`reads.py`; digits → `stock_code` prefix (+ the zero-padded exact), otherwise normalized-name
+**prefix then substring**, tiers **unioned** — unlike `find_corps` (R6's agent tool), which stops
+at the first tier that matches. **Invariant worth keeping:** every tier `resolve_corp` can hit is a
+*prefix* hit in the suggestion list, so the row a bare submit would land on is always at the top.
+
+**Zero Korean strings were minted** — the second slice in a row where the DECOMP reading expected
+one might be needed (S3 was the first). A candidate is 회사명 (sans) + 종목코드 (mono); no heading;
+an empty result renders **nothing**, because the submit already owns the 검색 불일치 sentence.
+
+**Decision D-P7-2 — the hero's ring clip moved to `.orbits`, and it had to.** `.hero` carried
+`overflow: hidden` to clip the two orbit rings (R2.1 §3: never shrink them). Measured at 1440, the
+eight-option panel spans y 440→761 while the hero ends at **732**: its last option was clipped and
+`elementFromPoint` there returned the Anchor craft panel below; at 390 it would have cut the list
+in half. `.orbits` is `position: absolute; inset: 0` of the hero — **the same rectangle**, measured
+identical afterwards (hero `[52,732,1440]` ≡ orbits `[52,732,1440]`) — so the rings are clipped by
+the hero's own box exactly as the round says, while a panel hanging off the input can leave it.
+Proof nothing else moved: `scrollWidth == viewport` at 390 **and** 1440 (the rings are 1251px
+wide), and the document is **3,047 px** at 1440 / **4,523 px** at 390 — identical to `P7.S3`'s
+numbers. **No other slice may reintroduce `overflow: hidden` on `.hero`.**
+
+**Measured** (headless Chrome/CDP, fresh profile, `next dev` on `127.0.0.1`, **both `/` and
+`/stocks`**, 1440×900 and 390×844; repeated once on the **Tailscale** origin and once against an
+**isolated production build** on `:3100` — all four runs agree):
+
+| check | result |
+|---|---|
+| suggest requests **on mount** | **0** — `typed` starts false, so StrictMode's double effect asks nothing |
+| 4 chars @60 ms / @400 ms | **1** request / **4** requests (debounce ~150 ms, `AbortController` per keystroke) |
+| clearing the box | **0** requests, list closed |
+| `계양` / `에스` / `0122` | 1 (계양전기 012200) / **8** (7 prefix hits + 나노씨엠에스 substring) / 계양전기 + 삼미금속 |
+| ↓ then Enter | `/stocks/01258020` — the handle — page rendered; a real mouse click → `/stocks/00102618` |
+| `계양` + Enter **unchosen** | `/stocks?q=계양` → **307** → `/stocks/00102618` (unchanged) |
+| `에스` + Enter **unchosen** | stays on `/stocks?q=에스` with ‘에스’와 일치하는 종목이 없습니다 (unchanged) |
+| panel vs input | width equal, `dx=0`, `dy=0`, radius **0**, `border-top: 0`, options 44px@390 / 40px@1440, all hit-testable |
+| panel ink | hero `rgb(10,19,16)` + `rgba(8,17,13,.72)` on `rgba(163,196,180,.4)`; /stocks the same base + `--surface-inset` on `--border-strong` |
+| console | no errors, no warnings, **no hydration complaint** on `/`, `/stocks`, a miss page, a stock page |
+
+**Notes later slices need:**
+
+1. **`P7.S5` (focus): the input now sits inside `span.SearchRow.field`** (`position: relative;
+   flex: 1 1 auto; min-width: 0`) — the panel's positioning context. Focus styling was **not**
+   touched (`:focus-visible` still lands on the `input`), but an inset-ring approach now has a
+   wrapper it can use, and must not assume the input is the form's direct child.
+2. **A CDP Enter without `text: "\r"` fires no keypress**, so the form's implicit submission never
+   happens and the product looks broken when it is not. `P7.S1`'s recipe needs that one addition;
+   it cost a wrong reading here before it was caught.
+3. **The live corpus is filing-derived: no 삼성전자/삼성전기.** The equivalent live ambiguous
+   prefix is **`에스`** (7 prefix hits, `resolve_corp` miss); `계양` is the unique-prefix hit.
+   `P7.S9`'s sweep should use those, not the plan's illustrative names.
+4. **`.venv/bin/python -m pytest` is 139 now** (138 at this slice's start). The phase's stated
+   "59" baseline is stale — it predates P5/P6's web and agent suites.
+5. The isolated production build (`P7.S2`'s copy-to-scratch method) still works unchanged, and
+   `MIJUAL_API_ORIGIN=http://127.0.0.1:8000` at build time is enough to point it at the dev API.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -586,6 +656,40 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   two pinned strips are unchanged. `product.md` was checked and needs nothing: it states the corpus
   (488 exposable events) and the board's states, never a claim that every row is rendered.
   (Recorded by `P7.S3`; the review may fold this into the `frontend` line if it prefers one.)
+
+- `api` — **a new read-only route: `GET /stocks/suggest?q=<종목명|종목코드>`** →
+  `{"query", "candidates": [{corp_code, corp_name, stock_code}, …]}`, **at most 8**, `200` with an
+  empty list when nothing matches (never 404), `q` its **only** parameter (so the "no holding count
+  is ever received here" promise still holds). Matching is `reads.suggest_corps`: all-digit →
+  `stock_code` prefix + the zero-padded exact; otherwise normalized-name **prefix then substring**,
+  tiers unioned, alphabetical inside each group. With it, the §내 종목 조회 rule sentence changes:
+  today's doc says a miss "names no reason, candidate or near-miss" — **the miss payload still names
+  none, and the resolver still never guesses on submit; candidates now exist on their own route,
+  before the submit, as the reader's own choice, and a chosen one travels as the exact handle
+  `/stocks/{corp_code}`**. Worth recording beside it: the route must stay **declared before**
+  `GET /stocks/{corp_code}`, or the handle route swallows `suggest` as a `corp_code`. (Recorded by
+  `P7.S4`.)
+- `frontend` — **the two search rows are one component.** `components/lookup/SearchRow.tsx` is
+  rendered by both the landing hero and R4's `LookupHeader`, each passing its own form/input/button
+  classes, so the signed geometry stays each surface's own while the behaviour is shared: a WAI-ARIA
+  combobox (`role="combobox"` + `aria-expanded`/`aria-controls`/`aria-activedescendant`, options
+  `role="option"`), ~150 ms debounce, an `AbortController` per keystroke, **no request on mount or
+  for an empty box**, ↑/↓ to move, **Enter on a highlighted option → `router.push(stockPath(corp_code))`**,
+  Enter with nothing highlighted → the unchanged native GET submit, Esc/blur to close, nothing
+  pre-highlighted. The panel is an **unsigned element built in the signed idiom** (radius 0,
+  hairline, the surrounding console field's own colours composited over `--paper` so a floating
+  panel is opaque, fade-only motion, 44px options at 390) and it mints **zero Korean copy**. Two
+  traps to record with it: the hero's ring clip now lives on `.orbits` rather than `.hero`
+  (identical rectangle — a panel hanging off the input would otherwise be cut at the hero's bottom
+  edge, measured), and a **CDP Enter without `text: "\r"` fires no keypress**, so a browser probe
+  can report a working GET form as broken. (Recorded by `P7.S4`.)
+- `experience` — the promise bullet "**A search miss names no reason, candidate or near-miss**" is
+  now half of the truth and should be split: the **miss** still names no reason and no near-miss,
+  and the resolver still never picks between two companies — but while the reader is **typing**,
+  내 종목 조회 offers up to eight candidates, each with its 종목코드, and a chosen one opens by the
+  exact handle. The defect class the rule guards against is *the system* opening the wrong
+  company's 놓친 돈; a reader choosing from a list is the opposite of that. (Recorded by `P7.S4`;
+  `product.md` was checked and needs nothing — it states no search-resolution promise.)
 
 ## Open Questions
 

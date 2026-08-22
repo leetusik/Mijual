@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
-import {
-  BOARD_LABEL_KO,
-  HERO_SUB_KO,
-  SEARCH_PLACEHOLDER_KO,
-  SEARCH_SUBMIT_KO,
-  STOCKS_LABEL_KO,
-  noMatchKo,
-} from "./copy";
+import { BOARD_LABEL_KO, HERO_SUB_KO, STOCKS_LABEL_KO, noMatchKo } from "./copy";
+import { SearchRow } from "./SearchRow";
 import styles from "./Lookup.module.css";
 
 /**
@@ -32,6 +26,16 @@ import styles from "./Lookup.module.css";
  * state: `?q=` that resolves nothing is a `200 {found: false}` result (`P5.S4`
  * note 1), and the typed query stays in the box so it can be edited rather than
  * retyped.
+ *
+ * ## What `P7.S4` changed, and what it did not
+ *
+ * The row is now `SearchRow` — the same component the landing hero renders, so
+ * one behaviour serves both — and it suggests candidates while the reader types
+ * (operator item 2). Everything above still holds: the form is the same plain GET
+ * to `/stocks`, the resolver is still unique-or-decline, and a miss still lands
+ * here with the query in the box. A **chosen** candidate skips all of it and
+ * navigates to `/stocks/{corp_code}`, which is why offering the list does not
+ * make the system guess.
  */
 export function LookupHeader({ query, missed }: { query?: string; missed?: boolean }) {
   return (
@@ -43,20 +47,16 @@ export function LookupHeader({ query, missed }: { query?: string; missed?: boole
       <h1 className={styles.title}>{STOCKS_LABEL_KO}</h1>
       <p className={styles.sub}>{HERO_SUB_KO}</p>
 
-      <form className={styles.search} action={ROUTES.stocks} method="get" role="search">
-        <input
-          className={`mono ${styles.input}`}
-          type="text"
-          name="q"
-          defaultValue={query}
-          aria-label={STOCKS_LABEL_KO}
-          placeholder={SEARCH_PLACEHOLDER_KO}
-          autoComplete="off"
-        />
-        <button className={styles.submit} type="submit">
-          {SEARCH_SUBMIT_KO}
-        </button>
-      </form>
+      <SearchRow
+        label={STOCKS_LABEL_KO}
+        defaultValue={query}
+        variant="surface"
+        classNames={{
+          form: styles.search,
+          input: `mono ${styles.input}`,
+          submit: styles.submit,
+        }}
+      />
 
       {missed && query ? (
         <p className={styles.noMatch} role="status">

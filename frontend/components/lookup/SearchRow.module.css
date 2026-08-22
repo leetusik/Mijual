@@ -1,0 +1,105 @@
+/* The candidate list under the search row (`P7.S4`, operator item 2).
+ *
+ * **No round draws this element**, so nothing here is invented: it takes the ink
+ * of the console field it hangs off — R2 §Cosmos's dark field in the hero
+ * (`rgba(8,17,13,.72)` on a `rgba(163,196,180,.4)` hairline) and R4's
+ * `--surface-inset` field on /stocks — keeps R1's square system, and moves only
+ * by a fade. The row's own geometry (560px, 48/52px controls) belongs to the two
+ * surfaces and is untouched: this file adds a positioning context and a panel.
+ */
+
+/* The input's wrapper, so the panel hangs off the *input* and not off the row —
+ * the 조회 button is not part of the field the candidates belong to. It inherits
+ * the flex terms the input used to carry in the row, and the input fills it. */
+.field {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hero {
+  --candidate-bg: rgba(8, 17, 13, 0.72);
+  --candidate-border: rgba(163, 196, 180, 0.4);
+  --candidate-pad: var(--space-4);
+}
+
+.surface {
+  --candidate-bg: var(--surface-inset);
+  --candidate-border: var(--border-strong);
+  --candidate-pad: var(--space-3);
+}
+
+.listbox {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Both console fields are translucent by design, which is right for a field
+     lying *on* the page and wrong for a panel floating *over* it. So the same
+     ink is composited over the page's own surface rather than over whatever text
+     happens to be underneath — the field's own rendered colour, made opaque. */
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--candidate-bg), var(--candidate-bg));
+  border: 1px solid var(--candidate-border);
+  /* The input's own bottom hairline is this panel's top edge; a second one there
+     would read as a 2px rule the round never draws. */
+  border-top: none;
+  border-radius: var(--radius-0);
+  /* Fade only. The global reduced-motion floor in `app/shell.css` neutralises it
+     without this file naming a second rule. */
+  animation: candidates-in var(--dur-fast) var(--ease);
+}
+
+@keyframes candidates-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 44px; /* R4 §Mobile's touch floor; 40 from the tablet breakpoint. */
+  padding-inline: var(--candidate-pad);
+  cursor: pointer;
+}
+
+/* Keyboard highlight and hover are the same state — the reader's pointer and
+   their ↓ key mean the same thing here. `--surface-inset` is the tint the rest
+   of the system already uses for it. */
+.option:hover,
+.active {
+  background: var(--surface-inset);
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--text-md);
+  color: var(--ink-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 종목코드 — mono, the same treatment every other handle in the product gets. */
+.code {
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+@media (min-width: 768px) {
+  .option {
+    min-height: 40px;
+  }
+}
