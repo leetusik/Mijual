@@ -1,11 +1,14 @@
 # Result — P5.S10: Next.js foundation
 
-**Status: `needs_operator`.** Everything in the plan is built, validated and landed. The
-one item that cannot be finished here is deliverable 6: the binary design assets are
-**not in this repository** (re-verified: nothing matching `*wordmark*`, `*ring*.png`,
-`*Pretendard*` or `*.woff2` exists anywhere in the checkout outside `.venv`/`.git`). The
-paths are wired, the directory and its README exist, and nothing was substituted,
-generated or placeheld. The export list is at the bottom of this file.
+**Status: `done`** (2026-08-22, second pass).
+
+The slice ran in two passes. The first built everything and stopped at `needs_operator` on
+deliverable 6: the five binary design assets live in the Claude Design project and cannot be
+created here. **The operator exported them, and this second pass — the plan's
+*Addendum — operator asset delivery* — copied them in byte-for-byte, re-verified the app and
+closed the gap.** Nothing was substituted, generated or placeheld at any point, in either
+pass. The delivery record is the last section of this file; the first pass's account below
+is unchanged except where it stated the files were missing.
 
 ## What exists now
 
@@ -61,9 +64,10 @@ own `foundations/` + `assets/` layout — so `fonts.css`'s `url("../assets/fonts
 resolves as `/assets/fonts/PretendardVariable.woff2` **with the relative path completely
 unchanged**. That is the whole path "mapping" the plan asked to record: there isn't one.
 
-Serving rather than importing is also what keeps the build honest while the binary is
-missing: a bundled `url()` pointing at a non-existent file fails the build outright,
-whereas a served one 404s and `font-display: swap` falls through Pretendard's own stack.
+Serving rather than importing is also what kept the build honest through the days the
+binary was missing: a bundled `url()` pointing at a non-existent file fails the build
+outright, whereas a served one 404s and `font-display: swap` falls through Pretendard's own
+stack. The font is in the repo now (last section) and the vendored file never changed.
 
 ### 3. One apply-time to-do against a landed nit (record untouched)
 
@@ -192,35 +196,114 @@ becoming an `ApiError`. Three cases, no fixtures, per the repo's terse-tests rul
    this config never emits. Next also normalised the file's formatting and set
    `jsx: react-jsx` on first build — its own doing, left as it wrote it.
 
+6. **Second pass (the addendum): three edits beyond the two files it names.** The addendum
+   says to update `public/assets/README.md` and the phase notes. Two other places carried the
+   same now-false sentence — `frontend/README.md`'s directory listing ("the binary design
+   assets — NOT in this repo") and the *provenance header* of the vendored
+   `public/foundations/fonts.css` ("PretendardVariable.woff2 is NOT in this repo yet") — and
+   both were corrected. The `fonts.css` edit touches **only the header this slice itself
+   wrote**; the vendored CSS body was re-diffed against
+   `rounds/01-brand-foundations/output/fonts.css` afterwards and is byte-identical, so the
+   landed record is still untouched. Third, `public/assets/fonts/.gitkeep` was deleted: it
+   existed to keep an empty directory in git and asserted the font was absent, and the
+   directory now holds the real font.
+
 Nothing else departs from the plan.
 
 ## Doc impact recorded in `phase.md`
 
 `frontend` (the foundation exists: stack, layout, the vendoring provenance and its
 read-only rule, the `.cosmos` shell + reduced-motion convention, the seven primitives and
-the two record readings, the CORS/origin answer, the binary-asset gap), `api` (the client's
+the two record readings, the CORS/origin answer, and the **binary assets now in the repo** —
+the doc's binary-asset Open Question is closed, with the white wordmark named), `api` (the client's
 view of the contract — nothing new on the wire), `qa` (the frontend's own check: `next
 build` + `tsc --noEmit` + 3 node:test cases; Python stays 113), `architecture` (the
 frontend/API seam is a same-origin rewrite, so the service needs no CORS), `operations`
-(`npm run dev` beside uvicorn in `compose.yaml`; the missing binaries are an operator step),
+(`npm run dev` beside uvicorn in `compose.yaml`; the binaries were an operator export step and
+it is done — replacing one means a new export from the design project, never a local edit),
 `decisions` (same-origin proxy over CORS; 「추정」 renders 추정; D+n is faint, never alert).
 
-## What the operator must export — deliverable 6
+## Deliverable 6 — the binaries landed (operator delivery, 2026-08-22)
 
-The files live in the Claude Design project **"Mijual Design System"** and cannot be
-created here. Drop each at the exact path below (`frontend/public/assets/README.md`
-carries the same table beside the slot):
+The operator exported all five files out of the Claude Design project **"Mijual Design
+System"** to `~/Downloads/handoff-output/brand-binaries/`. They were copied into the paths
+this slice had already wired, **unmodified** — not re-encoded, resized, optimised or
+metadata-stripped; each copy was `cmp`-verified against its source and is byte-identical:
 
-| file | what it is | drop at |
+| repo path | format | sha256 |
 |---|---|---|
-| `PretendardVariable.woff2` | Pretendard Variable, the Korean UI face (R1, self-hosted) | `frontend/public/assets/fonts/PretendardVariable.woff2` |
-| `mijual-wordmark-charcoal.png` | the English wordmark, brand charcoal `#1f2926` (R1 revision 3) | `frontend/public/assets/mijual-wordmark-charcoal.png` |
-| the reversed **white** wordmark | R1 revision 1 generated it from the same shape; the landed record names only the charcoal file, so export it under whatever name the design project gives it and `P5.S11` wires that name | `frontend/public/assets/` |
-| `mijual-logo-ring-charcoal.png` | ring logo (R2 — closes R1's missing symbol-mark gap) | `frontend/public/assets/mijual-logo-ring-charcoal.png` |
-| `mijual-logo-ring-white.png` | ring logo reversed — what the cosmos nav and footer use | `frontend/public/assets/mijual-logo-ring-white.png` |
+| `frontend/public/assets/fonts/PretendardVariable.woff2` | WOFF2 / TrueType, variable `wght 45–920`, 2,057,688 b | `9599f12f…d900b4` |
+| `frontend/public/assets/mijual-wordmark-charcoal.png` | PNG 1788×324 RGBA, 42,403 b | `2119682f…fb3d25c` |
+| `frontend/public/assets/mijual-wordmark-white.png` | PNG 1788×324 RGBA, 37,242 b | `8725c501…ca78807` |
+| `frontend/public/assets/mijual-logo-ring-charcoal.png` | PNG 2178×346 RGBA, 76,558 b | `454a07c0…852b68` |
+| `frontend/public/assets/mijual-logo-ring-white.png` | PNG 2178×346 RGBA, 64,605 b | `7bef551a…75ff4b` |
 
-There is **no SVG wordmark** and no favicon-scale mark beyond the ring logo. Until they
-arrive, Pretendard falls back down its own stack (`font-display: swap`, nothing blocks),
-IBM Plex Mono is unaffected because it comes from the CDN, and no image is substituted
-anywhere. `P5.S11` is the first slice that renders one, and it renders the real file or
-nothing.
+**The open filename question is answered: the reversed wordmark ships as
+`mijual-wordmark-white.png`** — the landed record described it without naming a file, and
+this is the exact name `P5.S11` wires. It is the same 1788×324 shape as the charcoal one;
+the white pair is what the cosmos-dark chrome uses, the charcoal pair is for light
+surfaces, and neither substitutes for the other. There is still **no SVG wordmark** and no
+favicon-scale mark beyond the ring logo.
+
+`fonts.css` needed **no edit**: its landed
+`url("../assets/fonts/PretendardVariable.woff2")` resolves from `/foundations/fonts.css` to
+`/assets/fonts/PretendardVariable.woff2`, which is exactly where the font now sits. The
+vendored file's body is still byte-identical to
+`rounds/01-brand-foundations/output/fonts.css` (re-diffed after this pass).
+
+### Re-verification (all commands run this pass)
+
+| command / check | result |
+|---|---|
+| `cd frontend && npm run build` | **pass** — compiled, 3 static pages prerendered; run again at the end so `next-env.d.ts` is back in its committed build form (`next dev` rewrites it to the `.next/dev/types/…` variant) |
+| `cd frontend && npm run typecheck` | **pass**, no output |
+| `cd frontend && npm run smoke` | **pass** — 3/3 in 91 ms |
+| `.venv/bin/python -m pytest` | **113 passed**, 2.60 s — baseline untouched, no Python file edited |
+| `python3 scripts/workflow.py validate` | **Workflow validation passed.** |
+| dev server: `GET /` | **200**, 19,552 b |
+| dev server: `GET /assets/fonts/PretendardVariable.woff2` | **200**, `font/woff2`, 2,057,688 b — served body sha256-**identical** to the file on disk |
+| dev server: the four PNGs at `/assets/…` | **200** each, `image/png`, 42,403 / 37,242 / 76,558 / 64,605 b |
+| dev server: `GET /foundations/fonts.css` | **200**, `text/css` |
+| **real browser** (headless Chrome 141 over CDP) | **Pretendard is loading, not falling back** — see below |
+| both servers | **stopped** (dev server and Chrome; verified with a follow-up curl returning `000`) |
+
+The font check is the one the addendum asks for, and it was done in a real browser rather
+than inferred from a 200:
+
+- `document.fonts` reports the face `Pretendard Variable` with `status: "loaded"` and
+  `weight: "45 920"`; `document.fonts.check('400 16px "Pretendard Variable"')` → `true`.
+- `CSS.getPlatformFontsForNode` — what Blink *actually drew with* — reports **Pretendard
+  Variable** for Korean prose: the `RightsChip` label 유상증자 신주인수권 (×10 glyphs) and the
+  `Citation` quote (×48). Before the export this text rendered in the `-apple-system`
+  fallback.
+- IBM Plex Mono is loaded at 400 and 600 from the CDN (unaffected by this delivery), and a
+  screenshot at 1280×1200 shows the cosmos-dark shell with every primitive rendering Korean
+  correctly — no tofu, no fallback metrics.
+
+**One finding, recorded for `P5.S19` and deliberately not acted on:** now that the real face
+is loaded it is visible that Korean glyphs inside a `--font-mono` element never reach
+Pretendard — the token stack `"IBM Plex Mono","SF Mono",Consolas,monospace` has no Hangul, so
+`StateBadge` 추후결정, the `LapseAlert` 소멸주의보 badge and the 근거 of the `[근거]` chip are
+drawn by the OS Korean face (macOS: Apple SD Gothic Neo), i.e. a different face per platform.
+Numerals are unaffected and Korean prose is correct. Both `tokens.css` and those components
+are as landed/approved, so this is a fidelity question for the real-browser slice — **not a
+licence to restyle a primitive or edit the vendored token file.**
+
+### Files touched in this pass
+
+- the five binaries (new, unmodified copies);
+- `frontend/public/assets/README.md` — rewritten from an export list into a delivery record
+  (what is here, formats, dimensions, sha256, the white-wordmark answer, and the rule that a
+  replacement is a new export rather than a local edit);
+- `frontend/public/assets/fonts/.gitkeep` — **deleted**: it existed only to keep an empty slot
+  in git and its text asserted the font "is not in this repo", which is now false; the
+  directory holds the real font;
+- `frontend/README.md` — the one line calling `assets/` "NOT in this repo";
+- `frontend/public/foundations/fonts.css` — **only the provenance-header line** that said the
+  woff2 was not in the repo yet (the vendored CSS body is untouched and still byte-identical
+  to the record);
+- `works/phases/active/P5/phase.md` — S10 findings notes 17–19 (the delivery table, the
+  browser verification, the mono/Hangul finding), the "binary assets are outside the repo"
+  gotcha, the S10 *Doc impact* entry, and the *Binary design assets* Open Question, now closed.
+
+`P5.S11` is unblocked: it renders the real files, at these exact names.

@@ -1212,9 +1212,10 @@ Python suite untouched at 113.**
    prepended. They are **served as static files, not bundled**, and the directory mirrors
    the design project's own `foundations/` + `assets/`, so `fonts.css`'s
    `url("../assets/fonts/PretendardVariable.woff2")` resolves correctly **unchanged**.
-   Serving also keeps the build green while the binary is missing (a bundled `url()` to a
-   non-existent file fails the build; a served one 404s and `font-display: swap` falls
-   through). **A change in either file is a design change.**
+   Serving also kept the build green through the days the binary was missing (a bundled
+   `url()` to a non-existent file fails the build; a served one 404s and `font-display: swap`
+   falls through) — the font is in the repo now (note 17) and the file was never touched
+   either way. **A change in either file is a design change.**
 3. **One apply-time to-do against a landed nit, record untouched.** `fonts.css` puts its
    `@import url(…IBM+Plex+Mono…)` **after** the `@font-face` block, where CSS is invalid and
    every browser drops it — so the mono face the design puts on *every numeral* would never
@@ -1300,24 +1301,60 @@ Python suite untouched at 113.**
     differs from training data and pointing at the docs bundled under
     `node_modules/next/dist/docs/` — deleting them only re-creates the change on the next
     `next dev`. **Read those bundled docs before writing Next code in S11–S17.**
-17. **⚠ The binary design assets are still missing, and `P5.S11` is blocked on them.**
-    Re-verified: nothing matching `*wordmark*`, `*ring*.png`, `*Pretendard*` or `*.woff2`
-    exists in the checkout. The slots, the paths and a README listing every expected file are
-    in `frontend/public/assets/`; **nothing was substituted, generated or placeheld**, and
-    `P5.S11` must render the real file or nothing. The export list is in this slice's
-    `result.md` and in that README. Until they land, Pretendard falls back down its own stack
-    (`font-display: swap`, nothing blocks) and IBM Plex Mono is unaffected (CDN).
+17. **The binary design assets landed — the operator exported all five on 2026-08-22, and
+    `P5.S11` is unblocked.** Copied in byte-for-byte (sha256 in
+    `frontend/public/assets/README.md`; not re-encoded, resized, optimised or stripped),
+    because they are the design project's own output and a diff here would be a design
+    change — replacing one means a **new export**, never a local edit:
+
+    | path | format |
+    |---|---|
+    | `frontend/public/assets/fonts/PretendardVariable.woff2` | WOFF2/TrueType, variable `wght 45–920`, 2,057,688 b |
+    | `frontend/public/assets/mijual-wordmark-charcoal.png` | PNG 1788×324 RGBA, 42,403 b |
+    | `frontend/public/assets/mijual-wordmark-white.png` | PNG 1788×324 RGBA, 37,242 b |
+    | `frontend/public/assets/mijual-logo-ring-charcoal.png` | PNG 2178×346 RGBA, 76,558 b |
+    | `frontend/public/assets/mijual-logo-ring-white.png` | PNG 2178×346 RGBA, 64,605 b |
+
+    **The white wordmark's filename is `mijual-wordmark-white.png`** — the record described
+    a reversed white version without naming its file, and this is the answer `P5.S11` wires;
+    the white pair is what the cosmos-dark chrome uses, the charcoal pair is for light
+    surfaces, and neither substitutes for the other. Nothing was substituted, generated or
+    placeheld at any point. `fonts.css` needed **no edit**: its landed
+    `url("../assets/fonts/PretendardVariable.woff2")` resolves as
+    `/assets/fonts/PretendardVariable.woff2`, exactly as vendored. There is still **no SVG
+    wordmark** and no favicon-scale mark beyond the ring logo.
+18. **Pretendard is verified loading in a real browser, not just 200-ing** (headless Chrome
+    over CDP, 2026-08-22): the face reports `status: "loaded"`,
+    `document.fonts.check('400 16px "Pretendard Variable"')` is `true`, and
+    `CSS.getPlatformFontsForNode` shows Blink drawing Korean prose with **Pretendard
+    Variable** (`RightsChip` 유상증자 신주인수권 ×10 glyphs, the `Citation` quote ×48) instead
+    of the `-apple-system` fallback. All five asset URLs return **200** with the exact byte
+    counts, and the served `woff2` body is sha256-identical to the file on disk.
+19. **⚠ Korean inside a `--font-mono` element does not reach Pretendard — a `P5.S19` check,
+    not a bug to fix here.** Now that the real face is loaded this is visible: the token
+    stack `--font-mono` is `"IBM Plex Mono","SF Mono",Consolas,monospace`, which has no
+    Hangul, so the Korean glyphs in the three primitives that use it — `StateBadge` 추후결정,
+    the `LapseAlert` 소멸주의보 badge, the `Citation` `[근거]` chip (brackets in Plex Mono,
+    근거 not) — are drawn by the **OS** Korean face (macOS: Apple SD Gothic Neo), i.e. a
+    different face per platform. Latin numerals are unaffected and Korean *prose* is
+    correct. Both the token file and those components are as landed/approved, so this is a
+    fidelity question for `P5.S19` against the real cards — **do not restyle a primitive or
+    edit the vendored `tokens.css` to "fix" it**.
 
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
   + the grounding pack are the *whole* source of truth an executor gets. Do not go looking for
   `landing/*.html` in this repo — it is not here, and its absence is not permission to improvise.
-- **Binary assets are outside the repo** (`frontend` v0002 Open Questions): the wordmark PNGs, the
-  ring logo (`mijual-logo-ring-{charcoal,white}.png`) and `PretendardVariable.woff2` live in the design
-  project. `fonts.css` self-hosts Pretendard from `../assets/fonts/PretendardVariable.woff2` and pulls
-  IBM Plex Mono from the Google Fonts CDN. **`P5.S10` cannot invent a wordmark** — expect an operator
-  co-work (`pending`) hand-off to export those files into the repo. There is **no SVG wordmark**.
+- **The binary assets are in the repo now, and they came from outside it** (`frontend` v0002 Open
+  Questions, closed by the operator's 2026-08-22 export): `frontend/public/assets/` holds
+  `mijual-wordmark-{charcoal,white}.png`, `mijual-logo-ring-{charcoal,white}.png` and
+  `fonts/PretendardVariable.woff2`, copied byte-for-byte and checksummed in that directory's README.
+  `fonts.css` self-hosts Pretendard from `../assets/fonts/PretendardVariable.woff2` and pulls IBM Plex
+  Mono from the Google Fonts CDN. **No slice may invent, generate, re-encode or placehold one of
+  these** — they are design-project output, so a replacement is a new export, never a local edit, and
+  a slice needing an asset that is not here renders the real file or nothing. There is still **no SVG
+  wordmark** and no favicon-scale mark beyond the ring logo.
 - **The exposure contract is not re-decidable.** `mijual.gates.exposure.event_exposure` is the single
   derivation; the API renders what it says. Event exposable iff not suppressed, not withdrawn, no
   blocking flag; field renderable iff `passed` or `tbd`.
@@ -1784,9 +1821,15 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   tag renders **추정** (the 「」 are the record's quoting notation; the border is the
   enclosure — unlike `[근거]`, whose brackets are literal), and a past **`D+n` is faint,
   never alert** (R3/R4/R5 all say so; R1 only said "unfilled"). The Open Question "binary
-  assets live in the design project" **stands, and is now blocking `P5.S11`**: the slots,
-  paths and an export list exist under `frontend/public/assets/`, and nothing is substituted
-  or placeheld. The doc's other two Open Questions narrow: **data fetching is a typed
+  assets live in the design project" is **closed**: the operator exported all five on
+  **2026-08-22** and they are in the repo byte-for-byte under `frontend/public/assets/` —
+  `fonts/PretendardVariable.woff2` (WOFF2, variable `wght 45–920`),
+  `mijual-wordmark-{charcoal,white}.png` (1788×324 RGBA) and
+  `mijual-logo-ring-{charcoal,white}.png` (2178×346 RGBA), checksummed in that directory's
+  README; Pretendard is verified **loading and drawing** in a real headless Chrome, and
+  nothing anywhere is substituted, generated or placeheld. The white wordmark's filename —
+  described but never named in the landed record — is **`mijual-wordmark-white.png`**, and
+  that is the name `P5.S11` wires. The doc's other two Open Questions narrow: **data fetching is a typed
   `fetch` wrapper** (`lib/api.ts`, no client library) and the **rendering strategy is per
   surface**, still open — but the API seam is decided (below). **`architecture`** — the
   frontend/API boundary is a **same-origin rewrite**: the browser talks only to the Next
@@ -1801,8 +1844,10 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   (http://127.0.0.1:3000) is documented in `compose.yaml`'s header beside the uvicorn line;
   like the API it is deliberately **not** a compose service, and P4 owns its deployment
   (repointing `MIJUAL_API_ORIGIN` is an env change, not a code change). Exporting the
-  wordmark/ring PNGs and `PretendardVariable.woff2` out of the Claude Design project is an
-  **operator step**, now concrete: five files, each with a target path. **`decisions`** —
+  wordmark/ring PNGs and `PretendardVariable.woff2` out of the Claude Design project was an
+  **operator step, and it is done** (2026-08-22) — the five files are checked in and
+  checksummed; because they are the design project's own output, replacing one means a new
+  export from there, never a local edit or a re-compression. **`decisions`** —
   three worth recording: the frontend reaches the API through a **same-origin proxy rather
   than CORS** (a cross-origin setup would have weakened a landed security decision to save a
   proxy line); the 「추정」 mark **renders 추정**; and a past `D+n` renders **faint, never in
@@ -1838,15 +1883,15 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   07:30/19:30 KST beat schedule. Operator may still choose another number.
 - **The "정정 이력" button label** — exited P3 unresolved and is carried here (`experience` v0002,
   `product` v0003); `P5.S13` needs it.
-- **Binary design assets** — *confirmed an operator co-work step, `P5.S10`, and now blocking
-  `P5.S11`*: re-verified that nothing matching `*wordmark*`, `*ring*.png`, `*Pretendard*` or
-  `*.woff2` exists anywhere in the checkout. `P5.S10` wired the paths, created the slots and
-  wrote the export list (five files with target paths) into
-  `frontend/public/assets/README.md` and its `result.md`, and **substituted nothing** — an
-  invented wordmark is a design violation; an empty slot with the path wired is honest. The
-  operator exports them out of "Mijual Design System". One detail needs their eye: the
-  landed record names only `assets/mijual-wordmark-charcoal.png` and *describes* a reversed
-  white version without naming its file, so `P5.S11` wires whatever name the export carries.
+- ~~**Binary design assets**~~ — **CLOSED 2026-08-22** by the operator's export (the co-work step
+  `P5.S10` stopped for). All five files are in the repo byte-for-byte under
+  `frontend/public/assets/` — `mijual-wordmark-{charcoal,white}.png` (1788×324),
+  `mijual-logo-ring-{charcoal,white}.png` (2178×346), `fonts/PretendardVariable.woff2`
+  (variable `wght 45–920`) — checksummed in that directory's README, with Pretendard verified
+  loading and drawing Korean prose in a real headless Chrome. **Nothing was ever substituted,
+  generated or placeheld.** The one detail that needed the operator's eye is answered: the white
+  wordmark ships as **`mijual-wordmark-white.png`**, and that is the name `P5.S11` wires.
+  `P5.S11` is unblocked.
 - **The concrete admin route** (`/ops` is the example, not the decision) and how the operator
   credential is issued — `security` calls these **deploy** decisions (P4); `P5.S9`/`P5.S17` need a
   working local value in the meantime.

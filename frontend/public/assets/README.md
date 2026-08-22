@@ -1,39 +1,61 @@
-# Binary design assets — expected here, **not in this repository**
+# Binary design assets — delivered by the operator, **exported from the design project**
 
-The wordmark PNGs, the ring logo PNGs and `PretendardVariable.woff2` live in the Claude
-Design project **"Mijual Design System"**, never in this repo. `docs/current/frontend.md`
-(Open Questions) and `P5`'s phase notes both record this, and `P5.S10` verified it again:
-nothing matching `*wordmark*`, `*ring*.png`, `*Pretendard*` or `*.woff2` exists anywhere in
-the checkout.
+These five files are the brand binaries from the Claude Design project **"Mijual Design
+System"**. They are not produced by any code in this repository and are **not
+regenerable here**: an invented wordmark is a design violation. They were exported by the
+operator on **2026-08-22** and copied in **byte-for-byte** by `P5.S10` — not re-encoded,
+not resized, not optimised, no metadata stripped.
 
-**They cannot be created here.** An invented wordmark is a design violation; an empty slot
-with the right path wired is honest. So the paths below are already referenced by the code
-and by `public/foundations/fonts.css`, and the files are simply absent until the operator
-exports them out of the design project into this directory.
+## What is here
 
-## What to export, and where to drop it
-
-| file | what it is | drop at |
+| file | what it is | format |
 |---|---|---|
-| `PretendardVariable.woff2` | Pretendard Variable, the Korean UI face (self-hosted; R1) | `frontend/public/assets/fonts/PretendardVariable.woff2` |
-| `mijual-wordmark-charcoal.png` | the English wordmark, brand charcoal `#1f2926` (R1 revision 3) | `frontend/public/assets/mijual-wordmark-charcoal.png` |
-| the reversed **white** wordmark | R1 revision 1 generated a reversed white version from the same shape; the landed record names only the charcoal file, so **export it under whatever name the design project gives it** and `P5.S11` wires that exact name | `frontend/public/assets/` |
-| `mijual-logo-ring-charcoal.png` | ring logo (R2 — closes R1's missing symbol-mark gap) | `frontend/public/assets/mijual-logo-ring-charcoal.png` |
-| `mijual-logo-ring-white.png` | ring logo, reversed — what the cosmos nav and footer use (R2) | `frontend/public/assets/mijual-logo-ring-white.png` |
+| `fonts/PretendardVariable.woff2` | Pretendard Variable, the Korean UI face — self-hosted per R1, referenced by `../foundations/fonts.css` | WOFF2 (TrueType outlines), variable `wght 45–920`, 2,057,688 b |
+| `mijual-wordmark-charcoal.png` | the English wordmark, brand charcoal `#1f2926` (R1 revision 3) | PNG 1788×324 RGBA, 42,403 b |
+| `mijual-wordmark-white.png` | the reversed **white** wordmark (R1 revision 1, same shape) — **this is the file the cosmos-dark surfaces use** | PNG 1788×324 RGBA, 37,242 b |
+| `mijual-logo-ring-charcoal.png` | ring logo (R2 — closes R1's missing symbol-mark gap) | PNG 2178×346 RGBA, 76,558 b |
+| `mijual-logo-ring-white.png` | ring logo, reversed — what the cosmos nav and footer use (R2) | PNG 2178×346 RGBA, 64,605 b |
 
-There is **no SVG wordmark** and no favicon-scale mark beyond the ring logo — R1 disclosed
-that gap and R2 closed only the ring half of it.
+`sha256`, so a later slice can prove a file was not re-encoded:
 
-## What happens while they are missing
+```
+9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4  fonts/PretendardVariable.woff2
+2119682f08054cc0fc83fbe57e82949c57b14ca4d02d767e8de924ad2fb3d25c  mijual-wordmark-charcoal.png
+8725c50119793e0bc16f9757a6c5dc69715dc20ce47f022f2eeb031d8ca78807  mijual-wordmark-white.png
+454a07c0d87d22461f24a38f8bbb496ada730787ec3b96cbf6cb5676c1852b68  mijual-logo-ring-charcoal.png
+7bef551a983b4e73ca4a56c07fd27bea3fc79ea3f241a545b609b8efe875ff4b  mijual-logo-ring-white.png
+```
 
-- `fonts.css`'s `@font-face` 404s and Pretendard falls back down its own stack
-  (`Pretendard` → `-apple-system` → `Malgun Gothic` → `sans-serif`). `font-display: swap`
-  means nothing blocks; the page renders in the fallback face.
-- IBM Plex Mono is unaffected — it comes from the Google Fonts CDN, not from here.
-- No image is substituted, generated or placeheld anywhere. `P5.S11` (global chrome) is the
-  slice that renders the ring wordmark, and it renders the real file or nothing.
+## The white wordmark's filename — the open question is closed
 
-`fonts.css` reaches the font as `../assets/fonts/PretendardVariable.woff2`, resolved from
-`/foundations/fonts.css` — i.e. exactly the relative path the landed record was written
-with, because this directory layout mirrors the design project's own `foundations/` +
-`assets/`. Nothing in that file was edited.
+The landed R1 record names only `assets/mijual-wordmark-charcoal.png` and *describes* a
+reversed white version without naming its file. The export answers it:
+**`mijual-wordmark-white.png`**, same 1788×324 shape as the charcoal one. `P5.S11` wires
+that exact name — no guessing, no second candidate.
+
+## Rules that still hold
+
+- **Do not edit, re-export, downscale or re-compress these files.** They are the design
+  project's own output; a diff here is a design change. Replacing one means a new export
+  from the design project, not a local edit.
+- **No image is substituted, generated or placeheld anywhere.** If a future asset (e.g. a
+  favicon-scale mark) is missing, the slice that needs it renders the real file or
+  nothing. There is still **no SVG wordmark** and no favicon-scale mark beyond the ring
+  logo — R1 disclosed that gap and R2 closed only the ring half of it.
+- Both wordmark variants and both ring variants ship: the charcoal pair is for light
+  surfaces, the white pair for the cosmos-dark chrome. Neither is dead weight and neither
+  substitutes for the other.
+
+## How the font is reached
+
+`../foundations/fonts.css` declares
+`src: url("../assets/fonts/PretendardVariable.woff2") format("woff2-variations")` and is
+served from `/foundations/fonts.css`, so the browser resolves
+`/assets/fonts/PretendardVariable.woff2` — the landed record's relative path, unedited,
+because this directory layout mirrors the design project's own `foundations/` + `assets/`.
+
+Verified in a real headless Chrome (`P5.S10`, 2026-08-22): the face reports
+`status: "loaded"`, `document.fonts.check('400 16px "Pretendard Variable"')` is `true`,
+and Blink draws Korean prose with the platform font **Pretendard Variable** — no longer
+the `-apple-system` fallback. IBM Plex Mono is unaffected; it still comes from the Google
+Fonts CDN.

@@ -47,7 +47,7 @@ lib/
   motion.ts         useReducedMotion() — the JS half of the reduced-motion floor
 public/
   foundations/      tokens.css + fonts.css, VENDORED VERBATIM from the landed record
-  assets/           the binary design assets — NOT in this repo; see assets/README.md
+  assets/           the brand binaries, exported from the design project — see assets/README.md
 ```
 
 ### The foundations are vendored, not authored

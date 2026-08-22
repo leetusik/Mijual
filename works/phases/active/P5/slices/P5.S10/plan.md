@@ -104,3 +104,16 @@ S11–S17, client conventions, asset status) and *Doc impact* (`frontend` — th
 foundation exists: stack, layout, vendoring provenance, primitives; `qa` — the
 frontend check). Structured verdict — **`needs_operator` with the export list if the
 binaries are absent**, else `done`. No commits, no status transitions.
+
+## Addendum — operator asset delivery (2026-08-22)
+
+The operator exported the five binaries to `~/Downloads/handoff-output/brand-binaries/`:
+`PretendardVariable.woff2` (WOFF2, 2,057,688 b), `mijual-wordmark-charcoal.png` +
+`mijual-wordmark-white.png` (1788×324 RGBA — the white one answers the unnamed-file
+question), `mijual-logo-ring-charcoal.png` + `mijual-logo-ring-white.png` (2178×346
+RGBA). Finish the slice: copy them (do not modify/re-encode) to the repo paths the
+slice wired (`frontend/public/assets/`, font under `assets/fonts/`), update
+`public/assets/README.md` and the phase notes with the delivered names/dimensions
+(S11 needs the white wordmark's filename), re-verify — `next build`, dev-server
+render showing the font actually loading (Pretendard no longer falling back) and an
+asset URL returning 200 — and return `done`.
