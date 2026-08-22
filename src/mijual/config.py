@@ -146,6 +146,17 @@ class Settings:
     #: :mod:`mijual.web.vocky` issues ``GET`` and nothing else.
     vocky_api_key: str | None = None
 
+    # -- the 운영자 연락처 (P6.S2, R6 §의견·문의). See ``mijual.agent.tools``.
+    #: ``MIJUAL_OPERATOR_CONTACT`` — the string ``get_contact()`` answers with.
+    #: R6 fixes it as a **deploy setting and nothing else**: 「운영자 문의: 연락처
+    #: 문자열은 배포 설정값 — 미정, 운영자 지정 (하드코딩 발명 금지)」, and `security`
+    #: records it as the one operator-identifying string the product will publish.
+    #: **Unset is the shipped state today** and the tool says so honestly rather
+    #: than inventing an address or a 「준비 중」 line — which is why there is no
+    #: default here and no ``require_`` accessor: nothing in the product may fail
+    #: for want of it, and nothing may substitute for it.
+    operator_contact: str | None = None
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -252,4 +263,7 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # external product and the panel says so rather than failing.
         vocky_api_base=pick("MIJUAL_VOCKY_API_BASE"),
         vocky_api_key=pick("MIJUAL_VOCKY_API_KEY"),
+        # 미정 until the operator supplies it (R6). Unset is a *state the product
+        # states*, never a hole something else fills in.
+        operator_contact=pick("MIJUAL_OPERATOR_CONTACT"),
     )

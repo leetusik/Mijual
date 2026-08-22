@@ -283,6 +283,95 @@ also the true build order.
       walks both tables' columns and foreign keys. **Do not add a foreign key to
       either table** (in either direction) — the test fails on any.
 
+19. **`P6.S2` landed the five tools — the shapes `P6.S3`/`P6.S4` build on, and the decisions taken.**
+    Package: **`src/mijual/agent/`** — `context.py` (`ToolContext`) · `tools.py` (the five +
+    `Citation`/`ToolResult`/`call_tool`) · `copy.py` (the Korean strings, with provenance) ·
+    `declarations.py` (`TOOL_SPECS` + `declarations()`). Importing it costs **no SDK, no
+    credential, no connection** (verified: `google` is absent from `sys.modules` after
+    `import mijual.agent`, and google-genai is not even installed in this venv).
+    - **`ToolResult` — what `P6.S3` consumes.** `tool` · `fact_row` (the signed mono 도구 행,
+      already composed — S5 renders it verbatim) · `payload` (JSON-ready verified-contract
+      values, fed back as the function response) · `citations: tuple[Citation, ...]` ·
+      `ok`. Plus `.evidence` (unique rcept_no, reading order) and `.quotes` (verbatim, unique)
+      — **exactly `record_turn`'s 근거 rcept_no 목록 and 인용 칩 원문**, so `P6.S4` persists a
+      turn by unioning the turn's results, never by re-reading the prose. `.response()` packs
+      `{ok, fact_row, result, citations}` if S3 wants one object. `Citation` =
+      `rcept_no` + optional `quote`/`span`/`field_key`, with **`quote is None` meaning the
+      API-tier citation** (R3: 접수번호 is the handle) — it is *a* citation, not a missing one.
+      `citations_in(payload)` walks any contract payload for the `rcept_no`(+`quote`,`span`)
+      convention, so a shape added later is cited automatically; multi-part figures (D4) yield
+      one citation per addend under the parent's filing number. **`ok=False` exists only where
+      the design signs a failure answer** (`save_feedback` → 재시도 행); 0건 is `ok=True`.
+    - **`ToolContext` — what `P6.S4` must construct** (frozen dataclass, per request):
+      `session` · `today` (KST day, fixed once for the whole turn) · `session_hash`
+      (`session_hash_or_new`) · `account=None` · `scope_rcept_no=None` · `settings=None`
+      (`.config()` loads on demand). **No tool takes an identity**: the model's declared
+      arguments are `query` / `rcept_no` / `text` / `email`, and `get_portfolio()` takes
+      *nothing* — asserted by a signature test, which is what makes "no client-supplied
+      holdings" structural. **`session` must be a write session when the turn may call
+      `save_feedback`**: `record_feedback` flushes and never commits, so the transport owns
+      the transaction (a write failure rolls back inside the tool so the turn's later reads
+      still work).
+    - **Settings field: `operator_contact` / `MIJUAL_OPERATOR_CONTACT`** (`mijual.config`),
+      no default and deliberately **no `require_` accessor** — nothing may fail for want of
+      it and nothing may substitute for it. Unset → `{"configured": false}` + the row
+      `운영자 연락처 → 미정`; the tool never emits an address or a 「준비 중」 line.
+    - **Search contract (Finding 15), decided here.** New public loaders in
+      `mijual.web.reads`: **`find_corps(session, q, limit=5)`** — the same normalization and
+      tier order as `resolve_corp` (종목코드 → 회사명 verbatim → normalized → prefix →
+      substring), first matching tier wins, but **several hits are returned** instead of
+      declining; and **`load_corp_events(session, codes, today=)`** — every **exposable**
+      event of those issuers as `EventView`s, batched through the same `_load_views` 조회 and
+      포트폴리오 use, gated twice (persisted verdict **and** derived contract). Past events are
+      kept (a lapsed ① is the subject of a 놓친 돈 question, unlike `load_stock`'s 진행 중인
+      권리). A **14-digit query is a filing number** and resolves to that single event.
+      Ranking = 범위 event first, then the board's own order (upcoming by D-day → open ② →
+      추후결정 → past); ordering only, no number derived. Listing is capped at
+      **`MAX_SEARCH_RESULTS = 8`** while the row states the true count, so a capped list is
+      visible rather than silent.
+    - **Decision — a 0건 filing-number search carries a machine `hint` (English, not copy)**
+      telling the model to call `get_event` first: a 철회된 event is *readable* (page, locked
+      notice, 정정사항 evidence) without being *searchable*, and answering 「찾지 못했습니다」
+      about it would be the weaker of two true statements. **S3's system instruction should
+      restate this**: a filing number → `get_event`. Note also that 0건 covers two situations —
+      no such company, and a company with no exposable event — and the signed sentence is true
+      of both because it speaks about 공시, not 회사.
+    - **`get_event` returns the detail page's payload, not a copy of it.** The assembly moved
+      from `routers/events.py` into **`mijual.web.reads.event_payload(session, detail)`**
+      (with `_add_offering` / `_withdrawal`); the route is now one line over it. So the agent
+      can quote nothing the page would not show, down to the key. A **withdrawn** event comes
+      back as a surface (`state: "withdrawn"`, `notice_ko`, `withdrawal`) and `get_event`
+      **prepends its 철회 citation explicitly** — the 정정 후 cell is the verbatim quote under
+      the key `after`, the one citation shape the generic walk cannot see. Live-verified on
+      썸에이지 `20260805000454`: quote `유상증자 철회`, span `[3445, 3461]`. Non-renderable →
+      `found: false` + the signed sentence; **the tool never refuses in prose** (S3 picks the
+      family).
+    - **Copy provenance — read `mijual/agent/copy.py` before writing any tool row.** Signed
+      and transcribed: the search format, the 0건 sentence, `내 포트폴리오 읽기 → 샘플
+      포트폴리오 · {n}종목 (구성 예시)`, `의견 저장 → 운영자 검토 대기열`, `구성 예시`,
+      `관제 현황판`. **Composed** (in the signed `{도구} → {결과}` grammar, from signed
+      vocabulary only, and flagged for `P6.S7`/`P6.REVIEW` to confirm): `이벤트 읽기 →
+      {회사} · {유형} · {rcept_no}`, `이벤트 읽기 → 0건`, `내 포트폴리오 읽기 → {n}종목`,
+      `의견 저장 → 재시도` (R6: 「실패 시에만 재시도 행」), `운영자 연락처 → {값}/미정`.
+      `RIGHTS_TOOL_LABEL_KO` = `① 유상증자` / **`② 전환사채`** (verbatim from R6's example) /
+      `③ 주식매수청구권` — note the deliberate difference from the reader-facing chips, which
+      carry **no ①②③ numbering** (R1 revision): this is the mono 도구 행 and R6's own example
+      numbers it. **No tool writes prose, ever.**
+    - **`declarations()` is the one untested path**: google-genai is not installed in this
+      venv, so `TOOL_SPECS` (plain data, pinned to `TOOL_NAMES` by test) is exercised and the
+      `types.Schema`/`FunctionDeclaration` construction is not. `P6.S3` verifies it on its
+      first live call; if the SDK wants `parameters_json_schema` instead, `TOOL_SPECS`
+      already holds JSON Schema and the change is one function.
+    - **Live corpus, zero spend** (2026-08-22, 12–52 ms per call):
+      `이벤트 검색 「대동기어」 → 2건 · ② 전환사채 · 20251016000315 · ① 유상증자 ·
+      20260715000369` (R6's example says 1건 — 대동기어 has since filed an ①; the row is the
+      corpus's own reading), `「계양」 → 1건` (unique prefix), `「삼성전」 → 0건` (ambiguous *and*
+      nothing exposable), 계양전기 `20260724000546` → 3 verbatim quotes + 발행가 확정 전 with
+      **no won amount anywhere**, sample 포트폴리오 → 4종목 / 15 quotes / 7 근거.
+    - **Suite 121 → 126 passed.** `tests/test_agent_tools.py` also carries the third AST scan
+      (`mijual.agent` imports no `mijual.dart`/`collect`/`extract`) — `P6.S4` extends the
+      scans, this one is cheap insurance meanwhile.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -360,3 +449,12 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   `create_app`'s default — so 「대화는 익명으로 저장됩니다」 moves from "trivially true, nothing
   stored" to implemented-and-asserted, and `/ops/conversations` · `/ops/sessions` · `/ops/feedback`
   serve real rows with **no route change**. Suite 118 → **121 passed**.
+- (`P6.S2`) **`architecture`** · **`backend`** (+ lines in **`api`**, **`operations`**,
+  **`security`**): the new top-level package **`mijual.agent`** exists (tools + declarations +
+  `ToolContext`) and reads persisted rows only — no spending module, no HTTP, no model call yet,
+  asserted by a third AST scan; `mijual.web.reads` gains **`event_payload`** (the detail card's
+  single assembly, now shared with the agent — `GET /events/{rcept_no}` is unchanged byte for
+  byte), **`find_corps`** (multi-candidate issuer lookup, unlike `resolve_corp`'s
+  unique-or-decline) and **`load_corp_events`** (exposable events as views); and
+  `Settings.operator_contact` / `MIJUAL_OPERATOR_CONTACT` is the new deploy setting the product
+  answers 미정 for until the operator supplies it. Suite 121 → **126 passed**.

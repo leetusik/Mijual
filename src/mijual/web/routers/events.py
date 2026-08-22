@@ -34,17 +34,10 @@ from typing import Any
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
-from mijual.gates.withdrawal import detect_withdrawal
-from mijual.present import (
-    convertible_view,
-    issuer_disagreement,
-    lapse_result,
-    offering_inputs,
-)
 from mijual.web import clock
 from mijual.web.deps import DbSession
 from mijual.web.errors import NotFound
-from mijual.web.reads import Detail, load_detail, resolve_event
+from mijual.web.reads import Detail, event_payload, load_detail, resolve_event
 
 router = APIRouter(tags=["events"])
 
@@ -62,39 +55,13 @@ def _detail(db: Session, rcept_no: str) -> Detail:
 
 @router.get("/events/{rcept_no}", summary="One event, as its detail page reads it")
 def event(db: DbSession, rcept_no: str) -> dict[str, Any]:
-    detail = _detail(db, rcept_no)
-    payload = detail.view.payload()
+    """The card, assembled by :func:`mijual.web.reads.event_payload`.
 
-    if detail.view.state == "withdrawn":
-        # 철회 replaces the body: "no fields, no countdown, no old dates" (R3).
-        # The exposure contract already empties the fields and the countdown;
-        # the money block, the ② fact strip and the 정정 teaser would put the old
-        # card back one key at a time, so a withdrawn event gets its notice and
-        # its evidence and nothing else.
-        evidence = _withdrawal(db, detail)
-        if evidence:
-            payload["withdrawal"] = evidence
-        return payload
-
-    story = detail.story
-    payload["corrections"] = {
-        "corrected": story.corrected,
-        "versions": len(story.versions),
-    }
-    # The 정정 strip's teaser: the summary and the schedule sentence, verbatim.
-    # The rail itself is one more request away — it is a separate view.
-    for key in ("summary", "schedule_impact"):
-        value = getattr(story, key)
-        if value is not None:
-            payload["corrections"][key] = value
-
-    if detail.view.rights_type == "R1":
-        _add_offering(payload, detail)
-    if detail.view.rights_type == "R2":
-        strip = convertible_view(detail.facts)
-        if strip is not None:
-            payload["convertible"] = strip.payload()
-    return payload
+    The assembly moved into the read layer in `P6.S2` because a second caller
+    arrived: the agent's ``get_event`` tool returns this exact payload, so the
+    model may quote nothing this page would not show.
+    """
+    return event_payload(db, _detail(db, rcept_no))
 
 
 @router.get(
@@ -106,53 +73,3 @@ def corrections(db: DbSession, rcept_no: str) -> dict[str, Any]:
     payload["event_id"] = detail.view.event_id
     payload["rcept_no_current"] = detail.view.rcept_no
     return payload
-
-
-def _add_offering(payload: dict[str, Any], detail: Detail) -> None:
-    """①'s money: the 환산 블록's inputs, and the 청약 결과 once it exists.
-
-    Both come from what the worker precomputed — the request path cannot build
-    either (:mod:`mijual.estimate` imports the three spending modules). An
-    offering with no stored inputs simply has no ``offering`` key: absent, never
-    an empty object, and never a zero.
-    """
-    if detail.offering is not None:
-        payload["offering"] = offering_inputs(detail.exposure, detail.offering).payload()
-    report = detail.performance
-    if report is None:
-        return
-    facts = report.facts if isinstance(report.facts, dict) else {}
-    if isinstance(report.lapse, dict):
-        payload["lapse_result"] = lapse_result(report.lapse, facts=facts).payload()
-    # 발행사 기재 불일치: two readings, both cited, no verdict. It exists only
-    # when the filing genuinely disagrees with itself.
-    disagreement = issuer_disagreement(facts, rcept_no=report.rcept_no) if facts else None
-    if disagreement is not None:
-        payload["issuer_disagreement"] = disagreement.payload()
-
-
-def _withdrawal(db: Session, detail: Detail) -> dict[str, Any]:
-    """The 철회 evidence: the 정정사항 row that retracted the decision.
-
-    R3's 철회 page is the locked notice plus *one sentence naming the evidence and
-    a Citation with the withdrawal quote* — so the payload carries the row's own
-    words (항목 · 정정 전 → 정정 후) and the span they were read at, and the
-    surface writes the sentence. ``notice_ko`` is already on the view.
-
-    Re-detected on the request rather than parsed out of the stored operator note:
-    the note is one prose line for a person, and a Citation needs the parts. This
-    reads stored bytes only — no OpenDART request, no model call — and a 철회 page
-    is 11 events in the whole corpus.
-    """
-    found = detect_withdrawal(db, detail.event)
-    if found is None:
-        return {}
-    out: dict[str, Any] = {
-        "rcept_no": found.rcept_no,
-        "item": found.item,
-        "before": found.before,
-        "after": found.after,
-    }
-    if found.span is not None:
-        out["span"] = list(found.span)
-    return out

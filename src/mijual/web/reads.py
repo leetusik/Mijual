@@ -66,6 +66,7 @@ from mijual.db.models import (
 )
 from mijual.db.repository import current_document, current_versions
 from mijual.gates.exposure import EventExposure, exposure_of
+from mijual.gates.withdrawal import detect_withdrawal
 from mijual.present import (
     BoardRow,
     BoardSummary,
@@ -94,7 +95,10 @@ __all__ = [
     "HoldingEntry",
     "corpus_as_of",
     "countdown_target",
+    "event_payload",
+    "find_corps",
     "load_board",
+    "load_corp_events",
     "load_detail",
     "load_portfolio",
     "load_stock",
@@ -527,6 +531,105 @@ def load_detail(session: Session, event: Event, *, today: date) -> Detail:
     )
 
 
+def event_payload(session: Session, detail: Detail) -> dict[str, Any]:
+    """One event's whole **verification contract**, as JSON. One assembly, two callers.
+
+    ``GET /events/{rcept_no}`` serves this and ``mijual.agent``'s ``get_event``
+    tool returns it (`P6.S2`), which is the point of it living here rather than in
+    the router: the agent may quote nothing the detail page would not show, and
+    two assemblies of "one event" would eventually differ by a key — the exact
+    failure mode :func:`_load_views` exists to prevent one level down.
+
+    Composition only; every value arrives from :mod:`mijual.present`, and the two
+    per-state rules are the contract's:
+
+    * **철회 replaces the body** — "no fields, no countdown, no old dates" (R3).
+      The exposure contract already empties the fields and the countdown; the
+      money block, the ② fact strip and the 정정 teaser would put the old card back
+      one key at a time, so a withdrawn event gets its notice and its evidence and
+      nothing else. R6 §거절 needs exactly that evidence: 철회 is a *verified state
+      fact* and carries its own 근거 칩.
+    * everything else gets the 정정 teaser, ①'s money and ②'s fact strip.
+    """
+    payload = detail.view.payload()
+
+    if detail.view.state == "withdrawn":
+        evidence = _withdrawal(session, detail)
+        if evidence:
+            payload["withdrawal"] = evidence
+        return payload
+
+    story = detail.story
+    payload["corrections"] = {
+        "corrected": story.corrected,
+        "versions": len(story.versions),
+    }
+    # The 정정 strip's teaser: the summary and the schedule sentence, verbatim.
+    # The rail itself is one more request away — it is a separate view.
+    for key in ("summary", "schedule_impact"):
+        value = getattr(story, key)
+        if value is not None:
+            payload["corrections"][key] = value
+
+    if detail.view.rights_type == "R1":
+        _add_offering(payload, detail)
+    if detail.view.rights_type == "R2":
+        strip = convertible_view(detail.facts)
+        if strip is not None:
+            payload["convertible"] = strip.payload()
+    return payload
+
+
+def _add_offering(payload: dict[str, Any], detail: Detail) -> None:
+    """①'s money: the 환산 블록's inputs, and the 청약 결과 once it exists.
+
+    Both come from what the worker precomputed — the request path cannot build
+    either (:mod:`mijual.estimate` imports the three spending modules). An
+    offering with no stored inputs simply has no ``offering`` key: absent, never
+    an empty object, and never a zero.
+    """
+    if detail.offering is not None:
+        payload["offering"] = offering_inputs(detail.exposure, detail.offering).payload()
+    report = detail.performance
+    if report is None:
+        return
+    facts = report.facts if isinstance(report.facts, Mapping) else {}
+    if isinstance(report.lapse, Mapping):
+        payload["lapse_result"] = lapse_result(report.lapse, facts=facts).payload()
+    # 발행사 기재 불일치: two readings, both cited, no verdict. It exists only
+    # when the filing genuinely disagrees with itself.
+    disagreement = issuer_disagreement(facts, rcept_no=report.rcept_no) if facts else None
+    if disagreement is not None:
+        payload["issuer_disagreement"] = disagreement.payload()
+
+
+def _withdrawal(session: Session, detail: Detail) -> dict[str, Any]:
+    """The 철회 evidence: the 정정사항 row that retracted the decision.
+
+    R3's 철회 page is the locked notice plus *one sentence naming the evidence and
+    a Citation with the withdrawal quote* — so the payload carries the row's own
+    words (항목 · 정정 전 → 정정 후) and the span they were read at, and the
+    surface writes the sentence. ``notice_ko`` is already on the view.
+
+    Re-detected on the request rather than parsed out of the stored operator note:
+    the note is one prose line for a person, and a Citation needs the parts. This
+    reads stored bytes only — no OpenDART request, no model call — and a 철회 page
+    is 11 events in the whole corpus.
+    """
+    found = detect_withdrawal(session, detail.event)
+    if found is None:
+        return {}
+    out: dict[str, Any] = {
+        "rcept_no": found.rcept_no,
+        "item": found.item,
+        "before": found.before,
+        "after": found.after,
+    }
+    if found.span is not None:
+        out["span"] = list(found.span)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # one 종목 (P5.S4)
 # ---------------------------------------------------------------------------
@@ -621,6 +724,54 @@ def resolve_corp(session: Session, query: str) -> Corp | None:
     return None
 
 
+def find_corps(session: Session, query: str, *, limit: int = 5) -> list[Corp]:
+    """Issuers a search text may mean — **several are legitimate**, unlike
+    :func:`resolve_corp`.
+
+    R4's resolution is *unique-or-decline* because opening the wrong company's
+    놓친 돈 page is the one defect class this product cannot ship. R6's
+    ``search_events`` tool is a different contract — 「이벤트 목록/단건」 — so
+    ambiguity here is a **list**, not a miss: the agent may say "두 곳이 있습니다"
+    and name both, which is the honest answer 조회 has no surface for
+    (`P6` phase note, Finding 15).
+
+    Same normalization and the same tier order as :func:`resolve_corp`, so the two
+    can never disagree about *what matches*, only about how many matches are
+    allowed: 종목코드 → 회사명 verbatim → normalized → normalized prefix →
+    normalized substring. The **first tier that matches wins** (a company whose
+    whole name was typed is that company, even though 13 corp names are a strict
+    prefix of another's), results are ordered by name for a stable answer, and
+    ``limit`` caps the list because a two-character query matches dozens.
+    """
+    text = (query or "").strip()
+    if not text:
+        return []
+
+    digits = text.replace("-", "")
+    if digits.isdigit() and len(digits) <= 6:
+        hit = session.scalars(select(Corp).where(Corp.stock_code == digits.zfill(6))).first()
+        if hit is not None:
+            return [hit]
+
+    key = _name_key(text)
+    if not key:
+        return []
+    names = session.execute(select(Corp.corp_code, Corp.corp_name)).all()
+    for match in (
+        [code for code, name in names if (name or "") == text],
+        [code for code, name in names if _name_key(name) == key],
+        [code for code, name in names if _name_key(name).startswith(key)],
+        [code for code, name in names if key in _name_key(name)],
+    ):
+        if match:
+            found = list(
+                session.scalars(select(Corp).where(Corp.corp_code.in_(tuple(match)))).all()
+            )
+            found.sort(key=lambda corp: (corp.corp_name or "", corp.corp_code))
+            return found[:limit]
+    return []
+
+
 def _events_for_corps(session: Session, corp_codes: Sequence[str]) -> list[Event]:
     """Every event of a set of issuers, in one query. Shared by 조회 and 포트폴리오."""
     if not corp_codes:
@@ -674,6 +825,40 @@ def _load_views(session: Session, events: Sequence[Event], *, today: date) -> _L
         exposures[event.id] = exposure
         views[event.id] = event_view(exposure, facts=facts.get(event.id), today=today)
     return _Loaded(exposures=exposures, views=views, facts=facts, offerings=offerings)
+
+
+def load_corp_events(
+    session: Session, corp_codes: Sequence[str], *, today: date
+) -> list[EventView]:
+    """Every **exposable** event of a set of issuers, as views. `P6.S2`'s search.
+
+    The listing behind ``search_events``: batched exactly like 조회 and 포트폴리오
+    (:func:`_load_views`), so a search result is the same reading of an event the
+    board and the detail page give — and gated the same way twice over, by the
+    persisted verdict *and* by the derived contract, because a gate run that has
+    not landed yet must not surface a row (:func:`load_board`'s rule).
+
+    A non-exposable event is not a search result (Finding 15): 철회·suppressed·
+    flagged events are absent here, which is what keeps 「게이트 실패 데이터로 답변」
+    structurally impossible on this path. A withdrawn event is still *reachable*
+    by filing number through :func:`resolve_event` — that is how the agent tells a
+    reader 「이 유상증자는 철회되었습니다」 with its evidence instead of nothing.
+
+    Unlike :func:`load_stock`'s 진행 중인 권리 this keeps the **past** ones too: a
+    lapsed ① is the subject of a 놓친 돈 question, and a search that could not find
+    it would answer 「찾지 못했습니다」 about an event the product renders.
+    """
+    events = [
+        event
+        for event in _events_for_corps(session, corp_codes)
+        if event.exposure_state == "exposable"
+    ]
+    loaded = _load_views(session, events, today=today)
+    return [
+        view
+        for view in (loaded.views[event.id] for event in events)
+        if view.state == "exposable"
+    ]
 
 
 def _rights_row(
