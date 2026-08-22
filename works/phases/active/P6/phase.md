@@ -958,6 +958,49 @@ also the true build order.
       would read `1500주`). Widening the predicate means naming keys by hand, which is
       the drift this seam exists to avoid.
 
+27. **`P6.REVIEW` re-review (2026-08-23) — verdict `pass` again. What was verified in the code, the
+    six versions that closed the F1 addendum, and one lesson for the next reopened phase.**
+    Full record in `slices/P6.REVIEW/result.md` §Re-review. Validation re-run fresh: **pytest 138
+    passed** (and **again after the `decisions` rewrite**), frontend `build` · `typecheck` ·
+    `smoke 15/15` green, `workflow validate` green, and the four AST boundary scans + the anonymity
+    scan run **by name**.
+    - **`P6.F1` was checked against the code, not accepted from note 26.** The membership
+      (never-compute) check and the verbatim-quote check both run **before** `figures.regroup` in
+      `citations._release`, so an invented figure is still blocked in the form the model wrote it;
+      `self.released` and the `TextEvent` take the *same* post-respelling string, so the 대화 로그
+      cannot disagree with the screen; `CitationGate.quotes` is built from `Citation`s and never
+      reads prose, so `TurnEnd.quotes` is untouched by construction; and a `verbatim_value` sentence
+      (a tool's own locked string) skips the respelling entirely.
+    - **The exclusions are structural, and the contract proves it.**
+      `present.event.Countdown.payload()` and `values.Quote.payload()` carry **no `value`+`estimated`
+      pair**, so `dday`/`days`/`window`/`span` can never enter the grouping table — the predicate
+      does the work, not a key list. Measured directly: `접수번호 20260724000546는 2026년
+      공시입니다` and `공고일은 2026-08-26이고 D-3 남았습니다` come back **identical**, while
+      `원문은 「예정발행가액(4,985원 -> 3200원)」이고 발행가는 3200원입니다` keeps the span byte-exact
+      and respells only the digits outside it. `citations._QUOTED` **is** `figures.QUOTED_SPAN` (one
+      object) — the spans the gate verifies are the spans the grouping refuses to touch.
+    - **The HTTP API did not move.** `with_display` copies, and it is called only from
+      `ToolResult.__post_init__`; `web/routers/events.py` and `web/reads.py` never mention it. So
+      `GET /events/{rcept_no}` gains no `value_display` — the transform is the **agent's** tool
+      contract. That is why `api` was **folded into `backend`** rather than versioned.
+    - **⚠ Lesson worth more than the fix: a post-review fix's Doc impact line must be re-derived
+      from the diff, not from the fix's own blast radius.** F1's addendum named `backend` (+ `api`,
+      `experience`), but the change left **`product`**, **`decisions`**, **`qa`** and
+      **`architecture`** asserting things that were now false — two of them carried the raw-numeral
+      behaviour as a live catalogue item or a stated reading, two carried the **137** baseline. Six
+      versions were created to close it (below); the first pass's eleven were not re-created and
+      `docs/current/*` was never hand-edited.
+    - **Findings carried forward unchanged:** 2/5/6 accepted as shipped; **1** (「필드로 이동」) and
+      **3** stay **open operator decisions, catalogued, not defects** — finding 1 is still the one
+      `- **Open…` bullet this phase puts on the ops 가동 전 미결 panel. Finding **4 is closed** and is
+      now `decisions` **D-23**.
+    - **⚠ Ops 개요 open-bullet re-check (`P5.REVIEW` note 8), done by rendering:** **3 bullets,
+      unchanged** (D-4 · D-22 · 「필드로 이동」), parser reporting `version: v0007`. Unchanged by
+      design — the numeral item was never an `Open` bullet and D-23 records a *closed* decision.
+    - **Hygiene note for the orchestrator** (not a defect, and carried from note 25): `phase.json`
+      reads `status: "in_progress"` with every slice `done` except `P6.REVIEW`
+      (`changes_requested`); `review-phase P6 --verdict pass` transitions both.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -1140,3 +1183,20 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   (separators were already normalized on both sides); and no signed format, no schema
   and no frontend file changed. The stored 대화 로그 answer carries the reader's form by
   construction. Suite 137 → **138 passed**.
+- (`P6.REVIEW` re-review) **consolidated — the list is closed again.** The F1 addendum reached
+  further than it named, so **six** versions were created (the first pass's eleven were **not**
+  re-created): **`backend` v0004** (`figures.py`, `value_display` on every `ToolResult` payload, and
+  the release-time respelling with its ordering, its quoted-span and tool-copy exemptions, and the
+  `holdings[].shares` limit) · **`decisions` v0007** (**D-23**, operator-attributable and dated
+  2026-08-23 with the verbatim disposition; the P6 reading it reverses struck in place and listed
+  under *Superseded Decisions*) · **`experience` v0005** (the raw-numeral catalogue item **closed**,
+  plus one positive line in the AI-journey anatomy) · **`product` v0006** (two operator-facing agent
+  calls → **one**) · **`qa` v0005** (**137 → 138** in all three places + what the new scripted case
+  covers) · **`architecture` v0005** (baseline 138; `figures` on the module-map and stack rows, both
+  saying *presentation, not derivation*). **`api` was deliberately folded into `backend`, not
+  versioned**: no frame, field, header, status or payload changed and `GET /events/{rcept_no}` is
+  byte-identical, so nothing in `api` became false — its 「no endpoint re-derives a number」 sentence
+  is strengthened, not contradicted. `docs/current/*` was regenerated by `rebuild-docs`, never
+  hand-edited, and `pytest` was re-run afterwards (**138 passed**) because the ops 개요 tab parses
+  `docs/current/decisions.md`; open-bullet count **3, unchanged**, verified by rendering the panel's
+  own reader.

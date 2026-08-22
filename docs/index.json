@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built",
+      "latest": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -43,11 +43,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the AI 질문 agent exists — an autonomous citation-forced agent on every surface, unlimited and anonymous, refusing rather than guessing; the whole designed product is now built",
           "previous": "v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed"
+        },
+        {
+          "id": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open",
+          "path": "docs/versions/product/v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open.md",
+          "created_at": "2026-08-23T02:12:17+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: the agent speaks the product's numerals — the raw-numeral operator call closed, one agent-surface call (a refusal's footer) still open",
+          "previous": "v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built"
         }
       ]
     },
     "experience": {
-      "latest": "v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy",
+      "latest": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -81,11 +89,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the AI 질문 journey as built and browser-verified — launcher, widget, dedicated page, mobile page, question strip, the four SSE states and the refusal anatomy",
           "previous": "v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser"
+        },
+        {
+          "id": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact",
+          "path": "docs/versions/experience/v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact.md",
+          "created_at": "2026-08-23T02:11:42+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: the agent's answers print the product's numerals (3,200원) — the raw-numeral catalogue item closed by operator disposition, verbatim quotes still byte-exact",
+          "previous": "v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy"
         }
       ]
     },
     "architecture": {
-      "latest": "v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables",
+      "latest": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -119,6 +135,14 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the mijual.agent package, the re-aimed request-path boundary (no OpenDART anywhere; the model only through mijual.agent), the first streaming endpoint, and the anonymous conversation tables",
           "previous": "v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam"
+        },
+        {
+          "id": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138",
+          "path": "docs/versions/architecture/v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138.md",
+          "created_at": "2026-08-23T02:13:54+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: the agent package gains figures.py (presentation-only thousands grouping) and the suite baseline moves to 138",
+          "previous": "v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables"
         }
       ]
     },
@@ -161,7 +185,7 @@
       ]
     },
     "backend": {
-      "latest": "v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter",
+      "latest": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -187,6 +211,14 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the mijual.agent package (autonomous loop, five tools, citation gate, its own model client), the SSE ask transport with its BackgroundTask commit, anonymous conversation storage, and the identity-free rate limiter",
           "previous": "v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader"
+        },
+        {
+          "id": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans",
+          "path": "docs/versions/backend/v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans.md",
+          "created_at": "2026-08-23T02:11:09+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: agent prose speaks the product's numerals — mijual.agent.figures, value_display beside every contract figure, and the citation gate's release-time respelling outside verbatim spans",
+          "previous": "v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter"
         }
       ]
     },
@@ -359,7 +391,7 @@
       ]
     },
     "qa": {
-      "latest": "v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method",
+      "latest": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -393,11 +425,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the suite at 137, four structural boundary scans plus the anonymity scan, agent verification against a scripted model at zero spend, and the live-agent browser pass as a measured method",
           "previous": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list"
+        },
+        {
+          "id": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched",
+          "path": "docs/versions/qa/v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched.md",
+          "created_at": "2026-08-23T02:13:29+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: the suite at 138 — one scripted turn covering the whole figure-grouping rule (grouped in prose, verbatim inside a span, identifiers and dates untouched)",
+          "previous": "v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method"
         }
       ]
     },
     "decisions": {
-      "latest": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset",
+      "latest": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -447,9 +487,17 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply-phase decisions: D-20 agent not chain (operator), D-21 the request-path boundary re-aimed, D-22 the operator contact honest-unset",
           "previous": "v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed"
+        },
+        {
+          "id": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded",
+          "path": "docs/versions/decisions/v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded.md",
+          "created_at": "2026-08-23T02:12:46+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6.F1: D-23 — agent prose prints the product's numerals (3,200원), operator disposition 2026-08-23; the P6 reading that the agent quotes numerals as-given is superseded",
+          "previous": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-22T23:03:40+09:00"
+  "last_rebuilt_at": "2026-08-23T02:14:29+09:00"
 }

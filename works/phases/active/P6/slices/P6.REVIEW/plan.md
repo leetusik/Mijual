@@ -1,5 +1,33 @@
 # Plan — P6.REVIEW: phase review of P6 (Apply — AI 질문 agent)
 
+## Re-review addendum (2026-08-23)
+
+The first pass (verdict `pass`, 11 doc versions consolidated) was reopened by
+an **operator disposition**, not a defect: finding 4 (raw numerals) became
+`P6.F1`, now `done`. This pass is a **focused re-review**:
+
+1. Verify `P6.F1` against its `plan.md`/`result.md` and phase.md note 26 —
+   grouped figures in released prose, verbatim spans/quotes byte-unchanged,
+   never-compute membership intact, identifiers/dates never grouped, the
+   honest limit (non-Figure bare ints) recorded.
+2. Re-run the validation suite fresh (pytest — expect **138**; frontend
+   build/typecheck/smoke — F1 touched no frontend file but confirm green;
+   `workflow.py validate`).
+3. Confirm the first pass's judgment still stands (no regression to the
+   consolidated docs' truth) and consolidate **only the F1 Doc impact
+   addendum** into new doc versions where durable truth moved (`backend`
+   v-next; judge whether the `api`/`experience` lines warrant versions or
+   ride the backend note — small deltas may be folded into one version each).
+   Do NOT re-create the 11 existing versions.
+4. Operator dispositions of the other findings (recorded in the reopen note
+   and phase.md): 2/5/6 accepted as shipped/catalogued; 1 and 3 remain open
+   operator decisions — they stay catalogued, not defects.
+
+Everything below is the original plan, already executed on the first pass —
+context for judgment, not work to redo.
+
+---
+
 ## Goal
 
 Review the whole phase against its objective, `intent.md` (including the

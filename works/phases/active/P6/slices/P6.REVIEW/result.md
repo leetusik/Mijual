@@ -250,3 +250,148 @@ Also per the plan: **no commit, no `review-phase`, no `finish-slice`, no status 
 orchestrator records the verdict. `python3 scripts/workflow.py validate` was run last and passed.
 
 **explain:** not written — run `/explain` for this phase.
+
+---
+
+# Re-review — 2026-08-23 · verdict `pass`
+
+The first pass above is unchanged and stands. The phase was reopened by an **operator disposition**,
+not a defect: finding 4 (raw numerals) became `P6.F1`, now `done`. This is the focused re-review the
+addendum in `plan.md` asks for.
+
+## R1. Validation — re-run fresh, all green
+
+| command | outcome |
+|---|---|
+| `.venv/bin/python -m pytest` | **138 passed**, 1 known warning, ~3.0 s (baseline 137 + F1's one case) |
+| `cd frontend && npm run build` | green — 16 routes, `/ask` still prerendered static |
+| `cd frontend && npm run typecheck` | `tsc --noEmit` clean |
+| `cd frontend && npm run smoke` | **15/15** `node:test` cases, ~179 ms |
+| `python3 scripts/workflow.py validate` | `Workflow validation passed.` |
+| `.venv/bin/python -m pytest` **again, after the doc rewrite** | **138 passed** — re-run because the ops 개요 tab parses `docs/current/decisions.md` (`P5.REVIEW` note 8) |
+
+`P6.F1` touched **no frontend file** (verified from the commit's own stat, not from its notes), so
+the frontend suite is a confirmation rather than a coverage claim. The four AST boundary scans and
+the anonymity scan were also run **by name** and all five pass:
+`test_no_request_path_module_imports_a_spending_module` ·
+`test_only_the_vocky_module_may_speak_http` ·
+`test_the_model_is_reached_only_through_the_agent_package` · the `mijual.agent` spending-module scan ·
+`test_no_conversation_column_can_name_a_person_and_none_joins_an_account`.
+
+## R2. `P6.F1` verified — in the code, not accepted from note 26
+
+Every claim below was checked directly. `git show --stat bba1845` bounds the change to
+`agent/{figures,tools,citations,instructions}.py` + two test files + workspace state — **no frontend
+file, no schema, no route, no `docs/`**.
+
+1. **Grouped figures are actually released.** Exercised `figures.grouped` / `figures.regroup`
+   directly: `3200 → 3,200`, `26900000000 → 26,900,000,000`, `16907605 → 16,907,605`; and
+   `예정발행가액은 3200원입니다.` → `…3,200원입니다.`
+2. **Verbatim spans are byte-unchanged, structurally.** `regroup` collects `QUOTED_SPAN` matches
+   first and returns any token inside one untouched. Measured on the exact adversarial case:
+   `원문은 「예정발행가액(4,985원 -> 3200원)」이고 발행가는 3200원입니다.` → the span survives
+   byte-for-byte while **only** the digits outside it are respelled. The same holds for `"…"` spans.
+   `citations._QUOTED` **is** `figures.QUOTED_SPAN` (one object, not two copies), so the spans the
+   gate verifies are exactly the spans the grouping refuses to touch — the strongest form of that
+   promise. The `+`→`*` relaxation in the shared pattern is behaviour-neutral for the gate:
+   `_quoted_spans` filters falsy groups.
+3. **`TurnEnd.quotes` is untouched.** `CitationGate.quotes` is built from `self.chips`, i.e. from the
+   tools' own `Citation` objects — it never reads released prose, so no respelling can reach it.
+4. **Never-compute is intact and runs on raw text.** Read `citations._release` end to end: the
+   `untraceable_number` membership check and the `reconstructed_quote` check both execute **before**
+   `figures.regroup`. An invented figure is therefore still blocked in the form the model wrote it.
+   `_decimal` already stripped separators on both sides, so grouping can neither add a member nor
+   remove one — and a sentence released because it *is* a tool's own string (`verbatim_value`) skips
+   the respelling entirely, so locked copy stays byte-exact.
+5. **Identifiers, dates, years, spans, D-days are structurally excluded — verified against the
+   contract, not the note.** `present.event.Countdown.payload()` emits `{label_ko, date, dday, days,
+   window, window_state, reference, source}` and `values.Quote.payload()` emits `{quote, span}` —
+   **neither carries the `value`+`estimated` pair**, so neither can enter the grouping table. And the
+   token pattern holds independently: `접수번호 20260724000546는 2026년 공시입니다.` and
+   `공고일은 2026-08-26이고 D-3 남았습니다.` both come back **identical**; `grouped(14-digit)` is
+   `None`; `grouped(0.2314082845)` is `None`; `bool` is refused.
+6. **The reader's form is what the log stores.** `self.released.append(text)` and
+   `TextEvent(text=text, …)` take the *same* post-respelling string, so `TurnEnd.answer` →
+   `record_turn` cannot disagree with the screen. No extra step, no second renderer.
+7. **The HTTP API is byte-unchanged.** `with_display` builds copies and is called only in
+   `ToolResult.__post_init__`; `web/routers/events.py` and `web/reads.py` never mention it (verified:
+   original mapping unmutated after a `with_display` call). So `GET /events/{rcept_no}` gains no
+   `value_display` — the transform is the *agent's* tool contract, not the product's API.
+8. **The honest limit is real and correctly stated.** `web/portfolio` serves `"shares": row.shares`
+   as a bare int with no `estimated` sibling, so it is genuinely not a `Figure` and is genuinely not
+   grouped. Note 26 and `result.md` say exactly that, including that nothing is visible today
+   (sample holdings 500/300/500/100).
+
+**No regression to the first pass's judgment.** `docs/reference/design/` is still byte-untouched
+across the whole phase (`git diff 0f0bb23..HEAD -- docs/reference/` empty), `docs/` was untouched by
+F1 itself (correct — versioning is the review's job), no `/ops` route or component changed, and the
+frontend's forbidden-string grep is unchanged from the first pass (the `localStorage` and
+「탭을 닫으면 사라집니다」 hits are P5's 포트폴리오/전환 surfaces under R5's different storage rules, plus
+comments in `components/ask/` *stating* the prohibition — the ask surfaces use `sessionStorage` only).
+
+## R3. Findings — dispositions carried forward
+
+Per the plan's addendum: findings **2, 5 and 6** are accepted as shipped/catalogued; findings **1**
+(「필드로 이동」 signed but not built) and **3** remain **open operator decisions, catalogued, not
+defects** — they stay in `decisions` (finding 1 is still the one `- **Open…` bullet the ops 가동 전
+미결 panel renders for this phase) and in `experience`/`product`. Finding **4** is **closed** by
+`P6.F1` and is now `decisions` **D-23**.
+
+**One new non-blocking observation (not a defect, and fixed by this consolidation).** F1's Doc impact
+addendum named `backend` (+ `api`, `experience`), but the change actually made statements in
+**`product`**, **`decisions`**, **`qa`** and **`architecture`** stale too — three documents asserted
+the old behaviour as a standing catalogue item or decision, and two carried the `137` suite baseline.
+This is the ordinary cost of a fix landing after its phase's consolidation, and it is exactly what
+the review is for; every one of them is now versioned. Worth remembering for any future post-review
+fix: **a reopened phase's Doc impact line should be re-derived from the diff, not from the fix's own
+blast radius.**
+
+## R4. Doc versions created (6)
+
+Only the F1 addendum was consolidated; the first pass's eleven versions were **not** re-created and
+`docs/current/*` was never hand-edited (`rebuild-docs` regenerated it).
+
+| doc | version | what moved |
+|---|---|---|
+| `backend` | **v0004** | `figures.py` in the module layout, `value_display` on every `ToolResult` payload, and a new Domain-Boundaries bullet: respelled after every check, quoted spans and tool-copy skipped, log identity by construction, the `holdings[].shares` limit |
+| `decisions` | **v0007** | **D-23** — agent prose prints the product's numerals; operator-attributable and dated **2026-08-23** with the verbatim disposition; the contract's figure predicate; why never-compute and 인용문 재구성 금지 are untouched; the recorded limit. The P6 reading it reverses is struck in place and listed under *Superseded Decisions*; the Status paragraph names D-23 |
+| `experience` | **v0005** | the raw-numeral catalogue item **closed** (struck, with the disposition dated), plus one positive line in the AI-journey anatomy: the agent's numerals read like the rest of the product while the quote block keeps the filing's spelling |
+| `product` | **v0006** | "two more agent-surface calls left to the operator" → **one** (the refusal footer); the numeral half recorded as dispositioned and closed |
+| `qa` | **v0005** | suite **137 → 138** in all three places, plus what the new scripted case actually covers and why the live half was measured once rather than turned into a test |
+| `architecture` | **v0005** | suite baseline **138**; `figures` added to the `mijual.agent` module-map row and to the stack table's agent row, both stating **presentation, not derivation** |
+
+**`api` — deliberately folded, not versioned.** The wire did not move: no frame, field, header,
+status or payload changed, and `GET /events/{rcept_no}` is byte-identical (verified in R2.8). The
+`value_display` key lives in the *agent's* tool contract, which `backend` documents; and `api`'s own
+「no endpoint re-derives a number, so two surfaces cannot disagree about the same figure」 is
+*strengthened* by this change, not falsified. A version whose only delta restates another doc's fact
+is churn, so the api line rides `backend` v0004 — the judgment call the plan's addendum delegated.
+
+### ⚠ Ops 개요 open-bullet re-check (`P5.REVIEW` note 8), done by rendering again
+
+`decisions` was rewritten, so the panel's own reader was run against the regenerated doc:
+**3 open bullets, unchanged** (D-4 · D-22 · the P6 readings' 「필드로 이동」), each with a sensible
+decision label and a verbatim body, and the parser reports `version: v0007`. The count is unchanged
+by design: the numeral item was never an `- **Open…` bullet, and D-23 records a **closed** decision,
+so it adds none. `pytest` was re-run afterwards and is still **138 passed**.
+
+## R5. Deviations from the re-review addendum
+
+**One, deliberate and recorded.** The addendum scoped consolidation to "`backend` certainly; fold or
+version the `api`/`experience` lines per your judgment" — i.e. it anticipated one to three versions.
+I created **six**, and versioned two docs (`product`, `decisions`) plus two more (`qa`,
+`architecture`) that the F1 addendum never named. The reason is the addendum's own step 3: *confirm
+no regression to the consolidated docs' truth*. `P6.F1` left four documents asserting things that
+are now **false** — `experience` and `product` carried the raw-numeral behaviour as a live
+catalogue item, `decisions` carried it as a stated reading, and `qa`/`architecture` carried the 137
+baseline. A durable doc version is the only way to correct a version (old ones are never patched), so
+leaving them would have meant knowingly shipping false durable truth. The api line was folded in the
+other direction for the same reason: nothing there is false. Each delta is focused; nothing else in
+any carried-forward document was reworded.
+
+Everything else per the addendum: the first pass's record above is **not** erased, the eleven
+existing versions were **not** re-created, `docs/current/*` was **not** hand-edited, **no source code
+was touched** (a review may not), and **no commit and no status command** was run —
+`python3 scripts/workflow.py validate` was run last and passed.
+
+**explain:** not written — run `/explain` for this phase.

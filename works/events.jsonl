@@ -254,3 +254,11 @@
 {"ts": "2026-08-23T01:52:05+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.F1"}
 {"ts": "2026-08-23T01:52:05+09:00", "type": "slice_status_changed", "slice": "P6.F1", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-23T02:05:52+09:00", "type": "slice_status_changed", "slice": "P6.F1", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-23T02:11:09+09:00", "type": "doc_version_created", "doc": "backend", "version": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:11:42+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:12:17+09:00", "type": "doc_version_created", "doc": "product", "version": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:12:46+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:13:29+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:13:54+09:00", "type": "doc_version_created", "doc": "architecture", "version": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138", "source": "P6.REVIEW"}
+{"ts": "2026-08-23T02:17:28+09:00", "type": "slice_status_changed", "slice": "P6.REVIEW", "old_status": "changes_requested", "new_status": "done"}
+{"ts": "2026-08-23T02:17:28+09:00", "type": "phase_reviewed", "phase": "P6", "verdict": "pass", "reviewer": "slice-executor-high"}
