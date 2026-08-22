@@ -569,6 +569,91 @@ numbers. **No other slice may reintroduce `overflow: hidden` on `.hero`.**
 5. The isolated production build (`P7.S2`'s copy-to-scratch method) still works unchanged, and
    `MIJUAL_API_ORIGIN=http://127.0.0.1:8000` at build time is enough to point it at the dev API.
 
+### Item 3 closed — `P7.S5`: the ring off the text fields, the fields' own hairline in its place
+
+**Two CSS files, ~55 lines, no DOM and no token touched.** `app/shell.css` grows one rule beside the
+signed `:focus-visible` ring — text-entry controls get `outline: none` and
+`border-color: var(--field-focus-border, var(--ink-2))` on `:focus` — and `Hero.module.css` `.input`
+sets the one hook (`--field-focus-border: rgba(163, 196, 180, 1)`), because the hero's dark console
+field is the only field in the product not on the shared `--border-strong` hairline.
+
+**Decision D-P7-3 — the a11y floor moved treatment, not existence, and the numbers say it holds.**
+Collision reading #1 is implemented literally: the ring stays the floor for every non-text
+focusable, and a text field indicates focus by brightening its own hairline. Rendered-pixel contrast
+of the state change (2× screenshots, blurred vs focused): hero **4.01:1**, `/stocks` **3.40:1**,
+`/auth/login` **3.30:1**; focused hairline against the field interior 10.12 / 7.05 / 6.76. All clear
+3:1 both ways. **The plan's illustrative `rgba(163,196,180,.8)` for the hero would have measured
+2.63:1** — under the bar — so the hero uses the same R2 console colour at full opacity instead. One
+number, same hue, same declaration.
+
+**Three implementation facts a later slice must not undo.**
+
+1. **The rule is `:focus`, not `:focus-visible`.** Browsers match `:focus-visible` on a text input
+   for a plain **mouse click** (that is why the operator saw the box on every click), but a
+   *programmatic* focus may not match it — `/portfolio` 수정 autofocuses `SharesInput`, measured. One
+   `:focus` rule covers click, Tab and `.focus()`; the ring above is the app's only outline, so
+   nothing else is affected.
+2. **The specificity is (0,1,1) on purpose, and it cannot be lowered.** Every field paints its
+   hairline from a CSS-module class at (0,1,0) (`border: 1px solid …`), so a `:where()`-flattened
+   (0,0,0) rule would lose the `border-color` **and** tie-and-lose the `outline: none` against the
+   (0,1,0) `:focus-visible` ring. `:where()` is used only to flatten the type list. Re-grepped: no
+   module sets a focus style today, so nothing is being overridden.
+3. **The selector is an allow-list of text-entry types**, not a `:not(checkbox):not(radio)`
+   deny-list, so a future `submit`/`file`/`range`/`color` input keeps the ring by default rather than
+   silently losing its indicator. Verified by injecting elements with a (0,1,0) class border into a
+   live page: `select`, `textarea` and a typeless `input` take the border treatment; `checkbox`,
+   `radio`, `submit` and `range` keep `solid 2px rgb(143,178,232)`.
+
+**Measured** (headless Chrome/CDP, fresh profile, `next dev` on **`127.0.0.1`**, 1440×900 and
+390×844, mouse click **and** keyboard Tab on every field; repeated on the **Tailscale** origin and
+against an **isolated production build** on `:3100` — all four runs agree). Eleven fields across
+`/`, `/stocks`, `/stocks/{corp_code}`, `/auth/login`, the AI 질문 widget, `/ask`, the `/ops` door,
+`/portfolio?sample=1`, `/portfolio` and `/portfolio/notifications`: focused `outline-style` **none**
+everywhere, blurred `rgba(163,196,180,.32|.4|.15)` → focused `rgb(157,179,168)` (`--ink-2`) or
+`rgb(163,196,180)` (hero). Before, all eleven wore `solid 2px rgb(143,178,232) @2px` — `--focus-ring`
+→ `--r1`, the ① 유상증자 hue.
+
+**The zero-gap rows are fixed at the source.** Input right edge = 조회 left edge = **924** (`/`
+@1440) and **656** (`/stocks` @1440), gap **0** before *and* after — the button did not move and no
+gap was added, per plan. With `outline: none` the entire focus treatment now lives inside the input's
+border box, so there is nothing left that *can* paint under the button. The hero's focused hairline
+is three-sided (`border-right: none`), which is the signed geometry.
+
+**Ring keepers re-verified, before and after, 1440 and 390:** wordmark, all three nav links, 샘플 chip,
+샘플 종료, the `[의견]` vocky trigger, the 조회 submit, all four board tabs, every 펼치기 (both strips
+*and* `P7.S3`'s window control), the AI 질문 launcher, board row links, and the 챙겼습니다 checkbox —
+all still `solid 2px rgb(143,178,232) @2px`. **The one difference in the whole 14-stop tab order is
+the single `input[type=text]` stop.**
+
+**Notes later slices need:**
+
+1. **`P7.S4`'s listbox was not touched and still measures identically** (`dx=0 dy=0`, width delta 0,
+   `border-top: 0`, radius 0). One observation for `P7.S9`/the review, deliberately left alone: with
+   the panel open, the focused input's hairline is now brighter than the panel's own
+   `--candidate-border` side edges, so the seam is visible at 2×. In the 2× screenshots it reads
+   correctly — the field is the active thing, the panel hangs off it — and the plan forbade touching
+   `SearchRow.module.css`. If the operator ever wants them matched, the change is one line there,
+   not here.
+2. **The ask composer is an `<input type="text">`, not a textarea** (`components/ask/Composer.tsx:49`).
+   The app renders **no** `<textarea>` anywhere. Any doc or plan wording that says "composer textarea"
+   is wrong.
+3. **`/ops`'s inner filter fields cannot be reached in this environment** — no ops credential is
+   configured, and R7's signed door answers one `401` for an unconfigured credential exactly as it
+   does for a wrong one. They share one declaration block with the door field, which *was* measured
+   live. Any slice needing `/ops` interiors has to raise the credential with the operator first.
+4. **A throwaway account is the only way to reach `AddHolding` and `NotificationsView` fields**
+   (`mode === "account"`; `/portfolio/notifications` redirects to `/auth/login` otherwise), and the
+   email field there appears only after 변경. Note the flow trap: on `/auth/login` the quiet row's
+   **계정 만들기 is the mode switch**, and the form's submit button then carries the same label — a
+   probe that clicks the first matching element switches mode and submits nothing. This slice's
+   throwaways were deleted through 계정 삭제 and verified gone: `account` holds exactly
+   `s19-fidelity@example.com` (id 14), the P5.S19 leftover `P7.S2` recorded.
+5. **`--field-focus-border` is the hook for any future field** whose hairline is not
+   `--border-strong`/`--border-soft`: set it on the field's own class, not on a wrapper, and keep it
+   inside that field's colour family.
+6. **Open Question Q2 is untouched by this slice.** The keyboard indicator survives by design; if the
+   operator meant *zero* indication, that is theirs to say.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -690,6 +775,29 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   exact handle. The defect class the rule guards against is *the system* opening the wrong
   company's 놓친 돈; a reader choosing from a list is the opposite of that. (Recorded by `P7.S4`;
   `product.md` was checked and needs nothing — it states no search-resolution promise.)
+
+- `frontend` — **focus indication is no longer one treatment for everything.** The a11y floor
+  "Focus ring: 2px `--focus-ring`" (v0002/v0004) still governs every button, link, tab, chip,
+  checkbox, radio and the R2 §vocky triggers — unchanged, same token, same 2px, same 2px offset —
+  but **a text-entry control (`input` of a text-entry type, `textarea`, `select`) now indicates
+  focus with `outline: none` plus an in-idiom `border-color` change**, `var(--field-focus-border,
+  var(--ink-2))`, set in `app/shell.css`; `Hero.module.css` `.input` is the only module that sets
+  the hook (`rgba(163,196,180,1)`, R2 §Cosmos's own console colour at full strength). Why it had to
+  change: `--focus-ring` aliases `--r1`, the ① 유상증자 rights hue, browsers match `:focus-visible`
+  on a text input for a plain **mouse click**, and on both 조회 rows the input's right edge touches
+  its button (**gap 0**, measured), so a 2px ring at `outline-offset: 2px` painted 4px *under* the
+  button — the operator's item 3. Record with it: the rule is `:focus` (a programmatic focus may not
+  match `:focus-visible`), it sits at specificity **(0,1,1)** because every field's hairline comes
+  from a (0,1,0) CSS-module class and a `:where()`-flattened rule would lose, and it names the
+  text-entry types rather than excluding checkbox/radio so a future input type keeps the ring by
+  default. Measured state-change contrast 3.30–4.01:1 and 6.8–10.1:1 against the field interior, in
+  `next dev` on `127.0.0.1` and the tailnet, at 1440 and 390, and in an isolated production build.
+  This is a **P7 operator override** of the record's single-treatment reading, not a removal of the
+  floor — Open Question **Q2** (does the operator want *zero* indication?) is still open. Two facts
+  worth recording beside it: the app renders **no `<textarea>`** — the ask composer is an
+  `<input type="text">` — and `P7.S4`'s candidate panel keeps its own `--candidate-border`, so with
+  the listbox open the focused input's hairline is brighter than the panel's side edges by design.
+  (Recorded by `P7.S5`.)
 
 ## Open Questions
 

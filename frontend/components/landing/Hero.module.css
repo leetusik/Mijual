@@ -167,6 +167,13 @@
   font-size: var(--text-md);
   color: #ffffff;
   appearance: none;
+  /* The hero is the one field not on the shared `--border-strong` hairline, so
+     it names its own focused hairline for `app/shell.css`'s text-field rule
+     (`P7.S5`): the very same R2 console colour at full strength — never a second
+     hue. Full opacity rather than a partial lift because the state change has to
+     be legible: composited over this field, `.4 → .8` is a 2.6:1 change and
+     `.4 → 1` is 3.95:1, which clears the 3:1 an indicator needs. */
+  --field-focus-border: rgba(163, 196, 180, 1);
 }
 
 .input::placeholder {

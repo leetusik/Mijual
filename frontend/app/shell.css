@@ -110,6 +110,54 @@ body {
   outline-offset: 2px;
 }
 
+/* Text fields are the one exception: they indicate focus in their own idiom
+ * rather than wearing the ring (`P7.S5`, operator item 3).
+ *
+ * Two facts made the ring wrong *here* and right everywhere else. A browser
+ * matches `:focus-visible` on a text input for a plain mouse click, not only for
+ * Tab — so the ring appeared on every click into 내 종목 조회, which is what the
+ * operator saw. And `--focus-ring` aliases `--r1`, the ① 유상증자 rights hue,
+ * painted at `outline-offset: 2px`: on the hero and /stocks search rows the
+ * input's right edge touches its 조회 button (gap 0, measured at 1440 and 390),
+ * so 4px of that ring landed *under* the button. The field's own hairline
+ * carries the state instead — a border *colour* change within that field's own
+ * family, which cannot overflow the box, introduces no hue and moves no
+ * geometry (no radius, height, padding, background or border width changes).
+ * `--field-focus-border` is the hook a module sets when its field does not sit
+ * on the shared `--border-strong` hairline; the hero's dark console field is the
+ * only one today.
+ *
+ * Everything else — buttons, links, tabs, chips, checkboxes, radios, the vocky
+ * triggers — keeps the signed 2px `--focus-ring` ring above, and no text field
+ * is left without a keyboard indicator: the border change is the indicator.
+ *
+ * The selector names the text-entry types rather than excluding a couple, so a
+ * future checkbox/radio/submit/file/range keeps the ring by default. `:where()`
+ * holds the type list at zero specificity, leaving the rule at (0,1,1) — one
+ * step above the (0,1,0) module class that paints the hairline, and still
+ * overridable by a module that later wants a focus state of its own.
+ */
+input:where(
+    :not([type]),
+    [type="text"],
+    [type="search"],
+    [type="email"],
+    [type="password"],
+    [type="tel"],
+    [type="url"],
+    [type="number"],
+    [type="date"],
+    [type="datetime-local"],
+    [type="month"],
+    [type="week"],
+    [type="time"]
+  ):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--field-focus-border, var(--ink-2));
+}
+
 /* Reduced motion is a floor, not an option (`frontend` v0002).
  *
  * The convention every later slice uses, so nobody re-invents one:
