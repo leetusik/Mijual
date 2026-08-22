@@ -57,6 +57,24 @@ export function eventPath(rceptNo: string): string {
 }
 
 /**
+ * One issuer's 내 종목 조회 page, keyed by the stable `corp_code`.
+ *
+ * This is where R3's "내 보유량으로 환산 →" goes: the API's own link-out for it is
+ * `GET /stocks/{corp_code}` (`P5.S4`'s recorded map — "the stable-handle link-out
+ * (R3's '내 보유량으로 환산 →')"), and `isActiveRoute` above was already written
+ * for `/stocks/00162461` keeping 내 종목 조회 underlined. A `?q=` link would have
+ * to carry a *name* — the search's own vocabulary, resolvable but not exact —
+ * while a `corp_code` names one issuer by construction, which is what
+ * "preselected" has to mean for a link a reader did not type.
+ *
+ * **`P5.S14` builds the page.** Until it lands this link has no page, the same
+ * deliberate choice `login` and `eventPath` record.
+ */
+export function stockPath(corpCode: string): string {
+  return `${ROUTES.stocks}/${corpCode}`;
+}
+
+/**
  * Is `pathname` inside `route`? The nav's active state (R2: "active = 600 + 2px
  * #fff underline") must survive a nested path — `/stocks/00162461` is still the
  * 내 종목 조회 surface — while `/` stays exact, or it would match everything.

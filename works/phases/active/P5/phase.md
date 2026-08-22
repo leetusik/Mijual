@@ -1533,6 +1533,89 @@ primitive/token/chrome file touched, Python suite untouched at 113, no Korean in
     second line wraps once more (label + date, then `· 청약 … 발행가 확정 전`), because the
     content does not fit one line and truncating data is not an option.
 
+### `P5.S13` — the event detail page is live; the conventions S14/S19 inherit, and eight readings
+
+`frontend/components/event/` + `app/events/[rcept_no]/page.tsx` is R3 over live
+`/events/{rcept_no}` (+ `/corrections`), all three rights types and every state the round draws.
+**0 new dependencies, no primitive/token/chrome/landing file touched, Python suite untouched at
+113, no Korean invented** (every string cited in `components/event/copy.ts`). Verified in real
+headless Chrome over `npm run start` on **13 real pages × 2 viewports + 2 404s**.
+
+| you need | use |
+|---|---|
+| the whole surface | `components/event` → `EventDetail` (the only export; the page is a thin route) |
+| a link to 조회 for a stock | **`stockPath(corpCode)`** from `@/lib/routes` — `/stocks/{corp_code}` |
+| one field rendered the way this surface renders it | `FieldValue({fieldKey, value, reference, moved})` from `components/event/Fields` (the CorrectionStory's diff columns already reuse it) |
+| a Korean string this surface owns | `components/event/copy.ts` — one citation per entry, no exceptions |
+
+1. **The 환산 CTA links to `/stocks/{corp_code}` — a path, not a query param.** The plan asked for
+   a "query-param convention"; `P5.S4` had already made the **corp_code path segment** 조회's
+   stable handle (`isActiveRoute` knows `/stocks/00162461`), and `?q=` is the *search* box the
+   landing hero posts to — a `corp_code` is not a search term. `lib/routes.ts` now states it once
+   as `stockPath()`. **`P5.S14` must serve that path**, and it is the only thing this page
+   promises about 조회 (the N주 multiplication stays R4's single site, `P5.S8` note 1).
+2. **매수예정가 renders as an ordinary field row under `// 발행 조건`** — served `korean_name`
+   (매수예정가격), value, its own `Citation` — not as a highlighted figure. `P5.S6` put
+   `appraisal_price` in the contract and thereby superseded R3's "not rendered" line; what R3
+   signed is the *row anatomy*, so using it invents no layout. Verified on 세기상사
+   `20260713000345` (**5,649원**, quote `매수예정가격 5,649`) and absent — no row — on
+   미래에셋비전스팩7호 `20260512000669`. **`P5.S19` should confirm this reading against the cards.**
+3. **The 정정 이력 label is still the phase's open question, and this surface is now its second
+   site.** R3's literal `정정 이력` is what renders (button, `aria-expanded`, no 접기 label — the
+   chrome's 메뉴 precedent). The question is unchanged, not resolved.
+4. **A not-found `rcept_no` renders the framework's own 404 inside the chrome.** `P5.S3` note 5
+   makes a non-renderable event a 404 that never explains itself, and the copy inventory holds
+   **no Korean 404 sentence** — writing one is a design change, so none was written. The chrome
+   around it is correct; only the sentence is English. **`P5.S19`/the operator decide** whether a
+   Korean not-found line gets signed. Same shape for both `99999999999999` and the flagged
+   `20260709000212`.
+5. **The CorrectionStory is an in-place disclosure, not a route** — a route needs its own way
+   back, and the product's only crumb ("← 관제 현황판") points at the board, not the event. It
+   fetches `/corrections` on first open, so a card never pays for a rail nobody opened. Two rail
+   readings: the **superseded-row grey annotation renders nothing** (the reader payload carries no
+   gate reason at all — that is operator truth, D-14 — and R3 says "may carry"), and the
+   **earliest row shows no `correction_kind`**, because that value is the English token `original`
+   for a first filing and Korean (기재정정 · 첨부정정) for every other. An event with no readable
+   본문 marks **no** row 현재 읽는 버전 — verified on HLB테라퓨틱스 `20260807000003`, whose three
+   rows carry no current badge at all.
+6. **The layout gotcha this surface cost a rebuild over: a collapsed `Citation` still occupies
+   its quote's width.** The panel is a child of the same element, so `max-content` on a flex/grid
+   line includes a 300-character 산식 quote. Consequences now baked into `Event.module.css`: a
+   field row gives the citation **its own grid area** (desktop `"label value" / "label cite"` with
+   a 220px label column; mobile `"label" / "cite" / "value"` with the chip lifted onto the label
+   line by `margin-top: -1.45em`), and `.chainStep` carries `max-width: 340px; min-width: 0`.
+   Without those, one row renders one character per line. The chain's arrows are **real flex
+   items** (`.chainArrow`), not `::before` pseudo-elements — an absolutely positioned arrow lands
+   outside the container the moment the chain wraps at 390px.
+7. **Section eyebrows are the record's two, and `correction_interpretation` is never a row.**
+   Only `// 일정` and `// 발행 조건` appear; the interpretation is the 정정 strip's own content, so
+   rendering it as a field would print the same sentence twice.
+8. **No 질문 스트립 on this page** (DECOMP note 8): R6's preset-chip strip on detail is **P6's**.
+   Its absence is a phase boundary, not a dropped element — do not "restore" it in review.
+9. **D4 holds on a real page.** 한화솔루션 `20260720000067`'s 청약 chip opens **both addends**
+   (`38,427,609` + `2,888` = 38,430,497) against `20260730000366`. The 발행사 기재 불일치 block
+   deliberately does *not* use `parts` for its derived reading: parts are addends that sum to the
+   value, and 발행 − 청약 is a difference, so the two inputs render as their own cited counts.
+10. **D2's trigger has not fired here either.** No page showed two rows for one bond; 알파AI
+    `20250918000398` — one of `P5.S5`'s three repaired ② events — serves **its own** bond end to
+    end (전환가액 2,000원 / 권면총액 55.0억원 / 만기 2028-09-22), so the identity-scoped pairing
+    holds through the presentation layer.
+11. **Live cross-check (2026-08-22, headless Chrome, `npm run start`).** Across 26 renders: no
+    `▷`, no `[object Object]`, no `undefined`/`NaN`/`null`, **no stray English token**, **zero
+    `position: fixed`** elements (P6's corner stays clear), **zero horizontal overflow at 390px**,
+    and every named mobile target exactly 44px (crumb 79×44 · DART **308×44 full-width** · 환산
+    149×44 · 정정 이력 71×44). A sparse ② (트리니티항공 `20250808000003`) shows the fact strip plus
+    the locked closing line and **no placeholder**; a past-opening ② reads **진행 중**, never 종료;
+    an unpriced ① (계양전기 `20260724000546`) shows **no 원 amount anywhere** while 할인율/배정비율
+    still render; 추후결정 (경남제약 `20260623000409`) shows the badge with **no date near it**; the
+    철회 page (썸에이지 `20260805000454`) renders **0 field rows and no countdown**; 대한광통신
+    `20260223002079` shows both readings unreconciled (2,117,937주 vs 2,083,302주) with the locked
+    footer. Dev console clean — no hydration warning.
+12. **One `P5.S19` fidelity item.** On desktop the 할인율 link of the 환산 chain sits in a 340px
+    box because of note 6's citation-panel width, so the gap before the next arrow is wider than
+    the round's even spacing. Data is never truncated to close it; the cards decide whether the
+    chain should instead cap the quote panel's width.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2140,6 +2223,51 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   the strips equal `open_now.count` / `tbd.count`; under `prefers-reduced-motion` the countdown is
   **identical after 3 s** and twinkle/drift/orbit/colon are `animation: none` with the shooting-star
   layer `display: none`; and exactly **one** `position: fixed` element exists on the page.
+- (`P5.S13`) **`frontend`** — the **event detail surface** R3 designs is built and is durable
+  frontend truth: `app/events/[rcept_no]/page.tsx` is a **request-time** page (`connection()`) over
+  one `/events/{rcept_no}` read, with `components/event/` as its component set (`EventDetail`
+  composition · `Header` · `Fields` · `Offering` · `Convertible` · `Withdrawn` · `Corrections` ·
+  `copy.ts` · one CSS module). Durable rules that land with it: **field labels come from the served
+  `korean_name`** and the frontend keeps **no field-name table of its own**, so a field the API
+  does not serve has no row, no marker and no explanation; `FieldValue` is the **one** renderer for
+  a field's value and the CorrectionStory's 정정 전/후 columns reuse it, so a value can never be
+  drawn two ways on one page; the **three-state citation** is rendered as served — a `parts` figure
+  shows **every addend** and a figure with neither `quote` nor `parts` shows **no chip at all**,
+  while a *difference* (발행 − 청약) is rendered as its own cited inputs rather than as parts;
+  **money is never printed before 확정발행가** even where the payload carries `planned_price`
+  (the `발행가 확정 전` chip and the due date replace it), while ratios render in both states and
+  배정비율 keeps **all ten decimals** because R4 multiplies by it; and a **collapsed `Citation`
+  still contributes its quote's width**, which is why a field row gives the chip its own grid area
+  and the 환산 chain caps a step at 340px with its arrows as real flex items — a layout constraint
+  any later surface embedding a citation inherits. `lib/routes.ts` gains **`stockPath(corpCode)`**:
+  the 환산 CTA links to **`/stocks/{corp_code}`**, making the corp_code path segment (not a query
+  param) the product's stable handle for 조회. Two record readings are stated as truth: the
+  **CorrectionStory is an in-place disclosure rather than a route** (the product's only crumb points
+  at the board), and **매수예정가 renders as an ordinary field row** under 발행 조건 — `P5.S6`'s
+  contract addition superseding R3's "not rendered" line, using the signed row anatomy rather than
+  a new layout. **`experience`** — the reader's event surface as built, and what it refuses to
+  state: a 철회 event is a **notice plus its evidence and nothing else** (no fields, no countdown,
+  no old dates); 추후결정 produces `StateBadge 추후결정` + "카운트다운 없음" with **no date anywhere
+  near it**; a field the current version dropped says "현재 버전 공시에 없음" as a fact, never as an
+  error; a past ② opening reads **진행 중**, never 종료; an `option_schedule` range appears **only**
+  as the locked "연속 기간 아님" caption, never as a period or a bar; the **발행사 기재 불일치 block
+  shows both readings, cites each into the same filing, and never reconciles them**, with the footer
+  stating only which reading the totals use; the identity rule prints the DART master name and adds
+  the locked 본문 표기 line **only** when the API says the body disagrees; the version rail marks
+  **no** current-readable row when the event has no readable 본문, shows no `correction_kind` on a
+  first filing (the value is the English token `original`), and carries **no** superseded-row reason
+  because why a value is missing is operator truth, never reader truth; a **non-renderable
+  `rcept_no` renders a not-found page that does not explain itself** — and no Korean 404 sentence
+  was invented, so the one English string on the surface is the framework's, pending an operator
+  decision. **`qa`** — the frontend check now covers the detail surface: `npm run build` (the page
+  is `ƒ`) + `typecheck` + `smoke` all green, **Python suite untouched at 113**, and the surface was
+  verified in a **real headless Chrome on both sides of 480px over `npm run start`** across
+  **13 real pages covering every ①②③ state plus two 404s**. Measured invariants worth keeping: no
+  `▷`, no `[object Object]`, no `undefined`/`NaN`/`null` and **no stray English token** on any of
+  the 26 renders; **zero `position: fixed`** elements and **zero horizontal overflow at 390px**;
+  every named mobile target exactly **44px** (DART link 308×44 full-width); a multi-part citation
+  opens **both** addends summing to the printed value; and an unpriced ① shows **no 원 amount
+  anywhere on the page**.
 
 ## Open Questions
 
@@ -2190,4 +2318,10 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   working local value in the meantime.
 - **vocky's real observation API** — its shape, and whether reaching it needs a credential the
   operator must supply (`P5.S18`).
+- **The not-found page has no Korean sentence** — *new, `P5.S13`*: a non-renderable `rcept_no`
+  must 404 without explaining itself (`P5.S3` note 5), and the copy inventory holds **no 404
+  string**, so `app/events/[rcept_no]/page.tsx` calls `notFound()` and the framework's English
+  default renders inside the correct chrome. Writing a Korean line would be inventing signed copy.
+  The operator (with `P5.S19`) decides whether a 404 sentence gets drawn; until then this is the
+  one English string a reader can reach.
 - Not P5's: the **운영자 연락처 string** for `get_contact` (P6, operator-provided, never invented).
