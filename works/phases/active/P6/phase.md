@@ -751,6 +751,111 @@ also the true build order.
       dev Postgres still has no `conversation_turn` table, which is why the
       scripted app used SQLite rather than writing to it.
 
+24. **`P6.S7` ran the fidelity pass live — three fixes, and what `P6.REVIEW` can
+    trust as measured rather than asserted.** Full table, ▷ ledger and the
+    consolidated operator questions in `slices/P6.S7/result.md`.
+    - **What actually ran.** uvicorn over the operator's **dev Postgres** + a
+      **live** `AgentGeminiClient` + `npm run build && npm run start` + headless
+      Chrome over CDP: 41 stages / ~120 scripted checks at **1440 · 768 · 481 ·
+      480 · 390**, **25 live turns** (24 stored), 27 stored quotes and every
+      numeral in 24 stored answers verified against the served payloads.
+      ▷ **$0.0743 estimated measured exactly on 8 turns** (18 calls, 87,908
+      tokens, thinking **LOW** throughout) → **▷ ≈ $0.23 for the pass**, never
+      billed.
+    - **⚠ Fix 1 — R6's 스트리밍 state was not reaching a real browser, and the
+      cause is a header.** Next's router gzips whatever it proxies (`compress`
+      defaults to on) including `text/event-stream`, and a gzip encoder holds the
+      stream until it has a block: every frame of a turn — 도구 행, sentences,
+      chips, footer — painted **in one burst under 10 ms** after a multi-second
+      「답변 준비 중…」. `P6.S4`'s measurement was right for what it measured:
+      **`curl` sends no `Accept-Encoding`, a browser sends `gzip`**. The fix is
+      one directive in `mijual.web.ask.SSE_HEADERS`: `Cache-Control: no-store,
+      **no-transform**` — the standard's own "do not re-encode" (RFC 9111
+      §5.2.2.6), which `compression`'s `shouldTransform` honours, and so do nginx
+      and the CDNs **P4** will meet. Measured after: tool row 1 at 5.5 s, tool row
+      2 at 8.7 s, first sentence at 11.0 s — prose grows and 중지 is pressable.
+      **Longest observed inter-frame gap with the live agent: 6.0 s** (first
+      model round) — and **there is still no heartbeat**, so a proxy idle timeout
+      under ~10 s would cut a legitimate turn. *Do not "simplify" that header
+      back to `no-store`.*
+    - **⚠ Fix 2 — a saved 의견 ended in a refusal that contradicted it.** The
+      reader saw 「의견을 저장했습니다 — 운영자가 확인합니다.」 and 「이 데이터는
+      검증을 통과하지 못했습니다.」 in the same bubble. Structural, not a model
+      slip: nothing about a feedback save is citable, so every sentence was
+      dropped at the gate and `loop._finish` selected the 폴백 family because
+      nothing had been released. Now `_feedback_only(results)` (all results are a
+      **successful `save_feedback`**) skips the fallback, emits **no event** —
+      the confirmation is already on screen from the surface — and records the
+      signed sentence as the turn's `answer` so the 대화 로그 replays what the
+      reader read. Deliberately narrow: a turn that *also* read an event and then
+      said nothing verifiable has genuinely failed to verify something and keeps
+      the 폴백.
+    - **Fix 3 — the dead `/board` route left the agent's reach.**
+      `copy.BOARD_POINTER_HREF` was **removed**, not corrected: the frontend owns
+      every route, the surface builds the pointer from the `{"kind":"board"}`
+      link, and a path string in a tool payload is a string the gate's
+      verbatim-string rule would let the model *say*. 0 of 24 stored answers ever
+      contained it.
+    - **Measured, not asserted, for `P6.REVIEW`.** The **ring reading test
+      passes** — a 27-point hit grid over the paused mark shows the planet's band
+      on top where the ring's upper half crosses it and `ringFront` on top where
+      the lower half does, with the ring visible outside the planet on both sides
+      (one ring, through a sphere — not the flat sticker the round paid for).
+      Launcher 68×50 + 22×22 mark + 40×13 half-rings + 11×11 tail, hover mark-only
+      1.35 with the frame fixed, active 1.15, open 16px × with ±45° 1.5px bars,
+      **reduced motion stops band · drift · transitions · hover scale**, and the
+      motion exception appears on **no** data surface (`/stocks` `/events` `/portfolio`
+      carry the launcher's three animations and nothing else; `/ask` carries none).
+      Widget **440×620** opaque `#0e1a15`, fixed, **no backdrop and no dim**, 28px
+      header icons, **landing layout byte-identical before and after opening it**.
+      Caret **7×15 `--live` `caretblink 1s steps(1)`**; footer fade =
+      `--dur-base`; 중단 keeps the partial at **`--ink-2`** on a `--surface-inset`
+      row with 재시도 and **no footer**; `--alert` appears nowhere. Chips mono
+      **10px** `--live` with the `rgba(95,208,165,.4)` border, blocks open to
+      `--surface-inset` + left 2px `--live` and **re-tap closes**. **27/27 stored
+      quotes byte-identical** to a served payload value; **0 numerals missing**
+      across 24 stored answers. All five refusal families exercised live. `/ask`
+      rail exactly **340px**, chat frameless, **zero `position: fixed`**; the
+      **480/481 boundary is exact**; **0 px horizontal overflow** on every touched
+      page at 390 including one with a rendered answer and an open citation block;
+      the corner is the launcher's alone on six pages and **no vocky element
+      exists**. The ops loop closes: 24 real rows, both filters working with the
+      five signed Korean names as values, the 대기열 holding the saved 의견,
+      nothing mutable.
+    - **Deployment, not schema (P4 inherits it).** The `P6.S1` tables were created
+      in the dev Postgres with `mijual.db.session.create_all` — additive and
+      idempotent, **16 → 18 tables**, no existing table touched, still zero
+      foreign keys. **P4 must run this before the first `POST /ask`**: P2 has no
+      migrations and `create_all` otherwise runs only from the
+      collect/gates/pipeline entry points.
+    - **⚠ The ▷ ledger is invisible under a default `uvicorn`.** It is `log.info`
+      on `mijual.web.ask`, and uvicorn configures only its own loggers, so the
+      root stays at `WARNING` and **agent spend is recorded nowhere**. Verified
+      both ways (0 lines plain; the line appears with `logging.basicConfig`).
+      Left unchanged — logging configuration is P4's — and raised as an operator
+      question.
+    - **Judged, not changed** (each with its reasoning in `result.md` §4):
+      the mobile menu keeps **AI 질문 in the third slot** (§Surfaces states a
+      position with an ordinal and the sheet mirrors the nav; §Mobile's
+      「메뉴 첫 행 ≥44px」 carries a touch-target floor that is met — rows 48px,
+      button 44px), the 확정 전 「3,200원」 is a **published planned figure the
+      detail page itself renders** (「예정발행가액(4,985원 -> 3,200원)」 in the
+      gate-passing 정정 해석) so the answer refused the *amount* exactly as R6-7
+      asks, and 필드로 이동 · the 7-link footer · raw numerals in prose · the ops
+      ISO timestamps · 철회-by-name · a 푸터 under a refusal · Korean glyphs inside
+      the mono 도구 행 are all **catalogued** rather than "improved".
+    - **Two method gotchas worth more than they look.** (a) A `Response.clone()`
+      tee installed to capture raw SSE bytes **buffers**: it reported one
+      2,096-byte chunk where the wire had seven spread frames, which would have
+      hidden fix 1's before/after. Time the **wire** with `curl` and the
+      **reader** with a `MutationObserver`, never the tee. (b) P5.S19's
+      re-measure rule held again — five FAILs were probe artifacts
+      (`span:nth-child(3)` matching a ring instead of the close glyph, a
+      transparent `.close` overlay winning `elementsFromPoint`, an `active`
+      transform read mid-transition, the sticky bar measured on the `<form>`
+      instead of its `.bar` wrapper, and **`/ops/feedback` being the vocky 관찰
+      뷰 while the `save_feedback` 대기열 lives on the Conversations tab**).
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -894,3 +999,21 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   sessionStorage key is unchanged, and **no backend file changed** (pytest **136 passed**; frontend
   `build` · `typecheck` · `smoke 15/15` green; 0 px horizontal overflow at 390 on every touched
   page, verified in a browser against a spend-free scripted agent).
+- (`P6.S7`) **`qa`** · **`api`** · **`operations`** (+ lines in **`backend`** and **`architecture`**;
+  **no** `frontend`/`experience` change — the pass touched no frontend file): the AI 질문 feature has
+  a **measured** baseline — the whole product run live (dev Postgres · live `gemini-3.7-flash` agent ·
+  `next build && next start` · headless Chrome) against R6's own contract, 41 stages / ~120 checks at
+  1440·768·481·480·390, **25 live turns** covering all five refusal families, **27/27 stored quotes
+  byte-identical** to the served payload and **0 numerals unaccounted for** in 24 stored answers, ▷
+  ≈ **$0.23 estimated** (thinking LOW, never billed); suite **136 → 137 passed**. Three durable-truth
+  changes came out of it: **(1) `POST /ask` now sends `Cache-Control: no-store, no-transform`** —
+  without it the production Next proxy gzips the stream and the reader sees no incremental output at
+  all, so the header is part of the streaming contract (`api`), and the deployed topology must
+  preserve it (`operations`, alongside `X-Accel-Buffering: no`; longest observed inter-frame gap
+  **6.0 s** and **still no heartbeat**); **(2) a turn whose only work is a successful `save_feedback`
+  ends as an answer carrying the signed confirmation, never as a 검증 미통과 폴백 refusal**
+  (`backend`); **(3) the agent carries no route string at all** — `BOARD_POINTER_HREF` removed, the
+  frontend owns every path (`architecture`/`backend`). Two operations facts P4 inherits: the
+  **conversation tables must be created in the deploy database** before the first `POST /ask`
+  (`create_all`; P2 has no migrations), and the **▷ ledger line needs a root logging configuration**
+  or agent spend is recorded nowhere.

@@ -340,10 +340,7 @@ def search_events(ctx: ToolContext, query: str) -> ToolResult:
     if not ordered:
         # The signed sentence travels as a *fact* the answer may state verbatim.
         payload["none_found_ko"] = ko.NOT_FOUND_KO.format(q=text)
-        payload["pointer"] = {
-            "label_ko": ko.BOARD_POINTER_KO,
-            "href": ko.BOARD_POINTER_HREF,
-        }
+        payload["pointer"] = {"label_ko": ko.BOARD_POINTER_KO}
         if _FILING_NUMBER.match(text):
             # An event can be *readable* without being *searchable*: a 철회된
             # filing has a page and a locked notice, and answering 「찾지
@@ -396,7 +393,7 @@ def get_event(ctx: ToolContext, rcept_no: str) -> ToolResult:
             "found": False,
             "rcept_no": key,
             "none_found_ko": ko.NOT_FOUND_KO.format(q=key),
-            "pointer": {"label_ko": ko.BOARD_POINTER_KO, "href": ko.BOARD_POINTER_HREF},
+            "pointer": {"label_ko": ko.BOARD_POINTER_KO},
         }
         return ToolResult(tool="get_event", fact_row=ko.EVENT_MISS_ROW, payload=payload)
 

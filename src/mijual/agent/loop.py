@@ -249,16 +249,30 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
     gate = turn.gate
 
     if turn.status == "done" and not gate.released:
-        # Everything the model produced was dropped at the gate (or it produced
-        # nothing at all). 「이 데이터는 검증을 통과하지 못했습니다」 is the family the
-        # record signs for exactly that, and it is the one family the *loop* may
-        # select on its own, because it is a statement about the data rather than
-        # about the reader's question.
-        family = ko.REFUSAL_FALLBACK
-        sentence = ko.REFUSAL_SENTENCES[family]
-        gate.family = family
-        gate.released.append(sentence)
-        yield RefusalEvent(family=family, text=sentence)
+        if _feedback_only(turn.results):
+            # 의견 저장 is the one turn whose **answer is not prose**: R6 §의견
+            # signs 「자동 저장 + 확인 한 줄」 and 「실패 시에만 재시도 행」, and the
+            # confirmation belongs to the surface (`mijual.agent.copy`:
+            # 「the surface renders it … the agent never writes it as prose」). So
+            # nothing citable is expected here, and the 폴백 family — a statement
+            # about *data* that failed verification — would contradict a save that
+            # succeeded (measured in `P6.S7`: the reader saw 「의견을
+            # 저장했습니다」 and 「이 데이터는 검증을 통과하지 못했습니다」 together).
+            # No event is emitted: the confirmation is already on the screen,
+            # under the tool's own row. It is recorded as the turn's answer so the
+            # 대화 로그 replays what the reader read (`P6.S4`'s rule).
+            gate.released.append(ko.FEEDBACK_SAVED_KO)
+        else:
+            # Everything the model produced was dropped at the gate (or it produced
+            # nothing at all). 「이 데이터는 검증을 통과하지 못했습니다」 is the family the
+            # record signs for exactly that, and it is the one family the *loop* may
+            # select on its own, because it is a statement about the data rather than
+            # about the reader's question.
+            family = ko.REFUSAL_FALLBACK
+            sentence = ko.REFUSAL_SENTENCES[family]
+            gate.family = family
+            gate.released.append(sentence)
+            yield RefusalEvent(family=family, text=sentence)
 
     links = _links(turn.results)
     if turn.status == "done":
@@ -288,6 +302,17 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
         tool_calls=turn.tool_calls,
         reason=turn.reason,
         usage=turn.ledger.payload(),
+    )
+
+
+def _feedback_only(results: Sequence[ToolResult]) -> bool:
+    """Did this turn do nothing but save an 의견, successfully?
+
+    Narrow on purpose. A turn that also read an event and then said nothing
+    verifiable *has* failed to verify something, and keeps the 폴백 family.
+    """
+    return bool(results) and all(
+        result.tool == "save_feedback" and result.ok for result in results
     )
 
 

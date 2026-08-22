@@ -240,3 +240,18 @@ def test_a_turn_that_verifies_nothing_falls_back_and_a_budget_ends_it_honestly(c
     assert events[-1].status == "error" and events[-1].reason == "ServerError"
     assert events[-1].answer.endswith(f"「{QUOTE}」입니다.")  # 부분 답변 유지
     assert not of(events, FooterEvent)  # 완료가 아니므로 푸터 없음
+
+
+def test_a_saved_의견_is_confirmed_and_never_refused(ctx) -> None:
+    """R6 §의견 signs 「자동 저장 + 확인 한 줄」 — and no refusal (`P6.S7`).
+
+    Nothing citable is expected from a feedback turn, so the 폴백 family (a claim
+    about *data* that failed verification) would contradict the confirmation the
+    surface prints under the tool's own row.
+    """
+    saved = ScriptedModel(calls("save_feedback", text="인용이 좋네요"), says("저장했습니다."))
+    events = list(run_turn(ctx, "의견 남길게요", client=saved))
+    assert of(events, ToolRowEvent)[0].ok is True
+    assert of(events, RefusalEvent) == []
+    assert events[-1].kind == "answer"
+    assert events[-1].answer == "의견을 저장했습니다 — 운영자가 확인합니다."

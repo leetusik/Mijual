@@ -147,7 +147,9 @@ def test_search_lists_the_exposable_events_scope_first_and_declines_honestly(sto
     assert miss.ok and miss.payload["count"] == 0 and miss.payload["results"] == []
     assert miss.fact_row == "이벤트 검색 「없는회사」 → 0건"
     assert miss.payload["none_found_ko"] == "「없는회사」에 해당하는 공시를 찾지 못했습니다"
-    assert miss.payload["pointer"] == {"label_ko": "관제 현황판", "href": "/board"}
+    # No href: the route belongs to the frontend, and a path in a payload is a
+    # string the gate would let the model say (`P6.S7`).
+    assert miss.payload["pointer"] == {"label_ko": "관제 현황판"}
 
     # 게이트 실패 데이터로 답변 금지, structurally: a 철회된 event is not a result.
     assert search_events(_ctx(store), "썸에이지").payload["count"] == 0

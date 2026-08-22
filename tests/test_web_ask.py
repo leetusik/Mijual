@@ -100,8 +100,10 @@ def test_the_handle_arrives_first_and_the_turn_lands_as_one_row(ask) -> None:
         "계양전기 증서 언제까지예요?", *ANSWER_TURN, session=handle, scope_rcept_no=R1_RCEPT
     )
     assert response.status_code == 200
-    # 스트림은 캐시되지 않고, 프록시 버퍼링을 끄라고 말한다.
-    assert response.headers["cache-control"] == "no-store"
+    # 스트림은 캐시되지 않고, 프록시 버퍼링·재인코딩을 끄라고 말한다.
+    # `no-transform` is `P6.S7`'s measurement, not a precaution: without it the
+    # `next start` proxy gzips the stream and the whole turn lands in one burst.
+    assert response.headers["cache-control"] == "no-store, no-transform"
     assert response.headers["x-accel-buffering"] == "no"
 
     sent = frames(response)

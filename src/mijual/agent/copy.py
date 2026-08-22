@@ -27,7 +27,6 @@ from __future__ import annotations
 
 __all__ = [
     "AGENT_INTRO_KO",
-    "BOARD_POINTER_HREF",
     "BOARD_POINTER_KO",
     "CONTACT_ROW",
     "CONTACT_UNSET_ROW",
@@ -64,9 +63,14 @@ SEARCH_ITEM = " · {rights_ko} · {rcept_no}"
 #: 링크 — 추측 금지」. The tool returns this **as a fact**, never as prose it wrote.
 NOT_FOUND_KO = "「{q}」에 해당하는 공시를 찾지 못했습니다"
 #: The pointer that travels with it. 「관제 현황판」 is the board's own name
-#: throughout the record; the route is P5's landed one.
+#: throughout the record. **No href travels with it** — the route belongs to
+#: `frontend/lib/routes.ts` (the board is `/`, not `/board`), the surface builds
+#: it from the `{"kind": "board"}` link the turn serves, and a path string in a
+#: tool payload is a string the citation gate would let the model *say*
+#: (`citations.py`'s verbatim-string rule). `P6.S3` recorded the dead route as a
+#: nit; `P6.S7` removed it rather than correcting it, because the agent should
+#: not carry a route at all.
 BOARD_POINTER_KO = "관제 현황판"
-BOARD_POINTER_HREF = "/board"
 
 #: 내 포트폴리오, verbatim from result.md §Agent capabilities:
 #: `내 포트폴리오 읽기 → 샘플 포트폴리오 · 4종목 (구성 예시)`. The count is the

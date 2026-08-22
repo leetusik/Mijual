@@ -120,12 +120,20 @@ _RCEPT = re.compile(r"\A\d{14}\Z")
 #:
 #: ``Cache-Control: no-store`` — an answer is per-reader, per-corpus-moment and
 #: never replayable; a cached SSE body would be a second reader's answer.
+#: ``no-transform`` — **measured, not defensive** (`P6.S7`): the production
+#: ``next start`` proxy gzips whatever it forwards, and a gzip encoder holds the
+#: stream until it has a block to emit, so every frame of a turn arrived in one
+#: burst at the end and R6's signed 스트리밍 state (도구 행 as the agent reads them,
+#: 프로즈 자람, the caret) was never on the screen. ``no-transform`` is the
+#: standard's own way to say *do not re-encode this payload* (RFC 9111 §5.2.2.6),
+#: and `compression`'s ``shouldTransform`` — the middleware Next's router runs —
+#: honours it, as do nginx and the CDNs P4 will meet.
 #: ``X-Accel-Buffering: no`` — nginx (and several PaaS routers) buffer a proxied
 #: response by default, which turns an incremental stream into one late blob.
 #: The header is meaningless where no such proxy exists and free where one does,
 #: and P4 owns the deployed topology (Open Question 4).
 SSE_HEADERS = {
-    "Cache-Control": "no-store",
+    "Cache-Control": "no-store, no-transform",
     "X-Accel-Buffering": "no",
 }
 

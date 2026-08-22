@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P6`
-- Current slice: `P6.S7`
-- Next slice: `P6.REVIEW`
+- Current slice: `P6.REVIEW`
+- Next slice: `none`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T21:56:46+09:00`
+- Rebuilt at: `2026-08-22T22:42:56+09:00`
 
 ## Active Phases
 
@@ -20,7 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
-| [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.S7` | `works/phases/active/P6` |
+| [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.REVIEW` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -106,7 +106,7 @@
 | [x] `P6.S4` | `done` | SSE 엔드포인트 + turn persistence + rate limiting + the request-path model boundary | `implementation` | `works/phases/active/P6/slices/P6.S4` |
 | [x] `P6.S5` | `done` | 런처 + 위젯: the whole desktop AI 질문 surface (bubbles, tool rows, 인용, SSE states, 거절, scope, sessionStorage) | `implementation` | `works/phases/active/P6/slices/P6.S5` |
 | [x] `P6.S6` | `done` | 전용 /ask 페이지 + 모바일 전폭 페이지 + 상세 질문 스트립 + 진입점 continuity | `implementation` | `works/phases/active/P6/slices/P6.S6` |
-| [ ] `P6.S7` | `todo` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P6/slices/P6.S7` |
+| [x] `P6.S7` | `done` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P6/slices/P6.S7` |
 | [ ] `P6.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P6/slices/P6.REVIEW` |
 
 ## Phase P4: Ship & Submit
