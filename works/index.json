@@ -49,6 +49,18 @@
       "done_slice_count": 22
     },
     {
+      "id": "P7",
+      "name": "실서비스 정상화 fix pass",
+      "objective": "P5/P6 shipped but the running product is broken or rough in 11 confirmed ways (nav cleanup, search typeahead, focus rings, board pagination + dead 펼치기 toggles, unreachable login, static countdowns, state-stomping auto-refresh, dead AI 질문 send, disorganized sample portfolio + inert 챙겼습니다 action, self-narrating implementation copy, missing AI 질문 widget). Fix all 11, verifying each fix against the signed P3 design (RESPECT THE DESIGN) and in a real browser. Runs before P4 Ship & Submit.",
+      "status": "planned",
+      "order": 3.5,
+      "path": "works/phases/active/P7",
+      "review_status": "pending",
+      "current_slice": "P7.S1",
+      "slice_count": 11,
+      "done_slice_count": 1
+    },
+    {
       "id": "P6",
       "name": "Apply — AI 질문 agent",
       "objective": "Implement the AI 질문 feature per R6's signed build prompt, after P5 lands the rest: the citation-forced agent backend (SSE, tools search_events/get_event/get_portfolio/save_feedback/get_contact, refusal families, server-side anonymous conversation storage) and its widget + dedicated page surfaces. RESPECT THE DESIGN.",
@@ -76,5 +88,5 @@
   "deferred_open_count": 2,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-23T02:17:28+09:00"
+  "last_rebuilt_at": "2026-08-23T06:48:26+09:00"
 }

@@ -1,0 +1,33 @@
+{
+  "id": "P7.S8",
+  "phase_id": "P7",
+  "name": "포트폴리오: tidy the sample layout and make 청약·매도로 챙겼습니다 visibly move the 놓친 돈",
+  "kind": "fix",
+  "status": "todo",
+  "order": 8,
+  "depends_on": [
+    "P7.S1"
+  ],
+  "created_at": "2026-08-23T06:44:07+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}
