@@ -654,6 +654,31 @@ the single `input[type=text]` stop.**
 6. **Open Question Q2 is untouched by this slice.** The keyboard indicator survives by design; if the
    operator meant *zero* indication, that is theirs to say.
 
+### Item 1 closed — `P7.S6`: the nav entry removed, verified by served-HTML count
+
+**Exactly the edit the DECOMP predicted, nothing else.** `frontend/components/chrome/copy.ts`:
+removed `{ label: STOCKS_LABEL_KO, href: ROUTES.stocks }` from `NAV_LINKS` (now two entries:
+관제 현황판 · AI 질문) and rewrote the doc comment above it to state the current shape and cite the
+P7 override; `Nav.tsx`, `Nav.module.css`, the footer, and no label were touched. `STOCKS_LABEL_KO`
+stays exported and in use (`LookupHeader.tsx`, `ask/links.ts`, `ask/copy.ts` and `lookup/copy.ts`
+re-exports) and `ROUTES` stays imported in `copy.ts` (its remaining two `NAV_LINKS` entries still
+reference `ROUTES.board`/`ROUTES.ask`), so nothing became unused.
+
+**Served-HTML counts on `GET /` confirm it precisely.** `내 종목 조회` occurrences: **6 → 4**; the
+two removed are exactly the desktop nav link and the mobile-sheet row (matched against
+`Nav-module__…__link`/`…__sheetRow` classes before the edit). The 4 remaining are all off-nav and
+untouched: the hero `<h1>`, the hero search `aria-label`, and their two RSC-flight-payload
+duplicates. `href="/stocks"` occurrences: **2 → 0**. `GET /stocks` still **200**s with its own
+`<h1>내 종목 조회</h1>` intact — the surface stays reachable, only the nav entry is gone. **Gotcha
+worth recording for later slices:** a plain `grep -c` on this app's served HTML undercounts,
+because Next serves the whole document as one line — `grep -c` counts *matching lines* (always 1
+if every hit is on that one line), not occurrences; use `grep -o pattern | wc -l` instead. Because
+the same `NAV_LINKS` array feeds both the desktop `<nav>` and the mobile sheet (one `.map` each,
+CSS handles the breakpoint), the single served-HTML check above covers both the 1440 nav and the
+390 sheet rows — no CDP session was needed for a one-entry removal. `npm run typecheck` and
+`python3 scripts/workflow.py validate` both pass. See `P7.S6/result.md` for the full diff and
+counts table.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -798,6 +823,21 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   `<input type="text">` — and `P7.S4`'s candidate panel keeps its own `--candidate-border`, so with
   the listbox open the focused input's hairline is brighter than the panel's side edges by design.
   (Recorded by `P7.S5`.)
+
+- `frontend` — **the nav is now two slots, not three: 관제 현황판 · AI 질문.** `NAV_LINKS`
+  (`components/chrome/copy.ts`) no longer carries a 내 종목 조회 entry / `/stocks` — an explicit
+  **P7 operator override** of R2's signed three-slot nav (item 1), scoped to the slot alone: no
+  re-centring, no re-spacing, no new slot, no other label touched. The 내 종목 조회 surface stays
+  reachable — the landing hero's own search *is* it, plus R3's detail link-out and the AI 질문
+  link row — and the label constant (`STOCKS_LABEL_KO`) stays exported and in use by
+  `LookupHeader.tsx` / `ask/links.ts` / `ask/copy.ts` / `lookup/copy.ts`, so no import broke.
+  Any current-doc language describing the nav as three links (e.g. `frontend`'s v0002/R2
+  supersession-table framing) should be updated to two. **For the review, not this slice:** two
+  P5 catalogue items are now *more* visible with the distraction gone — the footer's locked
+  positioning line still literally says **내 종목 연결** (`P5.S19` catalogue #4) and the hero
+  `<h1>` says **내 종목 조회** where R2's own literal was 내 종목 연결 (catalogue #12); neither is
+  P7.S6's to rewrite. (Recorded by `P7.S6`; see `P7.S6/result.md` for the diff and the
+  before/after served-HTML counts — 6→4 for `내 종목 조회`, 2→0 for `href="/stocks"` on `/`.)
 
 ## Open Questions
 

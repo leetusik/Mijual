@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P7`
-- Current slice: `P7.S6`
-- Next slice: `P7.S7`
+- Current slice: `P7.S7`
+- Next slice: `P7.S8`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T08:41:54+09:00`
+- Rebuilt at: `2026-08-23T08:44:56+09:00`
 
 ## Active Phases
 
@@ -20,7 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
-| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S6` | `works/phases/active/P7` |
+| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S7` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -106,7 +106,7 @@
 | [x] `P7.S3` | `done` | board: a limited firm list at a time, with the signed 펼치기 disclosures working | `fix` | `works/phases/active/P7/slices/P7.S3` |
 | [x] `P7.S4` | `done` | 내 종목 조회 typeahead: candidate suggestions before submit (API route + search UI) | `fix` | `works/phases/active/P7/slices/P7.S4` |
 | [x] `P7.S5` | `done` | focus treatment: the clipped blue ring off the inputs, keyboard focus kept | `fix` | `works/phases/active/P7/slices/P7.S5` |
-| [ ] `P7.S6` | `todo` | nav: drop the 내 종목 조회 slot (operator override of the signed three-slot nav) | `fix` | `works/phases/active/P7/slices/P7.S6` |
+| [x] `P7.S6` | `done` | nav: drop the 내 종목 조회 slot (operator override of the signed three-slot nav) | `fix` | `works/phases/active/P7/slices/P7.S6` |
 | [ ] `P7.S7` | `todo` | copy sweep: remove self-narrating implementation copy across the reader surfaces | `fix` | `works/phases/active/P7/slices/P7.S7` |
 | [ ] `P7.S8` | `todo` | 포트폴리오: tidy the sample layout and make 청약·매도로 챙겼습니다 visibly move the 놓친 돈 | `fix` | `works/phases/active/P7/slices/P7.S8` |
 | [ ] `P7.S9` | `todo` | fidelity sweep: all 11 items in a real browser, dev and production build, on the operator's own origins | `fix` | `works/phases/active/P7/slices/P7.S9` |

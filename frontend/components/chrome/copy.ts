@@ -37,23 +37,24 @@ export const RING_WORDMARK_NATURAL = { width: 2178, height: 346 } as const;
  * spells it). Not a new string — the name of the thing. */
 export const BRAND_ALT_KO = "미주알";
 
-/** The three signed nav destinations, in R6's finalized order:
- * **내 종목 조회 · 관제 현황판 · AI 질문**.
+/** The nav's two remaining destinations, R6's finalized order minus the slot the
+ * operator withdrew in P7: **관제 현황판 · AI 질문**.
  *
- * R2 landed 내 종목 연결 · 관제 현황판 · 해설 and posed the labels back as
- * provisional. Both were then settled by later signed rounds and both are in the
- * supersession table: R4 named the surface **내 종목 조회** ("Naming
- * consequences: nav label 내 종목 연결 → 내 종목 조회"), and R6 "retires the
- * provisional 해설 nav label in favor of 「AI 질문」" — its build prompt puts
- * 「AI 질문」 in "nav 세번째 자리". Rendering R2's literals would be rendering a
- * superseded decision. */
+ * R2 landed 내 종목 연결 · 관제 현황판 · 해설 as a three-slot nav and posed the
+ * labels back as provisional. Both were then settled by later signed rounds and
+ * both are in the supersession table: R4 named the surface **내 종목 조회**
+ * ("Naming consequences: nav label 내 종목 연결 → 내 종목 조회"), and R6 "retires
+ * the provisional 해설 nav label in favor of 「AI 질문」" — its build prompt puts
+ * 「AI 질문」 in "nav 세번째 자리". P7 item 1 then removed the 내 종목 조회 slot
+ * itself (an operator override of the signed three-slot nav, not a relabelling):
+ * the surface stays reachable from the landing hero's own search, R3's detail
+ * link-out, and the AI 질문 link row — see `phase.md`'s P7 Item 1 note. */
 export const STOCKS_LABEL_KO = "내 종목 조회";
 export const BOARD_LABEL_KO = "관제 현황판";
 /** Also the footer's bottom-row link, where R2 landed the retired 해설. */
 export const ASK_LABEL_KO = "AI 질문";
 
 export const NAV_LINKS = [
-  { label: STOCKS_LABEL_KO, href: ROUTES.stocks },
   { label: BOARD_LABEL_KO, href: ROUTES.board },
   { label: ASK_LABEL_KO, href: ROUTES.ask },
 ] as const;
