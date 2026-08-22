@@ -367,6 +367,72 @@ form renders 「이메일 또는 비밀번호가 일치하지 않습니다.」 (
    deliberate negative controls (`evil.example.com` ×2, `100.1.2.3`, `192.168.1.9`) — **none from
    `127.0.0.1` or the tailnet IP**.
 
+### RC-B closed — `P7.S2`: the account slot answers, and the round trip works
+
+**The fix is the removal of a cleanup flag**, one file
+(`frontend/components/chrome/useAccount.ts`), no other product code:
+
+```ts
+useEffect(() => {
+  if (probedPath === pathname) return;
+  probedPath = pathname;
+  void fetchAuthState().then((next) => {
+    if (probedPath === pathname) setAccountState(next);   // no `live`
+  });
+}, [pathname]);
+```
+
+Two source facts make dropping `live` safe, both checked rather than assumed. (a) The state it
+guarded is a **module** store that outlives every component, so an answer landing after a
+subscriber unmounted is still the answer the next subscriber wants. (b) `lib/session.ts` shares the
+**in-flight** probe, so StrictMode's two runs cost **one** request — and, less obviously, a stale
+answer can never overwrite a newer one, because a second probe can only start after the first has
+settled. The surviving `probedPath === pathname` check still drops an answer that lands after a
+client-side navigation moved the reader.
+
+**Measured on `127.0.0.1:3000` in `next dev`** (fresh profile, `mijual.portfolio.sample` cleared,
+CDP at 1440×900 and 390×844):
+
+| check on `/` | before | **after** | tailnet **after** |
+|---|---|---|---|
+| desktop slot markup | `<div class="…__slot"></div>` | **`<a class="…__login" href="/auth/login">로그인</a>`** | same |
+| `a[href="/auth/login"]` in the document | **0** | **2** (desktop slot + sheet row) | **2** |
+| mobile 390 sheet, opened | no 로그인 row | **로그인 present** | — |
+| `GET /api/auth/me` per page load | 1, **discarded** | **1**, 200, **published** | **1**, 200 |
+
+**The full round trip, one browser session, all client-side unless noted:** 로그인 clicked in the
+chrome → `/auth/login` (0 document loads) → 계정 만들기 `POST /auth/signup` **201** → `router.push`
+to `/portfolio` and the slot switches to the 축약 이메일 menu `p7s2…com` **with no reload** →
+client-side nav to `/`, slot unchanged → menu rows 내 포트폴리오 / 알림 설정 / 로그아웃 → 로그아웃
+**200**, fresh load, slot back to 로그인 + 「로그아웃되었습니다」 once → 로그인 again **200** →
+알림 설정 → 계정 삭제 (arms, then `DELETE /auth/account` **200**) → lands `/`, slot 로그인 → the
+same credentials now **401** 「이메일 또는 비밀번호가 일치하지 않습니다.」. **9 probes for 9 path
+visits** — exactly one each. Production build (isolated copy, `next start` on :3100): 로그인
+renders, 1 probe, 0 responses ≥ 400.
+
+**Notes the later slices need:**
+
+1. **StrictMode is on in `next dev` and it is the phase's second false-defect generator.** The
+   pattern to distrust anywhere in this app: a **module-scope** guard claimed inside an effect plus
+   a per-run cleanup flag = the work happens once and is thrown away, forever. `next start` runs
+   the effect once and looks perfect. Any P7 slice adding an effect that writes to module state
+   (S3's board control, S4's typeahead) should re-read this before trusting a dev measurement.
+2. **`AccountSlot.tsx` needed nothing** — the probe fix alone makes it render, so R5's three
+   renderings are intact. Re-verified while here: with `mijual.portfolio.sample` loaded the slot is
+   still 샘플 + 샘플 종료 with **0** 로그인 anchors (R5-4 outranks, `AccountSlot.tsx:132`).
+3. **`components/auth/useAuthState.ts` was left alone**, per the DECOMP note.
+4. **Building without disturbing the dev server**: `next build` has **no `--dist-dir`** flag in
+   16.3.2 (`distDir` is config-only), and Turbopack **panics on a symlinked `node_modules`**
+   pointing outside the project root. A real copy of `frontend/` (sources + a copied
+   `node_modules`, ~354 MB) into scratch builds and `next start`s cleanly, and leaves
+   `make stack-status` untouched — cheaper than stopping and restarting the stack.
+5. **Dev-DB leftovers that are not P7.S2's:** `account` still holds `s19-fidelity@example.com`
+   (id 14) with one live `auth_session`, from `P5.S19`. `P7.S9` will meet it during its sweep;
+   this slice's own throwaway (`p7s2-probe@example.com`) was deleted through the product's 계정
+   삭제 and is verified gone.
+6. **The one 4xx on a clean landing load is `/favicon.ico` 404** — pre-existing, in both the before
+   and after runs. Nobody's item; worth not re-discovering.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -426,6 +492,16 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   origin silently stops hydrating. It belongs in the Environment Variables table beside
   `MIJUAL_API_ORIGIN`. (The operations doc today describes no dev stack / `Makefile` at all —
   `P7.REVIEW` may decide whether that gap is worth closing.)
+- `frontend` — a dev-time trap for the Gotchas list, beside the `localhost`/`127.0.0.1` and
+  `EADDRINUSE` entries: **the App Router tree is wrapped in `React.StrictMode` under `next dev`**
+  (`next.config.ts` sets no `reactStrictMode`, and Next's `define-env.js` turns that into
+  `__NEXT_STRICT_MODE_APP = true`), so every effect runs twice. A **module-scope** guard claimed
+  inside an effect plus a per-effect-run cleanup flag therefore does its work once and discards the
+  result **forever** — the shape that made the chrome's account slot render nothing at all in dev
+  while `next start` was perfect (`P7.S2`, item 5). Recorded with it: a module store has no unmount
+  hazard for a cleanup flag to protect against, and `lib/session.ts` shares the in-flight probe, so
+  the double invocation costs one request. (Recorded by `P7.S2`; the doc does not describe
+  `useAccount` itself, so this is the trap, not an API change.)
 
 ## Open Questions
 

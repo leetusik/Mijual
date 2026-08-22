@@ -30,14 +30,35 @@ import type { AuthState } from "@/lib/types";
  * The probe is per **path**, not per mount: a session can begin on `/auth/login`
  * and end anywhere, and the chrome outlives a client-side navigation, so a store
  * that answered once at boot would show a stale slot for the rest of the visit.
- * Every mutation this app performs itself (로그인 · 로그아웃 · 계정 삭제) also
- * publishes through `setAccountState`, so the slot never waits for a navigation
- * to tell the truth.
+ * That covers every mutation this app performs itself: 로그인 lands on a new path
+ * (`AuthPanel` pushes 내 포트폴리오), 로그아웃 and 계정 삭제 leave through a fresh
+ * document load, which resets this module outright — and 수신 주소 변경, the one
+ * mutation that changes the slot's own text without moving the reader, publishes
+ * through `setAccountState` so the slot never waits for a navigation to tell the
+ * truth.
  *
  * **Nothing is cached across a probe**: `null` means *not answered yet* and is
  * deliberately distinct from `{authenticated: false}` (the convention
  * `components/auth/useAuthState.ts` set), so the slot renders neither state until
  * it knows rather than flashing 로그인 at a reader who is logged in.
+ *
+ * ## Why the probe carries no `live` cleanup flag (`P7.S2`)
+ *
+ * It used to, and in `next dev` that made the slot unanswerable — the whole of
+ * the operator's "no login exists". React StrictMode double-invokes effects in
+ * development, so run 1 claimed `probedPath`, started the probe, and then had its
+ * cleanup set `live = false`; run 2 returned early on the claim run 1 had just
+ * made. The one answer on the wire was discarded, `state` stayed `null` forever,
+ * and `AccountSlot` rendered an empty slot for the entire visit. `next start`
+ * invokes the effect once and was always fine, which is why it shipped.
+ *
+ * A cleanup flag is the wrong instrument here regardless of StrictMode: the state
+ * it guards is a **module** store that outlives every component, so an answer
+ * landing after a subscriber unmounted is still the answer the next subscriber
+ * wants — there is no unmount hazard to protect against. The guard that does the
+ * real work is `probedPath === pathname` at resolve time, which drops an answer
+ * that lands after a client-side navigation moved the reader. And two effect runs
+ * cost one request, not two: `lib/session.ts` shares the in-flight probe.
  */
 
 let state: AuthState | null = null;
@@ -74,13 +95,9 @@ export function useAccount(): AuthState | null {
   useEffect(() => {
     if (probedPath === pathname) return;
     probedPath = pathname;
-    let live = true;
     void fetchAuthState().then((next) => {
-      if (live && probedPath === pathname) setAccountState(next);
+      if (probedPath === pathname) setAccountState(next);
     });
-    return () => {
-      live = false;
-    };
   }, [pathname]);
 
   return value;
