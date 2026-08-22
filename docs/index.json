@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed",
+      "latest": "v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -35,11 +35,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the designed product is built — the surfaces exist, the notification boundary, and what the build closed",
           "previous": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added"
+        },
+        {
+          "id": "v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built",
+          "path": "docs/versions/product/v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built.md",
+          "created_at": "2026-08-22T22:54:42+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the AI 질문 agent exists — an autonomous citation-forced agent on every surface, unlimited and anonymous, refusing rather than guessing; the whole designed product is now built",
+          "previous": "v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed"
         }
       ]
     },
     "experience": {
-      "latest": "v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser",
+      "latest": "v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -65,11 +73,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the signed journeys as built, and what each surface refuses to state — verified in a real browser",
           "previous": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules"
+        },
+        {
+          "id": "v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy",
+          "path": "docs/versions/experience/v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy.md",
+          "created_at": "2026-08-22T22:55:38+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the AI 질문 journey as built and browser-verified — launcher, widget, dedicated page, mobile page, question strip, the four SSE states and the refusal anatomy",
+          "previous": "v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser"
         }
       ]
     },
     "architecture": {
-      "latest": "v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam",
+      "latest": "v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -95,11 +111,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the HTTP layer lands, the presentation layer between pipeline and transport, the same-origin frontend boundary, and the serving precomputation seam",
           "previous": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary"
+        },
+        {
+          "id": "v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables",
+          "path": "docs/versions/architecture/v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables.md",
+          "created_at": "2026-08-22T22:47:44+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the mijual.agent package, the re-aimed request-path boundary (no OpenDART anywhere; the model only through mijual.agent), the first streaming endpoint, and the anonymous conversation tables",
+          "previous": "v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam"
         }
       ]
     },
     "frontend": {
-      "latest": "v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled",
+      "latest": "v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -125,11 +149,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the Next.js app as built — vendored foundations, the trust primitives, chrome and eight signed surfaces, and the fidelity rules the pass settled",
           "previous": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain"
+        },
+        {
+          "id": "v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip",
+          "path": "docs/versions/frontend/v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip.md",
+          "created_at": "2026-08-22T22:56:57+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the AI 질문 surfaces — a module-scoped conversation store outside React, the first streaming client, the Saturn launcher, the 440x620 widget, the frameless /ask page and the preset strip",
+          "previous": "v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled"
         }
       ]
     },
     "backend": {
-      "latest": "v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader",
+      "latest": "v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -147,11 +179,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the mijual.web HTTP layer, the mijual.present derivation layer, auth/portfolio/ops modules, the mailer and conversation seams, and the label-field reader",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter",
+          "path": "docs/versions/backend/v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter.md",
+          "created_at": "2026-08-22T22:49:32+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the mijual.agent package (autonomous loop, five tools, citation gate, its own model client), the SSE ask transport with its BackgroundTask commit, anonymous conversation storage, and the identity-free rate limiter",
+          "previous": "v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader"
         }
       ]
     },
     "data": {
-      "latest": "v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables",
+      "latest": "v0005_p6_apply_phase_the_two_anonymous_conversation_tables_no_account_email_ip_ua_column_no_foreign_key_in_either_direction_a_randomly_minted_session_handle_and_rows_that_are_not_re-collectable",
       "current_path": "docs/current/data.md",
       "versions": [
         {
@@ -185,11 +225,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: identity-scoped 정정 pairing, the first stored label field, multi-part citations, and the serving/reader tables",
           "previous": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract"
+        },
+        {
+          "id": "v0005_p6_apply_phase_the_two_anonymous_conversation_tables_no_account_email_ip_ua_column_no_foreign_key_in_either_direction_a_randomly_minted_session_handle_and_rows_that_are_not_re-collectable",
+          "path": "docs/versions/data/v0005_p6_apply_phase_the_two_anonymous_conversation_tables_no_account_email_ip_ua_column_no_foreign_key_in_either_direction_a_randomly_minted_session_handle_and_rows_that_are_not_re-collectable.md",
+          "created_at": "2026-08-22T22:52:38+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the two anonymous conversation tables — no account/email/IP/UA column, no foreign key in either direction, a randomly minted session handle, and rows that are not re-collectable",
+          "previous": "v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables"
         }
       ]
     },
     "api": {
-      "latest": "v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes",
+      "latest": "v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -207,11 +255,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the whole HTTP contract — error envelope, presentation contract, board/event/stock reads, auth, portfolio, and the thirteen read-only ops routes",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows",
+          "path": "docs/versions/api/v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows.md",
+          "created_at": "2026-08-22T22:51:30+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: POST /ask, the first streaming endpoint — its SSE frame vocabulary, session-first handle, no-transform header and pre-stream envelope — plus the three ops conversation tabs now serving real rows",
+          "previous": "v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes"
         }
       ]
     },
     "operations": {
-      "latest": "v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built",
+      "latest": "v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -253,11 +309,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the six-stage beat with the run log, running the API and frontend locally, the re-derivation order, and the operator console as built",
           "previous": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes"
+        },
+        {
+          "id": "v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits",
+          "path": "docs/versions/operations/v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits.md",
+          "created_at": "2026-08-22T22:58:32+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: agent spend as a per-turn ▷ server-log line, the three conversation tabs alive on real rows, the streaming deploy constraints, and the two operator-provided values P4 inherits",
+          "previous": "v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built"
         }
       ]
     },
     "security": {
-      "latest": "v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary",
+      "latest": "v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -283,11 +347,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the auth model implemented — session-as-a-row, scrypt, service-wide CSRF, the uniform ops door, the measured no-join promise and the vocky key boundary",
           "previous": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage"
+        },
+        {
+          "id": "v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence",
+          "path": "docs/versions/security/v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence.md",
+          "created_at": "2026-08-22T22:53:28+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the anonymity promise implemented and asserted — minted-not-derived session handles, an identity-free rate limiter, the honest-unset operator contact, and sessionStorage-only client persistence",
+          "previous": "v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary"
         }
       ]
     },
     "qa": {
-      "latest": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list",
+      "latest": "v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -313,11 +385,19 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply phase: the suite at 118 plus the framework-free frontend check, real-browser verification as a method, and D1/D4 closed off the fragile list",
           "previous": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers"
+        },
+        {
+          "id": "v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method",
+          "path": "docs/versions/qa/v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method.md",
+          "created_at": "2026-08-22T22:59:53+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply phase: the suite at 137, four structural boundary scans plus the anonymity scan, agent verification against a scripted model at zero spend, and the live-agent browser pass as a measured method",
+          "previous": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list"
         }
       ]
     },
     "decisions": {
-      "latest": "v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed",
+      "latest": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -359,9 +439,17 @@
           "source": "P5.REVIEW",
           "summary": "P5 apply-phase decisions: D-16 session-as-a-row auth mechanics, D-17 factors-not-products, D-18 the free label tier, D-19 vocky read-only observation; D-15 closed",
           "previous": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin"
+        },
+        {
+          "id": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset",
+          "path": "docs/versions/decisions/v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset.md",
+          "created_at": "2026-08-22T23:02:28+09:00",
+          "source": "P6.REVIEW",
+          "summary": "P6 apply-phase decisions: D-20 agent not chain (operator), D-21 the request-path boundary re-aimed, D-22 the operator contact honest-unset",
+          "previous": "v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-22T18:22:58+09:00"
+  "last_rebuilt_at": "2026-08-22T23:03:40+09:00"
 }

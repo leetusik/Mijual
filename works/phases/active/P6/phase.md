@@ -856,6 +856,51 @@ also the true build order.
       instead of its `.bar` wrapper, and **`/ops/feedback` being the vocky 관찰
       뷰 while the `save_feedback` 대기열 lives on the Conversations tab**).
 
+25. **`P6.REVIEW` — verdict `pass`. What was verified independently, and the one thing left open.**
+    Full record in `slices/P6.REVIEW/result.md`. Validation re-run fresh: **pytest 137 passed**
+    (and **again after the `decisions` rewrite**, because the ops 개요 tab reads that doc),
+    frontend `build` · `typecheck` · `smoke 15/15` green, `workflow validate` green.
+    - **The keystone was checked in the code, not accepted from the notes.** `call_tool` is invoked
+      from **exactly one place in the whole codebase** (`loop.py:213`), dispatching on the name the
+      model supplied; `run_turn`'s only caller is `web/ask.py:480`; `messages` starts as history +
+      question with **nothing prefetched**; the turn ends at `if not calls: break`. The one place a
+      forced call could have hidden — a scoped turn — deliberately does **not** hide one:
+      `instructions.scope_line` uses a plain `resolve_event` read precisely so 범위 costs no tool
+      call, and says so. **Agent, not chain: met structurally.**
+    - **`docs/reference/design/` is byte-untouched across every P6 commit** (`git diff 0f0bb23..HEAD
+      -- docs/reference/` empty), and so is `docs/` overall — so no slice versioned a doc, which is
+      the correct per-phase rule. **No `/ops` route or component changed** either; the three tabs
+      came alive purely through `create_app`'s new default.
+    - **The five refusal sentences in `agent/copy.py` are byte-identical to R6 `result.md`
+      §Proposed copy**, as are the SSE strings, the 의견 confirmation, the 세션 line and the two
+      패널 lines. Copy fidelity was checked at the source, not via summary.
+    - **⚠ The one shortfall against the record: 「필드로 이동」** — R6 signs three footer context
+      links and two ship. Judged **non-blocking** and escalated rather than fixed, because building
+      it faithfully is impossible without invention: the link kinds are a closed set, the detail
+      page has no per-field anchor, and the record never says *which* field an answer citing several
+      should point at. It is entangled with the footer's link density. **A `P6.F1` only makes sense
+      after the operator decides "draw it or strike it"** — and it is now the one still-open reading
+      in `decisions`, so it surfaces on the ops 가동 전 미결 panel rather than living only here.
+    - **Every other catalogued item was re-judged and confirmed correctly catalogued**: 철회-by-name
+      is the exposure contract working as designed (not P6's to re-decide), raw numerals are R6's own
+      instruction plus never-compute (改 would have been the violation), the refusal 푸터 and the
+      mobile-menu row are record ambiguities, and the ops timestamp/cross-link items are P5 surfaces
+      P6 was constrained not to touch.
+    - **11 doc versions** consolidated: `architecture` v0004 · `backend` v0003 · `api` v0003 ·
+      `data` v0005 · `security` v0004 · `product` v0005 · `experience` v0004 · `frontend` v0004 ·
+      `operations` v0006 · `qa` v0004 · `decisions` v0006 (**D-20** agent-not-chain, operator
+      verbatim and dated 2026-08-22 · **D-21** the boundary re-aimed not relaxed · **D-22** the
+      contact honest-unset; **D-4** gained the `agent_turn` LOW row, **D-10**'s SSE clause landed).
+    - **⚠ Ops 개요 open-bullet re-check (P5.REVIEW note 8), done by rendering not by assuming:**
+      **1 → 3** bullets, each with a sensible decision label and verbatim body. The two new ones are
+      deliberately only the items **the operator alone can close** (the 연락처 string; 「필드로
+      이동」). P4's engineering to-dos — create the conversation tables before the first `POST /ask`,
+      preserve `no-transform` + `X-Accel-Buffering` through every hop with idle timeouts above ~10 s,
+      install a root logging config — were kept **off** that panel and put in `operations`: they are
+      미완, not 미결.
+    - **Hygiene note for the orchestrator** (not a defect): `phase.json` still reads
+      `status: "planned"` while every slice is `done`; `review-phase P6 --verdict pass` transitions it.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -1017,3 +1062,11 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   **conversation tables must be created in the deploy database** before the first `POST /ask`
   (`create_all`; P2 has no migrations), and the **▷ ledger line needs a root logging configuration**
   or agent spend is recorded nowhere.
+- (`P6.REVIEW`) **consolidated — the list above is closed.** Eleven versions created on the passing
+  review, one per doc the phase moved: **`architecture` v0004** · **`backend` v0003** ·
+  **`api` v0003** · **`data` v0005** · **`security` v0004** · **`product` v0005** ·
+  **`experience` v0004** · **`frontend` v0004** · **`operations` v0006** · **`qa` v0004** ·
+  **`decisions` v0006**. `docs/current/*` was regenerated by `rebuild-docs`, never hand-edited, and
+  `pytest` was re-run afterwards (**137 passed**) because the ops 개요 tab parses
+  `docs/current/decisions.md`. Open-bullet count **1 → 3**, verified by rendering the panel's own
+  reader. Nothing in this phase's diff changed durable truth without a line above.
