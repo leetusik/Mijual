@@ -1,0 +1,18 @@
+/* The chrome frame. A column so the footer sits at the bottom of a short page
+ * instead of riding up under the nav.
+ *
+ * It sets **no** `transform`, `filter`, `contain`, `opacity` or `z-index`: any of
+ * those would create a containing block or a stacking context and break the one
+ * continuous full-page starfield the round requires (`app/shell.css` keeps the
+ * same rule off `html`/`body`, and `.backdrop` is `position: fixed;
+ * z-index: -1`). `P5.S12` fills that slot; this frame must stay invisible to it. */
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.page {
+  flex: 1 0 auto;
+}

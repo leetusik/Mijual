@@ -1341,6 +1341,108 @@ Python suite untouched at 113.**
     fidelity question for `P5.S19` against the real cards — **do not restyle a primitive or
     edit the vendored `tokens.css` to "fix" it**.
 
+### `P5.S11` — the chrome exists; the route map, the two seams, the fidelity to-dos
+
+`frontend/components/chrome/` is the R2 chrome, wrapped around every route by the root
+layout. **0 new dependencies, no primitive or token touched, no Python file edited** (suite
+still 113), and **no Korean invented** — every chrome string is transcribed with a citation
+in `components/chrome/copy.ts`, the same convention `lib/copy.ts` uses for the primitives.
+
+| you need | use |
+|---|---|
+| the chrome around a page | nothing — `app/layout.tsx` already wraps every route in `SiteChrome` |
+| a route path | `import { ROUTES, isActiveRoute } from "@/lib/routes"` — **one module, one statement per path** |
+| a chrome string | `components/chrome/copy.ts` (surface copy still belongs to the surface's own slice) |
+| the 로그인 slot | `components/chrome/AccountSlot.tsx` — **`P5.S16`'s one swap point** |
+| vocky's script URL | `NEXT_PUBLIC_VOCKY_SRC` (`components/chrome/VockyScript.tsx`) |
+
+**The route map, decided here and inherited by S12–S17:** `/` 관제 현황판 (`P5.S12`) ·
+`/stocks` 내 종목 조회 (`P5.S14`, the API's own noun so page path and contract path are one
+vocabulary) · `/ask` **AI 질문 (P6's surface**, and deliberately not `/explain` — 해설 is the
+label R6 retired) · `/auth/login` 로그인 (`P5.S15`; `mijual.web.auth.RESET_PATH` already fixes
+`/auth/reset`, so the auth surfaces live under `/auth/`) · `/ops` 운영 관제 (`P5.S17`). Active
+state is `isActiveRoute`: `/` exact, everything else prefix-with-boundary, so
+`/stocks/00162461` keeps 내 종목 조회 underlined. **`/stocks` and `/ask` ship as bare shells**
+— chrome only, no copy, no placeholder — and their owners replace the files.
+
+1. **The superseded labels are what render, and the check is in the HTML.** 내 종목 조회 ·
+   관제 현황판 · **AI 질문** in the bar (R4/R6 via the supersession table, and R6's own "nav
+   finalized" line), and **AI 질문** in the footer's bottom row where R2 landed 해설
+   (`P5.DECOMP` note 7). Verified against the served HTML: **해설 and `▷` appear nowhere**,
+   and no 내 종목 연결 nav link exists.
+2. **The gate-cost sentence keeps its words and loses its `▷`** — `▷ 49.2억원은 …` becomes
+   49.2억원 + the 「추정」 tag + `은 할인율 인용이 게이트를 통과하지 못해 총액에서
+   제외했습니다`, byte-identical otherwise (its missing full stop included). ⚠ **The figure
+   is a dated-pack number, not a served one:** `grep` confirms the presentation contract has
+   no gate-cost figure anywhere (`/board/summary` serves the 718.1억/548.7억 pair and no
+   upper bound), and computing 49.2억 needs the corpus-median 할인율 from
+   `mijual.estimate`'s report — a module a request path may not import (S2 note 7). So the
+   footer states a 2026-08-20 figure on every page while the landing beside it states live
+   ones. Making it live is **backing work** (a persisted precomputation like `offering_input`,
+   plus a summary key), not a rendering fix: **`P5.REVIEW`'s call** whether that is a fix
+   slice or a deferred job.
+3. **The positioning line is locked copy and is transcribed verbatim — including 내 종목
+   연결.** R2's handoff §3 lists "the positioning sentence" among the *locked* items and §1
+   states it ("시장 전체의 소멸 임박 권리를 감시하는 관제 서비스 + 내 종목 연결"; also R1's
+   handoff and the operator's own `docs/reference/challenge/00_HANDOFF.md`). R4's supersession
+   is scoped to the **nav label**, and rewriting a locked sentence would be a design change,
+   so the footer says 연결 while the nav says 조회. **Flagged for `P5.S19`/`P5.REVIEW`** — if
+   the operator wants the sentence re-cut, that is a signed-copy change, not an edit.
+4. **`© 미주알`** — R2's bottom row is written "© · 자료: …" and the card stays in the design
+   project. The symbol is R2's, 미주알 is the product's own name (it is in the disclaimer on
+   the same surface), **no year is invented**. `P5.S19` checks it against the card.
+5. **The wordmark is `mijual-logo-ring-white.png` at h 19 (nav) / h 17 (footer), rendered by
+   a plain `<img>`.** The ring file (2178×346) is the mark *with* its orbital ring, which is
+   what R2 asks for; the wordmark pair (1788×324) has none and does not substitute. **`next/image`
+   is not used and must not be**: it serves a re-compressed derivative, and a delivered asset
+   is never re-encoded. Intrinsic dimensions travel as attributes so the 52px bar reserves the
+   right box before the PNG arrives. Verified in a browser: `complete: true`, natural
+   2178×346, rendered 119.59 × 19.
+6. **vocky: one script, three triggers, and the URL is configuration.** R2 wants the script
+   loaded "once, deferred, in the shell"; `next/script` in the root layout is exactly Next's
+   documented once-per-app mechanism. The URL is in **no** record, so it is
+   `NEXT_PUBLIC_VOCKY_SRC` — **unset ⇒ no script tag at all, triggers still render** (both
+   directions measured; with it set there is exactly one tag, still one after a client-side
+   navigation). `NEXT_PUBLIC_*` is inlined at **build** time, so setting it means rebuilding.
+   `P5.S18`/P4 own the real value.
+7. **The mobile sheet stays in the DOM, hidden with `display: none`.** An external script that
+   binds `[data-vocky-trigger]` at load would never see a trigger React mounts later, so all
+   three exist from the first paint; `display: none` keeps the closed sheet out of the tab
+   order and the a11y tree, and the desktop bar never shows it. Its open rule is
+   `.sheet.sheetOpen` — **specificity, not source order**, so a bundler moving a block cannot
+   flip it.
+8. **The bottom-right corner is clear and nothing in the chrome is `position: fixed`**
+   (measured: zero fixed elements). R2 §6-4 forbids a floating button and R6's launcher lands
+   in that corner — `P5.S12` should keep it that way too.
+9. **⚠ Fidelity to-do for `P5.S19`: the 「추정」 tag in the footer renders at 6.72px.** The
+   primitive is `0.56em` of its context (R3's system-wide re-cut, and R1's "the component
+   never sets its own size"), and the footer sentence is 12px — while **R2's own landing spec
+   writes the tag as 10px**. The two readings agree at ~17.9px context and diverge here. This
+   slice did **not** touch the primitive (the plan forbids it) and did not resize the signed
+   sentence. If the cards show a legible tag, the sanctioned fix is a **named prop on
+   `EstimateMarker` with its citation** (`components/index.ts`'s own rule), never a local
+   restyle. Worth deciding, because an estimate mark nobody can read is close to an untagged
+   estimate.
+10. **Two more `P5.S19` items in the same class.** (a) The positioning line and the bottom row
+    are Korean **in mono** because R2 says mono 11 — so they hit S10 note 19's mono/Hangul
+    gap and are drawn by the OS Korean face. (b) The 메뉴 button carries the chrome's own
+    hairline (`rgba(255,255,255,.3)`, the value R2 gives the `[의견]` trigger); R2 specifies
+    only "메뉴 button, mono, 44px hit", so its border is this build's reading of "button".
+11. **R5-4's 샘플 포트폴리오 entry is *not* in this footer, on purpose.** R5 says "진입:
+    로그인 페이지 하단 + **랜딩 푸터**" while its chrome section says "Footer 불변" and the
+    signoff records the round as extending only the account slot. Read together, the sample
+    entry is a **landing/sample** element, not global chrome: `P5.S15`/`P5.S16` (with
+    `P5.S12` if it lands on the landing page) own it. Do not silently drop it — it is signed.
+12. **Gotcha, and it cost this slice an hour: run browser checks against
+    `http://localhost:3000`, never `http://127.0.0.1:3000`.** Next 16's dev-origin protection
+    answers **403** for two `/_next/static/chunks/*.js` files when the browser's host is not
+    the dev server's own (`curl` gets 200 for the same URLs, which makes it look fine), so
+    **hydration never completes** and every interactive check quietly measures the
+    un-hydrated page — a click changes nothing, and an `<a>` still navigates, so even a
+    "client-side navigation worked" reading is misleading. The dev log says so explicitly
+    (`allowedDevOrigins`). Everything in note 7 and the sheet's behaviour was re-verified
+    over `localhost` **and** against `npm run build && npm run start`.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -1373,6 +1475,10 @@ Python suite untouched at 113.**
   stored rows (16 duplicates).
 - **`▷` in admin output is verbatim pipeline output** and must **not** be swapped for 「추정」 — the
   boundary is the source. Everywhere else in the product, 「추정」 is the only estimate mark.
+- **Browser-check the frontend over `http://localhost:3000`, not `http://127.0.0.1:3000`** —
+  Next 16's dev-origin protection 403s two client chunks for a foreign host, hydration never
+  completes, and the check silently measures an un-hydrated page (`P5.S11` note 12). A
+  `npm run build && npm run start` pass is the second opinion.
 - **Tests stay terse** (repo rule + `qa`): minimal high-value cases, no fixture sprawl. Today's
   baseline is `.venv/bin/python -m pytest` → 59 passed, ~1 s, no network, no model. Keep it that way.
 - **No Alembic.** Additive columns go through `mijual.db.schema_sync.ensure_columns`; new tables via
@@ -1860,6 +1966,45 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   error envelope becoming an `ApiError`. The Python suite is **untouched at 113**; this slice
   edited no Python file and added no Python dependency.
 
+- (`P5.S11`) **`frontend`** — the **global chrome** R2 designs is built and is durable
+  frontend truth: `components/chrome/` (nav · mobile top bar + sheet · footer · vocky
+  triggers · the script seam), wrapped around every route by the root layout, with the 52px
+  transparent bar over the cosmos, the three **signed** slots rendering their *superseded*
+  labels (내 종목 조회 · 관제 현황판 · **AI 질문**, R4/R6 over R2's provisional literals), the
+  active state as 600 + a 2px #fff underline, the quiet 로그인 slot, the ≤480px sheet (rows
+  ≥48px, R5's 구분선, a 200ms close that becomes a **cut** under reduced motion) and the
+  white-on-dark footer (ring wordmark h 17 + the locked positioning line in mono 11, the three
+  signed sentences, the mono 11 bottom hairline row). Three durable rules land with it: the
+  **wordmark is the delivered `mijual-logo-ring-white.png` rendered height-constrained through
+  a plain `<img>`** — never `next/image`, which would ship a re-compressed derivative of an
+  asset that is never re-encoded; the **gate-cost sentence's `▷` is gone and its 49.2억원
+  carries the 「추정」 tag**, the footer being its only placement; and **nothing in the chrome
+  is `position: fixed`** — no floating button, bottom-right corner clear for P6's launcher.
+  Two open fidelity readings for the record: the 「추정」 tag inside a 12px sentence renders
+  **6.72px** (the primitive's `0.56em`) against R2's landing literal of 10px, and the
+  positioning line/bottom row are Korean **in mono** by the round's own spec. The doc's Open
+  Question "concrete route paths were left to the build" is **answered for the reader
+  surfaces**: `/` 관제 현황판 · `/stocks` 내 종목 조회 · `/ask` AI 질문 (P6's surface, shipped
+  as a bare shell) · `/auth/login` 로그인 (`/auth/reset` is already fixed by the backend) ·
+  `/ops` unchanged; one module, `lib/routes.ts`, states each path once. **`api`** — nothing
+  new on the wire; the chrome calls no endpoint at all (`GET /auth/me` stays `P5.S16`'s
+  decision, so no surface pays for a session probe on every page load). **`operations`** —
+  one new frontend setting, **`NEXT_PUBLIC_VOCKY_SRC`**: vocky's script URL is external and in
+  no record, so it is configuration, loaded once through `next/script` in the shell, and
+  **unset means no script tag while the three `data-vocky-trigger` elements still render**;
+  `NEXT_PUBLIC_*` is inlined at build time, so P4 sets it *before* building. Also worth the
+  runbook: browser checks must use `http://localhost:3000` — Next 16's dev-origin protection
+  403s two client chunks for a foreign host and hydration silently never completes.
+  **`qa`** — the frontend's framework-free check now covers four prerendered routes
+  (`/`, `/_not-found`, `/ask`, `/stocks`); `npm run build` + `typecheck` + `smoke` (3 cases)
+  all green, the Python suite **untouched at 113**, and the chrome was verified in a **real
+  headless Chrome** on both sides of the 480px breakpoint (nav 52px/transparent/hairline, the
+  three labels and their moving active state, the wordmark at natural 2178×346 rendered 19px
+  high, the three footer sentences byte-identical, three triggers with **zero** vocky script
+  tags when the env is unset and **exactly one** when it is set — still one after a
+  client-side navigation, the sheet's 48px rows and its 200ms-fade/reduced-motion-cut close,
+  and zero `position: fixed` elements).
+
 ## Open Questions
 
 - **R7's 샘플 로드 여부 column has no backing fact** — *new, `P5.S9`*: R5's sample portfolio
@@ -1883,6 +2028,18 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   07:30/19:30 KST beat schedule. Operator may still choose another number.
 - **The "정정 이력" button label** — exited P3 unresolved and is carried here (`experience` v0002,
   `product` v0003); `P5.S13` needs it.
+- **The footer's 49.2억원 is a dated-pack figure, not a served one** — *new, `P5.S11`*: the
+  gate-cost sentence is signed and the footer is its only placement, but the presentation
+  contract serves no gate-cost number and deriving it needs `mijual.estimate`'s corpus-median
+  할인율, which a request path may not import (S2 note 7). It therefore states 2026-08-20's
+  figure on every page beside live landing numbers. Making it live is **backing work** (a
+  persisted precomputation + a summary key), so whether it becomes a fix slice, a deferred job
+  or stays as transcribed copy is **`P5.REVIEW`'s call**.
+- **The locked positioning sentence still says 내 종목 연결** — *new, `P5.S11`*: it is locked
+  operator copy (R1/R2 handoffs; the challenge brief), and R4's supersession is scoped to the
+  **nav label**, so the footer was transcribed verbatim rather than re-cut. If the operator
+  wants the sentence to match the surface's final name, that is a signed-copy change — an
+  operator/design call, not an implementation one.
 - ~~**Binary design assets**~~ — **CLOSED 2026-08-22** by the operator's export (the co-work step
   `P5.S10` stopped for). All five files are in the repo byte-for-byte under
   `frontend/public/assets/` — `mijual-wordmark-{charcoal,white}.png` (1788×324),

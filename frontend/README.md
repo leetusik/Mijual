@@ -36,19 +36,46 @@ plain CSS Modules over the tokens.
 
 ```
 app/
-  layout.tsx        the cosmos page root: <html lang="ko" class="cosmos">, the foundations
+  layout.tsx        the cosmos page root: <html lang="ko" class="cosmos"> + the global chrome
   shell.css         content column, type floor, focus ring, reduced-motion convention
   page.tsx          the foundation proof page — P5.S12 (landing) replaces it
+  stocks/page.tsx   내 종목 조회 — a bare shell; P5.S14 builds the surface
+  ask/page.tsx      AI 질문 — a bare shell; the surface is P6's, by the phase split
 components/         the R1/R2 trust primitives; every surface composes these
+  chrome/           the global chrome (R2): nav, mobile sheet, footer, vocky triggers
 lib/
   api.ts            the one API client — hard-coded routes, CSRF, credentials, envelope
   types.ts          the presentation contract, typed
   copy.ts           every Korean string a primitive renders, each with its source
+  routes.ts         the route map — one place a path is stated
   motion.ts         useReducedMotion() — the JS half of the reduced-motion floor
 public/
   foundations/      tokens.css + fonts.css, VENDORED VERBATIM from the landed record
   assets/           the brand binaries, exported from the design project — see assets/README.md
 ```
+
+### Routes and the chrome
+
+| route | surface | who builds it |
+|---|---|---|
+| `/` | 관제 현황판 (the landing) | `P5.S12` — `app/page.tsx` is still the foundation proof |
+| `/stocks` | 내 종목 조회 | `P5.S14` |
+| `/ask` | AI 질문 | **P6** — P5 ships the signed nav slot and an empty page, never a fake chat |
+| `/auth/login` | 로그인 / 계정 만들기 | `P5.S15` — **no page yet**; the nav's 로그인 slot points here |
+| `/ops` | 운영 관제 | `P5.S17` — linked from nowhere in the reader chrome, by design |
+
+`components/chrome/` wraps every route from the root layout: the 52px nav with the three
+signed slots, the mobile top bar + sheet, and the footer. Its two seams are named in the
+files — `AccountSlot.tsx` (the 로그인 slot `P5.S16` swaps for the account menu) and
+`VockyScript.tsx` (the script URL).
+
+### Environment
+
+| variable | what it does |
+|---|---|
+| `MIJUAL_API_ORIGIN` | where `next.config.ts` proxies `/api/*` (default `http://localhost:8000`) |
+| `NEXT_PUBLIC_API_BASE_URL` | overrides the client's base; normally unset, so calls stay same-origin |
+| `NEXT_PUBLIC_VOCKY_SRC` | vocky's script URL. **Unset → no script tag**, and the three `data-vocky-trigger` elements still render. It is read at **build** time (`NEXT_PUBLIC_*` is inlined), so setting it means rebuilding. The real value is `P5.S18`/P4's. |
 
 ### The foundations are vendored, not authored
 
@@ -66,10 +93,11 @@ URL is linked from the layout instead. The record stays untouched.
 
 ### What is deliberately *not* here
 
-Page surfaces (`P5.S11`–`P5.S17`), the starfield/glow/shooting-star layers (`P5.S12`), R7's
+Page surfaces (`P5.S12`–`P5.S17`), the starfield/glow/shooting-star layers (`P5.S12`), R7's
 ornament-free ops panel (`P5.S17`), and the AI 질문 agent in every form (P6). The shell
 guarantees a full-page fixed backdrop is possible (`.backdrop` in `shell.css`) and keeps the
-bottom-right corner free for P6's launcher.
+bottom-right corner free for P6's launcher — the chrome positions nothing `fixed` and adds no
+floating button (R2 §6-4).
 
 ## Rules that are not negotiable at the visual layer
 

@@ -1,0 +1,163 @@
+/* The global nav (R2 §Page shell). One 52px bar; the 480px query decides whether
+ * it shows the destinations + utility slots or the 메뉴 button.
+ *
+ * The literals here are the round's own numbers — 52px, h19 (on the element),
+ * 13.5px via `--text-base`, the `rgba(255,255,255,.12)` hairline, the 2px #fff
+ * active underline, `rgba(255,255,255,.3)` on the trigger (in
+ * `VockyTrigger.module.css`) — and nothing else is invented. Everything that has
+ * a token uses the token, so the cosmos remap keeps governing. */
+
+.bar {
+  position: relative; /* the mobile sheet hangs from this bar */
+  height: 52px;
+  /* "transparent over the cosmos": no background at all, so the one continuous
+     starfield runs behind the chrome. */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.inner {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-6);
+  height: 100%;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+.links {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-base); /* R2: 13.5px */
+  color: var(--ink-1);
+  text-decoration: none;
+  /* The active underline is 2px and sits on the bar's own baseline, so an
+     inactive link reserves the same 2px and nothing shifts when it becomes
+     active. */
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.link:hover {
+  color: var(--ink-2);
+}
+
+/* R2: "active = 600 + 2px #fff underline". #fff is the round's literal — the
+   underline is brighter than the remapped `--ink-1`, which is what makes it read
+   as the current destination on a page full of muted chrome. */
+.active {
+  font-weight: 600;
+  border-bottom-color: #fff;
+}
+
+.utility {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-inline-start: auto;
+  flex: none;
+}
+
+/* Mobile only (R2: "메뉴 button, mono, 44px hit"). */
+.menuButton {
+  display: none;
+  appearance: none;
+  margin-inline-start: auto;
+  padding: 0 var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  align-self: center;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .links,
+  .utility {
+    display: none;
+  }
+
+  .menuButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* The sheet menu. It hangs from the bar rather than from the viewport, so it
+ * cannot end up floating on its own after a scroll; it is opaque (`--paper`, the
+ * page's own background — not a new colour) because the starfield reading
+ * through a list of destinations is the readability problem R6 solved the same
+ * way for its widget. */
+.sheet {
+  /* Closed — and always closed above 480px, where the bar carries the
+     destinations itself. `display: none` also takes it out of the tab order and
+     out of the accessibility tree, which is why the markup can stay in the
+     document for vocky's script to bind (see `Nav.tsx`). */
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  flex-direction: column;
+  background: var(--paper);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 1;
+  /* R2: "Sheet close = 200ms fade" — `--dur-base` is that 200ms. Under
+     `prefers-reduced-motion: reduce` the shell reduces every transition to a cut
+     and `Nav.tsx` unmounts at once, so the fade never runs. */
+  transition: opacity var(--dur-base) var(--ease);
+}
+
+.sheetClosing {
+  opacity: 0;
+}
+
+.sheetRow {
+  display: flex;
+  align-items: center;
+  min-height: 48px; /* R2: rows ≥48px */
+  padding: 0 var(--space-4);
+  font-size: var(--text-base);
+  color: var(--ink-1);
+  text-decoration: none;
+}
+
+.sheetActive {
+  font-weight: 600;
+}
+
+/* R5's sheet: "구분선 + … 계정 메뉴 영역" — the line between the destinations and
+   the utility rows. */
+.sheetDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* The sheet opens only on the mobile side of the breakpoint.
+ *
+ * `.sheet.sheetOpen` rather than `.sheetOpen`: it outranks `.sheet`'s own
+ * `display: none` **by specificity rather than by source order**, so the rule
+ * holds wherever a bundler decides to put this block. Two same-specificity rules
+ * whose outcome depends on which one is emitted last is a bug waiting for a
+ * refactor to move a line. */
+@media (max-width: 480px) {
+  .sheet.sheetOpen {
+    display: flex;
+  }
+}

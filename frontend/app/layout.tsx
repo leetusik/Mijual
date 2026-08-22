@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { SiteChrome } from "@/components/chrome";
 import "./shell.css";
 
 /**
@@ -54,7 +55,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="stylesheet" href="/foundations/fonts.css" />
         <link rel="stylesheet" href={IBM_PLEX_MONO} />
       </head>
-      <body>{children}</body>
+      {/* R2 designs the landing *and* the global chrome every later surface
+          lives in, so the nav/footer/mobile sheet wrap every route from here —
+          one nav, one footer, and vocky's script loaded once for the whole app
+          (`components/chrome/`). A page still renders its own `<main>`. */}
+      <body>
+        <SiteChrome>{children}</SiteChrome>
+      </body>
     </html>
   );
 }

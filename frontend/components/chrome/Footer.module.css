@@ -1,0 +1,86 @@
+/* The global footer (R2 §Page shell). White-on-dark, and the round states its
+ * own literals: the 1px `rgba(255,255,255,.14)` top rule, the mono 11
+ * `rgba(255,255,255,.45)` positioning line, the 12px `rgba(255,255,255,.72)`
+ * sentence column, and a mono 11 bottom hairline row. Sizes go through the type
+ * tokens (11 = `--text-xs`, 12 = `--text-sm`), spacing through the 4px scale. */
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  /* The chrome's own separation from whatever page sits above it. R1's 4px
+     scale; the round draws the footer as its own band, not a strip. */
+  margin-top: var(--space-16);
+}
+
+.inner {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-8);
+}
+
+/* Two columns from the 768 breakpoint — mobile-first, so the identity block sits
+   above the sentences on a phone (R1: mobile-first, 480/768/1120). */
+@media (min-width: 768px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: var(--space-12);
+  }
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.positioning {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs); /* R2: mono 11 */
+  line-height: var(--leading-base);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sentences {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm); /* R2: 12px */
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.sentences p {
+  margin: 0;
+  line-height: var(--leading-base);
+}
+
+/* The bottom hairline row: mono 11, the same hairline the footer's top rule
+   uses, and the four items in the round's own order. */
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  /* The same register as the positioning line — the round gives this row a size
+     and a hairline and no ink of its own, and these two 11px mono lines are the
+     footer's fine print. */
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dot,
+.pipe {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.bottomLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bottomLink:hover {
+  color: var(--ink-1);
+}

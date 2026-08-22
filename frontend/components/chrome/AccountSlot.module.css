@@ -1,0 +1,25 @@
+/* The 로그인 slot. R2 §Page shell: "Right: 로그인 (quiet,
+ * `rgba(255,255,255,.68)`)" — quieter than the three destinations, because the
+ * 2층 is second-class to the anonymous experience (R2 handoff §2). */
+
+.login {
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.68);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.login:hover {
+  color: var(--ink-1);
+}
+
+/* The same entry as a sheet row (rows ≥48px, R2 §Page shell mobile). */
+.loginRow {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.68);
+  text-decoration: none;
+}
