@@ -43,6 +43,20 @@ export const ROUTES = {
 export type RouteKey = keyof typeof ROUTES;
 
 /**
+ * An event's detail page (R3), keyed by `rcept_no` — the same key the API
+ * resolves against every stored version, so yesterday's link still opens the page
+ * after a 정정 mutates the number (`P5.S3`'s recorded choice).
+ *
+ * **`P5.S13` builds the page.** Until it lands the board links to a route that
+ * 404s, which is the same deliberate choice `login` above records: an empty
+ * stand-in for a signed surface would read as a dropped design element, while a
+ * missing page is honest and one slice away.
+ */
+export function eventPath(rceptNo: string): string {
+  return `/events/${rceptNo}`;
+}
+
+/**
  * Is `pathname` inside `route`? The nav's active state (R2: "active = 600 + 2px
  * #fff underline") must survive a nested path — `/stocks/00162461` is still the
  * 내 종목 조회 surface — while `/` stays exact, or it would match everything.

@@ -1,0 +1,322 @@
+/* The board (R2 §Board 소멸 카운트다운, R3 §추후결정 board strip).
+ *
+ * The round states this surface in measurements — a 17px/700 title, a mono 11
+ * freshness chip, ≥44px tab hits with a 2px active underline, a desktop row grid
+ * of `86px 1fr 300px 230px 96px` at 9px vertical padding with dashed separators,
+ * a two-line mobile row at 11px, and the two pinned strips on `--surface-raised`
+ * with a hairline top. Those numbers are the contract; everything else here is
+ * tokens. */
+
+.board {
+  padding: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-lg); /* R2: title 17px/700 */
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--ink-1);
+}
+
+/* R2: mono 11 `기준 YYYY-MM-DD HH:MM KST` in --ink-3 … */
+.freshness {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* … and when stale, --alert on --alert-tint, padding 4×10, with the suffix. */
+.stale {
+  padding: 4px 10px;
+  background: var(--alert-tint);
+  color: var(--alert);
+}
+
+/* The stale notice above the tabs. The board content itself never dims. */
+.notice {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-inset);
+  border-left: 2px solid var(--alert);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   Tabs
+   --------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  border-bottom: 1px solid var(--border-soft);
+  /* Mobile: the strip scrolls rather than wrapping (R2). */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* R2: ≥44px hit. */
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* R2: active = 600 + 2px --ink-1 underline. */
+.tabActive {
+  font-weight: 600;
+  color: var(--ink-1);
+  border-bottom-color: var(--ink-1);
+}
+
+.tabCount {
+  font-size: var(--text-xs); /* R2: counts mono 11 */
+  color: var(--ink-3);
+}
+
+.tabCompact {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Rows
+   --------------------------------------------------------------------------- */
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  /* R2 mobile: 11px vertical padding, two lines. */
+  padding-block: 11px;
+  border-bottom: 1px dashed var(--border-soft);
+}
+
+/* The chip keeps its own width in both layouts: the 86px column is the space it
+   sits in, not a box it fills (a grid item would otherwise stretch to it). */
+.chip {
+  flex: none;
+  justify-self: start;
+}
+
+.corpCell {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.corp {
+  font-weight: 600;
+  color: var(--ink-1);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.corp:hover {
+  text-decoration: underline;
+}
+
+/* R2: the ↗ original-filing link, mono 11 --ink-3. */
+.dart {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  text-decoration: none;
+}
+
+.dart:hover {
+  color: var(--ink-2);
+}
+
+/* R2's mobile row is two lines — [chip + corp … DDay] / [label + date · extras]
+   — so the DDay is pulled up beside the name and this wrapper takes the whole
+   second line. On desktop the wrapper disappears and its two children become
+   grid cells 3 and 4. */
+.meta {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  order: 2;
+}
+
+.when {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.whenLabel {
+  font-size: var(--text-sm); /* R2: label 12px --ink-2 */
+  color: var(--ink-2);
+}
+
+.whenDate {
+  color: var(--ink-1);
+}
+
+.extras {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.subscription {
+  color: var(--ink-2);
+}
+
+/* R2: chip 발행가 확정 전 — sans 11, --surface-inset, 2×8. */
+.pricePending {
+  padding: 2px 8px;
+  background: var(--surface-inset);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.ddayCell {
+  display: flex;
+  justify-content: flex-end;
+  margin-left: auto;
+  order: 1;
+}
+
+/* Mobile keeps the extras beside the countdown on line two, separated by the
+   round's own middot. */
+.extras:not(:empty)::before {
+  content: "·";
+  color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   Pinned strips (② 진행 중, 일정 추후결정)
+   --------------------------------------------------------------------------- */
+
+.strip {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border-strong);
+}
+
+.stripLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* R2: 진행 중 in --live 600, the count mono 600. */
+.live {
+  font-weight: 600;
+  color: var(--live);
+}
+
+.stripCount {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+/* R2: 펼치기 as a hairline button. */
+.expand {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.expand:hover {
+  background: var(--surface-inset);
+  border-color: var(--ink-3);
+}
+
+@media (max-width: 480px) {
+  .tabFull {
+    display: none;
+  }
+
+  .tabCompact {
+    display: inline;
+  }
+
+  .expand {
+    min-height: 44px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Desktop row grid — R2's own columns.
+   --------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .row {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr) 300px 230px 96px;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-block: 9px; /* R2: 9px v-pad */
+  }
+
+  /* The wrapper stops being a box so `when` and `extras` are grid cells 3 and 4
+     while staying one flex line on mobile; the mobile reordering goes with it,
+     so the columns follow the DOM. */
+  .meta {
+    display: contents;
+  }
+
+  .ddayCell,
+  .meta {
+    order: 0;
+  }
+
+  .extras:not(:empty)::before {
+    content: none;
+  }
+}

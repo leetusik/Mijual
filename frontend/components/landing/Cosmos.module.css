@@ -1,0 +1,136 @@
+/* The cosmos backdrop (R2.1): one starfield, two glows, five shooting stars.
+ *
+ * The record gives the counts, the twinkle range, the drift period and the cycle
+ * range; it gives no rgba for the glows or the stars, so those alphas are this
+ * build's reading and the *hue* is the token's (`--live`, which the cosmos scope
+ * maps to R2's own #5fd0a5). Nothing here introduces a colour that is not a token
+ * or plain white starlight. */
+
+/* Root-level radial green glows: strong at ~12% height, faint echo at the
+   bottom. Two gradients on one layer — no element, no animation. */
+.glow {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      64% 46% at 50% 12%,
+      color-mix(in srgb, var(--live) 16%, transparent) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      78% 38% at 50% 100%,
+      color-mix(in srgb, var(--live) 7%, transparent) 0%,
+      transparent 74%
+    );
+}
+
+/* The field drifts for 80s and returns to where it started, so the loop has no
+   seam. It is inset past the viewport on every edge because a drifting field
+   must not uncover a starless margin. */
+.field {
+  position: absolute;
+  inset: -4%;
+  animation: drift 80s linear infinite;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-1.6%, -1.1%, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.star {
+  position: absolute;
+  background: #ffffff;
+  opacity: var(--star-opacity);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: var(--star-opacity);
+  }
+
+  50% {
+    opacity: calc(var(--star-opacity) * 0.28);
+  }
+}
+
+/* ≤480px is the mobile field: the last 80 stars leave, the first 160 stay
+   (R2: ≈240 desktop / 160 mobile). */
+@media (max-width: 480px) {
+  .star:nth-child(n + 161) {
+    display: none;
+  }
+
+  .shooter:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+.shooters {
+  position: absolute;
+  inset: 0;
+}
+
+/* The travel direction is the wrapper's; the streak only moves along it, so one
+   rotation states the angle once. */
+.shooter {
+  position: absolute;
+  transform: rotate(18deg);
+}
+
+.streak {
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85));
+  opacity: 0;
+  animation-name: shoot;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* A short flight inside a long cycle — the stagger is in the delays, so the five
+   never fire together. */
+@keyframes shoot {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+
+  1% {
+    opacity: 0.9;
+  }
+
+  7% {
+    transform: translate3d(46vw, 0, 0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate3d(46vw, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: the drift and the shooting stars are handled by the shell's
+   own `data-motion` rules; the per-star twinkle needs this, because that rule
+   reaches an element and its pseudo-elements, not 240 children. Frozen means the
+   star's own base opacity — the value it animates around. */
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none !important;
+    opacity: var(--star-opacity);
+  }
+}

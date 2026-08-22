@@ -1443,6 +1443,96 @@ state is `isActiveRoute`: `/` exact, everything else prefix-with-boundary, so
     (`allowedDevOrigins`). Everything in note 7 and the sheet's behaviour was re-verified
     over `localhost` **and** against `npm run build && npm run start`.
 
+### `P5.S12` — the landing is live; the readings it had to make, and what S13/S14 reuse
+
+`frontend/components/landing/` is the R2/R2.1 landing over live `/board/summary` + `/board`.
+S10's foundation proof and its dated 2026-08-20 numbers are gone. **0 new dependencies, no
+primitive/token/chrome file touched, Python suite untouched at 113, no Korean invented**
+(every string cited in `components/landing/copy.ts`). The production build's browser console is
+**empty** — no hydration warning, which is what the deterministic starfield exists for.
+
+| you need | use |
+|---|---|
+| a won/count/ratio rendered | `@/lib/format` — `won` (mirrors `mijual.estimate.won`: 조원 2dp / 억원 1dp / 원 0dp, half-even) · `count` · `percent` (the pipeline's `:.1%`) · `kstStamp` |
+| R2's board row anatomy | `components/landing/BoardRow` — shared by the board and both expanded strips |
+| the 「추정」 tag at R2's landing size over a value of any size | `components/landing/EstimateValue` |
+| a link to a detail page | `eventPath(rceptNo)` from `@/lib/routes` (the page itself is `P5.S13`'s) |
+
+1. **The hero H1 renders 내 종목 조회, not R2's literal 내 종목 연결.** R2 says "This IS the
+   내 종목 연결 surface … submit goes to R4's 조회", and R4 *named that surface* ("the surface
+   name **내 종목 조회**", signoff + build prompt §Route, plus the supersession table). It is a
+   name for a destination, not locked prose, and R2's literal would print two names for one
+   surface on a page whose nav one line above says 내 종목 조회. The retired wording survives
+   only in the footer's **locked positioning sentence** (`P5.S11` note 3), which is a different
+   class of copy. **`P5.S19`/`P5.REVIEW` check both against the cards.**
+2. **The ① extras date is the 청약 window's 마감** (`subscription_end`) — the decision `P5.S3`
+   note 10 left open. Every other 청약 date the product prints is the closing one (발표용 문장
+   4, the report's 청약종료 column, `next_lapse.date`), and the 소멸주의보 strip on the same
+   page prints 2026-09-04 for the same offerings; two different 청약 dates for 계양전기 on one
+   page would be the page contradicting itself. **`P5.S14` should print the same end.**
+3. **The board row's corp name links to `/events/{rcept_no}`; the `↗` still goes to DART.** R2
+   gives the row only the DART link, but R3's detail page opens with "← 관제 현황판" and its
+   추후결정 strip says "expanded rows link to detail" — the board is the way in. Only an href
+   was added. **The link 404s until `P5.S13` lands**, deliberately, like `/auth/login`.
+4. **The hero needed a `min-height: 680px` (desktop) for the rings to clear.** R2.1's rule is
+   an outcome — "never shrink them — give the hero vertical room instead, so rings clear the
+   nav line and the panels below" — and 110/160px padding alone does not produce it: rotated
+   −14° the outer ring occupies ≈640px against a 508px hero. Padding unchanged, content centred
+   in the taller box; measured ring box **72 → 712** with the nav ending at 52 and the first
+   panel starting at 732. Consequence for the review: the anchor panels now begin ~730px down,
+   so base-R2 decision 1's "live layer above the fold" is tighter than it was (R2.1 governs the
+   base record where they conflict, and the ring rule is what the build prompt states).
+5. **The landing's 「추정」 tag renders 9.52px, from a 17px marker context** (`EstimateValue`).
+   R2 asks for a 10px tag on landing surfaces; the primitive is `0.56em` of context and may not
+   set its own size, so the **surface** supplies the context and the value keeps its own (46px
+   on the value card, the line's size elsewhere). The primitive is untouched, so `P5.S11`'s
+   6.72px footer tag stands as it was — the two readings are `P5.S19`'s to settle together.
+6. **A strip states the count that is in view**, mirroring `/board`'s own `count` vs `total`: on
+   전체/CB the ② strip reads 57건 = `open_now.count`; on 유증/매수청구 it has no rows and does
+   not render at all (0건 would be a sentence about nothing). 펼치기 keeps its label while open
+   and carries state in `aria-expanded` — a 접기 label is copy nobody signed (the chrome's 메뉴
+   precedent).
+7. **Tabs filter the served list in the browser.** `?rights=` exists, but the whole board is one
+   160 KB request and `counts` is whole-board either way, so a tab costs no request and two tabs
+   cannot show two corpora. 전체 reads **488** while **450** rows are on the page — the 38 past
+   ①/③ are not on the landing by design; that is not a missing-rows bug.
+8. **Stars are generated once, deterministically** (`mulberry32`, fixed seed, module scope): a
+   `Math.random()` field is a hydration mismatch on every load. The mobile field is the first
+   160 of the same 240 (`:nth-child(n+161)` hides the tail ≤480px). The glow/ring alphas are this
+   build's reading — the record states geometry and counts, the *hue* is the `--live` token's.
+9. **Reduced motion is fully wired and measured**: countdown identical after 3 s (the interval
+   never runs — CSS cannot stop a `setInterval`), colon/twinkle/drift/orbit `animation: none`,
+   shooting-star layer `display: none`. The per-star twinkle needed a rule in the module's own
+   `prefers-reduced-motion` block, because the shell's `data-motion="tick"` rule reaches an
+   element and its pseudo-elements, not 240 children.
+10. **Live cross-check (2026-08-22, headless Chrome, dev *and* `npm run start`).** Hero stat line
+    = `/board/summary` exactly (718.1억원「추정」 · 488 · 33); both anchor cards agree (488 · 33 ·
+    15 · 69 · 548.7억원 · 365,527,824주 · 14.0%); the countdown's own diff against
+    `next_lapse.target` is **0 s off**; tabs = `counts` (488/50/422/16) and filter to 365/14/389;
+    ② strip 57건 = `open_now.count` with 삼성제약 **D+1** faint (never 종료); 추후결정 4건 with
+    `StateBadge 추후결정` and **no date anywhere**; freshness `기준 2026-08-22 04:14 KST`; with
+    `MIJUAL_STALE_AFTER_HOURS=1` the chip flips to alert + `· 7시간 전 데이터`, the inset notice
+    appears **and the rows render identically** (content never dims); **no `원` amount anywhere on
+    the page** — a ① before 확정발행가 shows the `발행가 확정 전` chip and no money; 390×844 gives
+    H1 34px, 48px controls, 160 stars / 3 shooters, compact tabs, two-line rows, no horizontal
+    overflow; exactly **one** `position: fixed` element (the backdrop), so P6's corner stays clear.
+11. **D2's trigger has NOT fired on the board** (DECOMP note 2). Across all 450 rendered rows
+    **no two share an `rcept_no`**. 코이즈 `20260122000058` sits on two exposable ① events
+    (1195/1264) and **neither is on the landing** (past ①). 사토시홀딩스 `20251219000402` sits on
+    events 941 (`reattached`) and 942 (`duplicate`) and **both are on the landing**, but they are
+    different bonds by their own originals — 941: `20250623000222`, 개시 2026-07-21, in the ②
+    strip at D+32; 942: `20251215000366`, 개시 2026-12-23, ranked at D-123 — so the shared 정정 is
+    an internal pairing artifact, not a duplicated row. The pair that *looks* duplicated is
+    **제이스코홀딩스 479/480** (same corp/type/date 2027-07-22) and it is two different filings
+    (`20260714000457` / `20260714000466`) — two CB tranches filed the same day, two truthful rows.
+    Nothing was de-duplicated. **`P5.S14`/`P5.S19` still carry the other half of the check** (a
+    per-stock 놓친 돈 total that double-counts one offering).
+12. **Two `P5.S19` fidelity items in `P5.S11` note 10's class.** (a) R2 asks for a **mono stat
+    line** and a **mono 13.5 band line**, so Korean prose on them is drawn by the OS Korean face
+    (S10 note 19) — as specified, not a defect to restyle. (b) On a 390px viewport an ① row's
+    second line wraps once more (label + date, then `· 청약 … 발행가 확정 전`), because the
+    content does not fit one line and truncating data is not an option.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2004,6 +2094,52 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   tags when the env is unset and **exactly one** when it is set — still one after a
   client-side navigation, the sheet's 48px rows and its 200ms-fade/reduced-motion-cut close,
   and zero `position: fixed` elements).
+
+- (`P5.S12`) **`frontend`** — the **landing 관제 현황판** is built and is durable frontend truth:
+  `components/landing/` (cosmos backdrop · hero · retrospective anchor · countdown · 소멸주의보 ·
+  board) rendered by `app/page.tsx` as a **request-time** page (`connection()`, Next 16's
+  replacement for the removed `dynamic` segment config) over one `/board/summary` + one `/board`
+  read, so no number on the page is derived from anything else. Durable rules that land with it:
+  the **cosmos backdrop fills `.backdrop`** with a starfield generated **once, deterministically**
+  (seeded PRNG at module scope — `Math.random()` would be a hydration mismatch on every load; the
+  mobile field is the first 160 of the same 240), the glows/rings state the record's geometry with
+  token hues; **the hero owns the orbit rings and is given a height floor (680px desktop) so the
+  full-size rings clear the nav and the first panel** — R2.1's "never shrink them, give the hero
+  vertical room" as an outcome rather than as its stated padding; the **landing 「추정」 tag gets its
+  10px from the surface** (`EstimateValue` puts the marker in a `--text-lg` context and the value
+  keeps its own size) because R1 forbids the primitive to set its own size, and the primitive is
+  untouched; **R2's board row anatomy is one component** shared by the board and both expanded
+  strips; and the live-tick pattern is SSR-first value + `suppressHydrationWarning` +
+  `useReducedMotion()` to **stop the interval**, since CSS cannot. New shared module **`lib/format.ts`**
+  — `won()` mirrors `mijual.estimate.won` branch for branch over **exact decimal strings** (no
+  `Number()` on money or a ratio, ever), plus `count` / `percent` / `kstStamp` (an instant is
+  **sliced, never `Date`-parsed**, so a reader's timezone cannot move a KST stamp). Two readings of
+  the record are stated as truth: the hero H1 renders the **superseded surface name 내 종목 조회**
+  (R4-5 named the surface; R2's 내 종목 연결 survives only inside the footer's locked positioning
+  sentence), and a **board row's corp name links to the event detail page** while the `↗` keeps
+  DART (R3's crumb and its 추후결정 strip make the board the way in). `lib/routes.ts` gains
+  `eventPath(rceptNo)`. **`experience`** — the reader's first surface as built, and what it refuses
+  to state: every landing number is **live from one summary object**, so the hero's stat line, the
+  value card, the stats card and the 소멸주의보 placard cannot disagree; a figure the payload omits
+  produces **no phrase at all** (no zero, no dash) and an absent countdown instant produces no
+  countdown; **no won amount appears on any board row** and a ① before 확정발행가 shows only the
+  `발행가 확정 전` chip beside its 청약 마감; **staleness is served, never timed client-side** — the
+  chip flips to the alert treatment with `· N시간 전 데이터` and an inset notice appears above the
+  tabs while **the rows render identically** (stale-never-dark, verified); a 추후결정 row renders
+  `StateBadge 추후결정` with **no date anywhere near it**; a past ② is the pinned **진행 중** strip
+  with a faint `D+n`, never 종료; the tabs' counts are **whole-board** (488) while the page ranks
+  450 rows, because past ①/③ belong to 조회 and the retrospective; and the hero's search is a plain
+  **GET form to `/stocks?q=`**, so the product's entry point works before any JavaScript does.
+  **`qa`** — the frontend check now covers the landing: `npm run build` (the landing is `ƒ` and
+  needs no API to build) + `typecheck` + `smoke` (3 cases) all green, **Python suite untouched at
+  113**, and the surface was verified in a **real headless Chrome on both sides of 480px and in
+  both `next dev` and `next start`**, with an **empty production console** (no hydration warning).
+  Measured invariants worth keeping: the rendered stat line equals `/board/summary` exactly; the
+  countdown's own diff against the served `next_lapse.target` is **0 s off**; tab counts equal
+  `counts` and filtering reproduces the endpoint's own `?rights=` populations (365 / 14 / 389);
+  the strips equal `open_now.count` / `tbd.count`; under `prefers-reduced-motion` the countdown is
+  **identical after 3 s** and twinkle/drift/orbit/colon are `animation: none` with the shooting-star
+  layer `display: none`; and exactly **one** `position: fixed` element exists on the page.
 
 ## Open Questions
 

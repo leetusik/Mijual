@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P5`
-- Current slice: `P5.S12`
-- Next slice: `P5.S13`
+- Current slice: `P5.S13`
+- Next slice: `P5.S14`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T10:44:36+09:00`
+- Rebuilt at: `2026-08-22T11:31:44+09:00`
 
 ## Active Phases
 
@@ -19,7 +19,7 @@
 | [x] `P1` | `done` | `pass` | Foundation Spike & Confirmations | `none` | `works/phases/active/P1` |
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
-| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S12` | `works/phases/active/P5` |
+| [ ] `P5` | `planned` | `pending` | Apply — build the signed design | `P5.S13` | `works/phases/active/P5` |
 | [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.DECOMP` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -85,7 +85,7 @@
 | [x] `P5.S9` | `done` | Admin backend: operator door + read-only ops endpoints + pipeline run log | `implementation` | `works/phases/active/P5/slices/P5.S9` |
 | [x] `P5.S10` | `done` | Next.js foundation: scaffold, tokens/fonts/assets, cosmos shell, trust primitives, API client | `implementation` | `works/phases/active/P5/slices/P5.S10` |
 | [x] `P5.S11` | `done` | Global chrome: nav, footer, mobile sheet, vocky triggers | `implementation` | `works/phases/active/P5/slices/P5.S11` |
-| [ ] `P5.S12` | `todo` | Landing 관제 현황판: hero, 회고 anchor panels, countdown, 소멸주의보, board | `implementation` | `works/phases/active/P5/slices/P5.S12` |
+| [x] `P5.S12` | `done` | Landing 관제 현황판: hero, 회고 anchor panels, countdown, 소멸주의보, board | `implementation` | `works/phases/active/P5/slices/P5.S12` |
 | [ ] `P5.S13` | `todo` | Event detail ①②③: header, 환산 블록, field rows, trust states, CorrectionStory | `implementation` | `works/phases/active/P5/slices/P5.S13` |
 | [ ] `P5.S14` | `todo` | 내 종목 조회 surface: search, 보유량, 진행 중인 권리, 놓친 돈 breakdown, empty states | `implementation` | `works/phases/active/P5/slices/P5.S14` |
 | [ ] `P5.S15` | `todo` | Auth surfaces + conversion offers + sample entry | `implementation` | `works/phases/active/P5/slices/P5.S15` |

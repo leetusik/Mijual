@@ -1,0 +1,6 @@
+/* The estimate tag's context on the landing: 0.56em of 17px ≈ 9.5px, against
+   R2's own literal of 10px for this page. The value inside carries its own size,
+   so a 46px headline and a 13.5px stat line share one tag size. */
+.context {
+  font-size: var(--text-lg);
+}

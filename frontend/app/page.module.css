@@ -1,16 +1,11 @@
-/* Layout for the foundation proof page only. `P5.S12` replaces this file along
- * with `page.tsx`; nothing here is a design decision worth inheriting. */
-.main {
-  padding-block: var(--space-12);
+/* The landing's own stacking. The hero runs full-bleed (its orbit rings need the
+ * whole width), so it carries its own content column; everything below it — the
+ * anchor panels, the 소멸주의보 placard and the board — sits in the shared 1120px
+ * column with the round's 20px rhythm between them. */
+
+.stack {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5);
+  padding-bottom: var(--space-16);
 }

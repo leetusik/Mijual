@@ -22,8 +22,10 @@ The API must be up separately (`.venv/bin/uvicorn mijual.web.app:app --reload`, 
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run smoke` | `node --test lib/*.test.ts` — the API wrapper's three cases, no framework |
 
-The other half of the smoke check is `npm run build` itself: it prerenders `app/page.tsx`
-through the shell and every primitive, so a broken component fails the build.
+The other half of the smoke check is `npm run build` itself: it compiles and type-checks every
+route and prerenders the static ones, so a broken component fails the build. The landing is
+**request-time** (`connection()` in `app/page.tsx`), so it is built without an API and rendered
+per request — a board that was a build-time snapshot would be a stale board.
 
 ## Stack
 
@@ -38,15 +40,18 @@ plain CSS Modules over the tokens.
 app/
   layout.tsx        the cosmos page root: <html lang="ko" class="cosmos"> + the global chrome
   shell.css         content column, type floor, focus ring, reduced-motion convention
-  page.tsx          the foundation proof page — P5.S12 (landing) replaces it
+  page.tsx          관제 현황판 — the landing (R2/R2.1), live from /board/summary + /board
   stocks/page.tsx   내 종목 조회 — a bare shell; P5.S14 builds the surface
   ask/page.tsx      AI 질문 — a bare shell; the surface is P6's, by the phase split
 components/         the R1/R2 trust primitives; every surface composes these
   chrome/           the global chrome (R2): nav, mobile sheet, footer, vocky triggers
+  landing/          the landing surface (R2/R2.1 + R3's 추후결정 strip) — cosmos, hero,
+                    anchor cards, countdown, 소멸주의보, board
 lib/
   api.ts            the one API client — hard-coded routes, CSRF, credentials, envelope
   types.ts          the presentation contract, typed
   copy.ts           every Korean string a primitive renders, each with its source
+  format.ts         won / count / percent / kstStamp — exact decimal strings, never a float
   routes.ts         the route map — one place a path is stated
   motion.ts         useReducedMotion() — the JS half of the reduced-motion floor
 public/
@@ -58,7 +63,7 @@ public/
 
 | route | surface | who builds it |
 |---|---|---|
-| `/` | 관제 현황판 (the landing) | `P5.S12` — `app/page.tsx` is still the foundation proof |
+| `/` | 관제 현황판 (the landing) | `P5.S12` — built; rows link to `/events/{rcept_no}` (`P5.S13`) |
 | `/stocks` | 내 종목 조회 | `P5.S14` |
 | `/ask` | AI 질문 | **P6** — P5 ships the signed nav slot and an empty page, never a fake chat |
 | `/auth/login` | 로그인 / 계정 만들기 | `P5.S15` — **no page yet**; the nav's 로그인 slot points here |
@@ -93,11 +98,10 @@ URL is linked from the layout instead. The record stays untouched.
 
 ### What is deliberately *not* here
 
-Page surfaces (`P5.S12`–`P5.S17`), the starfield/glow/shooting-star layers (`P5.S12`), R7's
-ornament-free ops panel (`P5.S17`), and the AI 질문 agent in every form (P6). The shell
-guarantees a full-page fixed backdrop is possible (`.backdrop` in `shell.css`) and keeps the
-bottom-right corner free for P6's launcher — the chrome positions nothing `fixed` and adds no
-floating button (R2 §6-4).
+The remaining page surfaces (`P5.S13`–`P5.S17`), R7's ornament-free ops panel (`P5.S17`), and
+the AI 질문 agent in every form (P6). The landing fills the `.backdrop` slot `shell.css`
+reserves and, like the chrome, positions **nothing else** `fixed` and adds no floating button
+(R2 §6-4) — the bottom-right corner stays free for P6's launcher.
 
 ## Rules that are not negotiable at the visual layer
 

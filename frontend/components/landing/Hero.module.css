@@ -1,0 +1,233 @@
+/* The hero (R2 §Hero + R2.1 §3). Every literal below is the round's own: 52px /
+ * 34px H1, 17px sub, a 52px / 48px search row 560px wide, 110/160px desktop
+ * padding, and the two orbit ellipses at 980×280 and 1200×360 rotated −14° with
+ * a star on a 26s orbit. */
+
+.hero {
+  position: relative;
+  /* Mobile keeps the rings and the vertical room the 4px scale allows; the
+     round's 110/160 is a desktop measurement. */
+  padding-block: var(--space-16) var(--space-12);
+  /* The rings are wider than a phone, and clipping them at the viewport edge is
+     not shrinking them (R2.1 §3: never shrink the rings). */
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    /* R2: "give the hero vertical room (110/160px padding desktop)" — so the
+       rings sit fully clear of the nav line above and the first panel below. */
+    padding-block: 110px 160px;
+    /* …and the room has to be enough for the rings, which is the outcome R2.1
+       actually states ("never shrink them — give the hero vertical room
+       instead, so rings clear the nav line and the panels below"). Rotated −14°
+       the outer ring occupies 1200·sin14° + 360·cos14° ≈ 640px of height, more
+       than the padding alone leaves, so the hero is given a floor that fits it
+       with room to spare and centres its content inside that. Measured after
+       the change: ring box 66 → 706, nav bottom 52, first panel top 732. */
+    min-height: 680px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Orbits — hero only, never shrunk, decorative.
+   --------------------------------------------------------------------------- */
+
+.orbits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  /* R2: rotate −14°. The rotation is on the stage, so both rings and the orbit
+     path share one angle. */
+  transform: rotate(-14deg);
+}
+
+.ellipseSmall,
+.ellipseLarge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  /* The record states the geometry and not the ink; the hue is the cosmos
+     token's (--live → #5fd0a5) at a starlight alpha. */
+  border: 1px solid color-mix(in srgb, var(--live) 20%, transparent);
+}
+
+.ellipseSmall {
+  width: 980px;
+  height: 280px;
+}
+
+.ellipseLarge {
+  width: 1200px;
+  height: 360px;
+  border-color: color-mix(in srgb, var(--live) 12%, transparent);
+}
+
+/* A zero-size box at the ellipse centre: the orbit path's coordinates are then
+   relative to that point, so the star rides the 980×280 ring exactly. */
+.track {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.orbiter {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--live);
+  offset-path: path("M -490 0 A 490 140 0 1 0 490 0 A 490 140 0 1 0 -490 0");
+  offset-rotate: 0deg;
+  /* R2: orbiting star on offset-path, 26s. `data-motion="tick"` freezes it under
+     reduced motion (`app/shell.css`). */
+  animation: orbit 26s linear infinite;
+}
+
+@keyframes orbit {
+  from {
+    offset-distance: 0%;
+  }
+
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Content
+   --------------------------------------------------------------------------- */
+
+.inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  /* R2: H1 52px/700 desktop, 34px mobile. R1: display ≥24 at -0.02em. */
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  color: var(--ink-1);
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--text-lg); /* R2: sub 17px */
+  line-height: var(--leading-base);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* The search row: console input + solid 조회, 560px total, 48px on mobile and
+   52px from the tablet breakpoint. */
+.search {
+  display: flex;
+  width: 100%;
+  max-width: 560px;
+  margin-top: var(--space-2);
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
+  padding-inline: var(--space-4);
+  /* R2 §Cosmos: dark console field. */
+  background: rgba(8, 17, 13, 0.72);
+  border: 1px solid rgba(163, 196, 180, 0.4);
+  border-right: none;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  color: #ffffff;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.submit {
+  flex: none;
+  height: 48px;
+  padding-inline: var(--space-6);
+  /* R2 §Cosmos: solid actions on dark. */
+  background: var(--live-solid);
+  border: 1px solid rgba(95, 208, 165, 0.45);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.submit:hover {
+  background: color-mix(in srgb, var(--live-solid) 82%, #ffffff);
+}
+
+/* R2: the mono stat line. Korean in mono is the round's own instruction (the
+   same reading the footer's positioning line follows), so numerals need no
+   further treatment here — the whole line is already mono. */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.stat {
+  white-space: nowrap;
+}
+
+/* The value sits in a 17px marker context (so the tag is R2's 10px) and takes
+   the line's own size back here. */
+.statValue {
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+/* R2: "number+건 spans nowrap". */
+.nowrap {
+  white-space: nowrap;
+  color: var(--ink-1);
+}
+
+.dot {
+  color: var(--ink-3);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 52px;
+  }
+
+  .input,
+  .submit {
+    height: 52px;
+  }
+}

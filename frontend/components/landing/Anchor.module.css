@@ -1,0 +1,97 @@
+/* The retrospective anchor (R2): two craft panels, 1fr / 340px, 20px gap; on
+ * mobile the value card sits above the countdown card. The panel itself (surface,
+ * hairline, top-edge glow, corner brackets) is `CraftPanel`'s — this file only
+ * lays the two out and sizes their contents to the round's numbers. */
+
+.anchor {
+  display: grid;
+  gap: var(--space-5); /* R2: 20px gap */
+}
+
+@media (min-width: 768px) {
+  .anchor {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs); /* R2: mono 11 --ink-3 */
+  color: var(--ink-3);
+}
+
+/* The headline is a 17px marker context (so the 「추정」 tag is R2's 10px) with a
+   46px value inside it; the `.mono` numeral then runs at R1's 0.95em of that. */
+.headline {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.headlineValue {
+  font-size: 46px; /* R2: 46px/700 */
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  color: var(--ink-1);
+}
+
+/* R2: band line mono 13.5. The line is mono, so its numerals need no further
+   treatment; only the marker context is raised for the tag. */
+.band {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.bandValue {
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+/* R2: fact sentence 15px, full card width, one line — "no max-width cap". */
+.fact {
+  margin: 0;
+  width: 100%;
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+/* The 2×2 live stats. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  margin-top: var(--space-2);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  color: var(--ink-2);
+}
+
+.statValue {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--ink-1);
+}
