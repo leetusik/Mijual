@@ -1,20 +1,19 @@
+import { AskPage } from "@/components/ask";
+
 /**
- * `/ask` — **AI 질문**, as a bare page shell. The surface is **P6's**.
+ * `/ask` — **AI 질문**, R6's dedicated page.
  *
- * The nav's third slot is signed (R6 finalized 내 종목 조회 · 관제 현황판 · AI
- * 질문, and its build prompt puts the dedicated page behind that slot), and
- * RESPECT THE DESIGN forbids dropping an approved element — so P5 renders the
- * slot and the route. Everything R6 designs *behind* it is the agent: the widget,
- * the launcher, presets, tool fact rows, numbered citation chips, refusals,
- * streaming and anonymous server-side storage. All of that is P6's phase, by the
- * split this phase was created under (`P5.DECOMP` note 7).
+ * P5 shipped this route as a bare shell and said so in the file it left behind
+ * ("P6 replaces this file"): the nav's third slot and the footer's bottom row
+ * were signed, so the route had to exist, while everything R6 designs behind it
+ * belonged to this phase. `P6.S6` replaces it whole.
  *
- * So this page renders **nothing**: no invented copy, no fake chat, no
- * placeholder, no 「준비 중」 string — the same honesty rule the ops panel's empty
- * tabs follow (`P5.DECOMP` note 5a: an honest 0건 rather than an invented
- * string). A reader who arrives sees the chrome and an empty page, which is what
- * this build truthfully has. **P6 replaces this file.**
+ * The surface itself is `components/ask/AskPage.tsx` — a client component,
+ * because it is the second **view** over the module-scoped conversation store
+ * (`lib/ask.ts`) that keeps a turn streaming while the reader walks between the
+ * widget and this page. This file stays a plain route entry: no data loading, no
+ * layout and no copy of its own.
  */
-export default function AskPage() {
-  return <main className="content" />;
+export default function AskRoute() {
+  return <AskPage />;
 }

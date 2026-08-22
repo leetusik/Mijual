@@ -1,0 +1,81 @@
+/* 전용 페이지 (R6 §Surfaces 개정 ④, §Mobile).
+ *
+ * The record's literals here are **340** (the rail) and **44px** (the mobile
+ * input bar and its targets); the breakpoint is R1's own 480 (so the desktop
+ * side starts at 481px, the same line `useAsk.ts`'s `DESKTOP_QUERY` draws).
+ * Everything else is a token.
+ *
+ * **There is no frame** — 「챗 표면 프레임 없음: 패널·브래킷 없이 페이지에 직접」.
+ * So this file gives the chat column no background, no border and no shadow; the
+ * only panel is `.rail`, and it is a `CraftPanel` (R2.1's own).
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--space-6) var(--space-16);
+}
+
+/* Mobile-first: 전폭 페이지 하나 — the rail's contents stack above the chat,
+   because a 340px rail cannot sit beside a 390px viewport and the four things it
+   carries (범위 · 약속 · 인트로 · 세션) are the surface's own opening. */
+.columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+/* 「검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용」 — the panel's promise,
+   quieter than the intro it introduces. */
+.promise {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* 「입력 바 하단 sticky」. Opaque with the page's own `--paper` so growing prose
+   never reads through it; `sticky`, so the page adds no `position: fixed`. */
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--paper);
+}
+
+/* ≥481px: 「우측 340 레일」. The rail is placed into the second column while
+   keeping its DOM lead, so reading order and visual order can differ on purpose. */
+@media (min-width: 481px) {
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .rail {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .chat {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}

@@ -1,0 +1,73 @@
+/* 질문 스트립 (R6 §Surfaces · R6-2 · §Mobile).
+ *
+ * The record's own numbers: 「프리셋 = 가로 스크롤 한 줄 (타깃 ≥44px)」. One line
+ * at **every** width, because a 스트립 is one line — the ≤480px rule is where the
+ * round states it, and keeping the 44px target everywhere is the same cheap
+ * choice `Event.module.css`'s crumb records ("hit targets ≥44px — cheap to keep
+ * everywhere").
+ *
+ * Everything else is a token. The chips carry no `--live` ink and no fill: they
+ * are affordances, and `--live` means 살아있는 가치 on this product's surfaces.
+ */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* The row scrolls; the strip itself never widens the page (the detail page's
+     zero-horizontal-overflow rule at 390px, `P5.S13`). */
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* The label sits in the quietest ink the system has, tracked like R3's section
+   eyebrow on the same page (0.08em — `Event.module.css`'s own literal). */
+.heading {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+/* 「가로 스크롤 한 줄」 — one line, scrolled, never wrapped. */
+.row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  max-width: 100%;
+  overflow-x: auto;
+  /* A horizontal scroller inside a vertical page: keep the browser from
+     hijacking the vertical gesture, and never bounce the page sideways. */
+  overscroll-behavior-x: contain;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: 44px; /* R6 §Mobile: 타깃 ≥44px */
+  padding-inline: var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--border-strong);
+}
+
+/* 「자유 입력은 한 단계 뒤」 — the same chip, one step quieter. */
+.free {
+  background: none;
+  color: var(--ink-2);
+}
+
+.free:hover {
+  color: var(--ink-1);
+}

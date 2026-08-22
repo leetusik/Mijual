@@ -651,6 +651,106 @@ also the true build order.
       (`app/shell.css`'s `.backdrop` is P5's), and both are `right/bottom`-anchored
       so neither can widen the document. Real-browser fidelity is `P6.S7`'s.
 
+23. **`P6.S6` finished the surfaces — the page, the mobile page, the 질문 스트립 and
+    every entry point, measured in a browser against a spend-free scripted agent.**
+    New: **`frontend/components/ask/`** `AskPage.tsx` + `AskPage.module.css` ·
+    `QuestionStrip.tsx` + `Strip.module.css` · `presets.ts` · `AskPageScope.tsx`,
+    and **`frontend/components/event/fieldOrder.ts`**. Edited: `app/ask/page.tsx`
+    (P5's shell replaced whole), `ask/copy.ts` (+3 signed strings), `ask/index.ts`,
+    `ask/Ask.module.css` (one ≤480px block), `event/EventDetail.tsx`,
+    `event/Fields.tsx`. **The store gained nothing** — `lib/ask.ts`, `lib/api.ts`
+    and every S5 component are byte-unchanged, and **no backend file** was touched
+    (pytest still **136 passed**; `build` · `typecheck` · `smoke 15/15` green).
+    - **The page is S5's second view, and `close()` is how it arrives.**
+      `AskPage` reads `useAskState()` and calls the same store; on mount it calls
+      **`store.close()`**, which is 「위젯이 열려 있으면 닫고 리다이렉트」 for the
+      nav slot, the footer link and a typed URL too — the widget header's
+      external-link was only one of the ways in. `close()` touches no turn, so a
+      mid-stream arrival renders the growing snapshot (「대화·범위 그대로」).
+      `AskSurface` already renders neither launcher nor widget on `/ask`.
+    - **The 340 rail's contents are a decision, and they are flagged.** R6 fixes
+      the width and 「레일만 패널」 and writes **nothing** about what is in it (no
+      R6 cards exist in this repo — §Context). The rail is a **`CraftPanel`**
+      (R2.1's own — the record contrasts 「패널·브래킷 없이」 with 「레일만 패널」)
+      carrying the four signed things this surface has: the 범위 chip
+      `범위: {종목} · {rcept_no}` **+ its ×** (the widget puts it in a header the
+      frameless page does not have), 「검증된 필드만 근거로 답합니다 — 모든 답에
+      원문 인용」 (R6-2 패널 copy, newly transcribed as `VERIFIED_ONLY_KO`), the
+      agent intro and the 세션·저장 line. The page's thread renders **no** intro
+      block, so nothing is said twice. ⚠ `P6.S7`/`P6.REVIEW` confirm against the
+      record's Page card.
+    - **Preset generation rule (`components/ask/presets.ts`), verbatim in one
+      sentence:** every served field except `correction_interpretation`, in the
+      **page's own reading order**, chip text = the served **`korean_name`**, and
+      the chip's text **is** the question sent. The one exception is the question
+      R6 itself wrote — `forfeited_share_method` → 「실권주는 어떻게 처리되나요?」
+      (result.md §Composition examples). **No sentence template was invented**: a
+      「{label}은 어떻게 되나요?」 generator would be invented copy *and* wrong
+      Korean for most labels. Gate-blocked fields need no filtering — the contract
+      never serves them. A **철회** event yields no presets (the page renders no
+      fields and 철회 is the family the agent would answer with), a field with no
+      `korean_name` yields no chip, and the strip is capped by nothing: it is one
+      horizontally-scrolling line. **`FIELD_ORDER`/`STORY_FIELD` moved out of
+      `event/Fields.tsx` into `event/fieldOrder.ts`** so the row order and the chip
+      order are one list, not two.
+    - **Chip press = `setScope` + `ask` + the reader's surface**, in that order:
+      desktop `open()` (the widget), ≤480px `router.push('/ask')`, and on `/ask`
+      nothing to open. `setScope` (not `setPageScope`) because pressing a chip
+      **is** the reader choosing a 범위. The strip renders no answer and holds no
+      state; its last chip is R6-2's 「직접 질문 입력 →」, which opens the surface in
+      the event's 범위 and sends nothing (`freeInput={false}` on the page, where
+      the composer is the next element).
+    - **Ambient-scope lifecycle, decided:** `AskPageScope` (renders `null`) is
+      mounted by the event detail page **only** — set on mount, **cleared in the
+      effect's cleanup**, keyed by `{rcept_no, name}` values rather than object
+      identity. React runs a removed subtree's cleanup before the new subtree's
+      effects, so event A → event B lands on B; a lost race would leave `null`
+      (= 전체 공시), never someone else's event. Everywhere else the ambient scope
+      is null by construction. A **withdrawn** event keeps the ambient scope (R6's
+      own Refusal card is a 철회 conversation) while offering no presets.
+      Measured live: launcher on detail opens at `범위: 계양전기 · 20260724000546`,
+      `×` → `범위: 전체 공시`, and reopening keeps 전체 공시 — the reader's choice
+      is never overridden.
+    - **Mobile shape.** ≤480px the rail's contents stack **above** the chat (a 340
+      rail cannot sit beside a 390 viewport), so the DOM order is rail → chat and
+      the desktop layout places the rail into column 2 by grid. The input bar is
+      **`position: sticky; bottom: 0`** with `--paper` behind it — nothing new is
+      `position: fixed` anywhere. The 44px controls are a **≤480px-only** block in
+      `Ask.module.css`: the widget never renders there, so its signed 36px
+      composer is untouched. **No auto-scroll on the page** (the widget scrolls its
+      own 620px box; scrolling the document under a reader is the ambient motion
+      R1 keeps off data surfaces).
+    - **`/ask` shows presets when its 범위 is an event**, generated by the same
+      rule from a client `GET /events/{rcept_no}`; a failed read or a 철회 event
+      yields no chips and **no message** (R6 writes none).
+    - **⚠ The one place the record contradicts itself, left unresolved on purpose.**
+      R6 §Mobile writes 「메뉴 첫 행 ≥44px」 while §Surfaces writes 「nav 세번째 자리
+      「AI 질문」」 — and the mobile sheet mirrors the nav list. P5's shipped order was
+      **kept** (AI 질문 = third row, rows 48px, 메뉴 button 44px, both ≥44) rather
+      than silently reordering signed chrome. `P6.S7`/`P6.REVIEW` decide; it is one
+      line in `chrome/Nav.tsx` if the other reading wins.
+    - **Measured, not asserted (headless Chrome over CDP, `next build && next
+      start` + uvicorn).** 0 px horizontal overflow at **390** on `/ask`, the ①
+      detail page with the strip, the 철회 page and the landing; strip chips 44px
+      with the row scrolling (1009 > 358) instead of widening the document; `/ask`
+      at 1440 has the rail at **exactly 340px**, a chat column with **no border and
+      no background** (프레임 없음) and **zero** `position: fixed` (no launcher);
+      the in-place citation block renders **full width with `max-height: 180px` +
+      `overflow-y: auto`** at 390. Entry points: nav third slot, footer bottom row
+      and sheet row all `AI 질문 → /ask`; the widget's external-link lands on the
+      page with the same thread; 뒤로가기 from the page returns to the detail page
+      with the conversation intact; `sessionStorage` holds **only**
+      `mijual.ask.thread` at every step.
+    - **Spend-free end to end.** Everything that would have called a model ran
+      against `create_app(Settings(), agent_client=lambda: ScriptedModel(...))`
+      (S4's seam) over `tests/test_agent_tools._corpus` in SQLite, served on :8000
+      behind the same `/api` rewrite. **No live model call was made in this
+      slice** — the answer rendered on the mobile page (도구 행, chip 1, 인용 블록,
+      `근거 1건 · … · KST` footer) is the scripted turn. Two facts for whoever runs
+      it again: `MIJUAL_API_ORIGIN` is baked at **build** time (note 21), and the
+      dev Postgres still has no `conversation_turn` table, which is why the
+      scripted app used SQLite rather than writing to it.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -780,3 +880,17 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   API's first streaming client (`streamAsk` + `decodeSse`, CSRF-guarded, `session` frame first,
   중지 = abort). Nothing renders at ≤480px, on `/ask`, or under `/ops`. Backend untouched
   (pytest **136 passed**); frontend `build` · `typecheck` · `smoke` green (smoke 11 → **15**).
+- (`P6.S6`) **`frontend`** · **`experience`** (+ a line in **`product`**): the AI 질문 surfaces are
+  complete — **`/ask` is a real page** (P5's bare shell replaced): a frameless chat directly on the
+  page with a single **340px right rail** panel (범위 chip + the signed 검증/인트로/세션 lines) and
+  **no launcher**, arriving by nav slot · footer link · the widget's external-link and closing the
+  widget on the way in with the thread intact; **≤480px it is the whole surface** — full width, no
+  widget, no launcher, a `position: sticky` 44px input bar, 44px targets, 도구 행 kept and in-place
+  citation blocks full width with the 180px cap; **event detail gained the 질문 스트립** (preset
+  chips generated from that event's gate-passing fields, in the page's own field order, opening the
+  widget — mobile: the page — in that event's 범위 with the question sent, plus R6-2's 「직접 질문
+  입력 →」), and an **ambient 범위** bound per event page that never overrides a reader's own choice.
+  Second view, not second state: `lib/ask.ts` and every `P6.S5` component are unchanged, the one
+  sessionStorage key is unchanged, and **no backend file changed** (pytest **136 passed**; frontend
+  `build` · `typecheck` · `smoke 15/15` green; 0 px horizontal overflow at 390 on every touched
+  page, verified in a browser against a spend-free scripted agent).

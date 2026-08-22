@@ -12,6 +12,12 @@
 export { AskProvider } from "./AskProvider";
 export { AskSurface } from "./AskSurface";
 export { AskWidget } from "./AskWidget";
+/** The dedicated page (`app/ask/page.tsx`), the event detail page's 질문 스트립,
+ * and the ambient-범위 binder that page mounts — `P6.S6`. */
+export { AskPage } from "./AskPage";
+export { AskPageScope } from "./AskPageScope";
+export { QuestionStrip } from "./QuestionStrip";
+export { presetsFor, type AskPreset } from "./presets";
 export { AskLauncher } from "./AskLauncher";
 export { Answer } from "./Answer";
 export { Composer, type ComposerState } from "./Composer";

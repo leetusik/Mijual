@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AskPageScope, QuestionStrip, presetsFor } from "@/components/ask";
 import { ROUTES } from "@/lib/routes";
 import type { EventDetail as Detail } from "@/lib/types";
 import { ConvertibleStrip } from "./Convertible";
@@ -27,20 +28,49 @@ import styles from "./Event.module.css";
  * dates. The crumb and the provenance line stay, because they are the page's
  * frame rather than the card's body — the provenance line is exactly what the
  * one citation on that page is an instance of.
+ *
+ * ## AI 질문 (`P6.S6`)
+ *
+ * Two additions R6 puts on this page and P5 deliberately left out (`P5.S13` note
+ * 8), both entry points and neither a surface of its own:
+ *
+ * - the **질문 스트립** under the header — 프리셋 칩 generated from this event's
+ *   gate-passing fields, which open the widget (모바일: the page) in this event's
+ *   범위 with the question sent. 「스트립 자체는 답변을 렌더하지 않음」, and it
+ *   holds no state;
+ * - the page's **ambient 범위** — 「이벤트 상세에서 열면 범위 = 그 이벤트」 —
+ *   bound by `AskPageScope`, which renders nothing and never overrides a 범위 the
+ *   reader chose.
+ *
+ * Both need `{rcept_no, name}`, because the signed 범위 chip prints 「범위: {종목}
+ * · {rcept_no}」; an event payload missing either (both are nullable on the wire)
+ * gets neither. A **withdrawn** event keeps the ambient 범위 and offers no
+ * presets: the page renders no fields to generate them from, and 철회 is the
+ * refusal family the agent would answer with — 「답할 수 없는 질문은 프리셋으로
+ * 제안하지 않음」.
  */
 export function EventDetail({ detail }: { detail: Detail }) {
   const withdrawn = detail.state === "withdrawn";
   const fieldCount = Object.keys(detail.fields).filter(
     (key) => key !== "correction_interpretation",
   ).length;
+  const scope =
+    detail.rcept_no && detail.corp_name
+      ? { rcept_no: detail.rcept_no, name: detail.corp_name }
+      : null;
+  const presets = withdrawn ? [] : presetsFor(detail.fields);
 
   return (
     <main className={`content ${styles.page}`}>
+      {scope ? <AskPageScope scope={scope} /> : null}
+
       <Link className={`mono ${styles.crumb}`} href={ROUTES.board}>
         ← {BOARD_LABEL_KO}
       </Link>
 
       <EventHeader detail={detail} />
+
+      {scope ? <QuestionStrip scope={scope} presets={presets} /> : null}
 
       {withdrawn ? (
         <Withdrawn detail={detail} />

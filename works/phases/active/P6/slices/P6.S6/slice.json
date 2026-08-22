@@ -3,14 +3,14 @@
   "phase_id": "P6",
   "name": "전용 /ask 페이지 + 모바일 전폭 페이지 + 상세 질문 스트립 + 진입점 continuity",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 6,
   "depends_on": [
     "P6.S5"
   ],
   "created_at": "2026-08-22T19:21:32+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-22T21:30:00+09:00",
+  "completed_at": "2026-08-22T21:56:46+09:00",
   "risk": "high",
   "source": {
     "type": "manual",

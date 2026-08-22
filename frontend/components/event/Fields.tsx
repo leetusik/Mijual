@@ -18,6 +18,9 @@ import {
   STEP_TWO_KO,
   optionWindowCaptionKo,
 } from "./copy";
+// The reading order and the story field moved to plain data in `P6.S6`, so the
+// 질문 스트립 generates its preset chips in the same order this section renders.
+import { STORY_FIELD, fieldRank } from "./fieldOrder";
 import styles from "./Event.module.css";
 
 /**
@@ -44,37 +47,12 @@ import styles from "./Event.module.css";
  *    grouping and the order.
  */
 
-/** Rendered by the 정정 strip and the CorrectionStory, never as a field row.
- *
- * `correction_interpretation` is a served field like any other, but its value is
- * the 정정 story itself (`field_moves` + `interpretation`) — R3 gives it §5's
- * strip and the CorrectionStory view, and printing its nested record in a 220px
- * row would be neither the design nor readable. */
-const STORY_FIELD = "correction_interpretation";
-
 /** 일정 holds the fields that state *when*; 발행 조건 holds the filing's terms. */
 const SCHEDULE_FIELDS = new Set([
   "warrant_trading_period",
   "subscription_agents",
   "dissent_notice_procedure",
 ]);
-
-/** Row order = **the filing's own §7 numbering** (`copy-inventory.md` §Field keys
- * and their Korean names), which is also the order R3's ① card reads in;
- * `appraisal_price` is the label-tier 11th field (`P5.S6`) and has no §7 number,
- * so it follows. A field this list does not know keeps its served position. */
-const FIELD_ORDER = [
-  "warrant_trading_period",
-  "subscription_agents",
-  "forfeited_share_method",
-  "excess_subscription",
-  "issue_price_formula",
-  "refixing_terms",
-  "option_schedule",
-  "lockup_release",
-  "dissent_notice_procedure",
-  "appraisal_price",
-];
 
 export function FieldSections({
   fields,
@@ -86,7 +64,7 @@ export function FieldSections({
 }) {
   const rows = Object.values(fields)
     .filter((field) => field.field_key !== STORY_FIELD)
-    .sort((a, b) => rank(a.field_key) - rank(b.field_key));
+    .sort((a, b) => fieldRank(a.field_key) - fieldRank(b.field_key));
 
   const schedule = rows.filter((field) => SCHEDULE_FIELDS.has(field.field_key));
   const terms = rows.filter((field) => !SCHEDULE_FIELDS.has(field.field_key));
@@ -99,11 +77,6 @@ export function FieldSections({
       <FieldSection name={SECTION_TERMS_KO} rows={terms} reference={reference} />
     </>
   );
-}
-
-function rank(key: string): number {
-  const index = FIELD_ORDER.indexOf(key);
-  return index === -1 ? FIELD_ORDER.length : index;
 }
 
 function FieldSection({

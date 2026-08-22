@@ -166,5 +166,60 @@ export const FEEDBACK_TOOL = "save_feedback";
 // ---------------------------------------------------------------------------
 
 /** R6-2: 「자유 입력은 한 단계 뒤 ("직접 질문 입력 →")」 — the signed affordance for
- * typing your own question, reused as the composer's idle button text. */
+ * typing your own question, reused as the composer's idle button text.
+ *
+ * On the 질문 스트립 it is that affordance **in its own place**: the last chip,
+ * which opens the surface in the event's 범위 and sends nothing (R6-2's
+ * presets-first order — 프리셋 먼저, 자유 입력 한 단계 뒤). */
 export const ASK_SUBMIT_KO = "직접 질문 입력 →";
+
+// ---------------------------------------------------------------------------
+// 패널 카피 (result.md §Proposed copy) — the 질문 스트립 heading and the 340 레일
+// ---------------------------------------------------------------------------
+
+/**
+ * 「패널: "이 공시에 대해 질문"」, verbatim (result.md §Proposed copy).
+ *
+ * R6-1's first design put an inline **패널** on the event detail page; the final
+ * revision replaced the panel with the widget + page pair and left 상세 with the
+ * 질문 스트립 (「상세의 질문 스트립(프리셋 칩 …)은 위젯을 이벤트 범위로 열며 질문
+ * 전송」). The strip is therefore that panel's surviving affordance on that page,
+ * and this is the round's own name for it — the nearest signed string rather than
+ * a new heading. **Flagged for `P6.S7`/`P6.REVIEW`**: R6 draws the strip but
+ * writes no label for it.
+ */
+export const ASK_ABOUT_KO = "이 공시에 대해 질문";
+
+/**
+ * 「패널: … "검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용"」, verbatim
+ * (result.md §Proposed copy).
+ *
+ * The promise line. It renders in the dedicated page's **340 레일** — see
+ * `AskPage.tsx` for why the rail's contents are these four signed things and
+ * nothing else.
+ */
+export const VERIFIED_ONLY_KO = "검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용";
+
+// ---------------------------------------------------------------------------
+// 질문 스트립 (R6-2 · result.md §Composition examples)
+// ---------------------------------------------------------------------------
+
+/**
+ * The one preset question the record itself writes.
+ *
+ * result.md §Composition examples: 「Panel: 계양전기 `20260724000546` — "실권주는
+ * 어떻게 처리되나요?" 답변, 근거 = forfeited_share_method · excess_subscription의
+ * verbatim quote」 — a question about a **gate-passing field** of one event, which
+ * is exactly what R6-2 says a preset is (「프리셋은 그 이벤트의 게이트 통과
+ * 필드에서 생성」). So where `forfeited_share_method` is served, its chip is this
+ * sentence verbatim instead of the field's own label.
+ *
+ * Every other chip is the served `korean_name` — the label the page's own field
+ * row prints, off the wire. **Nothing here composes a Korean sentence**: a
+ * template like 「{label}은 어떻게 되나요?」 would be invented copy, and it would
+ * read wrongly over half the field names (a 기간 is not 처리되는 것). The rule and
+ * its consequence — a strip that mixes one signed sentence with field labels — is
+ * recorded in `presets.ts` and flagged for `P6.S7`/`P6.REVIEW`.
+ */
+export const FORFEITED_QUESTION_KO = "실권주는 어떻게 처리되나요?";
+export const FORFEITED_FIELD = "forfeited_share_method";

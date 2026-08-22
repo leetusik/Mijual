@@ -413,3 +413,14 @@
   cursor: default;
   opacity: 0.72;
 }
+
+/* ≤480px there is no widget and no launcher, so the **only** composer on this
+ * side of the breakpoint is the dedicated page's (`AskPage.tsx`) — and R6 §Mobile
+ * fixes its bar: 「입력 바 하단 sticky (44px)」, with ≥44px targets. The widget's
+ * own 36px controls are untouched, because the widget never renders here. */
+@media (max-width: 480px) {
+  .input,
+  .send {
+    min-height: 44px;
+  }
+}
