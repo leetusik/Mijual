@@ -293,6 +293,23 @@ export type LapseTotals = {
   value_floor?: Figure;
 };
 
+/**
+ * One 놓친 돈 row: the 실적보고서's outcome, plus the event-derived block **only
+ * when the 유상증자결정 is exposable** (`P5.S4` note 6). A row hanging off a
+ * flagged event keeps its 소멸 계산 — a lapse is a fact the 실적보고서 attests —
+ * and has no `countdown`, no `warrant_trading_period` quote and no `rcept_no` to
+ * link, rather than a "상세 보기" that would 404.
+ */
+export type LapseBreakdownRow = { rights_type: RightsType; lapse: LapseResult } & Partial<
+  RightsRow
+> & {
+    /** The 매매기간 field payload — this row's one `Citation` (R4). */
+    warrant_trading_period?: FieldPayload;
+    /** Present where the filing contradicts itself; `ui-traps.md` #2 is a
+     * payload rule, so it rides on a breakdown row too. */
+    issuer_disagreement?: Disagreement;
+  };
+
 export type StockPage = {
   stock: { corp_code: string; corp_name: string | null; stock_code: string | null };
   reference: string;
@@ -301,7 +318,7 @@ export type StockPage = {
     /** Served, never assumed client-side. Outside it, a row is **absent**. */
     coverage: { start: string; end: string; convertible_start: string };
     totals: LapseTotals;
-    rows: Array<{ rights_type: RightsType; lapse: LapseResult } & Partial<RightsRow>>;
+    rows: LapseBreakdownRow[];
     pending?: { count: number; subscription_end: string };
   };
 };

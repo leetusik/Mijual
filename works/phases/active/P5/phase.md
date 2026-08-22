@@ -1616,6 +1616,98 @@ headless Chrome over `npm run start` on **13 real pages × 2 viewports + 2 404s*
     the round's even spacing. Data is never truncated to close it; the cards decide whether the
     chain should instead cap the quote panel's width.
 
+### `P5.S14` — 내 종목 조회 is live; the shared math seam, the session key, and two gaps
+
+`frontend/components/lookup/` + `app/stocks/` is R4 over live `/stocks?q=…` and
+`/stocks/{corp_code}`. **0 new dependencies, no primitive/token/chrome/landing/event file
+touched, Python suite untouched at 113, no Korean invented** (every string cited in
+`components/lookup/copy.ts` or re-exported from the surface that owns it). Verified in real
+headless Chrome over `npm run start` — **43 checks, all pass**, 15 navigations across 9 issuers
+× 2 viewports — plus a `next dev` second opinion.
+
+| you need | use |
+|---|---|
+| **⌊N × 배정비율⌋ × 증서 1주 이론가치** | **`@/lib/holding`** → `convert(factors, shares)` — the product's **one** multiplication site (`P5.S8` note 1). `P5.S16` imports it; it does not write a second one |
+| the pieces, if a surface needs them alone | `allottedShares` · `excessLimit` · `sharesValue` · `sumValues` · `parseShares` · `MAX_SHARES` |
+| 조회's remembered holdings (R5-3's 세션 이월) | `holding.SESSION_KEY` (`mijual.lookup.holdings`) · `readSessionHoldings()` · `writeSessionHolding()` |
+| a link to one issuer's 조회 page | `stockPath(corpCode)` from `@/lib/routes` — **now served** |
+| the 놓친 돈 row's served shape | `LapseBreakdownRow` in `@/lib/types` |
+
+1. **Two routes, and the search redirects onto the handle.** `/stocks` is the search
+   (`?q=` resolves server-side; the param is **`q`**, the name `P5.S12`'s hero form and the API
+   already use) and `/stocks/{corp_code}` is a resolved stock. A hit `redirect()`s onto the
+   corp_code path, so the page a reader bookmarks is the stable handle `P5.S13`'s 환산 CTA links,
+   and the two entry points reach byte-identical pages instead of two routes that must be kept
+   saying the same thing. A **miss stays on the search page** and renders R4's locked 검색 불일치
+   line with the query still in the box — `found: false` is a result, not an error.
+2. **The math seam is `lib/holding.ts`, and its two rules are structural.** Arithmetic is
+   `BigInt` over the digits with the scale tracked separately — **no `Number()` on money or a
+   ratio, ever** — so 배정비율's ten decimals survive and the flooring is the multiplication's own
+   step (`mijual.calc.allotted_shares` governs, as R4's signoff verified). And `convert()` returns
+   **`value: null`** when the factors carry no `unit_value`: money before 확정발행가 is
+   *unconstructable* rather than merely unrendered, mirroring `mijual.present`. `OfferingInputs`
+   and `LapseResult` both satisfy `ConversionFactors` structurally, which is why one function
+   serves the live ① rows, the 놓친 돈 rows **and** 내 포트폴리오's.
+3. **sessionStorage convention, for `P5.S16`:** one key `mijual.lookup.holdings`, one object
+   `{"v":1,"entries":{"<corp_code>":<shares>},"last":{"corp_code","shares"}}`. Per-issuer, so
+   R5-3's 세션 이월 제안 reads the whole session in one go. Behaviour: a stock you already typed
+   into restores **its own** count; a **different** stock is never filled in and gets the offer
+   chip `이전 입력 {n}주` instead (R4-6's "never auto-fill silently"). Nothing is sent anywhere —
+   the API accepts no holding count on any path and there is no anonymous write endpoint.
+4. **No holding ⇒ no derived number.** An empty field is not a zero: an ① row states its factors
+   (배정비율, and the price or the `발행가 확정 전` chip) and the 놓친 돈 headline — frame line +
+   total — appears only once a count exists. `0원` under "청약도 매도도 하지 않았다면" would be a
+   claim about a holding the reader never described. The per-offering 소멸 계산 (market-wide) does
+   not depend on a holding and always renders.
+5. **Three readings of the record, recorded for `P5.S19`.** (a) The coverage caption's start is
+   **served** (`lapse.coverage.start`) while `오늘` is R4's own word — `coverage.end` *is* today
+   KST. (b) The boundary panel renders **rights-type chips**, not the record's ①②, because R1's
+   revision removed the numbering from the UI (the same reading `components/event/copy.ts` made for
+   ③'s 1단계/2단계); both dates come off the wire, so it prints `2025-06-01부터` where the record
+   writes "2025-06부터". (c) The calc footer is **per row** — offerings of one stock do not share a
+   배정비율, so one footer for several rows would print one row's factor as if it covered the others.
+6. **②'s 전환가액 stays, and that is not a violation of "②/③ rows never carry a won amount".**
+   R4 §② names 오버행 % · 전환 시 주식수 · 전환가액 as the dilution context in the same document
+   whose hard rules forbid won amounts on ②/③ rows; the rule is about the **per-holding**
+   conversion, and R5 later calls this very strip ②'s substitute for it ("금액 = R4 계약 그대로",
+   `P5.S8` note 6). Exactly those three of R3's six render — "Both link out to detail for
+   everything else" — and ③ carries the 2단계 dependency line with **no 매수예정가** (it is not in
+   `STOCK_FIELDS`, by `P5.S8` note 6's boundary).
+7. **D4 is not re-triggered here.** R4 gives a breakdown row **one** `Citation` — the 매매기간
+   quote — and the 소멸 계산 cell prints 발행/청약 as *words* with only the 소멸 count as a number.
+   No summed 실적보고서 figure carries a chip on this surface. The 발행사 기재 불일치 block does
+   ride along (`ui-traps` #2 is a payload rule, `P5.S4` note 9), rendered in R3's own signed words.
+8. **⚠ D2's second check: the trigger has NOT fired.** 코이즈 has two exposable ① events
+   (1195 · 1264) sharing version `20260122000058`, but only ev1195 carries a 증권발행실적보고서
+   (`20260129000503`). The breakdown is keyed on the **실적보고서**, which is unique, so the page
+   renders **one** offering row and `totals.offerings: 1` (1,000주 → 944,495원). Nothing was
+   de-duplicated. `P5.S19` still holds the board half.
+9. **⚠ `P5.S4` note 8's gap is now visible on a page, and it is a design question.** An ① whose
+   청약 has closed but whose 실적보고서 has not been filed is in **neither** section, so its stock
+   renders the *no-event* empty state ("이 종목에는 진행 중이거나 2026년에 소멸된 권리가 없습니다").
+   Live today: **센서뷰 `01593668`** and **클로봇 `01784914`**, each with a 확정발행가-priced ①
+   whose 청약 closed **2026-08-14**. Nothing was invented for them — `pending` would render the
+   wrong copy (their 청약 is over) and a 놓친 돈 row would be a figure nobody filed. **`P5.S19`/the
+   operator decide** whether a state gets signed for it.
+10. **Two facts about the environment, neither this surface's.** (a) Next prefetches the chrome's
+    로그인 link, so **every** page in this build logs a `/auth/login` 404 until `P5.S15` lands —
+    measured identically on `/` and on an event detail page. (b) The shared `Citation` primitive's
+    `[근거]` chip (14px) and its panel's DART link (17px) sit under the mobile 44px floor, exactly
+    as on R3's detail page; the primitive was **not** touched (a variation belongs in it with a
+    named prop and a citation, never as a local restyle). Both are `P5.S19` items.
+11. **Live cross-check (2026-08-22, headless Chrome, `npm run start`).** 계양전기 by name **and**
+    by `012200` → `/stocks/00102618`; unpriced ① → `발행가 확정 전` + 배정 신주 **115주** +
+    **+23주** + `= 500주 × 0.2314082845 · 1주 미만 버림` and **no 원 in the page body**;
+    한화솔루션 500주 reproduces R4's own card client-side — **679,575원** (하한 **545,181원**),
+    배정 **123주 × 5,525원**, `발행 − 청약 = 소멸 3,734,925주 (8.86%)` + **206.4억원**, calc footer
+    and disclaimer — and 1,000주 gives exactly 2× (246주 · 1,359,150원); 대한광통신 shows
+    **2,117,937주** beside the derived **2,083,302주** with both inputs cited, unreconciled;
+    유티아이's D+46 ② reads **진행 중** and the word 종료 appears nowhere; 휴맥스's ③ (D-5) has the
+    dependency line and no won amount; 고려아연 gets the no-event state with 감시 중 **488건**;
+    한솔테크닉스's flagged-event row keeps its 소멸 계산 and loses the 기간 line, the quote and the
+    link; 390×844 has **no horizontal overflow**, every target ≥44px, and **zero `position: fixed`**
+    elements (P6's corner stays clear).
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2269,6 +2361,56 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   opens **both** addends summing to the printed value; and an unpriced ① shows **no 원 amount
   anywhere on the page**.
 
+- (`P5.S14`) **`frontend`** — **내 종목 조회** (R4) is built and is durable frontend truth:
+  `components/lookup/` over two **request-time** routes (`connection()`) — `app/stocks/page.tsx`
+  (the search: `?q=` resolves through `GET /stocks?q=`, a hit **redirects onto**
+  `/stocks/{corp_code}`, a miss stays put and renders the locked 검색 불일치 line) and
+  `app/stocks/[corp_code]/page.tsx` (a resolved stock; an unknown code is a 404 that explains
+  nothing). The **corp_code path is the product's stable handle for an issuer** while a query is the
+  search's own vocabulary — `?q=`'s name is `q`, one word shared by the hero form, the page and the
+  contract. Durable rules that land with it: **`lib/holding.ts` is the product's one N주
+  multiplication site** — `convert(factors, shares)`, exact `BigInt` decimal arithmetic with **no
+  `Number()` on money or a ratio**, ⌊N × 배정비율⌋ floored on the digits (`mijual.calc` governs),
+  and **`value: null` when the factors carry no `unit_value`**, so money before 확정발행가 is
+  *unconstructable* rather than merely unrendered; `OfferingInputs` and `LapseResult` satisfy its
+  input type structurally, so **`P5.S16` imports it instead of writing a second one** (`P5.S8`
+  note 1's requirement, discharged). Holdings live in **sessionStorage only**, one key
+  `mijual.lookup.holdings` = `{v, entries:{corp_code:shares}, last:{corp_code,shares}}` — per
+  issuer, so R5-3's 세션 이월 제안 reads the session in one go — with **the same stock restoring its
+  own count and a different stock only ever *offered* one** ("이전 입력 {n}주"), never auto-filled
+  and never sent anywhere. Three readings of the record are stated as truth: the coverage caption's
+  start is **served** while `오늘` is the round's own word; the boundary panel renders **rights-type
+  chips rather than the record's ①②** (R1's revision removed the numbering from the UI) with both
+  dates off the wire; and the calc footer is **per breakdown row**, because offerings of one stock
+  do not share a 배정비율. `lib/types.ts` gains `LapseBreakdownRow` (the 놓친 돈 row's served shape,
+  `warrant_trading_period` + `issuer_disagreement` included). **`experience`** — the reader's
+  conversion surface as built, and what it refuses to state: **no holding means no derived number**
+  (an empty field is not a zero — the ① row shows its factors, the 놓친 돈 headline appears only
+  once a count exists, and "사라진 가치 0원" is never printed); an unpriced ① shows `발행가 확정 전`
+  + the due date and **no money anywhere**, while 배정 신주 and 초과청약 한도 still compute; a
+  **②/③ row carries no per-holding amount** — ② carries R4's three dilution facts (오버행 % ·
+  전환 시 주식수 · 전환가액, the same strip R5 calls ②'s substitute) and ③ the 2단계 dependency line
+  with **no 매수예정가** — while an already-open ② reads **진행 중** and the word 종료 appears
+  nowhere; a breakdown row carries **exactly one `Citation`** (the 매매기간 quote) and prints
+  발행/청약 as words, so no summed 실적보고서 figure ever carries a chip; a row hanging off a
+  *flagged* event keeps its 소멸 계산 and silently loses its 기간 line, quote and link; 발행사 기재
+  불일치 rides onto the breakdown row in R3's own signed words, both readings cited, never
+  reconciled; a **search miss is a result** and names no reason, candidate or near-miss; and a
+  resolved stock with nothing to show states the watched 3종 and the live 감시 중 count instead of a
+  zero. **`qa`** — the frontend check now covers 조회: `npm run build` (both routes `ƒ`) +
+  `typecheck` + `smoke` (**3 → 6 `node:test` cases**, ~79 ms, still no jest/vitest/jsdom) all green,
+  **Python suite untouched at 113**, and the surface was verified in a **real headless Chrome over
+  `npm run start` and again in `next dev`** — 43 checks across 9 issuers × 2 viewports. Measured
+  invariants worth keeping: **한화솔루션 500주 reproduces R4's own card client-side from factors
+  only — 679,575원, 하한 545,181원, 배정 123주 × 5,525원** (and 1,000주 is exactly 2×), 계양전기
+  500주 → 115주 / +23주 with **no `원` in the page body**, 대한광통신's two readings both cited and
+  unreconciled, 코이즈's 놓친 돈 total **not double-counted** (one row, `offerings: 1` — D2's second
+  trigger did **not** fire), the restore-chip flow offering rather than filling, and 390×844 with no
+  horizontal overflow, every target ≥44px and **zero `position: fixed`** elements. Two pre-existing
+  conditions were measured and left alone: Next's `/auth/login` prefetch 404 on **every** page until
+  `P5.S15` lands, and the shared `Citation` chip/link sitting under the mobile 44px floor exactly as
+  on R3's detail page.
+
 ## Open Questions
 
 - **R7's 샘플 로드 여부 column has no backing fact** — *new, `P5.S9`*: R5's sample portfolio
@@ -2318,6 +2460,14 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   working local value in the meantime.
 - **vocky's real observation API** — its shape, and whether reaching it needs a credential the
   operator must supply (`P5.S18`).
+- **A closed 청약 with no 실적보고서 yet has no signed state** — *new, `P5.S14`* (raised as a gap by
+  `P5.S4` note 8, now visible on a page): such an ① is in **neither** section of 내 종목 조회, so its
+  stock renders the *no-event* empty state — "이 종목에는 진행 중이거나 2026년에 소멸된 권리가
+  없습니다". Live today on **센서뷰 `01593668`** and **클로봇 `01784914`**, both with a
+  확정발행가-priced ① whose 청약 closed **2026-08-14**. Nothing was invented for them: `pending`
+  would render the wrong copy (their 청약 is over) and a 놓친 돈 row would be a figure nobody filed.
+  R4 signs no state for the interval between 청약 종료 and the 증권발행실적보고서, so drawing one is a
+  **design** call — `P5.S19`/the operator's, not an implementation one.
 - **The not-found page has no Korean sentence** — *new, `P5.S13`*: a non-renderable `rcept_no`
   must 404 without explaining itself (`P5.S3` note 5), and the copy inventory holds **no 404
   string**, so `app/events/[rcept_no]/page.tsx` calls `notFound()` and the framework's English
