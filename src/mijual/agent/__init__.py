@@ -24,7 +24,21 @@ What lives here, in the order the phase builds it:
 * :mod:`mijual.agent.declarations` — the Gemini ``FunctionDeclaration`` set, built
   from plain data with a **local** SDK import, so the package imports with no SDK
   and no credential present.
-* `P6.S3` adds the autonomous function-calling loop and `P6.S4` the transport.
+* :mod:`mijual.agent.client` — the agent's **own** streaming Gemini client, with
+  the two ideas copied (never imported) from ``mijual.extract``: a structural call
+  budget and a ▷ usage ledger. Also the neutral message/chunk types the loop
+  speaks, so a test can drive the real loop with a scripted fake.
+* :mod:`mijual.agent.instructions` — the system instruction. It **advises**; it
+  never commands a tool call.
+* :mod:`mijual.agent.citations` — 인용 강제 as a gate on the generation boundary:
+  an unverified claim cannot enter the stream (R6), and the never-compute rule
+  rides the same gate.
+* :mod:`mijual.agent.events` — the typed event stream `P6.S4` serializes and
+  `P6.S5` renders, ending in one terminal that carries everything persistence needs.
+* :mod:`mijual.agent.loop` — :func:`~mijual.agent.loop.run_turn`, the autonomous
+  function-calling turn. **The model decides** which tools to call, in what order,
+  across how many rounds, and when it is ready to answer.
+* `P6.S4` adds the transport; nothing here speaks HTTP or persists a turn.
 
 Importing this package costs no connection, no credential and no SDK.
 """
@@ -32,6 +46,17 @@ Importing this package costs no connection, no credential and no SDK.
 from __future__ import annotations
 
 from mijual.agent.context import ToolContext
+from mijual.agent.events import (
+    AgentEvent,
+    CitationEvent,
+    FooterEvent,
+    LinksEvent,
+    RefusalEvent,
+    TextEvent,
+    ToolRowEvent,
+    TurnEnd,
+)
+from mijual.agent.loop import HistoryTurn, TurnBudget, run_turn
 from mijual.agent.tools import (
     TOOL_NAMES,
     Citation,
@@ -49,9 +74,19 @@ from mijual.agent.tools import (
 
 __all__ = [
     "TOOL_NAMES",
+    "AgentEvent",
     "Citation",
+    "CitationEvent",
+    "FooterEvent",
+    "HistoryTurn",
+    "LinksEvent",
+    "RefusalEvent",
+    "TextEvent",
     "ToolContext",
     "ToolResult",
+    "ToolRowEvent",
+    "TurnBudget",
+    "TurnEnd",
     "UnknownTool",
     "call_tool",
     "citations_in",
@@ -59,6 +94,7 @@ __all__ = [
     "get_contact",
     "get_event",
     "get_portfolio",
+    "run_turn",
     "save_feedback",
     "search_events",
 ]

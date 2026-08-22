@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P6`
-- Current slice: `P6.S3`
-- Next slice: `P6.S4`
+- Current slice: `P6.S4`
+- Next slice: `P6.S5`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-22T20:01:47+09:00`
+- Rebuilt at: `2026-08-22T20:29:25+09:00`
 
 ## Active Phases
 
@@ -20,7 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
-| [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.S3` | `works/phases/active/P6` |
+| [ ] `P6` | `planned` | `pending` | Apply — AI 질문 agent | `P6.S4` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -102,7 +102,7 @@
 | [x] `P6.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P6/slices/P6.DECOMP` |
 | [x] `P6.S1` | `done` | 익명 대화 저장소 + Conversations 포트 구현: schema, session hash, cursor reads, ops tabs live | `implementation` | `works/phases/active/P6/slices/P6.S1` |
 | [x] `P6.S2` | `done` | The five agent tools: search_events / get_event / get_portfolio / save_feedback / get_contact | `implementation` | `works/phases/active/P6/slices/P6.S2` |
-| [ ] `P6.S3` | `todo` | Agent core: the autonomous Gemini function-calling loop, citation forcing, refusal families, never-compute | `implementation` | `works/phases/active/P6/slices/P6.S3` |
+| [x] `P6.S3` | `done` | Agent core: the autonomous Gemini function-calling loop, citation forcing, refusal families, never-compute | `implementation` | `works/phases/active/P6/slices/P6.S3` |
 | [ ] `P6.S4` | `todo` | SSE 엔드포인트 + turn persistence + rate limiting + the request-path model boundary | `implementation` | `works/phases/active/P6/slices/P6.S4` |
 | [ ] `P6.S5` | `todo` | 런처 + 위젯: the whole desktop AI 질문 surface (bubbles, tool rows, 인용, SSE states, 거절, scope, sessionStorage) | `implementation` | `works/phases/active/P6/slices/P6.S5` |
 | [ ] `P6.S6` | `todo` | 전용 /ask 페이지 + 모바일 전폭 페이지 + 상세 질문 스트립 + 진입점 continuity | `implementation` | `works/phases/active/P6/slices/P6.S6` |

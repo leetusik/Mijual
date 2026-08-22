@@ -372,6 +372,100 @@ also the true build order.
       (`mijual.agent` imports no `mijual.dart`/`collect`/`extract`) — `P6.S4` extends the
       scans, this one is cheap insurance meanwhile.
 
+20. **`P6.S3` landed the agent core — the entry point, the event vocabulary, the gate rule,
+    and two live-measured SDK facts `P6.S4` must not rediscover.**
+    New modules in `src/mijual/agent/`: **`loop.py`** (the turn) · **`client.py`** (the agent's
+    own Gemini client + the neutral message/chunk types) · **`citations.py`** (the gate) ·
+    **`events.py`** (the typed stream) · **`instructions.py`** (the system instruction).
+    `copy.py` gained the five signed refusal sentences. Suite 126 → **130 passed**.
+    - **Entry point:** `run_turn(ctx, question, history=(), *, client=None, budget=None,
+      now=None) -> Iterator[AgentEvent]` (`mijual.agent.loop`, re-exported from
+      `mijual.agent`). A **sync generator**; `P6.S4` adapts it to SSE and the reader's
+      「중지」 is simply the consumer closing it (nothing is retracted, nothing is emitted).
+      `history` is `Sequence[HistoryTurn(question, answer)]` — plain prose, because chip
+      numbering is per answer (R6-4). `budget` is `TurnBudget(max_rounds=6,
+      max_tool_calls=10, max_model_calls=8)`.
+    - **Event vocabulary** (`mijual.agent.events`, every one a frozen dataclass with
+      `payload()` and `frame()` → `{"event", "data"}`): `tool_row` `{tool,row,ok}` ·
+      `citation` `{number,rcept_no,api_tier,quote?,span?,field_key?}` · `text`
+      `{text,citations:[번호]}` · `refusal` `{family,text}` · `links` `{links:[…]}` ·
+      `footer` `{count,evidence,generated_at,links}` · and the **terminal**.
+      **Ordering rule S5 depends on:** a `citation` event is a *definition* emitted
+      immediately **before** the `text` event that names its number, so the chip is painted
+      with its sentence (R6: 칩은 주장과 동시에 도착; 자리표시·후행 부착 없음). A number is
+      defined once per answer — same 근거 = same 번호.
+    - **Terminal shape:** one class `TurnEnd` with `status ∈ {done, aborted, error}` (its
+      `event` name *is* the status). Fields: `kind` (`answer`|`refusal`) · `answer` (the
+      released prose, joined) · `refusal_category` · `scope` · `evidence` · `quotes` ·
+      `blocked` · `rounds` · `tool_calls` · `reason` · `usage`. **`P6.S4` calls `record_turn`
+      from this object alone** — the five middle fields are literally its arguments, so the
+      log can never disagree with what the reader saw. `evidence`/`quotes` are **the chips
+      the reader saw**, not the union of tool results (note 19 suggested the union; R7's
+      column is 「인용 칩 원문」, so the log replays the answer, not the research).
+      `footer` and `links` are emitted **only on `done`** — 중단/오류 has its own signed
+      inset row and 재시도, and a footer under a half-answer would read as a finished one.
+    - **Citation-gate rule chosen — drop-not-fail, with a verified-string escape.** A
+      sentence is released only if (a) every `[[cite:cN]]` id resolves to a citation a tool
+      returned, (b) it has at least one such id **or** is verbatim a string a tool payload
+      carried, (c) every numeric token appears among the tools' own values (never-compute),
+      and (d) every 「…」/"…" span occurs verbatim in tool output. A failing sentence is
+      **dropped** — never emitted, never marked — and the count rides `TurnEnd.blocked`. If a
+      turn releases **nothing**, the loop states the 검증 미통과 폴백 family itself. A
+      budget/error abort is deliberately **not** turned into 폴백 (that sentence would be a
+      false claim about the data); it ends `aborted`/`error` with the partial answer intact.
+      A tool result naming exactly one filing **lends its citation** to a verbatim string of
+      its own, which is what puts a 근거 칩 on 「이 유상증자는 철회되었습니다」 (R6: 거절도
+      인용 강제) while leaving the 0건 sentence honestly chip-less.
+      **Two id spaces:** the model cites `c7` (assigned when the tool ran, closed set — there
+      is no id for a filing no tool returned); the reader sees chip `1` (assigned on first
+      use). Honest limit, recorded: the number check is *membership*, not semantics — a small
+      integer or a year is effectively always allowed. What it catches is a value that exists
+      **nowhere upstream**, which is the shape of every computed or invented figure.
+    - **Refusal families are recognised, not generated.** `copy.REFUSAL_SENTENCES` holds the
+      five signed sentences verbatim, keyed by the exact `REFUSAL_FAMILIES` strings the R7
+      filter sends; the gate cuts a family sentence out of the stream and emits it as a
+      `refusal` event. A paraphrase is therefore not a softer refusal — it is uncited prose
+      and gets dropped. `copy.family_of()` is exact-match only.
+    - **Client + ledger location: `mijual.agent.client`, per turn.** `AgentGeminiClient`
+      (model `gemini-3.7-flash`, lazy `google.genai` import, key resolved on first *use*,
+      **AFC disabled** so the loop is ours). Budget: `max_calls` raises `CallBudgetExceeded`
+      **before** the call. Ledger: `UsageLedger.payload()` rides `TurnEnd.usage` (calls ·
+      tokens · `thinking_levels` · `cost_usd_estimate`) and `.render()` gives the ▷ line for
+      `P6.S4`'s log. Nothing was lifted into a neutral module and `mijual.extract` is not
+      imported — the two clients diverged immediately (JSON vs. streamed tool calls).
+      **Errors carry the exception type name only** (`GeminiError("ClientError")`), never a
+      message that could contain a URL.
+    - **Thinking level: `LOW`, and it is a decision.** D-4's rule for an unlisted task, and
+      three reasons to stay: the surface is free and unlimited (R6-5) so per-turn cost is the
+      product's cost; SSE's first token is reader-visible latency and thinking precedes it;
+      and 인용 강제 / never-compute / 거절 가족 are enforced **structurally**, so a cheaper
+      level cannot produce an unverified claim, only a blocked one. **Measured:** five live
+      turns at LOW, `blocked == 0` on every one — the marker protocol held. Raise it on
+      `AgentGeminiClient(thinking_level=…)` if a measurement says tool choice suffers; the
+      level is recorded per call either way.
+    - **⚠ Two live-measured SDK facts.** (1) **Gemini 3.x requires `thought_signature`**: the
+      opaque bytes on a function-call part must be echoed back in the conversation history or
+      the *second* round dies with `400 INVALID_ARGUMENT`. `ModelCall.thought_signature`
+      carries it; never inspect, log or store it. (2) The live model writes
+      `…입니다.[[cite:c2]]` with **no space** after the full stop — a sentence splitter that
+      requires whitespace glues a whole answer into one sentence carrying every chip at once.
+      Both are fixed here; both would have been invisible to a chain-shaped implementation.
+    - **Live smoke, 2026-08-22 (▷ $0.0942 total, 28 calls, ~103k tokens, all LOW):** the model
+      chose a different tool path in every turn and, on a 0건 search, **re-searched with a
+      corrected query on its own**. 확정 전 came out exactly as R6-7 signs it (cited known
+      facts, then 금액만 거절); 철회 produced the signed 3-part refusal with a 근거 칩; 계산
+      요청 produced the fixed redirect with **zero** tool calls forced.
+    - **Open copy point for `P6.S7`/`P6.REVIEW`:** the live 확정 전 answer stated
+      「예정발행가액은 3,200원입니다」 (1차 발행가액 반영) before refusing the amount. That is
+      a gate-passing field the event page itself renders, so it is a *published planned*
+      figure rather than a 확정 전 금액 claim — but it is worth confirming against R6's
+      「확정 전 금액 — 금지」 with a real browser beside the detail page.
+    - **Nit found, deliberately not fixed here:** `copy.BOARD_POINTER_HREF = "/board"` (landed
+      in `P6.S2`) is a **dead route** — `frontend/lib/routes.ts` has `ROUTES.board = "/"` and
+      there is no `frontend/app/board/`. `P6.S3` serves link *kinds* (`{"kind":"board"}`) and
+      no hrefs at all, so nothing in this slice depends on it. **`P6.S5`/`P6.S7` should map
+      the pointer through `ROUTES`** rather than render that string.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -458,3 +552,15 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   unique-or-decline) and **`load_corp_events`** (exposable events as views); and
   `Settings.operator_contact` / `MIJUAL_OPERATOR_CONTACT` is the new deploy setting the product
   answers 미정 for until the operator supplies it. Suite 121 → **126 passed**.
+- (`P6.S3`) **`architecture`** · **`backend`** (+ lines in **`security`**, **`operations`**,
+  **`qa`**, and a **`decisions`** candidate): `mijual.agent` now **reaches the model** —
+  `run_turn()` is an autonomous Gemini function-calling loop (the model chooses the tools, the
+  order, the rounds and the moment to answer; a structural round/call budget bounds it) with its
+  own streaming client (`gemini-3.7-flash`, thinking **LOW** recorded per call, ▷ ledger per
+  turn, `mijual.extract` copied-not-imported), **인용 강제 as a generation-boundary gate** (an
+  uncited or untraceable-number or non-verbatim-quote sentence cannot enter the stream; blocked
+  count is reported), the five signed refusal families selected by their signed sentences, and a
+  typed event stream whose terminal carries `record_turn`'s arguments verbatim. Still no HTTP, no
+  SSE, no persistence (`P6.S4`). Suite 126 → **130 passed**. **Decision candidate:** the
+  agent-not-chain architecture + the model-in-request-path boundary, and D-4's per-task thinking
+  level gaining an `agent_turn` row at `LOW`.

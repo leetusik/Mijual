@@ -26,6 +26,7 @@ are recorded as an open copy point in ``works/phases/active/P6/phase.md`` for
 from __future__ import annotations
 
 __all__ = [
+    "AGENT_INTRO_KO",
     "BOARD_POINTER_HREF",
     "BOARD_POINTER_KO",
     "CONTACT_ROW",
@@ -34,13 +35,17 @@ __all__ = [
     "EVENT_ROW",
     "FEEDBACK_RETRY_ROW",
     "FEEDBACK_ROW",
+    "FEEDBACK_SAVED_KO",
     "NOT_FOUND_KO",
     "PORTFOLIO_ROW",
     "PORTFOLIO_SAMPLE_LABEL_KO",
     "PORTFOLIO_SAMPLE_ROW",
+    "REFUSAL_FALLBACK",
+    "REFUSAL_SENTENCES",
     "RIGHTS_TOOL_LABEL_KO",
     "SEARCH_ITEM",
     "SEARCH_ROW",
+    "family_of",
     "search_row",
 ]
 
@@ -73,6 +78,66 @@ PORTFOLIO_SAMPLE_LABEL_KO = "구성 예시"
 #: 의견 저장, verbatim from result.md §Agent capabilities:
 #: `의견 저장 → 운영자 검토 대기열`.
 FEEDBACK_ROW = "의견 저장 → 운영자 검토 대기열"
+
+#: The confirmation line, verbatim from result.md §Proposed copy 의견. Kept here
+#: beside the row it follows; the surface renders it (`P6.S5`), the agent never
+#: writes it as prose.
+FEEDBACK_SAVED_KO = "의견을 저장했습니다 — 운영자가 확인합니다."
+
+#: 에이전트 인트로, verbatim from result.md §Proposed copy. A **surface** string
+#: (`P6.S5` renders it above an empty thread), transcribed here because it is the
+#: agent's own promise and this file is where the phase keeps the agent's words.
+AGENT_INTRO_KO = (
+    "검증을 통과한 공시에 대해서만 답합니다. 모든 답에는 원문 인용이 붙습니다. "
+    "계산은 하지 않습니다 — 계산은 내 종목 조회가 합니다."
+)
+
+# ---------------------------------------------------------------------------
+# 거절 가족 (R6-7) — signed, and the only sentences a refusal may say
+# ---------------------------------------------------------------------------
+#: The five families and their sentences, **verbatim** from result.md §Proposed
+#: copy (「거절 가족 (R6-7)」) — 철회 · 확정 전 · 공시에 없음 · 계산 요청 · 폴백, in
+#: the record's own order. The keys are
+#: :data:`mijual.web.conversationstore.REFUSAL_FAMILIES`, the exact strings R7's
+#: 거절 카테고리 filter sends, so a stored row is findable by the panel that was
+#: built for it.
+#:
+#: Three rules ride on this mapping and none of them is a style choice:
+#:
+#: * **the family is the most specific thing said** — R6 forbids per-reason-code
+#:   wording, and the reader payload carries no gate reason code at all, so there
+#:   is nothing more specific that could honestly be said;
+#: * **a refusal is not an error** — these are ordinary prose sentences on the
+#:   ordinary prose path, and the surface gives them body ink, no alert colour and
+#:   no icon;
+#: * **the loop selects a family by recognising its sentence**, so a paraphrase is
+#:   not a softer refusal — it is prose with no citation, and the gate drops it.
+REFUSAL_SENTENCES: dict[str, str] = {
+    "철회": "철회된 공시는 해설하지 않습니다.",
+    "확정 전": "확정 전 금액은 해설하지 않습니다.",
+    "공시에 없음": "공시에 없는 내용은 해설하지 않습니다.",
+    "계산 요청": "해설은 계산하지 않습니다 — 계산은 검증된 수치로 내 종목 조회가 합니다.",
+    "검증 미통과 폴백": (
+        "이 데이터는 검증을 통과하지 못했습니다. 검증되지 않은 내용은 해설하지 않습니다."
+    ),
+}
+
+#: The family a turn falls to when nothing it generated could be verified — the
+#: one family the *loop* may select on its own, because it is a statement about
+#: the data rather than about the reader's question.
+REFUSAL_FALLBACK = "검증 미통과 폴백"
+
+
+def family_of(sentence: str) -> str | None:
+    """Which signed family this sentence **is**, or ``None``.
+
+    Exact match only: a family is selected by the record's own words arriving
+    verbatim, never by a keyword in something that resembles them.
+    """
+    text = sentence.strip()
+    return next(
+        (family for family, signed in REFUSAL_SENTENCES.items() if signed == text), None
+    )
 
 # ---------------------------------------------------------------------------
 # composed (see the module docstring)
