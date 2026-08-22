@@ -1,4 +1,5 @@
 import { CraftPanel, DDay, RightsChip, StateBadge } from "@/components";
+import { DeadlineOffer } from "@/components/auth";
 import { dartUrl } from "@/lib/api";
 import type { EventDetail } from "@/lib/types";
 import {
@@ -110,6 +111,16 @@ export function EventHeader({ detail }: { detail: EventDetail }) {
           )}
 
           <WindowLine detail={detail} />
+
+          {/* R5-2's second conversion touchpoint: "상세 D-day 아래 한 줄 링크".
+              It is gated on a deadline that is still ahead — "이 마감 알림 받기"
+              under an anchor already behind the reference day would promise an
+              alert nothing can send (the 시점 칩 are 7/3/1/0 days *before* a
+              deadline), and a 추후결정 event has no 마감 to be alerted about at
+              all. The gate is this build's reading; the line itself is signed. */}
+          {countdown.date && countdown.days !== null && countdown.days >= 0 ? (
+            <DeadlineOffer corpCode={detail.corp_code} />
+          ) : null}
         </div>
       )}
     </CraftPanel>

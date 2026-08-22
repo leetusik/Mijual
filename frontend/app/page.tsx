@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { SampleEntry } from "@/components/auth";
 import { Board, Cosmos, Hero, LapseNotice, RetrospectiveAnchor } from "@/components/landing";
 import { getBoard, getBoardSummary } from "@/lib/api";
 import styles from "./page.module.css";
@@ -39,6 +40,11 @@ export default async function BoardLanding() {
           <RetrospectiveAnchor summary={summary} />
           <LapseNotice summary={summary} />
           <Board board={board} />
+          {/* R5-4's second sample entry — "진입: 로그인 페이지 하단 + 랜딩 푸터".
+              It lands at the foot of the landing *page*: R5 leaves the global
+              footer unchanged ("Footer 불변"), so the sample entry is a landing
+              element rather than chrome (`P5.S11` note 11). */}
+          <SampleEntry variant="landing" />
         </div>
       </main>
     </>

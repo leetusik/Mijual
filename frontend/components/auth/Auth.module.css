@@ -1,0 +1,343 @@
+/* R5's auth surfaces and its two conversion touchpoints.
+ *
+ * The round states this layer in behaviour rather than in measurements — one
+ * panel with two modes and a 전환 링크, a permanent PII inset, a button whose
+ * *text* is replaced while a request is in flight (no spinner), a one-line error,
+ * a bottom-fixed sample entry, an offer panel that never covers the results, and
+ * a one-line link under a detail D-day. Those are the contract; everything below
+ * is the signed system carrying them.
+ *
+ * Three rules this file keeps, each from a landed decision rather than taste:
+ *
+ * - **No colour literal, and no `--alert` on a failure.** `--alert` means
+ *   expiring/lost and nothing else (`frontend.md` §Tokens: "Red never encodes
+ *   price movement"), so R5's "오류(본문 한 줄)" renders in body ink. A red login
+ *   error would spend the one hue this product reserves for a deadline.
+ * - **No radius, no shadow** (R1: square system, hairline elevation), and the
+ *   controls are R4's own measurements — the round says to reuse its signed input
+ *   primitive rather than redesign one (build-prompt §Portfolio), and its 48px
+ *   console row / 44px mobile floor are what `components/lookup/Lookup.module.css`
+ *   already states.
+ * - **Nothing here is `position: fixed`.** The chrome has no fixed element
+ *   (`P5.S11` note 8) and R6's launcher lands in the bottom-right corner; an
+ *   offer panel that floated would take that corner *and* be the forced overlay
+ *   R5-2 forbids ("게이트 화면·강제 모달 금지").
+ */
+
+/* ---------------------------------------------------------------------------
+   The auth page (R5-1)
+   --------------------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /* One column, narrower than the 1120px content column: the panel collects two
+     fields, and a form stretched to the board's width would read as a surface
+     that wants more than it does. R4's console row uses the same 560 ceiling. */
+  max-width: 560px;
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink-1);
+}
+
+.intro {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* R4's signed input, reused: inset surface, hairline border, 44px floor. An
+   email and a password are prose, not numerals, so neither is mono. */
+.input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding-inline: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--ink-1);
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+/* R4's 조회 button, the product's one primary action treatment. While a request
+   is in flight this button carries 확인 중… and is disabled — the state is the
+   label, which is why nothing here spins. */
+.submit {
+  min-height: 48px;
+  padding-inline: var(--space-4);
+  background: var(--live-solid);
+  border: 1px solid var(--live-solid);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+.submit:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+/* The one body line R5 signs for a failure — body ink, never alert. */
+.error {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+/* 재설정 링크를 보냈습니다 · 로그아웃되었습니다 — statements, not alarms. */
+.notice {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* The 전환 링크 and the 재설정 trigger: quiet, 44px, and buttons rather than
+   links because neither navigates — one swaps the panel's mode, the other posts
+   a request. */
+.quietRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.quiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.quiet:hover:not(:disabled) {
+  color: var(--ink-1);
+}
+
+.quiet:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------------------
+   The PII inset — R5-1's permanent element on the auth screen
+   --------------------------------------------------------------------------- */
+
+.pii {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
+}
+
+.piiLine {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   샘플 진입 (R5-4) — the auth page's bottom-fixed entry, and the landing's line
+   --------------------------------------------------------------------------- */
+
+.sample {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-soft);
+}
+
+.sampleLink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: var(--text-base);
+  color: var(--ink-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sampleLink:hover {
+  color: var(--live);
+}
+
+.sampleSub {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+}
+
+/* The landing's own line, at the foot of the page (never in the global footer,
+   which R5 leaves unchanged). */
+.landingSample {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.landingSample:hover {
+  color: var(--live);
+}
+
+/* ---------------------------------------------------------------------------
+   전환 제안 ① — the offer panel under 조회's results (R5-2)
+   --------------------------------------------------------------------------- */
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.offerHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.offerLead {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.offerBody {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* 닫기: a 44px target that says what it does, quiet enough that the results
+   beside it stay the page's subject. */
+.dismiss {
+  flex: none;
+  min-height: 44px;
+  min-width: 44px;
+  padding-inline: var(--space-2);
+  background: none;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  color: var(--ink-1);
+}
+
+.offerCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  background: var(--live-solid);
+  border: 1px solid var(--live-solid);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+  text-decoration: none;
+}
+
+/* "지금처럼 로그인 없이 계속 쓸 수 있습니다" — the sentence that keeps the offer
+   an offer. It is part of the panel, never a dismissal-only escape. */
+.offerStay {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   전환 제안 ② — the one-line link under a detail page's D-day (R5-2)
+   --------------------------------------------------------------------------- */
+
+.deadlineOffer {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.deadlineOffer:hover {
+  color: var(--live);
+}
+
+/* ---------------------------------------------------------------------------
+   ≥480px
+   --------------------------------------------------------------------------- */
+
+@media (min-width: 480px) {
+  .panel {
+    padding: var(--space-6);
+  }
+
+  .submit {
+    align-self: flex-start;
+    min-width: 160px;
+  }
+}

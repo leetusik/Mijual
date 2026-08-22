@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { parseShares, readSessionHoldings, writeSessionHolding } from "@/lib/holding";
+import { ConversionOffer } from "@/components/auth";
+import { convert, parseShares, readSessionHoldings, writeSessionHolding } from "@/lib/holding";
 import type { BoardSummary, StockPage } from "@/lib/types";
 import { HoldingStrip } from "./HoldingStrip";
 import { CoveragePanel, NoRights } from "./LookupEmpty";
@@ -67,6 +68,20 @@ export function StockView({
 
   const empty = page.rights.count === 0 && page.lapse.totals.offerings === 0;
 
+  // R5-2 places its offer panel "값 계산 직후" — after a per-holding value has
+  // rendered. That is asked of `lib/holding.ts`, the product's one multiplication
+  // site, rather than answered a second way here: the same `convert()` the rows
+  // and the 놓친 돈 total already call, so the offer cannot appear beside numbers
+  // that do not exist (an unpriced ① converts to `value: null` by construction).
+  const valued =
+    shares !== null &&
+    [
+      ...page.lapse.rows.map((row) => convert(row.lapse, shares).value),
+      ...page.rights.rows.map((row) =>
+        row.offering ? convert(row.offering, shares).value : null,
+      ),
+    ].some((value) => value !== null);
+
   return (
     <div className={styles.stock}>
       <HoldingStrip
@@ -92,6 +107,10 @@ export function StockView({
       )}
 
       <CoveragePanel coverage={page.lapse.coverage} />
+
+      {/* 전환 제안 (R5-2), last on the page and in normal flow: it never covers
+          the results, it gates nothing, and it shows at most once per session. */}
+      <ConversionOffer ready={valued} />
     </div>
   );
 }

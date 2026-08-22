@@ -1708,6 +1708,117 @@ headless Chrome over `npm run start` — **43 checks, all pass**, 15 navigations
     link; 390×844 has **no horizontal overflow**, every target ≥44px, and **zero `position: fixed`**
     elements (P6's corner stays clear).
 
+### `P5.S15` — the auth surfaces exist; the routes S16 owns, the session seam, the copy floor
+
+`frontend/components/auth/` + `app/auth/{login,reset}` is R5-1's one panel and R5-2's two
+conversion touchpoints, over the `/auth/*` endpoints `P5.S7` built. **0 new dependencies, no
+primitive / token / chrome file touched, Python suite untouched at 113, no Korean invented**
+(every string cited in `components/auth/copy.ts`). Verified in real headless Chrome over
+`npm run start` **and** `next dev` — 76 of 80 checks pass, and the four non-passes were
+over-strict assertions, each re-measured in `result.md`.
+
+| you need | use |
+|---|---|
+| "am I logged in", in a **client** component | `import { useAuthState } from "@/components/auth/useAuthState"` — lazy (`enabled`), and `null` until answered |
+| …in a **server** component | `import { readAuthState } from "@/lib/session.server"` — forwards the request's own cookie |
+| the raw probe / the 로그아웃 flash | `@/lib/session` — `fetchAuthState` · `writeFlash("logout")` · `readFlashOnce()` |
+| a structural code → R5's signed body line | `authErrorKo(code)` from `@/components/auth/copy` — **three codes, `null` for everything else** |
+| an R5 element on another surface | `@/components/auth` → `ConversionOffer` · `DeadlineOffer` · `SampleEntry` · `PiiInset` |
+
+**The routes decided here, which `P5.S16` must honour** (`lib/routes.ts` states each once):
+`/auth/login` · `/auth/reset?token=` (**the backend already fixed this** —
+`mijual.web.auth.RESET_PATH` mails `{MIJUAL_APP_BASE_URL}/auth/reset?token=…`, so it is a query,
+not a `[token]` segment) · **`/portfolio`** 내 포트폴리오 (the API's own noun; a successful
+로그인 routes there and it **404s until S16**) · **`/portfolio?sample=1`** (`samplePath()`, both
+signed sample entries) · **`/portfolio?add={corp_code}`** (`portfolioAddPath()`, the logged-in
+담기 link — a navigation that writes nothing; S16 preselects the issuer in R5's own 종목 추가
+panel).
+
+1. **What `P5.S16` still owes, stated as a list because three of them are links this slice
+   already renders.** (a) The 내 포트폴리오 page itself at `/portfolio`. (b) The **sample mode**
+   behind `?sample=1` — banner, nav 「샘플」 칩, 샘플 종료, over the anonymous
+   `GET /portfolio/sample` that already exists. (c) The **`?add=` preselection**. (d) The
+   logged-in **account menu** in `AccountSlot.tsx` — untouched here, still R2's quiet 로그인 link
+   (measured `rgba(255,255,255,.68)`, weight 400: R5-2's "nav 로그인 변경 금지" holds). (e) The
+   **로그아웃 writer**: call `writeFlash("logout")` and send the reader to an anonymous surface;
+   the auth panel already reads and clears it, so "로그아웃되었습니다 1회 표시" needs no second
+   mechanism.
+2. **An authenticated visit to `/auth/login` redirects to `/portfolio`, and that is a design
+   reading.** R5's fourth auth state (로그인됨) *is* the 2층 — there is no signed logged-in
+   variant of the auth screen — so rendering one would have meant inventing both a sentence and
+   a control. Server-side, over the forwarded cookie.
+3. **`authErrorKo` is the whole error vocabulary, and it is exactly three codes wide.**
+   `invalid_credentials` → 불일치 · `email_taken` → 중복 가입 · `password_too_short` → 8자 미만;
+   **everything else returns `null` and the surface shows no line.** Two otherwise-silent codes
+   are held off structurally rather than verbally: `invalid_email` by the email input carrying
+   **`mijual.web.auth._EMAIL_RE` as its `pattern`** (measured: `a@b` cannot be submitted at all
+   and spends no request — the browser refuses in the UA's own words, the same class as the
+   framework's English 404), and `csrf_required` by `lib/api.ts`. **`invalid_reset_token` stays
+   reachable and stays silent — new Open Question below.**
+4. **The 8자 rule is checked client-side on 계정 만들기 and the reset confirm, never on
+   로그인.** On a login a short password is a *wrong* password and R5's line for that is 불일치;
+   checking length there would contradict the round and leak a password-shape fact. Where it
+   applies the client states the **same signed sentence** the server maps `password_too_short`
+   to — measured to render without spending a request.
+5. **An error line is body ink, never `--alert`.** `--alert` means expiring/lost and nothing
+   else (`frontend.md`: "Red never encodes price movement"), and R5 says "오류(**본문** 한 줄)".
+   A red auth error would spend the one hue reserved for a deadline. Later surfaces with their
+   own failure copy (`P5.S17`'s door) should follow this, not invent a second treatment.
+6. **확인 중 is the button's own text, measured.** Under 700 ms emulated latency the submit
+   button reads `확인 중…` and is `disabled`; **no spinner element exists on the panel**, and
+   nothing anywhere on these surfaces is a modal or an overlay.
+7. **The 조회 offer's three conditions, and the one that is a reading.** Shown (a) only after
+   `lib/holding.ts`'s own `convert()` produces a value — the same multiplication site the rows
+   use, so no second arithmetic exists and an unpriced ① can never trigger it; (b) once per
+   session, flag `sessionStorage["mijual.convert.offer"]`; (c) **only to an anonymous reader** —
+   its body is "계정에 저장하면 …", and offering an account to someone who has one is the
+   가짜 사용자 정체성 R5 forbids. R5-2 writes no logged-in variant of *this* panel (the swap it
+   signs is the detail one-liner), so (c) is this build's reading — `P5.S19`'s to confirm.
+   The panel is the **last block of the stock view, in normal flow** (`CraftPanel`'s own
+   `position: relative`; the page still has **zero** fixed elements, so P6's corner stays clear).
+8. **The detail one-liner is gated on `countdown.days >= 0`, and that is also a reading.**
+   "이 마감 알림 받기" under an anchor already behind the reference day promises an alert nothing
+   can send — the 시점 칩 are 7/3/1/0 days *before* a deadline — and a 추후결정 event has no
+   마감 at all. Measured absent on a D+43 ①, a 추후결정 event and a 철회 page; present and
+   under the D-day on 계양전기's D-3.
+9. **⚠ Every event detail page now makes one `GET /auth/me`.** It is what renders the signed
+   two-state line, it answers 200 either way (anonymous is a result, not a 401) and it gates
+   nothing — but the element renders **nothing until the probe answers**, so a two-state line
+   never flashes the wrong state. If `P5.S16` decides the chrome should probe once per page load
+   for the account menu, that probe should **replace** this one rather than sit beside it; both
+   read `lib/session.ts`.
+10. **The PII inset renders two lines, not three.** R5's copy list says "PII 패널 3행" while
+    R5-1 quotes exactly two sentences; the third is on the card, which stays in the design
+    project. Nothing was invented to reach the count — `P5.S19` checks it against the card.
+    The inset is on **both** auth pages, because `security` calls it "a permanent inset panel on
+    the auth screen".
+11. **Three labels are composed from the round's own nouns, never written.** `비밀번호 재설정`
+    (the trigger, and the confirm page's title + verb — the record names the mechanism and never
+    labels its control), `이메일` / `비밀번호` (R5-1's own "이메일+비밀번호"), and the 전환
+    링크, whose label **is** the other mode's name. Same class as `P5.S11`'s `© 미주알`; all
+    flagged for `P5.S19`.
+12. **⚠ The sample subline says 4건 while the live sample renders 5 rows** (`P5.S8` note 14 —
+    대동기어 also holds an exposable ① that lapsed). The sentence describes the *composition*,
+    which is still four pinned disclosures, and it is signed copy, so it is transcribed verbatim.
+    `P5.S16`/`P5.S19` will see the difference on the page; it is live data, not a deviation.
+13. **The landing's sample line is a landing element, not chrome** (`P5.S11` note 11, honoured):
+    one `<SampleEntry variant="landing" />` at the foot of `app/page.tsx`'s stack, asserted in
+    the browser **not** to be inside `<footer>`. R5's "Footer 불변" holds — no chrome file was
+    edited by this slice at all.
+14. **Live cross-check (2026-08-22, headless Chrome, `npm run start` + `next dev`).** 가입 →
+    확인 중 → `/portfolio` with a live cookie; wrong password and unknown address produce the
+    **identical** string (compared with `==` in the browser); 중복 가입 and 8자 미만 their own;
+    재설정 answers identically for a known and an unknown address and the link appeared **only**
+    in the server log; the emailed link opens the confirm page (**token never rendered**), sets
+    a password, lands logged in, and is **single-use**; 한화솔루션 500주 still reproduces
+    **679,575원** with the offer beside it; 390×844 has **no horizontal overflow**, every target
+    ≥44px and zero fixed elements. Test account and its reset grant deleted afterwards —
+    `account/auth_session/password_reset/holding/lapse_claim/notification_pref` all back to 0.
+15. **Gotcha for `P5.S16`, cost this slice a build:** `lib/session.server.ts` may not import a
+    module whose graph contains a React hook (`next/headers` and `useState` cannot meet), which
+    is why the hook lives in `components/auth/useAuthState.ts` and `lib/session.ts` imports no
+    React at all. Keep that split.
+
 ### Constraints and gotchas the later slices must not rediscover
 
 - **The cards never left the Claude Design project.** `build-prompt.md` + `docs/current/frontend.md`
@@ -2411,8 +2522,76 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   `P5.S15` lands, and the shared `Citation` chip/link sitting under the mobile 44px floor exactly as
   on R3's detail page.
 
+- (`P5.S15`) **`frontend`** — R5's **auth surfaces and its two conversion touchpoints** are built
+  and are durable frontend truth: `components/auth/` over two request-time routes —
+  `app/auth/login/page.tsx` (R5-1's **one panel with two modes**, its 전환 링크, the four states,
+  the 재설정 request and the permanent PII inset) and `app/auth/reset/page.tsx` (the page the
+  emailed link lands on; **`?token=` is the backend's own link shape, not a path segment**, and a
+  visit with no token redirects rather than rendering a sentence nobody signed). Durable rules
+  that land with it: **확인 중 is the submit button's own text replaced + disabled**, with no
+  spinner and no modal anywhere on the layer; **a failure renders one body line in body ink,
+  never `--alert`** (that hue means expiring/lost, so an auth error may not spend it), mapped
+  from `P5.S7`'s structural code by **`authErrorKo` — exactly three codes wide
+  (`invalid_credentials` · `email_taken` · `password_too_short`) and `null` for everything
+  else**, so an unsigned failure is never given words; the **8자 rule is stated client-side on
+  계정 만들기 and the reset confirm but never on 로그인**, where a short password is simply
+  wrong and the round's line is 불일치; and **the email input carries the service's own regex as
+  its `pattern`**, so `invalid_email` — which has no signed Korean — is refused by the browser in
+  the browser's copy instead (verified: `a@b` cannot be submitted and spends no request). The
+  route map gains **`/portfolio`** (내 포트폴리오, the API's own noun and where a successful
+  로그인 goes), **`samplePath()` = `/portfolio?sample=1`** — R5-4's sample is a *mode* of the
+  layer, not a second surface — and **`portfolioAddPath()` = `/portfolio?add={corp_code}`** for
+  the logged-in 담기 link, which navigates and **writes nothing**. New shared seam
+  **`lib/session.ts` + `lib/session.server.ts` + `components/auth/useAuthState.ts`**: a client
+  probe, a server read that forwards the request's own cookie, and a hook whose `null` (*not
+  answered yet*) is deliberately distinct from `{authenticated:false}` so a two-state element
+  never flashes the wrong state — plus the one-time flash channel that carries the
+  **로그아웃되었습니다** message as a *kind*, never a stored sentence. **`experience`** — the
+  reader's account surfaces as built, and what they refuse to state: a **login error never names
+  a field** and a wrong password and an unknown address produce the byte-identical line
+  (measured in the browser with `==`); a **재설정 request answers the same sentence whether or
+  not the address has an account**, and the link travels only through the mailer; an
+  **authenticated visit to the 로그인 page redirects to 내 포트폴리오** rather than inventing a
+  logged-in variant of a screen the round draws four states for; the **PII statement is
+  permanent on both auth pages** and renders the round's two signed lines with **no invented
+  third**; R5-2's **offer panel appears only after a per-holding value has rendered** (asked of
+  `lib/holding.ts`, the one multiplication site), **once per session**, dismissible, as the last
+  block of the page in normal flow — it never covers the results, never gates, leaves the nav's
+  로그인 quiet, and is **not shown to a reader who already has an account** (offering an account
+  to an account holder is the 가짜 사용자 정체성 the round forbids); and the **detail one-liner**
+  swaps 이 마감 알림 받기 → / 내 포트폴리오에 담기 → under the D-day **only where the deadline is
+  still ahead**, because an alert for a passed anchor is a promise nothing can keep. Both signed
+  **샘플 entries** render — the 로그인 page's bottom pair and the landing page's own footer line,
+  which is a **landing element rather than chrome** (R5's "Footer 불변" is untouched).
+  **`security`** — the R5 reader-auth *surface* now matches the model the doc records: the panel
+  collects **email + password and nothing else**, the PII inset states that permanently on the
+  auth screen (not as a link to a policy page), 가입 여부 is never disclosed by the 재설정 flow,
+  the login failure names no field, the **reset token is never rendered** and leaves the app only
+  in the confirm request's body, and **no anonymous surface was gated** — the conversion offers
+  are an inline panel and a one-line link, with no modal, no interstitial and no highlighted nav.
+  One consequence worth the checklist: the auth pages are the product's first surfaces that
+  branch on a session, and they do it through one seam that **degrades to anonymous** on any
+  probe failure. **`qa`** — the frontend check now covers the auth layer: `npm run build`
+  (8 routes; `/auth/login` and `/auth/reset` both `ƒ`) + `typecheck` + `smoke` (**6 → 8**
+  `node:test` cases, ~85 ms, still no jest/vitest/jsdom — the two new ones pin each signed line
+  to the code that produces it **and** that every other code produces none) all green, the
+  **Python suite untouched at 113**, and the layer was verified in a **real headless Chrome over
+  `npm run start` and again in `next dev`** — 76 of 80 checks, the four non-passes being
+  over-strict assertions re-measured in the slice's `result.md`. Measured invariants worth
+  keeping: 가입 → **확인 중 (text swap + disabled, no spinner element)** → `/portfolio` with a
+  live cookie; the two login failures byte-identical; the 재설정 answer identical for a known and
+  an unknown address with the link only in the server log; the emailed link **single-use**;
+  the offer panel gone after 닫기 and not returning on another stock in the same session; **zero
+  `position: fixed`** elements and **no horizontal overflow at 390×844** with every target ≥44px.
+  Test data was removed afterwards (all six reader tables back to 0).
+
 ## Open Questions
 
+- **An expired or spent 재설정 link has no signed sentence** — *new, `P5.S15`*: R5 signs three
+  auth failure lines (불일치 / 중복 가입 / 8자 미만) and `invalid_reset_token` is not one of them,
+  so the confirm page returns to idle and **states nothing**; the reader can request a fresh link
+  from the panel. Writing "링크가 만료되었습니다" would be inventing signed copy, so nothing was
+  written. **Operator/`P5.S19` call**, the same shape as the missing Korean 404 sentence.
 - **R7's 샘플 로드 여부 column has no backing fact** — *new, `P5.S9`*: R5's sample portfolio
   is anonymous end to end and `P5.S8` deliberately built **no anonymous write endpoint**, so
   a 샘플→계정 이전 arrives as ordinary authenticated holdings and nothing server-side records

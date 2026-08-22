@@ -25,9 +25,16 @@
  * `login` is the 2층 entry the nav's right-hand slot points at. `/auth/…` is not
  * a free choice — `mijual.web.auth.RESET_PATH` already fixes `/auth/reset` as the
  * password-reset page's path on this app, so its siblings live beside it.
- * **`P5.S15` builds the panel; until it lands this link has no page.** That is
- * deliberate: an empty stand-in for a signed surface would read as a dropped
- * design element, while a missing page is honest and one slice away.
+ * `P5.S15` built both: `/auth/login` is the one panel with its two modes, and
+ * `/auth/reset` is the page the emailed link lands on (`?token=…`, the query the
+ * backend's own link already carries — not a path segment).
+ *
+ * `portfolio` is **내 포트폴리오**, the product's only gated surface — `/portfolio`,
+ * the API's own noun for it (`GET /portfolio`), the same page-path-equals-contract-
+ * path rule `/stocks` follows. `P5.S15` decides the path because it is what a
+ * successful 로그인 routes to and what both sample entries point at;
+ * **`P5.S16` builds the page**, so until it lands the route 404s — the same
+ * deliberate choice `login` and `eventPath` recorded before their own slices.
  */
 export const ROUTES = {
   /** 관제 현황판 — the landing (R2/R2.1). */
@@ -36,8 +43,14 @@ export const ROUTES = {
   stocks: "/stocks",
   /** AI 질문 — R6's surface; the body is **P6**'s (`P5.DECOMP` note 7). */
   ask: "/ask",
-  /** 로그인 — R5's auth panel (`P5.S15`), beside the backend's `/auth/reset`. */
+  /** 로그인 — R5's auth panel (`P5.S15`). */
   login: "/auth/login",
+  /** The emailed reset link's landing page. The path is **not** this module's to
+   * choose: `mijual.web.auth.RESET_PATH` already builds the link as
+   * `{MIJUAL_APP_BASE_URL}/auth/reset?token=…`, so the page reads `?token=`. */
+  reset: "/auth/reset",
+  /** 내 포트폴리오 — R5's 2층 (`P5.S16`). */
+  portfolio: "/portfolio",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -72,6 +85,38 @@ export function eventPath(rceptNo: string): string {
  */
 export function stockPath(corpCode: string): string {
   return `${ROUTES.stocks}/${corpCode}`;
+}
+
+/**
+ * 샘플 포트폴리오 (R5-4) — where both signed entries go.
+ *
+ * R5 draws the sample as a **mode of 내 포트폴리오**, not as a surface of its own:
+ * "로드 상태: 2층 표면에 inset 배너 … + nav 「샘플」 칩 + 샘플 종료". A mode is a
+ * query on the layer's own route, which is also what makes 샘플 종료 a matter of
+ * dropping the flag rather than navigating somewhere else — so the entries point
+ * at `/portfolio?sample=1` and **`P5.S16` implements the mode** behind it (it
+ * loads the anonymous `GET /portfolio/sample`, which already exists).
+ *
+ * `P5.S15` renders the two entries R5-4 places — the 로그인 page's bottom and the
+ * landing's footer line — and, like every other cross-slice link in this map,
+ * they reach a page that is one slice away.
+ */
+export function samplePath(): string {
+  return `${ROUTES.portfolio}?sample=1`;
+}
+
+/**
+ * The logged-in half of R5-2's detail one-liner: "내 포트폴리오에 담기 →".
+ *
+ * A 담기 needs a 보유량 the detail page never asks for, and there is no anonymous
+ * write endpoint to guess one into (`P5.S8` note 13); `POST /portfolio/holdings`
+ * takes `{corp_code, shares}` and R5's own 담기 affordance is the 2층's 종목 추가
+ * panel. So the link **navigates with the issuer named** and 내 포트폴리오 opens
+ * its own signed input — `P5.S16` reads `?add=` and preselects the issuer.
+ * Nothing is written by following a link.
+ */
+export function portfolioAddPath(corpCode: string): string {
+  return `${ROUTES.portfolio}?add=${encodeURIComponent(corpCode)}`;
 }
 
 /**
