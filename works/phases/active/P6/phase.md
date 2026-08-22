@@ -901,6 +901,63 @@ also the true build order.
     - **Hygiene note for the orchestrator** (not a defect): `phase.json` still reads
       `status: "planned"` while every slice is `done`; `review-phase P6 --verdict pass` transitions it.
 
+26. **`P6.F1` made the agent speak the product's numerals — the mechanism, and what it
+    deliberately does not reach.** Review finding 4, operator disposition 2026-08-23
+    (verbatim: 「make it 3,200원. dk how」). Suite **137 → 138 passed**. Full record in
+    `slices/P6.F1/result.md`.
+    - **New module `src/mijual/agent/figures.py` is the whole mechanism**, and it is
+      **presentation, never computation** — twice over, so the never-compute rule is
+      untouched.
+      (1) **The tool contract serves the reader's form.**
+      `ToolResult.__post_init__` runs `figures.with_display(payload)`, putting a
+      **`value_display`** string beside every *figure*'s exact `value`
+      (`"3200"` → `"3,200"`). One line in the system instruction's NEVER COMPUTE block
+      tells the model to write a figure the way `value_display` writes it.
+      (2) **The gate guarantees it.** `CitationGate.learn` builds a `{raw: grouped}`
+      table from the same nodes and `_release` respells the sentence **after** every
+      check passes.
+    - **⚠ What counts as a figure is the contract's own predicate, not a key list**: a
+      node carrying **both `value` and `estimated`** — exactly what
+      `present.values.Figure.payload()` and `present.event.FieldPayload.payload()`
+      emit. So `rcept_no` (its own key), `countdown.days`/`dday`, `span`, `event_id`,
+      `window` and every date are structurally *not* figures and can never be grouped.
+      `grouped()` also refuses < 1000 and a **14-digit bare integer** (that shape is a
+      접수번호 here). **The key is `value_display`, not `display`** — `FieldPayload`
+      already uses `display` for its render mode (`"value"` / `"추후결정"`).
+    - **Verbatim stays verbatim, structurally.** `regroup` skips every 「…」/"…" span,
+      and `citations._QUOTED` is now `figures.QUOTED_SPAN` — **one pattern**, so the
+      spans the gate verifies are exactly the spans the grouping refuses to touch. A
+      sentence released because it *is* a tool's own string (a locked `notice_ko`,
+      `none_found_ko`) is copy and is never respelled. `TurnEnd.quotes` and the
+      citation events come from `Citation`s and were not touched at all. The token
+      pattern's lookarounds encode the rest of the rule: not part of a longer number
+      (`15.22`, an already-grouped `3,200`), not `2026-08-26`, not `2026년`, not the
+      `3` of `D-3`.
+    - **Membership already normalized separators** (`_decimal` strips commas on both
+      sides) — that is now *stated* rather than incidental, and the check still runs on
+      what the model wrote, **before** the respelling, so an invented figure is blocked
+      in its raw form. Grouping can neither add a number to the traceable set nor take
+      one out.
+    - **The log needs no extra step**: the respelled string is what `gate.released`
+      appends, so `TurnEnd.answer` → `record_turn` carries `3,200원` by construction
+      (note 20's rule, unchanged). **No signed format changed** — fact rows and the
+      footer carry counts and 접수번호 only, and neither goes through any of this. No
+      frontend file was touched.
+    - **Live smoke, 2026-08-23 (▷ $0.0107 estimated, 4 calls, 12,287 tokens, LOW):**
+      two scoped turns produced 「예정발행가액은 **3,200원**입니다」, 「전환가액은
+      **1,591원**입니다」, 「권면총액은 **26,900,000,000원**입니다」, `blocked 0`, dates
+      ungrouped. **All five released sentences arrived already grouped** — every
+      `regroup` call was a no-op. The model reads `value_display` and writes it, so in
+      practice the payload is the mechanism and the release-time rewrite is the
+      guarantee. Both are kept: the fallback is what makes the property testable
+      without a model and true regardless of one.
+    - **Honest limit worth knowing:** grouping reaches **contract figures only**. A
+      bare integer that is a genuine quantity but not a `Figure` — `holdings[].shares`
+      in the portfolio payload — is still spoken ungrouped (the sample's holdings are
+      500/300/500/100, so nothing is visible today; a real account holding ≥1000 shares
+      would read `1500주`). Widening the predicate means naming keys by hand, which is
+      the drift this seam exists to avoid.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -1070,3 +1127,16 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   `pytest` was re-run afterwards (**137 passed**) because the ops 개요 tab parses
   `docs/current/decisions.md`. Open-bullet count **1 → 3**, verified by rendering the panel's own
   reader. Nothing in this phase's diff changed durable truth without a line above.
+- (`P6.F1`) **after the consolidation above — the list reopened, one line for the re-review.**
+  **`backend`** (+ a line in **`api`** and **`experience`**): the agent's tool payloads
+  now carry a **`value_display`** string beside each figure's exact `value` — the same
+  number in the product's own thousands grouping (`"3200"` → `"3,200"`) — and the
+  citation gate respells a released sentence's raw figures with it, so **agent prose
+  prints 3,200원 like every other surface** (`mijual.agent.figures`; new module). A
+  *figure* is the contract's own predicate (a node carrying both `value` and
+  `estimated`), so 접수번호, dates, years, spans and D-days are structurally excluded;
+  verbatim 「…」 spans, locked Korean strings and `TurnEnd.quotes` are byte-unchanged;
+  the never-compute membership check is unchanged and still runs before the respelling
+  (separators were already normalized on both sides); and no signed format, no schema
+  and no frontend file changed. The stored 대화 로그 answer carries the reader's form by
+  construction. Suite 137 → **138 passed**.

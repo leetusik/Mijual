@@ -1,18 +1,18 @@
 {
-  "id": "P6.REVIEW",
+  "id": "P6.F1",
   "phase_id": "P6",
-  "name": "phase review",
-  "kind": "review",
-  "status": "changes_requested",
-  "order": 9999,
+  "name": "Thousands-grouped numerals in agent prose (3,200원)",
+  "kind": "fix",
+  "status": "done",
+  "order": 8,
   "depends_on": [],
-  "created_at": "2026-08-21T23:40:55+09:00",
-  "started_at": "2026-08-22T22:43:02+09:00",
-  "completed_at": "2026-08-22T23:07:10+09:00",
+  "created_at": "2026-08-23T01:52:05+09:00",
+  "started_at": "2026-08-23T01:52:05+09:00",
+  "completed_at": "2026-08-23T02:05:52+09:00",
   "risk": "high",
   "source": {
-    "type": "new_phase",
-    "id": "P6"
+    "type": "manual",
+    "id": null
   },
   "paths": {
     "plan": "plan.md",

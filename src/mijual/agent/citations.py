@@ -28,6 +28,14 @@ cuts it into sentences, and for each one:
 4. **requires quotes to be verbatim** (「인용문 재구성·요약 금지」). Any 「…」 or
    "…" span in the prose must occur verbatim in something a tool returned.
 
+**What a released sentence is respelled to.** Once a sentence has passed, its raw
+figures are written the way the rest of the product writes them — ``3200원`` →
+``3,200원`` (:mod:`mijual.agent.figures`, `P6.F1`). Only tokens that are literally
+a figure this turn's tools returned, only outside a 「…」 span, and never a sentence
+that is itself a tool's own string: verbatim stays verbatim, and the number a
+sentence states never changes. The reader's form is what
+:attr:`CitationGate.released` keeps, so the 대화 로그 stores what was read.
+
 **What a blocked sentence does.** It is dropped — never emitted, never marked on
 the stream (a visible hole would be a placeholder, and R6 forbids those). The
 count rides the terminal event so the rate is observable. If a turn ends with
@@ -59,6 +67,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from mijual.agent import copy as ko
+from mijual.agent import figures
 from mijual.agent.events import AgentEvent, CitationEvent, RefusalEvent, TextEvent
 from mijual.agent.tools import Citation, ToolResult
 
@@ -72,7 +81,9 @@ _ANY_MARKER = re.compile(r"\[\[[^\[\]]*\]\]")
 #: A numeric token as either side writes it: ``13,220`` · ``15.22`` · ``2026``.
 _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 #: A quoted span in Korean prose, in the three forms the record and the model use.
-_QUOTED = re.compile(r"「([^「」]+)」|“([^”]+)”|\"([^\"]+)\"")
+#: One pattern, shared with :mod:`mijual.agent.figures`: the spans this gate
+#: verifies are exactly the spans the grouping refuses to touch.
+_QUOTED = figures.QUOTED_SPAN
 #: A sentence ends at a terminator followed by whitespace **or by a marker** — or
 #: at a line break. The lookahead is what keeps ``15.22`` one token instead of two
 #: sentences; the ``\[\[`` half is measured behaviour, not defensiveness: the live
@@ -104,6 +115,9 @@ class CitationGate:
         self._ref_of: dict[tuple[str, str | None], str] = {}
         self._number_of: dict[tuple[str, str | None], int] = {}
         self._values: set[Decimal] = set()
+        #: ``{as a payload writes a figure: as the reader reads it}`` — the
+        #: turn's own numerals, and the only tokens :meth:`_release` may respell.
+        self._grouping: dict[str, str] = {}
         self._verbatim: list[str] = []
         self._verified: dict[str, tuple[Citation, ...]] = {}
         self._buffer = ""
@@ -137,6 +151,7 @@ class CitationGate:
             self._verbatim.append(text)
             self._verified.setdefault(_norm(text), lends)
         self._values |= _numbers_in(result.payload)
+        figures.grouping_table(result.payload, self._grouping)
         return payloads
 
     def _ref_for(self, citation: Citation) -> str:
@@ -228,12 +243,21 @@ class CitationGate:
             return self._block(text, "unresolved_citation")
 
         cited = _unique([self._by_ref[ref] for ref in refs])
+        # A sentence released because it *is* a tool's own string (a locked
+        # notice, the signed 0건 sentence) is copy, not prose — it leaves exactly
+        # as the payload wrote it.
+        verbatim_value = False
         if not cited:
             lends = self._verified.get(_norm(text))
             if lends is None:
                 return self._block(text, "uncited")
             cited = _unique(lends)
+            verbatim_value = True
 
+        # Never-compute, and it runs on what the model wrote: separators are
+        # normalized away on both sides (:func:`_decimal`), so 3,200 and 3200 are
+        # the same member. Grouping is presentation and cannot add a number to
+        # this set or take one out of it.
         loose = [token for token in _NUMBER.findall(text) if _decimal(token) not in self._values]
         if loose:
             return self._block(text, "untraceable_number")
@@ -241,6 +265,12 @@ class CitationGate:
         for quoted in _quoted_spans(text):
             if not any(quoted in source for source in self._verbatim):
                 return self._block(text, "reconstructed_quote")
+
+        if not verbatim_value:
+            # 3,200원 like every other surface (`P6.F1`). Verified first, respelled
+            # second, and only the turn's own figures outside a quoted span —
+            # the numbers are unchanged, only the way they are written.
+            text = figures.regroup(text, self._grouping)
 
         events: list[AgentEvent] = []
         numbers: list[int] = []
@@ -329,6 +359,14 @@ def _quoted_spans(text: str) -> list[str]:
 
 
 def _decimal(token: str) -> Decimal | None:
+    """A numeric token as a value, **with its separators normalized away**.
+
+    ``3,200`` and ``3200`` are one number written two ways, and the membership
+    check has to trace both — the payload may carry either and the reader is shown
+    the grouped one (:mod:`mijual.agent.figures`). Grouping is presentation, never
+    computation: it can neither put a number into the traceable set nor take one
+    out, which is why normalizing here does not weaken the never-compute rule.
+    """
     try:
         return Decimal(token.replace(",", ""))
     except (InvalidOperation, ValueError):

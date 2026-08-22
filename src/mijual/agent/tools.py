@@ -16,6 +16,12 @@ rather than re-applied here, and a won amount before 확정발행가 is absent f
 one reason that matters: it is unconstructable upstream (R6 §Hard rules,
 `api` §The presentation contract).
 
+**Figures travel display-ready.** Beside each figure's exact ``value`` sits the
+same number in the product's own thousands grouping (``3200`` → ``3,200``), so the
+agent's prose reads like every other surface (:mod:`mijual.agent.figures`).
+Formatting, not arithmetic: the contract's value is untouched and an identifier is
+never a figure.
+
 **Citations travel with the values.** :func:`citations_in` walks a tool's payload
 and collects every ``rcept_no`` in it with the verbatim ``quote`` and ``span``
 sitting beside it, so `P6.S3` can enforce 「인용 없는 주장은 생성 단계에서 차단」
@@ -42,6 +48,7 @@ from typing import Any
 from sqlalchemy.exc import SQLAlchemyError
 
 from mijual.agent import copy as ko
+from mijual.agent import figures
 from mijual.agent.context import ToolContext
 from mijual.present import EventView
 from mijual.web import portfolio as portfolio_service
@@ -211,6 +218,16 @@ class ToolResult:
     payload: dict[str, Any] = field(default_factory=dict)
     citations: tuple[Citation, ...] = ()
     ok: bool = True
+
+    def __post_init__(self) -> None:
+        # Figures leave every tool **display-ready**: a value the reader would see
+        # grouped gains its ``value_display`` string beside the exact contract
+        # ``value`` (:mod:`mijual.agent.figures`), so the model can write 3,200원
+        # like every other surface without restating a number in another form.
+        # Presentation only — nothing is derived, converted or rounded, and an
+        # identifier (접수번호) is not a figure and is never touched. Done here
+        # rather than at the five call sites so no tool can forget it.
+        object.__setattr__(self, "payload", figures.with_display(self.payload))
 
     @property
     def evidence(self) -> tuple[str, ...]:

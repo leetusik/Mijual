@@ -249,3 +249,8 @@
 {"ts": "2026-08-22T23:02:28+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset", "source": "P6.REVIEW"}
 {"ts": "2026-08-22T23:07:10+09:00", "type": "slice_status_changed", "slice": "P6.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-22T23:07:10+09:00", "type": "phase_reviewed", "phase": "P6", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-23T01:52:05+09:00", "type": "slice_status_changed", "slice": "P6.REVIEW", "old_status": "done", "new_status": "changes_requested"}
+{"ts": "2026-08-23T01:52:05+09:00", "type": "phase_reviewed", "phase": "P6", "verdict": "changes_requested", "reviewer": "operator"}
+{"ts": "2026-08-23T01:52:05+09:00", "type": "slice_created", "phase": "P6", "slice": "P6.F1"}
+{"ts": "2026-08-23T01:52:05+09:00", "type": "slice_status_changed", "slice": "P6.F1", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-23T02:05:52+09:00", "type": "slice_status_changed", "slice": "P6.F1", "old_status": "in_progress", "new_status": "done"}

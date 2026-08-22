@@ -21,6 +21,7 @@ from sqlalchemy.orm import sessionmaker
 from mijual.agent import ToolContext, get_contact, get_event, get_portfolio, save_feedback
 from mijual.agent import search_events
 from mijual.agent.declarations import TOOL_SPECS
+from mijual.agent.figures import grouped
 from mijual.agent.tools import TOOL_NAMES, call_tool
 from mijual.config import Settings
 from mijual.db.models import (
@@ -172,6 +173,13 @@ def test_get_event_is_the_detail_contract_with_its_citations_and_no_money(store)
     # 확정발행가 없음 ⇒ 확정 전 금액 is unconstructable rather than refused by prompt.
     assert result.payload["offering"]["price_confirmed"] is False
     assert not [key for key in result.payload["offering"] if "value" in key]
+
+    # A figure travels display-ready (`P6.F1`): the reader's 3,200 beside the
+    # contract's exact 3200, and nothing added to a ratio or to an identifier.
+    price = result.payload["offering"]["planned_price"]
+    assert (price["value"], price["value_display"]) == ("3200", "3,200")
+    assert "value_display" not in result.payload["offering"]["allotment_ratio"]
+    assert grouped(R1_RCEPT) is None and grouped(16907605) == "16,907,605"
 
     # 철회 is a surface with its own evidence, not a miss — R6: 거절도 인용 강제.
     pulled = get_event(_ctx(store), WITHDRAWN_RCEPT)

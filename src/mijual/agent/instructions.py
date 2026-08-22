@@ -75,6 +75,13 @@ another unit — a number that does not appear in a tool result is discarded wit
 its sentence. A value marked estimated keeps its 「추정」 mark in your prose. A
 value that is absent from a payload does not exist: say so, never fill it in.
 Today's date and any countdown are the tools' values, never your own arithmetic.
+
+HOW TO WRITE A FIGURE. A figure that a reader reads with thousands separators
+comes with a `value_display` string beside its `value` — the same number in the
+product's own grouping (`"3200"` → `"3,200"`). Write the figure exactly as
+`value_display` writes it: every other page of 미주얼 prints 3,200원, and this is
+formatting, not arithmetic. A filing number (`rcept_no`), a date, a year and a
+D-day are **not** figures: write those exactly as the payload has them.
 """
 
 

@@ -44,7 +44,7 @@ from mijual.agent.events import (
 from mijual.config import Settings
 from mijual.db.models import Base
 from mijual.web.conversationstore import new_session_hash
-from test_agent_tools import R1_RCEPT, WITHDRAWN_RCEPT, _corpus
+from test_agent_tools import R1_RCEPT, R2_RCEPT, WITHDRAWN_RCEPT, _corpus
 
 #: The one verbatim 본문 span the fixture carries, and its citation ref.
 QUOTE = "신주인수권증서의 상장·매매기간"
@@ -198,6 +198,42 @@ def test_the_five_families_are_selected_by_their_signed_sentences(ctx) -> None:
     assert end.answer.startswith("공시에 적힌 기간은") and end.answer.endswith(
         "확정 전 금액은 해설하지 않습니다."
     )
+
+
+def test_a_figure_reaches_the_reader_grouped_and_a_quote_reaches_it_verbatim(ctx) -> None:
+    """`P6.F1`: 3,200원 like every other surface — and nothing else respelled.
+
+    One turn covers the whole rule: the raw form is grouped, the already-grouped
+    form is traced and left alone (membership normalizes separators), 접수번호 and
+    a year are not figures, and a verified 「…」 span is copied byte for byte even
+    when the same digits outside it are grouped.
+    """
+    model = ScriptedModel(
+        calls("get_event", rcept_no=R1_RCEPT),
+        says(
+            "예정발행가액은 3200원입니다[[cite:c2]]. 같은 값은 3,200원으로도 적습니다[[cite:c2]]. "
+            f"접수번호 {R1_RCEPT}는 2026년 공시입니다[[cite:c2]]. "
+            f"원문은 「{QUOTE}」입니다[[cite:c2]]."
+        ),
+    )
+    events = list(run_turn(ctx, "발행가 얼마로 적혀 있나요?", client=model))
+
+    texts = [event.text for event in of(events, TextEvent)]
+    assert texts[0] == "예정발행가액은 3,200원입니다." and texts[1].startswith("같은 값은 3,200원")
+    # An identifier is not a figure, and neither is a year.
+    assert texts[2] == f"접수번호 {R1_RCEPT}는 2026년 공시입니다."
+    assert texts[3] == f"원문은 「{QUOTE}」입니다."
+    end = events[-1]
+    # 로그는 읽힌 그대로 (P6.S4's rule): the stored answer carries the reader's form.
+    assert end.blocked == 0 and "3,200원" in end.answer and "3200원" not in end.answer
+
+    # The same figure inside a verified span stays exactly as the filing writes it.
+    quoted = ScriptedModel(
+        calls("get_event", rcept_no=R2_RCEPT),
+        says("전환가액은 1591원입니다[[cite:c1]]. 원문 표기는 「1591」입니다[[cite:c1]]."),
+    )
+    said = [event.text for event in of(list(run_turn(ctx, "전환가?", client=quoted)), TextEvent)]
+    assert said == ["전환가액은 1,591원입니다.", "원문 표기는 「1591」입니다."]
 
 
 def test_a_turn_that_verifies_nothing_falls_back_and_a_budget_ends_it_honestly(ctx) -> None:
