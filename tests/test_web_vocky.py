@@ -121,11 +121,16 @@ def test_an_unreachable_vocky_degrades_and_never_fabricates_a_row(monkeypatch) -
 
 
 def test_only_the_vocky_module_may_speak_http(monkeypatch) -> None:
-    """The one outbound call in the request path lives in one file, by test.
+    """The one outbound call `mijual.web` makes itself lives in one file, by test.
 
-    `test_web_smoke` keeps OpenDART and the model out of `web/`; this keeps every
-    *other* network client out of it, so a later slice cannot quietly add a second
-    external dependency to a request path.
+    **Re-aimed in `P6.S4`.** `test_web_smoke` keeps OpenDART out of `web/`
+    entirely and keeps every model SDK out of it too — the AI 질문 agent's model
+    call is reached through `mijual.agent`, which owns the SDK, the credential and
+    the budget. So this scan's sentence is now precise: **`mijual.web` itself
+    speaks HTTP in exactly one file**, and a later slice cannot quietly add a
+    second external dependency to a request path. What travels through
+    `mijual.agent` is HTTP too — it is just not `mijual.web`'s, and it is scanned
+    from the other side (`tests/test_agent_tools.py`).
     """
     package = Path(__file__).resolve().parents[1] / "src" / "mijual" / "web"
     clients = ("urllib", "http.client", "socket", "requests", "httpx")

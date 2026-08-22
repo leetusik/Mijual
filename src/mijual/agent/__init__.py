@@ -6,11 +6,11 @@ request path", and P6's agent is an LLM call in a request path by design — SSE
 streaming cannot be anything else. So the boundary is redrawn rather than
 quietly broken (`P6` Finding 1): ``mijual.web`` still imports no spending module
 and still speaks HTTP in exactly one file, and **the model is reached only through
-this package**. `P6.S4` re-aims the two AST scans onto that shape and adds the
-third: ``mijual.dart`` / ``mijual.collect`` / ``mijual.extract`` must stay out of
-``mijual.agent`` too — the agent reads persisted rows, it never collects or
-extracts, and it does not borrow ``mijual.extract.client``'s Gemini wrapper
-however convenient that would be.
+this package**. `P6.S4` re-aimed the AST scans onto that shape — ``mijual.web``
+imports no OpenDART module and no model SDK, and ``mijual.dart`` /
+``mijual.collect`` / ``mijual.extract`` stay out of ``mijual.agent`` too. The
+agent reads persisted rows, it never collects or extracts, and it does not borrow
+``mijual.extract.client``'s Gemini wrapper however convenient that would be.
 
 What lives here, in the order the phase builds it:
 
@@ -38,7 +38,9 @@ What lives here, in the order the phase builds it:
 * :mod:`mijual.agent.loop` — :func:`~mijual.agent.loop.run_turn`, the autonomous
   function-calling turn. **The model decides** which tools to call, in what order,
   across how many rounds, and when it is ready to answer.
-* `P6.S4` adds the transport; nothing here speaks HTTP or persists a turn.
+* Nothing here speaks HTTP or persists a turn: `P6.S4`'s transport
+  (:mod:`mijual.web.ask`) streams these events as SSE, owns the turn's
+  transaction, and stores the terminal as one anonymous row.
 
 Importing this package costs no connection, no credential and no SDK.
 """

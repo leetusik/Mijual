@@ -12,20 +12,39 @@ writes" stayed true when writes arrived. `P5.S9`'s 운영 관제 adds no third k
 its two ``POST`` routes touch only the operator's own session row, and every other
 ops route is a ``GET`` **by rule** (R7 §6.5 — mutation 엔드포인트 없음).
 
-**The request-path rule (a boundary, not a guideline).**
+**The request-path rule (a boundary, not a guideline) — re-aimed by `P6.S4`.**
 
-    No OpenDART call and no LLM call may happen in a request path.
+Through P5 it read *"No OpenDART call and no LLM call may happen in a request
+path"*. R6's AI 질문 agent **is** a model call in a request path — SSE streaming
+cannot be anything else — so the boundary was moved deliberately rather than
+allowed to quietly become false (`P6` Finding 1). It now reads:
 
-That is the `architecture` boundary in one sentence, and it is why a dead worker
-leaves the board **stale, never dark** — the 결격 uptime rule. Serving may only
-read persisted state; if the data is old, the product says how old (the
-freshness 기준시각) and keeps serving.
+    No OpenDART call happens in any request path; the model is reached **only**
+    through :mod:`mijual.agent`; and ``mijual.web`` itself speaks HTTP in exactly
+    one file.
 
-The rule is kept **structurally**, not by discipline: nothing under
-``mijual.web`` imports :mod:`mijual.dart`, :mod:`mijual.collect` or
-:mod:`mijual.extract` — the three modules that spend requests or model calls.
-``tests/test_web_smoke.py`` asserts it by walking this package's imports, so a
-later slice cannot reintroduce a spending call without the suite saying so.
+The first clause is the one that keeps a dead worker leaving the board **stale,
+never dark** — the 결격 uptime rule. Everything the product *shows* is still read
+from persisted state; if the data is old, the product says how old (the freshness
+기준시각) and keeps serving. Nothing about the board's availability depends on the
+agent: :mod:`mijual.web.ask` is one route, and a model that is down costs that
+route its answers and no other surface anything.
+
+The rule is kept **structurally**, not by discipline, and all three clauses are
+scanned:
+
+* nothing under ``mijual.web`` imports :mod:`mijual.dart`, :mod:`mijual.collect`
+  or :mod:`mijual.extract` — the three spending modules
+  (``tests/test_web_smoke.py``);
+* nothing under ``mijual.web`` imports a model SDK — the seam is
+  :mod:`mijual.agent`, which owns the credential, the call budget and the ▷
+  ledger (``tests/test_web_smoke.py``);
+* only :mod:`mijual.web.vocky` imports an HTTP client
+  (``tests/test_web_vocky.py``);
+* and :mod:`mijual.agent` itself imports no spending module either
+  (``tests/test_agent_tools.py``) — the agent reads persisted rows, it never
+  collects or extracts.
+
 What this layer *may* import is the deterministic side: :mod:`mijual.calc` (all
 displayed arithmetic), :mod:`mijual.gates.exposure` (the exposure contract, which
 P5 renders and never re-decides) and :mod:`mijual.db` (persisted rows).
@@ -50,8 +69,11 @@ Layout::
     mijual.web.conversationstore — `P6.S1`'s implementation of it: the anonymous
                            conversation/feedback tables, their write API, and the
                            newest-first cursor reads the three ops tabs render
+    mijual.web.ask       — `P6.S4`'s transport for the AI 질문 agent: the SSE
+                           stream, the turn's transaction and row, and the
+                           identity-free rate limiter that says nothing
     mijual.web.routers   — one module per surface (health · board · events ·
-                           stocks · auth · portfolio · ops)
+                           stocks · auth · portfolio · ops · ask)
 
 Routers stay transport-thin: they read settings, call :mod:`mijual.web.reads`, and
 serialize. Loading lives in ``reads``; meaning lives in :mod:`mijual.present`. An

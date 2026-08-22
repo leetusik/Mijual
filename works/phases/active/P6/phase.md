@@ -466,6 +466,105 @@ also the true build order.
       no hrefs at all, so nothing in this slice depends on it. **`P6.S5`/`P6.S7` should map
       the pointer through `ROUTES`** rather than render that string.
 
+21. **`P6.S4` put the agent on the wire — the endpoint contract `P6.S5`/`P6.S6` build against,
+    and five decisions that are cheaper to read than to rediscover.**
+    New modules: **`src/mijual/web/ask.py`** (the decisions) + **`src/mijual/web/routers/ask.py`**
+    (the route), the `mijual.web.portfolio` / `routers/portfolio.py` split this codebase already
+    uses. Suite 130 → **136 passed**.
+    - **The contract.** `POST /ask`, CSRF header required (service-wide guard, no exception),
+      body `{question, scope_rcept_no?, session?, history?}` → `text/event-stream; charset=utf-8`
+      with `Cache-Control: no-store` and `X-Accel-Buffering: no`.
+      **Frame one is always `event: session`** carrying `{"session_hash", "scope"?}` — the browser
+      keeps it in `sessionStorage` (R6-5/6) and sends it back as `session` on the next turn; it is
+      **never a cookie**, because the thread is tab-scoped by design and a cookie is exactly the
+      identifier the schema refuses. Then the agent's own events by their `frame()` —
+      `tool_row` · `citation` · `text` · `refusal` · `links` · `footer` — then **exactly one**
+      terminal, `done` | `aborted` | `error`. The transport reorders nothing and invents no field.
+      `history` is oldest-first prose, capped at the newest **8** turns × 8 000 chars (dropped, not
+      refused, so a long-lived tab keeps working). Pre-stream failures are the ordinary envelope
+      with **no Korean**: `invalid_question` · `invalid_scope` (a 범위 that is not 14 digits is
+      refused, never silently ignored — that would answer a different question) · `csrf_required` ·
+      `rate_limited` · `invalid_request` (422). **Once streaming, the only failure is the typed
+      `error` terminal** — never a half-frame. **⚠ There is no signed Korean copy for a pre-stream
+      envelope**; `P6.S5` decides what the widget shows for one, and the nearest signed thing is
+      R6's 중단 inset + 「재시도」.
+    - **No stop endpoint** (the `DECOMP` table's "ask · stop" is superseded, deliberately). 중지 =
+      the reader aborts the fetch = the consumer stops pulling = `run_turn`'s generator is closed.
+      A stop route would need a server-side registry of *running* turns whose only job is to cancel
+      what the socket already cancels. Nothing is retracted; released text stands.
+    - **⚠ A streaming response cannot use `WriteSession` — or any `yield` dependency.** FastAPI
+      tears a `yield` dependency down when the **handler returns**, which for a `StreamingResponse`
+      is *before the first frame*. So `ask.py` opens its own session inside the body iterator and
+      commits it from the response's **`BackgroundTask`** — the one hook Starlette runs on **both**
+      exits (stream finished **and** client disconnected; measured, not assumed). Do not "simplify"
+      this back onto `deps.WriteSession`. The transport owns the transaction, so the tools'
+      `save_feedback` flush becomes real on the same commit.
+    - **⚠ Absorb an event *after* yielding its frame, never before.** Measured 2026-08-22: with the
+      obvious ordering, a turn cut mid-answer stored **one sentence more than `curl` had been
+      sent** — the sentence was produced, absorbed, and then lost to the cancelled send. Being
+      resumed past a `yield` is proof the consumer took the previous frame. Any later change to
+      `AskTurn.frames()` must keep that order.
+    - **Abort-persistence policy, decided.** `done`/`aborted`/`error` all persist **from `TurnEnd`
+      alone** (note 20's rule, unchanged). A **disconnect has no terminal**, so the row is built
+      from the frames actually written (`_Released`) — the same released strings in the same order,
+      asserted equal to the terminal's fields by test. A 중지 **before the first sentence** stores
+      nothing (no 답변 to replay, no 거절 to categorise; the row would be noise in a log whose
+      purpose is 품질 점검). **The row records what the reader saw and nothing about the
+      mechanism**: R7 signs the columns and there is no status bit, so `aborted` vs `error` lives in
+      the server log — **no new column was added** (note 18's rule held). A `record_turn` failure
+      rolls the **whole** transaction back, feedback included: a 대기열 row whose 원 대화 링크 points
+      at a turn that was never written is worse than no row.
+    - **Rate limiting (Open Question 3), decided — ship the cheap honest thing.**
+      `ask.TurnLimiter` on `app.state.ask_limiter`, in process, **persisting nothing and holding no
+      address**: (a) `max_concurrent=6` — an integer, unevadable, and the ceiling that actually
+      bounds money and latency; (b) 30 turns / 300 s **per session handle** — bounds a runaway tab
+      and is *trivially evaded* by minting a fresh handle, which is stated rather than hidden. No
+      IP/UA counter even in memory: it would put the forbidden identifier in the process on the
+      strength of "it's only in memory". A refused turn is `429 rate_limited` in the plain envelope
+      with **no `message_ko` and zero UI copy anywhere** (R6-5: 질문 수 무제한 — a limit that is not
+      shown must not be implied). An in-flight slot has a 600 s TTL so a lost one self-heals instead
+      of wedging the endpoint. **Per process** — P4 owns cross-process state, same parking as login
+      rate limiting.
+    - **Injection seam: `create_app(agent_client=…)` — a *factory*, not a client** (`Callable[[],
+      ModelClient] | None`), because the call budget and the ▷ ledger are per turn. `None` → each
+      turn builds its own live `AgentGeminiClient`. Tests and the SSE smoke pass
+      `lambda: ScriptedModel(...)`, so the suite spends nothing and **`GEMINI_API_KEY` is required
+      neither to import nor to `create_app`** (verified: with it unset, `create_app(Settings())`
+      builds and `google` is absent from `sys.modules`). Tests fill `app.state.session_factory`
+      directly — the endpoint opens its own session, so there is **no dependency to override**.
+    - **▷ ledger: server log only** (Finding 14). `TurnEnd.usage` is rebuilt into a `UsageLedger`
+      and rendered by its own `.render()`, so there is one renderer and one rate card:
+      `agent turn done · answer · rounds 3 · tools 2 · blocked 0 · calls 3 (0 failed) · tokens … ·
+      thinking LOW · ▷ $0.0027 estimated (…, not billed)`. A disconnect logs
+      `agent turn disconnected · … ▷ $0.0000`. No signed ops panel gained a row.
+    - **The boundary re-aim (Finding 1), landed honestly.** The sentence is now three clauses, each
+      with its own scan: **no OpenDART call in any request path** (`test_web_smoke`, unchanged
+      target, re-aimed docstring) · **the model is reached only through `mijual.agent`** — new scan
+      `test_the_model_is_reached_only_through_the_agent_package`, banning `google`/`openai`/
+      `anthropic` under `src/mijual/web/**` · **`mijual.web` itself speaks HTTP in exactly one
+      file** (`test_web_vocky`, docstring made precise) · plus S2's third scan keeping spending
+      modules out of `mijual.agent`. The old absolute wording was also corrected in
+      `mijual/web/__init__.py`, `mijual/web/app.py`'s **OpenAPI `DESCRIPTION`** (an outward
+      surface) and `mijual/agent/__init__.py`. `docs/current/*` untouched — see *Doc impact*.
+    - **SSE buffering (Open Question 4) — measured, four ways, all unbuffered.** `curl -N` with
+      per-line timestamps against uvicorn directly, and through the Next `/api` rewrite on **both**
+      `next dev` 16.3.2 (Turbopack) and a production `next build && next start`: six distinct
+      arrival times across 6.5 s, proxy timings within ~30 ms of direct, and `cache-control` /
+      `x-accel-buffering` / `transfer-encoding: chunked` all travelling through untouched. So
+      **`P6.S5` can rely on incremental SSE through the rewrite locally.** Two honest limits: P4's
+      *deployed* topology (edge route / CDN / nginx) is still unmeasured — `X-Accel-Buffering: no`
+      is set for the nginx case — and **there is no heartbeat**, so a proxy idle timeout could cut a
+      long tool round (the turn is sync and blocking, so a keep-alive comment needs a timer; not
+      built, recorded for P4/`P6.S7`).
+    - **Two facts for whoever runs the product locally.** `MIJUAL_API_ORIGIN` is read by
+      `next.config.ts` at **build** time, so `next start` serves whatever origin was set during
+      `npm run build` (a `next start` against the default `:8000` was the first failure hit — a real
+      P4 deploy note). And the operator's dev Postgres does **not** yet have `conversation_turn` /
+      `conversation_feedback`: P2 has no migrations and `create_all` runs from the
+      collect/gates/pipeline entry points, so a local end-to-end run needs the tables created first.
+      **No live model call was made from the endpoint in this slice** — S3 proved the client live,
+      and `P6.S5`/`P6.S7` exercise the whole wire in a browser.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** Every element of R6's build prompt ships; nothing is dropped, simplified,
@@ -511,12 +610,16 @@ also the true build order.
   implementation detail.
 - **The 운영자 연락처 string is unset** (Finding 9) — operator-provided at P4/deploy. Until then
   `get_contact` answers honestly. Not a blocker.
-- **Is there a rate limit at all, and where does its state live?** `security` says it is an
-  operations decision with no UI copy, and P5 already parked login rate limiting in P4 for needing
-  cross-process state. `P6.S4` should ship the cheapest honest thing (or nothing) and record which.
-- **Does the SSE stream survive the Next rewrite proxy unbuffered in the deployed topology?** P4
-  may replace the rewrite with an edge route; if it does, streaming is a deploy concern too. Verify
-  locally in `P6.S4`/`P6.S7` and hand P4 the measurement.
+- ~~**Is there a rate limit at all, and where does its state live?**~~ **Answered by `P6.S4`
+  (note 21):** yes, two in-process ceilings holding no identity and persisting nothing — a
+  concurrency cap (unevadable, bounds spend) and a per-session-handle window (evadable, bounds one
+  tab) — refusing with `429 rate_limited` and **zero UI copy**. Per process; **P4 still owns
+  cross-process state**, alongside login rate limiting.
+- ~~**Does the SSE stream survive the Next rewrite proxy unbuffered?**~~ **Answered by `P6.S4`
+  (note 21) for every local topology:** unbuffered straight at uvicorn, through `next dev`, and
+  through a production `next build && next start`, with the SSE headers travelling untouched.
+  **Still open for P4:** the *deployed* topology (edge route / CDN / nginx — `X-Accel-Buffering: no`
+  is set for the last), and the absence of a heartbeat during a long tool round.
 - **Carried from P5, unchanged and still not P6's to invent:** the English 404 sentence, the locked
   내 종목 연결 positioning line, the dated 49.2억원 footer figure, and 「샘플 로드 여부」's absent
   backing fact.
@@ -564,3 +667,18 @@ _One line per durable-truth change; `P6.REVIEW` consolidates these into doc vers
   SSE, no persistence (`P6.S4`). Suite 126 → **130 passed**. **Decision candidate:** the
   agent-not-chain architecture + the model-in-request-path boundary, and D-4's per-task thinking
   level gaining an `agent_turn` row at `LOW`.
+- (`P6.S4`) **`architecture`** · **`backend`** · **`api`** · **`security`** · **`operations`**
+  (+ a line in **`qa`**): the **request-path boundary sentence changes** — "No OpenDART call *and no
+  LLM call* happens in a request path" becomes *no OpenDART call in any request path; the model is
+  reached **only** through `mijual.agent`; `mijual.web` itself speaks HTTP in exactly one file*,
+  now carried by four AST scans (the new one bans a model SDK anywhere under `src/mijual/web/**`)
+  and corrected in the OpenAPI `DESCRIPTION` too; **`POST /ask` is the API's first streaming
+  endpoint** (`text/event-stream`, CSRF-guarded, `session` frame first with the anonymous handle for
+  `sessionStorage`, the typed agent events, exactly one `done`/`aborted`/`error` terminal, no stop
+  endpoint — 중지 is a client disconnect); **every turn is persisted anonymously**, `aborted` and
+  `error` and mid-stream 중지 included, so 「대화는 익명으로 저장됩니다 (품질 점검용)」 is now true of
+  the broken turns as well; **rate limiting exists and says nothing** — in-process, no IP/UA/account
+  even transiently, `429` in the plain envelope, zero UI copy, cross-process state parked for P4;
+  agent spend is logged as a **▷ server-log line only** (no signed ops panel row); and
+  `create_app(agent_client=…)` is the new seam (a per-turn factory), with `GEMINI_API_KEY` still
+  required neither to import nor to build an app. Suite 130 → **136 passed**.

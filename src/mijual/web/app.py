@@ -18,25 +18,29 @@ path to point at, and it is nothing more than a call to the factory::
 **Serving is decoupled from the pipeline** and stays that way: this module
 imports the deterministic side (:mod:`mijual.calc` through
 :mod:`mijual.web.clock`, :mod:`mijual.db` through :mod:`mijual.web.deps`) and
-none of the spending side. See the rule in :mod:`mijual.web`.
+none of the spending side. `P6.S4` added the one model call a request path makes
+— the AI 질문 agent — and it arrives through :mod:`mijual.agent` and nowhere
+else. See the re-aimed rule in :mod:`mijual.web`.
 """
 
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from typing import AsyncIterator, Callable
 
 from fastapi import FastAPI
 
 from mijual import __version__
+from mijual.agent.client import ModelClient
 from mijual.config import Settings, load_settings
 from mijual.mail import ConsoleMailer, Mailer
+from mijual.web.ask import TurnLimiter
 from mijual.web.conversations import Conversations
 from mijual.web.conversationstore import DbConversations
 from mijual.web.csrf import register_csrf_guard
 from mijual.web.deps import dispose_engine, session_factory
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import auth, board, events, health, ops, portfolio, stocks
+from mijual.web.routers import ask, auth, board, events, health, ops, portfolio, stocks
 
 __all__ = ["app", "create_app"]
 
@@ -44,7 +48,8 @@ TITLE = "미주알 API"
 DESCRIPTION = (
     "HTTP layer over the persisted pipeline output. Everything the product "
     "shows is a read; the only writes are a reader's own account and holdings. "
-    "No OpenDART call and no LLM call happens in a request path."
+    "No OpenDART call happens in a request path. The one model call a request "
+    "path makes is the AI 질문 agent, reached only through mijual.agent."
 )
 
 
@@ -65,6 +70,7 @@ def create_app(
     *,
     mailer: Mailer | None = None,
     conversations: Conversations | None = None,
+    agent_client: Callable[[], ModelClient] | None = None,
 ) -> FastAPI:
     """A fully wired app. Pass ``settings`` to point one at another database.
 
@@ -82,6 +88,16 @@ def create_app(
     ``EmptyConversations`` remains for a caller that wants a source with nothing
     in it. The factory below builds on the app's own lazy engine, so constructing
     an app still opens no connection.
+
+    ``agent_client`` is `P6.S4`'s seam for the AI 질문 agent's model, and it is a
+    **factory** rather than a client: the call budget and the ▷ ledger are per
+    turn (`P6.S3`), so a shared instance would ration the second reader with the
+    first reader's spend. ``None`` means each turn builds its own live
+    :class:`~mijual.agent.client.AgentGeminiClient`; a test and the SSE smoke pass
+    a scripted one, which is what keeps the suite free of live calls. The
+    credential is still resolved on **first live use**, so ``GEMINI_API_KEY`` is
+    required neither to import this module nor to build an app — the same rule
+    ``database_url`` follows through the lazy engine.
     """
     app = FastAPI(
         title=TITLE,
@@ -96,6 +112,11 @@ def create_app(
     app.state.conversations = conversations or DbConversations(
         lambda: session_factory(app.state)()
     )
+    app.state.agent_client = agent_client
+    # Per app, per process, holding nothing but counters — and saying nothing to
+    # any reader (R6-5: 질문 수 무제한, so a limit must not be implied). See
+    # :class:`mijual.web.ask.TurnLimiter`.
+    app.state.ask_limiter = TurnLimiter()
 
     register_error_handlers(app)
     register_csrf_guard(app)
@@ -108,6 +129,9 @@ def create_app(
     # 운영 관제 (R7). Behind its own credential and its own cookie, read-only
     # everywhere but its two session routes, and linked from no reader surface.
     app.include_router(ops.router)
+    # AI 질문 (R6). The only route that reaches a model, and it does so through
+    # `mijual.agent` alone — the re-aimed boundary (`P6` Finding 1).
+    app.include_router(ask.router)
     return app
 
 
