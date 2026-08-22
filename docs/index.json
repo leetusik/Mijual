@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added",
+      "latest": "v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -27,11 +27,19 @@
           "source": "P3.REVIEW",
           "summary": "Product truth after the P3 design: the signed surface set and three-slot nav, the 「추정」 estimate mark, the anonymous-first boundary and what the design added",
           "previous": "v0002_product_truth_after_p2_the_lapsed-warrant_headline_the_live_rights_board_and_the_measured_price_of_the_trust_gate"
+        },
+        {
+          "id": "v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed",
+          "path": "docs/versions/product/v0004_p5_apply_phase_the_designed_product_is_built_the_surfaces_exist_the_notification_boundary_and_what_the_build_closed.md",
+          "created_at": "2026-08-22T18:19:40+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the designed product is built — the surfaces exist, the notification boundary, and what the build closed",
+          "previous": "v0003_product_truth_after_the_p3_design_the_signed_surface_set_and_three-slot_nav_the_estimate_mark_the_anonymous-first_boundary_and_what_the_design_added"
         }
       ]
     },
     "experience": {
-      "latest": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules",
+      "latest": "v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -49,11 +57,19 @@
           "source": "P3.REVIEW",
           "summary": "P3 signed surface map: 관제 현황판 landing, 내 종목 조회, event detail, 내 포트폴리오, AI 질문 and 운영 관제 — journeys, UX states and Korean copy rules",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser",
+          "path": "docs/versions/experience/v0003_p5_apply_phase_the_signed_journeys_as_built_and_what_each_surface_refuses_to_state_verified_in_a_real_browser.md",
+          "created_at": "2026-08-22T18:16:30+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the signed journeys as built, and what each surface refuses to state — verified in a real browser",
+          "previous": "v0002_p3_signed_surface_map_landing_event_detail_ai_and_journeys_ux_states_and_korean_copy_rules"
         }
       ]
     },
     "architecture": {
-      "latest": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary",
+      "latest": "v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -71,11 +87,19 @@
           "source": "P2.REVIEW",
           "summary": "Data backbone landed: package, Postgres schema, Celery beat topology and the P2 to P3 exposure boundary",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam",
+          "path": "docs/versions/architecture/v0003_p5_apply_phase_the_http_layer_lands_the_presentation_layer_between_pipeline_and_transport_the_same-origin_frontend_boundary_and_the_serving_precomputation_seam.md",
+          "created_at": "2026-08-22T18:04:19+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the HTTP layer lands, the presentation layer between pipeline and transport, the same-origin frontend boundary, and the serving precomputation seam",
+          "previous": "v0002_data_backbone_landed_package_postgres_schema_celery_beat_topology_and_the_p2_to_p3_exposure_boundary"
         }
       ]
     },
     "frontend": {
-      "latest": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain",
+      "latest": "v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -93,11 +117,19 @@
           "source": "P3.REVIEW",
           "summary": "P3 signed design system: tokens (light root + cosmos dark scope), type, motion, the trust primitives, and the design record with its supersession chain",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled",
+          "path": "docs/versions/frontend/v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled.md",
+          "created_at": "2026-08-22T18:14:22+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the Next.js app as built — vendored foundations, the trust primitives, chrome and eight signed surfaces, and the fidelity rules the pass settled",
+          "previous": "v0002_p3_signed_design_system_tokens_light_root_cosmos_dark_scope_type_motion_the_trust_primitives_and_the_design_record_with_its_supersession_chain"
         }
       ]
     },
     "backend": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -107,11 +139,19 @@
           "source": "bootstrap",
           "summary": "Initial backend doc",
           "previous": null
+        },
+        {
+          "id": "v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader",
+          "path": "docs/versions/backend/v0002_p5_apply_phase_the_mijual.web_http_layer_the_mijual.present_derivation_layer_auth_portfolio_ops_modules_the_mailer_and_conversation_seams_and_the_label-field_reader.md",
+          "created_at": "2026-08-22T18:03:27+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the mijual.web HTTP layer, the mijual.present derivation layer, auth/portfolio/ops modules, the mailer and conversation seams, and the label-field reader",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
     "data": {
-      "latest": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract",
+      "latest": "v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables",
       "current_path": "docs/current/data.md",
       "versions": [
         {
@@ -137,11 +177,19 @@
           "source": "P2.REVIEW",
           "summary": "P2 pipeline data model: document families, measured field tiers, 정정 pairing, event states and the exposure contract",
           "previous": "v0002_dart_as_the_mvp_data_source_rights-type_field_matrix_extraction_targets_version_and_constraints"
+        },
+        {
+          "id": "v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables",
+          "path": "docs/versions/data/v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables.md",
+          "created_at": "2026-08-22T18:07:01+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: identity-scoped 정정 pairing, the first stored label field, multi-part citations, and the serving/reader tables",
+          "previous": "v0003_p2_pipeline_data_model_document_families_measured_field_tiers_pairing_event_states_and_the_exposure_contract"
         }
       ]
     },
     "api": {
-      "latest": "v0001_bootstrap",
+      "latest": "v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -151,11 +199,19 @@
           "source": "bootstrap",
           "summary": "Initial api doc",
           "previous": null
+        },
+        {
+          "id": "v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes",
+          "path": "docs/versions/api/v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes.md",
+          "created_at": "2026-08-22T18:02:14+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the whole HTTP contract — error envelope, presentation contract, board/event/stock reads, auth, portfolio, and the thirteen read-only ops routes",
+          "previous": "v0001_bootstrap"
         }
       ]
     },
     "operations": {
-      "latest": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes",
+      "latest": "v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -189,11 +245,19 @@
           "source": "P3.REVIEW",
           "summary": "P3 operations: the design grounding-pack export command at zero spend, and the observation-only operating rules the signed admin panel imposes",
           "previous": "v0003_pipeline_operations_quota_and_request_ceilings_beat_schedule_and_budgets_the_pipeline_lock_and_how_to_regenerate_every_artifact_at_zero_spend"
+        },
+        {
+          "id": "v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built",
+          "path": "docs/versions/operations/v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built.md",
+          "created_at": "2026-08-22T18:12:00+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the six-stage beat with the run log, running the API and frontend locally, the re-derivation order, and the operator console as built",
+          "previous": "v0004_p3_operations_the_design_grounding-pack_export_command_at_zero_spend_and_the_observation-only_operating_rules_the_signed_admin_panel_imposes"
         }
       ]
     },
     "security": {
-      "latest": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage",
+      "latest": "v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -211,11 +275,19 @@
           "source": "P3.REVIEW",
           "summary": "Security model decided in the P3 design: email+password reader auth with minimal PII, the separate admin door, read-only ops surfaces and the anonymity promise for conversation storage",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary",
+          "path": "docs/versions/security/v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary.md",
+          "created_at": "2026-08-22T18:09:31+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the auth model implemented — session-as-a-row, scrypt, service-wide CSRF, the uniform ops door, the measured no-join promise and the vocky key boundary",
+          "previous": "v0002_security_model_decided_in_the_p3_design_email_password_reader_auth_with_minimal_pii_the_separate_admin_door_read-only_ops_surfaces_and_the_anonymity_promise_for_conversation_storage"
         }
       ]
     },
     "qa": {
-      "latest": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers",
+      "latest": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -233,11 +305,19 @@
           "source": "P2.REVIEW",
           "summary": "Extraction-accuracy measurement: method, the frozen evalset, cross-model provenance and the first measured numbers",
           "previous": "v0001_bootstrap"
+        },
+        {
+          "id": "v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list",
+          "path": "docs/versions/qa/v0003_p5_apply_phase_the_suite_at_118_plus_the_framework-free_frontend_check_real-browser_verification_as_a_method_and_d1_d4_closed_off_the_fragile_list.md",
+          "created_at": "2026-08-22T18:21:11+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply phase: the suite at 118 plus the framework-free frontend check, real-browser verification as a method, and D1/D4 closed off the fragile list",
+          "previous": "v0002_extraction-accuracy_measurement_method_the_frozen_evalset_cross-model_provenance_and_the_first_measured_numbers"
         }
       ]
     },
     "decisions": {
-      "latest": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin",
+      "latest": "v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -271,9 +351,17 @@
           "source": "P3.REVIEW",
           "summary": "P3 design-gate decisions: design-only re-scope, FastAPI+Next.js, cosmos-dark pivot, 「추정」 everywhere, email+password auth, unlimited anonymous questions, read-only desktop-only admin",
           "previous": "v0003_p2_decisions_data-backbone_stack_per-task_thinking_level_cross-model_evalset_judging_and_the_conservative-default_pair"
+        },
+        {
+          "id": "v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed",
+          "path": "docs/versions/decisions/v0005_p5_apply-phase_decisions_d-16_session-as-a-row_auth_mechanics_d-17_factors-not-products_d-18_the_free_label_tier_d-19_vocky_read-only_observation_d-15_closed.md",
+          "created_at": "2026-08-22T18:18:15+09:00",
+          "source": "P5.REVIEW",
+          "summary": "P5 apply-phase decisions: D-16 session-as-a-row auth mechanics, D-17 factors-not-products, D-18 the free label tier, D-19 vocky read-only observation; D-15 closed",
+          "previous": "v0004_p3_design-gate_decisions_design-only_re-scope_fastapi_next.js_cosmos-dark_pivot_everywhere_email_password_auth_unlimited_anonymous_questions_read-only_desktop-only_admin"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-22T01:33:25+09:00"
+  "last_rebuilt_at": "2026-08-22T18:22:58+09:00"
 }

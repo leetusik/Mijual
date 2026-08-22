@@ -3212,3 +3212,56 @@ _One line per durable-truth change; `P5.REVIEW` consolidates these into doc vers
   The operator (with `P5.S19`) decides whether a 404 sentence gets drawn; until then this is the
   one English string a reader can reach.
 - Not P5's: the **운영자 연락처 string** for `get_contact` (P6, operator-provided, never invented).
+
+## `P5.REVIEW` — the phase passes; what was verified, and what P6/P4 inherit
+
+Full detail in `slices/P5.REVIEW/result.md`. **Verdict: `pass`.**
+
+1. **Validation, run as one suite.** `pytest` **118 passed / 2.57 s** (the one carried Starlette
+   warning); `npm run build` (16 routes) + `typecheck` + `smoke` **11/11**; `workflow validate` clean
+   before *and* after doc consolidation. The cross-cutting live smoke confirmed the landing's numbers
+   equal `/board/summary` exactly, one detail page per rights type (①②③) at 200, a 조회 breakdown
+   (한화솔루션 206.4억원 / 3,734,925주 / 8.86%), the auth round-trip, the `/portfolio` gate (API 401,
+   frontend 307), and the `/ops` door + 개요 tab with a live Redis lock chip. Test account deleted
+   through the product, ops session logged out, both servers stopped.
+2. **RESPECT THE DESIGN held, and the evidence is one line.** `git log -- docs/reference/design/`
+   shows **exactly one P5 commit** (`f7eed0f`, S18): **one file, 59 insertions, 0 deletions**, and a
+   grep for `^-` content lines returns **0** — the §6.3 write-back the round itself delegated. Every
+   other landed record is byte-untouched across 21 slices.
+3. **Both exclusions are structural, not disciplinary.** `/ask` renders chrome and nothing else (293
+   chars of visible text, all nav + footer); `web/conversations.py` is 123 lines of `Protocol` +
+   `EmptyConversations` with no LLM client and no storage; **no conversation table exists in the live
+   schema**. `compose.yaml` has only postgres + redis, and there is no Dockerfile / CI workflow /
+   deploy config anywhere — every deploy-shaped thing is a *seam* for P4, not a half-build.
+4. **The deferred record is clean.** D1 → S5 and D4 → S20 promoted and closed with before/after
+   measurements; D2 observed three times and re-measured independently at review (**no two of the 450
+   rendered board rows share an `rcept_no`**) — and, importantly, **never papered over with a
+   display-level `DISTINCT`**; D3's rationale stands because the signed coverage boundary is served,
+   so pre-2026 depth would change no rendered number.
+5. **The 19 operator questions are questions, not defects.** Judged one by one: in every case the
+   options were *invent something signed-looking* or *leave it visibly blank*, and the build always
+   chose blank. The two most reader-visible before submission are the **English 404 sentence** and
+   the **locked 내 종목 연결 positioning line**; the **dated 49.2억원 footer figure** is the one place
+   a stale number sits beside live ones, and it is **backing work → a deferred job**, not a P5 fix.
+6. **Two hygiene findings, neither blocking and neither code.** (a) A test account
+   `s19-fidelity@example.com` + its session survive in the **local dev** database although S19's note
+   and S16's doc-impact line both claim full cleanup — left in place deliberately so the finding is
+   stated rather than silently erased; nothing is committed and P4 deploys against a fresh database.
+   (b) **Expired `auth_session` / `ops_session` rows are never pruned** (15 ops rows accumulated
+   across S17–S19 + this review) — they grant nothing, but both tables grow monotonically. Recorded
+   as a **P4** item in `operations` and `qa`.
+7. **Docs consolidated: eleven versions, one per Doc-impact doc** — `api` v0002 and `backend` v0002
+   replace bootstrap stubs; `architecture` v0003, `data` v0004, `security` v0003, `operations` v0005,
+   `frontend` v0003, `experience` v0003, `decisions` v0005 (**D-16 … D-19 added, D-15 closed**),
+   `product` v0004, `qa` v0003. `rebuild-docs` run, `validate` re-run clean, **no source file touched
+   by the review**.
+8. **One consolidation check worth repeating next phase:** the ops 개요 tab *parses*
+   `docs/current/decisions.md` for its `- **Open…` bullets, so versioning that doc can move an
+   operator surface. Verified after the rewrite: still **exactly one** open bullet (D-4), so only the
+   cited version moves v0004 → v0005. **If a future review edits `decisions`, re-check that count.**
+9. **What P6 inherits, unchanged by this review:** the conversation port (`Conversations` →
+   `Page(rows, total, next_cursor)`, no method taking an account/email/IP/UA filter, nothing writing),
+   wired through `create_app(conversations=…)` so **P6 changes no route**; the bare `/ask` shell and
+   the nav/footer AI 질문 slots; the detail page's absent 질문 스트립; the three ops tabs' honest
+   zeros; and the clear bottom-right corner (**zero `position: fixed` elements on every reader
+   surface**) for R6's launcher.

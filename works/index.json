@@ -40,13 +40,13 @@
       "id": "P5",
       "name": "Apply — build the signed design",
       "objective": "Implement Mijual per P3's signed design records (R1–R7 build prompts) except the AI 질문 agent feature (split to P6): FastAPI backend over the P2 exposure contract, Next.js frontend, auth/portfolio, admin panel, vocky integration — faithful under RESPECT THE DESIGN. AI 질문 agent → P6; deployment/hosting → P4 (Ship & Submit).",
-      "status": "planned",
+      "status": "done",
       "order": 3.5,
       "path": "works/phases/active/P5",
-      "review_status": "pending",
-      "current_slice": "P5.REVIEW",
+      "review_status": "pass",
+      "current_slice": null,
       "slice_count": 22,
-      "done_slice_count": 21
+      "done_slice_count": 22
     },
     {
       "id": "P6",
@@ -76,5 +76,5 @@
   "deferred_open_count": 2,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-22T17:52:24+09:00"
+  "last_rebuilt_at": "2026-08-22T18:27:10+09:00"
 }
