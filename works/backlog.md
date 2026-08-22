@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P7`
-- Current slice: `P7.S1`
-- Next slice: `P7.S2`
+- Current slice: `P7.S2`
+- Next slice: `P7.S3`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T06:48:26+09:00`
+- Rebuilt at: `2026-08-23T07:13:38+09:00`
 
 ## Active Phases
 
@@ -20,7 +20,7 @@
 | [x] `P2` | `done` | `pass` | Data & Extraction Pipeline | `none` | `works/phases/active/P2` |
 | [x] `P3` | `done` | `pass` | Mijual Web Service (design only) | `none` | `works/phases/active/P3` |
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
-| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S1` | `works/phases/active/P7` |
+| [ ] `P7` | `planned` | `pending` | 실서비스 정상화 fix pass | `P7.S2` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
@@ -101,7 +101,7 @@
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
 | [x] `P7.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P7/slices/P7.DECOMP` |
-| [ ] `P7.S1` | `todo` | dev origin unblock: hydration on 127.0.0.1/Tailscale — closes the dead 펼치기, static countdown, state-stomping reload, dead AI 질문 send and missing widget | `fix` | `works/phases/active/P7/slices/P7.S1` |
+| [x] `P7.S1` | `done` | dev origin unblock: hydration on 127.0.0.1/Tailscale — closes the dead 펼치기, static countdown, state-stomping reload, dead AI 질문 send and missing widget | `fix` | `works/phases/active/P7/slices/P7.S1` |
 | [ ] `P7.S2` | `todo` | login reachable: the chrome account slot answers in dev (StrictMode double-effect in useAccount) | `fix` | `works/phases/active/P7/slices/P7.S2` |
 | [ ] `P7.S3` | `todo` | board: a limited firm list at a time, with the signed 펼치기 disclosures working | `fix` | `works/phases/active/P7/slices/P7.S3` |
 | [ ] `P7.S4` | `todo` | 내 종목 조회 typeahead: candidate suggestions before submit (API route + search UI) | `fix` | `works/phases/active/P7/slices/P7.S4` |

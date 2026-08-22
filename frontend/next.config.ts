@@ -23,7 +23,44 @@ import type { NextConfig } from "next";
  */
 const API_ORIGIN = process.env.MIJUAL_API_ORIGIN ?? "http://localhost:8000";
 
+/**
+ * The dev-origin seam (`P7.S1`).
+ *
+ * `next dev` serves its own dev resources (`/_next/*`, the HMR socket) only to a
+ * tiny allow-list of hosts — Next builds it as `['**.localhost', 'localhost',
+ * ...allowedDevOrigins, <the -H hostname>]` and 403s everything else
+ * (`next/dist/server/lib/router-utils/block-cross-site-dev.js`). `make stack-up`
+ * runs `next dev -H 0.0.0.0`, so before this seam existed the list was exactly
+ * `**.localhost` / `localhost` / `0.0.0.0` — and the URL the operator actually
+ * opens, `http://127.0.0.1:3000`, was not on it: two client chunks 403'd, the HMR
+ * handshake was rejected, **hydration never completed**, and Next's dev client
+ * reloaded the tab on its failed reconnect. Six P7 complaints (items 4b, 6, 7, 8,
+ * 11) were that one blocked origin, not product defects.
+ *
+ * The matcher (`isCsrfOriginAllowed`) compares hosts only, segment by segment, so
+ * `**.ts.net` covers Tailscale MagicDNS names exactly — but an IPv4 literal can be
+ * matched only exactly or by whole-octet wildcards, and `100.*.*.*` would open all
+ * of 100.0.0.0/8 rather than Tailscale's 100.64.0.0/10 (verified against 16.3.2's
+ * source). So the tailnet address arrives through `MIJUAL_DEV_ORIGINS`
+ * (comma-separated hosts), which `make web-up` fills from `tailscale ip -4`; run
+ * the dev server by hand and you can set it yourself. This is **dev-only** —
+ * `allowedDevOrigins` is read exclusively by the dev router server, so
+ * `next build && next start` behaves identically with or without it.
+ */
+const DEV_ORIGINS = [
+  "127.0.0.1",
+  // Inert while the server binds `-H 0.0.0.0` (v4 only); correct the day it binds v6.
+  "[::1]",
+  // Tailscale MagicDNS names. The tailnet *IP* cannot be expressed here — see above.
+  "**.ts.net",
+  ...(process.env.MIJUAL_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean),
+];
+
 const nextConfig: NextConfig = {
+  allowedDevOrigins: DEV_ORIGINS,
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${API_ORIGIN}/:path*` }];
   },

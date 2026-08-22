@@ -277,6 +277,96 @@ nothing around it.
    ("서버 전송 없음", the AI 질문 anonymity line).** Anything the slice cannot cleanly classify
    goes to the operator as a review question rather than being deleted.
 
+### RC-A closed — `P7.S1` measured, three origins, before and after
+
+**The fix.** `frontend/next.config.ts` grows an `allowedDevOrigins` seam next to the existing API
+seam: a static list (`127.0.0.1`, `[::1]`, `**.ts.net`) plus `MIJUAL_DEV_ORIGINS` (comma-separated
+hosts) that `make web-up` fills from the same `tailscale ip -4` lookup `stack-status` prints. No
+product code was touched.
+
+**Why the tailnet IP is not in the static list.** Read out of 16.3.2's `isCsrfOriginAllowed`
+(`next/dist/server/app-render/csrf-protection.js`) and exercised directly against that module: the
+matcher compares **hosts only**, splitting on `.` and popping segments from the right, so
+`**.ts.net` matches Tailscale MagicDNS names (`**` is legal only as the leftmost segment —
+`100.**` is rejected), while an IPv4 literal can be matched only exactly or by whole-octet
+wildcards. `100.64.*.*` matches `100.64.5.6` but **not** `100.77.164.42`, and the only pattern that
+covers the tailnet, `100.*.*.*`, opens **all of 100.0.0.0/8** rather than Tailscale's
+100.64.0.0/10. So the exact IP arrives through the env seam instead — verified still tight: with
+the seam live, a `/_next/*` chunk fetched with `Origin: http://100.1.2.3:3000`,
+`http://192.168.1.9:3000` or `http://evil.example.com` still gets **403**, while `127.0.0.1`, the
+tailnet IP and a `*.ts.net` name get **200**.
+
+**Measurements** (headless Chrome over CDP, `Emulation.setDeviceMetricsOverride` 1440×900, one dev
+server, `/` unless noted). "before" = the original config restored on disk and the dev server
+allowed to reload it, i.e. a genuine re-run of `P7.DECOMP`'s baseline in this session:
+
+| | `localhost:3000` | `127.0.0.1:3000` | `100.77.164.42:3000` |
+|---|---|---|---|
+| `/_next/*` 403s — before | 0 | **2** | **2** |
+| `/_next/*` 403s — **after** | 0 | **0** | **0** |
+| HMR handshake — before | 101 | **none, 5 frame errors** | **none, 5 frame errors** |
+| HMR handshake — **after** | 101 | **101** | **101** |
+| AI 질문 launcher — before / after | 1 / 1 | **0 / 1** | **0 / 1** |
+| `position: fixed` nodes — before / after | 2 / 2 | **1 / 2** | **1 / 2** |
+| countdown ticks over 2.6 s — before / after | yes / yes | **no / yes** | **no / yes** |
+| 펼치기 ① rows — before / after | 386→446 / 386→446 | **386→386 / 386→446** | **386→386 / 386→446** |
+| 펼치기 ② rows — after | 446→450 | 446→450 | 446→450 |
+| typed value after 150 s — before / after | kept / kept | **wiped at 40 s / kept** | wiped (DECOMP) / **kept** |
+
+The two 403s are the same chunks every time — `_next/static/chunks/_03keo62._.js` and
+`node_modules_next_0o9ro4l._.js`. `+60` and `+4` on the two strips match `open_now` 60 / `tbd` 4
+exactly (useful for `P7.S3`).
+
+**Item 7's reload takes ~40 s, not 30.** The first pass waited 30 s and saw the value survive on a
+blocked origin — a near-miss false negative. A dedicated watcher on the un-fixed origin recorded
+the top-frame navigation at **40 s** with the typed 계양 gone; after the fix all three origins hold
+the value and the `window` marker for **150 s** with **0** navigations. Any later slice measuring
+this must wait ≥60 s.
+
+**Closed by this slice with no product code** (all measured on `127.0.0.1`, the operator's own
+origin): **4b** 펼치기 (386→446, `aria-expanded` false→true), **6** countdown (ticks), **7** the
+state-stomping reload (150 s, value kept, 0 navigations), **8** AI 질문 send (a full turn streamed:
+`POST /api/ask` 200, 도구 행 「이벤트 검색 「계양전기」 → 1건 · ① 유상증자 · 20260724000546」 +
+「이벤트 읽기」, the answer with four DART 원문 citations, 근거 footer), **11** the launcher (1 in
+the DOM, 2 fixed nodes). The hydration halves of **5** and **9** are closed too: on
+`/portfolio?sample=1` the 챙겼습니다 checkbox flips 놓친 돈 → **챙긴 돈** with the figure unchanged
+(`679,575원` + 「추정」), and `/auth/login` round-trips — `POST /api/auth/login` → **401** and the
+form renders 「이메일 또는 비밀번호가 일치하지 않습니다.」 (no account was created).
+
+**Notes the later slices need:**
+
+1. **The dev server reloads `next.config.ts` by itself** (`✓ Running next.config.ts took 14ms`), so
+   a config edit goes live without a restart — but an **env** change does not. `MIJUAL_DEV_ORIGINS`
+   only takes effect through `make web-up` (or `stack-down` + `stack-up`). This also means a config
+   edit silently contaminates a "before" measurement taken after the edit.
+2. **`P7.S2` (item 5): the login *form* is not broken** — it reaches the API and renders the signed
+   error. What is missing is only the chrome's entry, which is RC-B. Also confirmed live: with a
+   sample in `localStorage` the account slot renders 샘플 · 샘플 종료 and never 로그인 (R5-4's rule,
+   `AccountSlot.tsx:132`) — my `/auth/login` probe shared a browser profile with the portfolio
+   probe and hit exactly that. **Clear `mijual.portfolio.sample` before judging the slot.**
+3. **`P7.S8` (item 9): the 챙겼습니다 behaviour is already correct**, so that half of the item is
+   already done; what remains is the layout tidy — and the row's caption is item 10's literal
+   example (「본인 표시 · 이 브라우저(localStorage)에」), which `P7.S7` owns.
+4. **The production build was never affected and still is not.** `allowedDevOrigins` is read only
+   by the dev router server (`router-server.js:207/336/669`, all behind `development`), and a
+   `npm run build && next start -H 0.0.0.0 -p 3100` served **0** 403s, 1 launcher, ticking
+   countdowns and working 펼치기 on **both** `127.0.0.1:3100` and the tailnet IP, with no HMR
+   socket at all. That is the `P5.S19`/`P6.S7` gap in one line: **prod was always fine on every
+   origin; dev was broken on every origin but `localhost`.**
+5. **Reproducing the measurement.** Headless Chrome (`/Applications/Google Chrome.app/…`) with
+   `--headless=new --remote-debugging-port=<p> --user-data-dir=<scratch>`, driven over raw CDP from
+   Node 24 (global `WebSocket`); `Target.createTarget` + `Target.attachToTarget {flatten: true}`,
+   then `Page`/`Runtime`/`Network`/`Log` enabled and `Emulation.setDeviceMetricsOverride`
+   1440×900. Useful selectors: launcher `button[class*="launcher"]`, countdown
+   `[class*="countdown"]`, 펼치기 = the `button`s whose text is exactly `펼치기`, board rows =
+   `document.querySelectorAll('li').length`, composer `form[class*="composer"] input`. Type with
+   `Input.insertText` (a controlled React input ignores a scripted `.value`). The scripts lived in
+   session scratch and were not committed. The pre-fix dev log is kept at
+   `var/stack/web.log.pre-p7s1` (gitignored) — 11 `Blocked cross-origin request` lines, all from
+   the operator's own origins. The log since the restart has four, and all four are this slice's
+   deliberate negative controls (`evil.example.com` ×2, `100.1.2.3`, `192.168.1.9`) — **none from
+   `127.0.0.1` or the tailnet IP**.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -316,11 +406,26 @@ nothing around it.
 
 _One line per durable-truth change; `P7.REVIEW` consolidates these into doc versions._
 
-- `frontend` — **the `P5.S19` browser-check note is incomplete and, as written, misleading.** It
-  says to check over `localhost` rather than `127.0.0.1`; the real rule is that `next dev` bound
-  to `0.0.0.0` serves its dev resources **only** to `localhost` unless `allowedDevOrigins` names
-  the host, and that an un-hydrated page looks exactly like six separate product bugs. (Recorded
-  by `P7.DECOMP`; the slice that fixes it should extend this line.)
+- `frontend` — **the `P5.S19` browser-check note (`docs/current/frontend.md:313`) is incomplete
+  and, as written, misleading.** It says to check over `localhost` rather than `127.0.0.1`; the
+  real rule is that `next dev` bound to `0.0.0.0` serves its dev resources **only** to `localhost`
+  unless `allowedDevOrigins` names the host, and that an un-hydrated page looks exactly like six
+  separate product bugs. (Recorded by `P7.DECOMP`.) **`P7.S1` fixed the cause, so the note now
+  inverts:** `frontend/next.config.ts` carries an `allowedDevOrigins` seam (`127.0.0.1`, `[::1]`,
+  `**.ts.net`, plus `MIJUAL_DEV_ORIGINS` — comma-separated hosts, filled by `make web-up` from
+  `tailscale ip -4`), and the rule for every future browser check is **verify on `127.0.0.1` and
+  the Tailscale origin — the operator's own — not on `localhost`**, because `localhost` is the one
+  origin that was never able to show this class of defect. Worth recording with it: Next's matcher
+  (`isCsrfOriginAllowed`) is host-only and segment-wildcarded, so an IPv4 literal can be named only
+  exactly or by whole-octet wildcards (`100.*.*.*` would open all of 100.0.0.0/8, not Tailscale's
+  100.64.0.0/10) — hence the env seam; and the dev server **auto-restarts on a `next.config.ts`
+  edit** but not on an env change.
+- `operations` — a new operator-facing environment variable, `MIJUAL_DEV_ORIGINS` (frontend,
+  dev-only): comma-separated extra hosts appended to `allowedDevOrigins`; `make web-up` fills it
+  from `tailscale ip -4`, and anyone starting `next dev` by hand must set it or the Tailscale
+  origin silently stops hydrating. It belongs in the Environment Variables table beside
+  `MIJUAL_API_ORIGIN`. (The operations doc today describes no dev stack / `Makefile` at all —
+  `P7.REVIEW` may decide whether that gap is worth closing.)
 
 ## Open Questions
 

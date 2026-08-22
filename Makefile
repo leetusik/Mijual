@@ -11,6 +11,14 @@
 # rewrite. The API itself stays on 127.0.0.1 — remote traffic reaches it
 # only through the frontend proxy.
 #
+# Reachable is not the same as working: `next dev` serves /_next/* and its
+# HMR socket only to hosts on `allowedDevOrigins` (see frontend/next.config.ts,
+# P7.S1) and 403s the rest, which leaves the page rendered but never hydrated.
+# 127.0.0.1 and **.ts.net are named in the config; the tailnet IP is not stable
+# across machines, so web-up looks it up here and passes it in through
+# MIJUAL_DEV_ORIGINS. Started the dev server some other way? Set that variable
+# yourself, or the Tailscale origin will silently stop hydrating.
+#
 # The API runs with a root logging config on purpose: without one, the
 # per-turn agent-spend ▷ ledger line is recorded nowhere (operations doc,
 # "invisible under a default uvicorn").
@@ -22,6 +30,11 @@ STACK := var/stack
 API_HOST := 127.0.0.1
 API_PORT := 8000
 WEB_PORT := 3000
+
+# This machine's Tailscale IPv4, empty when the daemon is down. Used twice:
+# to print the remote URL, and to let `next dev` accept that origin (P7.S1).
+TS_BIN := $(shell command -v tailscale || echo /Applications/Tailscale.app/Contents/MacOS/Tailscale)
+TS_IP  := $(shell $(TS_BIN) ip -4 2>/dev/null | head -1)
 
 API_PID := $(STACK)/api.pid
 WEB_PID := $(STACK)/web.pid
@@ -67,9 +80,15 @@ web-up:
 	@if [ -f $(WEB_PID) ] && kill -0 $$(cat $(WEB_PID)) 2>/dev/null; then \
 		echo "web already running (pid $$(cat $(WEB_PID)))"; \
 	else \
+		MIJUAL_DEV_ORIGINS="$(TS_IP)" \
 		nohup npm --prefix frontend run dev -- -H 0.0.0.0 -p $(WEB_PORT) \
 			> $(WEB_LOG) 2>&1 < /dev/null & echo $$! > $(WEB_PID); \
 		echo "web starting (pid $$(cat $(WEB_PID)), log $(WEB_LOG))"; \
+		if [ -n "$(TS_IP)" ]; then \
+			echo "  dev origins: 127.0.0.1, [::1], **.ts.net, $(TS_IP)"; \
+		else \
+			echo "  dev origins: 127.0.0.1, [::1], **.ts.net (tailscale down — its IP is not allowed)"; \
+		fi; \
 	fi
 
 stack-down:
@@ -97,7 +116,5 @@ stack-status:
 		echo "web: running (pid $$(cat $(WEB_PID)))"; \
 	else echo "web: stopped"; fi
 	@echo "open:  http://127.0.0.1:$(WEB_PORT)"
-	@ts=$$(command -v tailscale || echo /Applications/Tailscale.app/Contents/MacOS/Tailscale); \
-	ts_ip=$$($$ts ip -4 2>/dev/null | head -1); \
-	if [ -n "$$ts_ip" ]; then echo "tailscale:  http://$$ts_ip:$(WEB_PORT)"; \
+	@if [ -n "$(TS_IP)" ]; then echo "tailscale:  http://$(TS_IP):$(WEB_PORT)"; \
 	else echo "tailscale:  (not up)"; fi
