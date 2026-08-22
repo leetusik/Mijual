@@ -226,6 +226,29 @@
   color: var(--ink-3);
 }
 
+/* The ranked list's display-window disclosure (`P7.S3`, operator item 4a).
+ *
+ * Deliberately **not** a third pinned strip: `--surface-raised` + a hairline top
+ * is R2's treatment for the two pinned sections, and a third raised band between
+ * the rows and the ② strip would read as a section the round never drew. This is
+ * one line of breathing room under the last dashed row carrying the strips' own
+ * `.expand` button and `.stripCount` — same button class, so the same hairline,
+ * the same hover and the same 44px mobile floor come with it.
+ *
+ * Centred, because the count + button carry no sentence: left-aligned they would
+ * sit under the RightsChip column and read as a half-drawn row. `--space-5`
+ * above and the ② strip's own `--space-4` margin below keep the two controls
+ * apart at both widths. */
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding-top: var(--space-5);
+}
+
 /* ---------------------------------------------------------------------------
    Pinned strips (② 진행 중, 일정 추후결정)
    --------------------------------------------------------------------------- */

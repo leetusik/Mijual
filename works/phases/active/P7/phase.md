@@ -433,6 +433,72 @@ renders, 1 probe, 0 responses ≥ 400.
 6. **The one 4xx on a clean landing load is `/favicon.ico` 404** — pre-existing, in both the before
    and after runs. Nobody's item; worth not re-discovering.
 
+### Item 4a closed — `P7.S3`: a 30-row display window, and zero new copy
+
+**The change is two files in `components/landing/`** — `Board.tsx` (a `WINDOW_STEP = 30` constant, a
+`shown` `useState`, `rows.slice(0, shown)`, a `selectTab()` that resets the window, and the
+disclosure) and `Board.module.css` (one class, `.more`). No copy file, no API, no data, no other
+component.
+
+**Decision D-P7-1 — the number is 30, and a click adds 30.** No round names one: R2 draws the ranked
+list with no length and no pagination control (`P5.S3` note 11, "the design paginates nothing"), so
+this is an operator override of an unsigned gap. 30 is the horizon this same page already names in
+the hero stat line (`30일 이내 마감`) and is short enough to read without the ② strip sliding off;
+adding 30 per click rather than revealing all 386 is the whole of "some amount at a time" — a
+reveal-everything button would put the page straight back where the operator found it.
+**Open Question Q3 stays open until the operator confirms the number** (the review must put it to
+them); nothing else about the board waits on that answer.
+
+**Zero Korean strings were minted** — worth recording, because the DECOMP reading (#3) expected the
+slice might have to mint one. The button is `EXPAND_KO` (펼치기) in the strips' own `styles.expand`
+class, and beside it sits a mono `{count(hidden)}건` in `styles.stripCount` — the strips' exact
+`60건` / `4건` idiom, carrying the exact same meaning it carries there (*what this click discloses*).
+So the control says nothing the record has not already signed on this panel three times.
+
+**Two shape decisions later slices should not re-argue.** (a) The control is deliberately **not** a
+third pinned strip: `--surface-raised` + a hairline top is R2's marker for a *pinned* section, and a
+third raised band between the rows and the ② strip would read as a section no round drew. It is one
+`--space-5` line under the last dashed row, centred, carrying the strips' button verbatim. (b) The
+button carries **no `aria-expanded`** — it is incremental, not two-state, so the attribute would sit
+`false` forever and lie; the strips keep theirs.
+
+**Measured on `127.0.0.1:3000` in `next dev`** (fresh profile, CDP at 1440×900 and 390×844; "before"
+re-measured by restoring both files to `HEAD` and letting Fast Refresh reload, then restoring the
+change):
+
+| on `/`, 전체 tab | before | **after** |
+|---|---|---|
+| ranked rows rendered | **386** | **30** |
+| the control | — | **`356건` + `펼치기`** (3 펼치기 buttons on the panel, was 2) |
+| `<li>` in the served HTML | 395 | **39** |
+| served HTML for `/` | 701,871 B | **369,151 B** (−47%) |
+| document height 1440 / 390 | 17,730 / 30,806 px | **3,047 / 4,523 px** |
+| tab counts | 488/50/422/16 | **488/50/422/16** |
+
+Click-through: 30 → **60** (`326건`) → … → **386** in **12** clicks, then the control is **gone** and
+only the two strips' 펼치기 remain. **0 network requests** across all 12 — it is entirely
+client-side. Tabs: 유상증자 **14** rows and 매수청구 **10** rows show **no control at all** (nothing
+to disclose, the same rule `Strip` keeps for a 0건 sentence); 전환사채 shows 30 + `332건`; every tab
+switch resets the window and no tab count ever moves. Order preserved (first rows 계양전기 D-2 ·
+라온텍 D-3 · 휴맥스 D-4). The strips are untouched: 30 → 90 (+60) → 94 (+4) → 30, the same `+60`/`+4`
+`P7.S1` measured. The new button's computed border, radius, font, colour, background and width are
+**identical** to the strip's, min-height 32px at 1440 and **44px** at 390, with **16px** between it
+and the ② strip and no horizontal overflow at either width. Same results on the **Tailscale**
+origin and in an **isolated production build** on `:3100` (build pass, 16 routes, port freed).
+
+**Notes for later slices:**
+
+1. **`P7.S9`'s sweep must count 30, not 386.** Any board row-count assertion inherited from
+   `P5.S19` / `P7.S1` (386 → 446 → 450) now reads **30 → 90 → 94** at the first window. The 386 is
+   still reachable — 12 펼치기 clicks — and the corpus is unchanged.
+2. **No effect and no module state were added**, so `P7.S2`'s StrictMode trap could not apply here;
+   `P7.S4`'s typeahead still has to worry about it.
+3. **The dev server Fast-Refreshes a component edit in ~5 ms**, so a "before" measurement taken
+   after an edit is contaminated the same way `P7.S1` found for `next.config.ts`. Restoring both
+   files to `HEAD`, re-measuring and restoring the change costs about a minute and is worth it.
+4. **`/favicon.ico` 404 remains the only 4xx on a clean landing load**, before and after, at 1440
+   (not at 390) — still nobody's item.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -502,6 +568,24 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   hazard for a cleanup flag to protect against, and `lib/session.ts` shares the in-flight probe, so
   the double invocation costs one request. (Recorded by `P7.S2`; the doc does not describe
   `useAccount` itself, so this is the trap, not an API change.)
+- `frontend` — **the landing board no longer renders every ranked row.** It shows **30 at a time**
+  and discloses the next 30 through the signed 펼치기 hairline button (`EXPAND_KO`, the strips' own
+  `.expand`) with a mono remaining-count in the strips' `N건` idiom; **zero new Korean copy**. It is
+  a **display window, never a filter**: the served corpus, the ranked order and the whole-board
+  `counts` are unchanged (전체 still reads 488), and a tab switch resets the window to the first 30.
+  This is a **P7 operator override** of an unsigned gap — R2 specifies the sort, the row anatomy and
+  the two strips but **no list length and no pagination control**, so `P5.S3` note 11's "the design
+  paginates nothing" no longer describes the rendered page and should be recorded as superseded
+  *for the rendering*, not for the API (the board is still one request). Measured effect: the served
+  HTML for `/` drops **701.9 KB → 369.2 KB** and the document from 17,730 px to 3,047 px at 1440.
+  The initial count (**30**, +30 per click) is `P7.S3`'s decision D-P7-1 and awaits operator
+  confirmation (Q3). (Recorded by `P7.S3`.)
+- `experience` — the 관제 현황판 §Board bullet describes the board as urgency-interleaved with tabs
+  and a D-day-ascending sort; it should now also say the reader sees **30 rows at a time** and
+  presses 펼치기 for the next 30 — reading the whole list is a deliberate act, not the default. The
+  two pinned strips are unchanged. `product.md` was checked and needs nothing: it states the corpus
+  (488 exposable events) and the board's states, never a claim that every row is rendered.
+  (Recorded by `P7.S3`; the review may fold this into the `frontend` line if it prefers one.)
 
 ## Open Questions
 
@@ -515,8 +599,11 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   collision reading 1 (keep a keyboard-visible indicator, change the treatment). If the operator
   literally wants *zero* focus indication anywhere, that removes the record's a11y floor and
   needs their explicit call.
-- **Q3 — how many firms is "some amount"?** The board serves 386 ranked rows. S3 must pick an
-  initial count and a disclosure; the number is not in any record.
+- **Q3 — how many firms is "some amount"?** The board serves 386 ranked rows and the number is in
+  no record. **`P7.S3` chose 30, with each 펼치기 click adding 30** (decision D-P7-1: 30 is the
+  horizon the hero's own stat line names, and chunking keeps the page scannable, which is the ask).
+  It is live and measured; **the operator has still not confirmed the number**, so the review must
+  put it to them. Changing it is a one-constant edit (`WINDOW_STEP` in `Board.tsx`).
 - **Q4 — should a 챙겼습니다 row disappear?** R5-8 signs re-label + hue change, same figure. If
   the operator wants the row gone from 지나간 마감, that supersedes a signed round.
 - **Q5 — does the operator want live data refresh?** After S1 the countdown ticks and nothing

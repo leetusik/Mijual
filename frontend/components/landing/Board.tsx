@@ -24,6 +24,19 @@ import {
 import styles from "./Board.module.css";
 
 /**
+ * How many ranked rows the board shows before the first 펼치기, and how many
+ * each click adds (`P7.S3`, operator item 4a).
+ *
+ * No round names a number — R2 draws the list with no length and no pagination
+ * control — so the count is a P7 operator override, and **30** is the phase's
+ * decision: it is the horizon this very page already names in the hero's stat
+ * line (`30일 이내 마감`), and it is short enough to read without the ② strip
+ * below sliding off the screen. A click adds another 30 instead of revealing all
+ * 386, because "some amount at a time" is the whole of the ask.
+ */
+const WINDOW_STEP = 30;
+
+/**
  * The board — 소멸 카운트다운 (R2 §Board, plus R3's 추후결정 strip).
  *
  * Craft panel: header (title + freshness chip) → the stale notice when there is
@@ -47,14 +60,34 @@ import styles from "./Board.module.css";
  * and `counts` is **always whole-board** either way. Filtering the served list
  * reproduces the endpoint's own `keep()` — same predicate, same order — while a
  * tab click costs no request and cannot show a different corpus in two tabs.
- * `counts` stays the tab numbers, so 전체 reads 488 even though 450 rows are on
- * the page: the 38 past ①/③ belong to 조회 and the retrospective, not here.
+ * `counts` stays the tab numbers, so 전체 reads 488 even though this page's own
+ * corpus is 450 rows: the 38 past ①/③ belong to 조회 and the retrospective, not
+ * here.
+ *
+ * ## The display window (`P7.S3`)
+ *
+ * The design paginates nothing — and rendering all 386 ranked rows at once is
+ * exactly what the operator asked to stop ("the list should show some amount of
+ * firms, not all at once"). So the ranked list renders `WINDOW_STEP` rows and
+ * discloses the next `WINDOW_STEP` through the record's own 펼치기 button. It is
+ * a **display** limit and never a filter: the served corpus, the ranked order
+ * and the whole-board `counts` are all untouched (전체 still reads 488), and a
+ * tab switch starts a new list at the first window. The two pinned strips are
+ * unaffected — they disclose all of their rows at once, as R2 signs.
  */
 export function Board({ board }: { board: BoardResponse }) {
   const [tab, setTab] = useState<RightsType | null>(null);
+  const [shown, setShown] = useState(WINDOW_STEP);
+
+  /** A tab is a new list, so it starts at the first window. */
+  const selectTab = (next: RightsType | null) => {
+    setTab(next);
+    setShown(WINDOW_STEP);
+  };
 
   const keep = (rows: Row[]) => (tab ? rows.filter((row) => row.rights_type === tab) : rows);
   const rows = keep(board.rows);
+  const hidden = Math.max(rows.length - shown, 0);
   const openNow = keep(board.open_now.rows);
   const tbd = keep(board.tbd.rows);
 
@@ -72,7 +105,7 @@ export function Board({ board }: { board: BoardResponse }) {
             전체/유증/CB/매수청구 — so it carries its own compact form too. */}
         <Tab
           active={tab === null}
-          onSelect={() => setTab(null)}
+          onSelect={() => selectTab(null)}
           count={board.counts.all}
           compact={TAB_ALL_KO}
         >
@@ -82,7 +115,7 @@ export function Board({ board }: { board: BoardResponse }) {
           <Tab
             key={type}
             active={tab === type}
-            onSelect={() => setTab(type)}
+            onSelect={() => selectTab(type)}
             count={board.counts[type]}
             compact={RIGHTS_LABEL_COMPACT_KO[type]}
           >
@@ -92,10 +125,28 @@ export function Board({ board }: { board: BoardResponse }) {
       </div>
 
       <ol className={styles.rows}>
-        {rows.map((row) => (
+        {rows.slice(0, shown).map((row) => (
           <BoardRow key={row.event_id} row={row} />
         ))}
       </ol>
+
+      {/* The display window's disclosure — the strips' own 펼치기 button and the
+          same mono count, where the count is what the click reveals, exactly as
+          it is on the strips. With nothing left to reveal the control is gone:
+          a disclosure over an empty remainder is the 0건 sentence about nothing
+          that `Strip` already refuses. */}
+      {hidden > 0 ? (
+        <p className={styles.more}>
+          <span className={`mono ${styles.stripCount}`}>{count(hidden)}건</span>
+          <button
+            type="button"
+            className={styles.expand}
+            onClick={() => setShown((value) => value + WINDOW_STEP)}
+          >
+            {EXPAND_KO}
+          </button>
+        </p>
+      ) : null}
 
       {/* ② 전환청구 진행 중 — the signed sentence with the live count. */}
       <Strip rows={openNow}>
