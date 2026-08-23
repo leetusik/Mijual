@@ -304,3 +304,5 @@
 {"ts": "2026-08-23T10:59:57+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing", "source": "P7.REVIEW"}
 {"ts": "2026-08-23T11:05:17+09:00", "type": "slice_status_changed", "slice": "P7.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-23T11:05:17+09:00", "type": "phase_reviewed", "phase": "P7", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-23T13:22:39+09:00", "type": "phase_created", "phase": "P8"}
+{"ts": "2026-08-23T13:23:11+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture", "source": "P8"}

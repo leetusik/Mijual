@@ -73,6 +73,18 @@
       "done_slice_count": 10
     },
     {
+      "id": "P8",
+      "name": "Design polish pass — audit & polish every surface",
+      "objective": "Audit and polish the whole 미주알 product surface by surface — no new features. For each surface: the orchestrator walks it in the operator's runtime, reports what is dead/confusing/off, and asks the operator what's wrong; the operator answers how it should be fixed; a Claude Design round (design-cowork, one handoff + pending gate per surface) polishes it; an apply slice implements that signed round faithfully (RESPECT THE DESIGN) and verifies it in the operator's runtime — then the next surface. Opens with a small fix slice for the AskWidget t1 duplicate-key bug.",
+      "status": "planned",
+      "order": 3.8,
+      "path": "works/phases/active/P8",
+      "review_status": "pending",
+      "current_slice": "P8.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
       "id": "P4",
       "name": "Ship & Submit",
       "objective": "Notifications (email first), production deploy to ssh h, smoke tests, presentation deck (주최사별 효용 매핑, AI-role architecture, 소멸 총액 opening number), demo video, and daker.ai submission before 2026-09-07 10:00.",
@@ -88,5 +100,5 @@
   "deferred_open_count": 2,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-23T11:27:13+09:00"
+  "last_rebuilt_at": "2026-08-23T13:23:42+09:00"
 }

@@ -5,12 +5,12 @@
 
 ## Pointer
 
-- Current phase: `P4`
-- Current slice: `P4.DECOMP`
-- Next slice: `P4.REVIEW`
+- Current phase: `P8`
+- Current slice: `P8.DECOMP`
+- Next slice: `P8.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T11:27:13+09:00`
+- Rebuilt at: `2026-08-23T13:23:42+09:00`
 
 ## Active Phases
 
@@ -22,6 +22,7 @@
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
 | [x] `P7` | `done` | `pass` | 실서비스 정상화 fix pass | `none` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
+| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.DECOMP` | `works/phases/active/P8` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -126,6 +127,13 @@
 | [x] `P6.S7` | `done` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P6/slices/P6.S7` |
 | [x] `P6.F1` | `done` | Thousands-grouped numerals in agent prose (3,200원) | `fix` | `works/phases/active/P6/slices/P6.F1` |
 | [x] `P6.REVIEW` | `done` | phase review | `review` | `works/phases/active/P6/slices/P6.REVIEW` |
+
+## Phase P8: Design polish pass — audit & polish every surface
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P8.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P8/slices/P8.DECOMP` |
+| [ ] `P8.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P8/slices/P8.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

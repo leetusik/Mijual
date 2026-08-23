@@ -347,7 +347,7 @@
       ]
     },
     "operations": {
-      "latest": "v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product",
+      "latest": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -405,6 +405,14 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: MIJUAL_DEV_ORIGINS in the environment table, and the Makefile dev stack as the supported way to run the local product",
           "previous": "v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits"
+        },
+        {
+          "id": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture",
+          "path": "docs/versions/operations/v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture.md",
+          "created_at": "2026-08-23T13:23:11+09:00",
+          "source": "P8",
+          "summary": "seed ## Operator Runtime manifest (operator-confirmed at P8 intent capture)",
+          "previous": "v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product"
         }
       ]
     },
@@ -571,5 +579,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-23T11:27:09+09:00"
+  "last_rebuilt_at": "2026-08-23T13:23:42+09:00"
 }
