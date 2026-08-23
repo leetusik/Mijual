@@ -426,6 +426,29 @@ handoff carries.
 
 Screenshots: session scratch `p8s2/r8-walk-desktop-landing-chrome.jpg`, `p8s2/r8-walk-mobile-footer-and-404.jpg`.
 
+### R8 interview — operator answers (2026-08-23, `P8.S2` gate 1)
+
+Recorded verbatim-in-substance beside the walk items; the handoff
+`docs/reference/design/rounds/08-foundations-chrome/handoff.md` carries them as direction.
+
+| walk item | operator answer | handoff effect |
+|---|---|---|
+| 1 dead 의견 | "the 의견 will be shown at the footer, and the stacked menu. not the bare nav. and you should connect vocky service … we should make feedback send design. no agent mcp linked yet." Key supplied out-of-band → `.env` `VOCKY_API_KEY` (project `mijual`, same key dev + prod), **never in the repo or the record** | nav `[의견]` dropped; footer + sheet stay; 미주알 designs its own feedback-send surface; server-side forward to vocky `POST /api/feedback` |
+| 2 favicon | "leave the favicon for now. defer." | deferred job (orchestrator files at review / now) |
+| 3 404 | "well, make 404 default." — read as: keep Next's default 404 | out of round; P8 Q3 answered |
+| 4 footer | "remove the text and keep it simple and clean" | footer prose removed; minimal footer in play |
+| 5 hover | "nav 의견 will be dropped, and current hover interaction of ai 질문 is enough" | no hover work; P7 Q9 answered for this surface |
+| 6 account slot | "show the full email. and random genereated icon for the account. we could give a frame for the show that the email and the icon interaction possible" | full email + identicon + frame; supersedes R5 축약 이메일 |
+| 7 focus | "." | unchanged |
+| 8 mobile sheet/footer wrap | "you fix it as you want." | in play for Claude Design |
+| 9 empty band / sample link | "we gonna add a secion for the portfolio. '포트폴리오' -> with no signin, just sample, with a sign, then show the user's portfolio. but i'm not sure we can call it 'portfolio'. you suggest if better term" | nav third slot → `/portfolio` (sample signed out, own signed in); label posed back (handoff §6 Q1) |
+| 10 motion | "motion is fine so far" | unchanged |
+
+**Operator Questions routing from this gate:** Q2 answered (above); Q3 answered (404 stays default); Q4 answered
+for R8 — copy is in play **only** for the new feedback-send surface and the holdings-slot label, dated 2026-08-23;
+Q1 answered in practice (inherited items were decided inside the round: P7 Q1, Q2, Q9, Q6#1, Q6#4, Q7③ closed by the
+answers above; P7 Q10/Q11 untouched and still open).
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -443,16 +466,16 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   slice hands the operator its inherited items together with the walk's own findings**, so they are
   decided where they are visible. If the operator would rather settle some of them before any round
   starts (Q3's board window is one constant; Q13 is housekeeping), say so at the first `pending`.
-- **Q2 — 의견 (vocky) still has nothing to bind to.** `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
+- **Q2 — 의견 (vocky) still has nothing to bind to.** _Answered at the R8 gate (see §R8 interview)._ `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
   no embeddable script, so all three signed chrome triggers are dead controls. R8's walk will meet
   them, and **no slice may invent a URL**: the operator must supply the script/capture path, or decide
   that 의견 routes elsewhere (the AI 질문 agent already has a 의견 tool). Until then surface 1 cannot
   honestly claim "every visible control does something".
-- **Q3 — does chrome polish include the 404 page?** It is Next.js's default page, it carries the one
+- **Q3 — does chrome polish include the 404 page?** _Answered at the R8 gate: stays default._ It is Next.js's default page, it carries the one
   English sentence a Korean-only reader can reach, and it belongs to no signed round. Folding it into
   R8 means designing a page the record never drew (still polish, not a feature); leaving it means the
   English sentence ships. Operator's call at R8's handoff.
-- **Q4 — is copy in play this pass?** `design-cowork` locks copy by default and the whole product
+- **Q4 — is copy in play this pass?** _Answered for R8 at its gate: per round, named + dated._ `design-cowork` locks copy by default and the whole product
   leans on it ("inventing a Korean string is a design change"), but "audit and polish the whole
   thing" plus P7 Q7's four developer-vocabulary strings suggests some rounds need copy explicitly
   **in play, named and dated in that round's handoff**. Blanket answer, or per round?
