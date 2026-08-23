@@ -390,6 +390,42 @@ operator its inherited items alongside the walk's own findings** (see Operator Q
 - The dev stack was left exactly as found (api pid 25177, web pid 13009, both answering `200`); the
   temporary `:3100` production server used for the prod check is stopped.
 
+### R8 walk — surface 1 (foundations + chrome), 2026-08-23, operator runtime
+
+Walked by the orchestrator in Chrome desktop at `http://127.0.0.1:3000` (signed in) and
+`http://100.77.164.42:3000` (tailnet, signed out), plus a 390px mobile frame, `next dev`. First-time-user
+findings, **not** judged against the record; the operator's answers at the `pending` gate decide what R8's
+handoff carries.
+
+1. **Three dead 의견 triggers** — header `[의견]`, footer `의견 보내기`, mobile-sheet `의견 보내기`: click → nothing
+   (no vocky script loaded; `NEXT_PUBLIC_VOCKY_SRC` unset). Operator Questions Q2 / P7 Q1.
+2. **No favicon** (0 `<link rel=icon>`, `/favicon.ico` 404 — generic tab globe), `<title>` is "미주알" on every
+   route incl. 404, no `meta description` / `theme-color`.
+3. **404 = Next.js default**: "404 / This page could not be found." in English; on desktop a white page on which the
+   dark-theme wordmark disappears and nav/[의견] ghost; no footer. Operator Questions Q3 / P7 Q6#1.
+4. **Footer typography/copy**: the tagline ("시장 전체의 소멸 임박 권리를 감시하는 관제 서비스 + 내 종목 연결") and the
+   bottom row are IBM Plex Mono at 11px — Korean prose in the numeral font; the gate-cost sentence ("49.2억원 [추정]은
+   할인율 인용이 게이트를 통과하지 못해 총액에서 제외했습니다") lacks a final period and reads as developer vocabulary
+   (P7 Q7③, Q6#4); footer wordmark is not a link (header one is).
+5. **No hover state** on the inactive nav slot ("AI 질문") or on `[의견]` — nothing changes under the pointer (P7 Q9).
+6. **Account slot**: a truncated email ("swan…com") as a button with no menu affordance; the dropdown (내 포트폴리오 /
+   알림 설정 / 로그아웃) hangs from the middle of the slot, aligned to neither the email nor `[의견]`. Esc closes it
+   and restores focus (works).
+7. **Focus**: buttons/links get the 2px `--focus-ring` (#8fb2e8, offset 2px) — on the hairline-bordered `[의견]` it
+   reads as a double frame; the search field gets the brightened hairline, which stops at the 조회 button edge
+   (P7 Q2/Q10).
+8. **Mobile 390px**: `메뉴` opens an inline list that pushes the page down (no sheet/overlay, no backdrop), label stays
+   "메뉴" (aria-expanded flips, no 닫기); rows 48px. Footer bottom row wraps with "AI 질문" orphaned on its own line;
+   Next's dev badge covers "© 미주알" (dev only). Launcher absent ≤480 (by record).
+9. **~120px empty band** between "내 포트폴리오는 어떻게 보이나 — 샘플로 열어보기 →" and the footer (desktop + mobile).
+10. **Motion**: 252 animations running at rest on the landing (starfield drift/twinkle/shoot, orbit, countdown colon
+    blink, launcher ring drift/band spin); one solid-dark frame during a fast scroll. Reduced-motion not testable
+    from the walk harness — left for the apply slice's sweep.
+11. No skip link (landmarks header/nav/main/aside/footer exist); header wordmark links to `/`.
+12. Hydration/account slot fine on both origins in `next dev`; board/hero not walked here (surface 2).
+
+Screenshots: session scratch `p8s2/r8-walk-desktop-landing-chrome.jpg`, `p8s2/r8-walk-mobile-footer-and-404.jpg`.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not

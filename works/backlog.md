@@ -8,9 +8,9 @@
 - Current phase: `P8`
 - Current slice: `P8.S2`
 - Next slice: `P8.S3`
-- Waiting on operator: `none`
+- Waiting on operator: `P8.S2`
 - Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T13:48:56+09:00`
+- Rebuilt at: `2026-08-23T13:58:13+09:00`
 
 ## Active Phases
 
@@ -134,7 +134,7 @@
 |---|---|---|---|---|
 | [x] `P8.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P8/slices/P8.DECOMP` |
 | [x] `P8.S1` | `done` | AskWidget t1 중복 키 — collision-free turn ids after a restored thread | `fix` | `works/phases/active/P8/slices/P8.S1` |
-| [ ] `P8.S2` | `todo` | R8 폴리시 라운드 — foundations/tokens + global chrome (nav · footer · vocky) | `co-work` | `works/phases/active/P8/slices/P8.S2` |
+| [~] `P8.S2` | `pending` | R8 폴리시 라운드 — foundations/tokens + global chrome (nav · footer · vocky) | `co-work` | `works/phases/active/P8/slices/P8.S2` |
 | [ ] `P8.S3` | `todo` | Apply R8 — foundations/tokens + global chrome | `implementation` | `works/phases/active/P8/slices/P8.S3` |
 | [ ] `P8.S4` | `todo` | R9 폴리시 라운드 — landing 관제 현황판 + board | `co-work` | `works/phases/active/P8/slices/P8.S4` |
 | [ ] `P8.S5` | `todo` | Apply R9 — landing 관제 현황판 + board | `implementation` | `works/phases/active/P8/slices/P8.S5` |
