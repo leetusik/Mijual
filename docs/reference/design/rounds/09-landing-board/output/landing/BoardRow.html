@@ -1,0 +1,51 @@
+<!-- @dsCard group="⏳ P8.S4 · Landing" viewport="1280x1500" name="BoardRow" subtitle="행 해부 5종 (유증·CB·매수청구·진행 중 D+n·추후결정) × idle/hover/focus/변경 · D-day는 행의 마지막 칸 · desktop + 390px" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r9-rows.jsx"></script>
+<script type="text/babel">
+const R1 = R9_ROWS[0], CB = R9_ROWS[3], R3 = R9_ROWS[4], OPEN = R9_OPEN_NOW[0], TBD = R9_TBD[0];
+function Case({ label, rows, extras = true, states }) {
+  return <React.Fragment>
+    <div className="lab">{label}</div>
+    <section className="panel" style={{ padding: '10px 24px' }}><R9Rows rows={rows} extras={extras} states={states} /><i className="bk"></i></section>
+  </React.Fragment>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="① 유상증자 신주인수권 — extras에 청약 마감 + 「발행가 확정 전」 (R2 그대로, 자리만 이동)" rows={[R1]} />
+<Case label="② 전환사채 오버행 — extras 없음. 빈 열을 만들지 않고 값 열은 우변에 그대로 — 종목명 뒤 한 곳만 넓어진다" rows={[CB]} extras={false} />
+<Case label="③ 주식매수청구권 — extras 없음, 같은 열" rows={[R3]} extras={false} />
+<Case label="② 진행 중 (스트립 안) — 개시일이 지났으므로 D+n. 「종료」라고 쓰지 않는다 (ui-traps #5)" rows={[OPEN]} extras={false} />
+<Case label="일정 추후결정 — 날짜 슬롯을 비워두지 않는다: 키 날짜 칸은 라벨만, 「추후결정」은 레일이 답한다 (walk 5)" rows={[TBD]} />
+
+<div className="lab">상태 — idle / hover (행 전체가 클릭 대상, walk 1) / focus-visible / 갱신으로 값이 바뀐 행 (행 높이 최소 44px, 내용은 수직 중앙)</div>
+<section className="panel" style={{ padding: '10px 24px' }}>
+  <R9Rows rows={[R1]} />
+  <R9Rows rows={[{ ...CB, c: '라온텍' }]} extras={false} states={{ '라온텍': 'hover' }} />
+  <R9Rows rows={[{ ...R3, c: '휴맥스' }]} extras={false} states={{ '휴맥스': 'focus' }} />
+  <R9Rows rows={[{ ...R9_ROWS[3] }]} extras={false} states={{ '라온텍': 'changed' }} />
+  <i className="bk"></i>
+</section>
+
+<div className="lab">390px — 2줄: 1줄 = 유형칩 + 회사 + ↗ · D-day (우측), 2줄 = 라벨 + 날짜 · extras · 날짜는 mono nowrap</div>
+<div className="m390">
+<section className="panel" style={{ padding: '10px 16px' }}>
+  <R9Rows rows={[R1, CB, R3, TBD]} />
+  <i className="bk"></i>
+</section>
+</div>
+
+<div className="note">
+<b>구성 요소·순서는 R2 그대로 —</b> 유형칩 · 회사 600 + ↗ (DART 원문) · 카운트다운 라벨 + 날짜 · 유형별 extras · <b>D-day (행의 마지막 칸, 패널 우변에 붙음)</b>. R9가 바꾼 것은 <b>열 폭</b>뿐이다: <b>76 · 회사 1fr · 240 · 190 · 96</b>, extras가 없는 목록은 <b>76 · 회사 1fr · 300 · 96</b> — 값 열은 전부 고정폭이라 유형이 섞인 목록에서도, 보드와 스트립 사이에서도 열이 어긋나지 않는다. 오늘의 ~450px 구멍은 <b>빈 extras 열</b>과 1fr 회사 열이 겹쳐 생긴 것이므로, 빈 열을 만들지 않는 것으로 사라진다 — 남는 폭은 종목명 뒤 한 곳뿐이다.<br />
+<b>행 높이 —</b> <code>min-height:44px</code> + <code>align-items:center</code> — 값의 자릿수나 칩 유무와 무관하게 내용이 수직 중앙에 놓인다.<br />
+<b>행 전체가 클릭 대상 (walk 1) —</b> 회사명 링크가 행을 덮는 stretched-link (<code>.corp::after</code> = 행 전체, 접근 가능한 이름은 회사명 그대로). ↗과 다른 링크는 <code>position:relative;z-index:1</code>로 위에 남는다. hover = 행 배경 --surface-raised + 회사명 밑줄 (<b>「상세」 같은 지시 문구는 두지 않는다</b> — 배경과 밑줄이 이미 그 말을 한다). focus-visible = 같은 배경 + 행 둘레 2px --focus-ring. press = --surface-inset. 색 반전 없음 (R1).<br />
+<b>날짜 없는 행 (walk 5) —</b> 키 날짜 칸은 <b>라벨만</b> 렌더한다 — 빈 날짜 슬롯도, 대시도 없다. 「언제」에 답하는 칸은 언제나 레일 하나이므로, 날짜가 없으면 레일이 「추후결정」을 든다. extras의 「발행가 확정 전」은 그대로 (알려질 사실이므로 TBD와 다르다).<br />
+<b>갱신 표시 —</b> 값이 바뀐 행·새로 들어온 행은 레일 바깥에 2px --live 인셋 엣지를 한 주기 동안 유지하고 바뀐 값만 200ms 페이드로 들어온다. 다음 갱신에서 지워진다. reduced-motion: 페이드 없이 즉시, 엣지는 그대로.<br />
+<b>390px —</b> 1줄 = 유형칩 + 회사 + ↗ 와 우측 D-day, 2줄 = 라벨 + 날짜 · extras (두 열에 걸침) — R2의 모바일 2줄 행 그대로. 모든 mono 값은 <code>white-space:nowrap</code> (walk 10의 「2026-09- / 04」 방지), 한국어는 <code>word-break:keep-all</code>.
+</div>
+</React.Fragment>);
+</script></body></html>

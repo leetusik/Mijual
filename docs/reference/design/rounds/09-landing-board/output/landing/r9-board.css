@@ -1,0 +1,149 @@
+/* R9 (P8.S4) — 관제 현황판 board geometry. This file IS the column-plan contract:
+   the cards below render nothing that is not in here, so the numbers can be read
+   off it directly. Tokens only; no colour literals except the cosmos page wash. */
+
+body{margin:0;padding:24px;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(19,66,52,.35),transparent 72%),var(--paper);font-family:var(--font-sans);color:var(--ink-1);word-break:keep-all}
+#root{display:grid;gap:20px;max-width:1120px}
+a{color:var(--ink-1)}a:hover{color:var(--live)}
+.lab{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.mono{font-family:var(--font-mono)}
+.nowrap{white-space:nowrap}
+
+/* craft panel (R2.1) — hairline + top-edge glow + four corner brackets */
+.panel{position:relative;background:var(--surface-card);border:1px solid var(--border-strong);box-shadow:var(--panel-glow);padding:18px 24px 0}
+.panel::before,.panel::after,.panel>.bk::before,.panel>.bk::after{content:"";position:absolute;width:9px;height:9px}
+.panel::before{left:-1px;top:-1px;border-left:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel::after{right:-1px;top:-1px;border-right:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel>.bk::before{left:-1px;bottom:-1px;border-left:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+.panel>.bk::after{right:-1px;bottom:-1px;border-right:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+
+/* header + freshness */
+.phead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ptitle{margin:0;font-size:var(--text-lg);font-weight:700;letter-spacing:var(--tracking-tight)}
+.fresh{display:flex;align-items:center;gap:8px}
+.stamp{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);white-space:nowrap}
+.stamp.stale{color:var(--alert);background:var(--alert-tint);padding:4px 10px}
+.upd{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);background:var(--live-tint);padding:2px 8px;white-space:nowrap}
+.notice{margin:16px 0 0;padding:8px 12px;background:var(--surface-inset);border-left:2px solid var(--alert);font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+
+/* tabs — R9 adds hover (P7 Q9 answered) */
+.tabs{display:flex;gap:16px;margin-top:16px;border-bottom:1px solid var(--border-soft);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;background:none;border:0;border-bottom:2px solid transparent;font-family:var(--font-sans);font-size:var(--text-base);color:var(--ink-2);white-space:nowrap;cursor:pointer;transition:color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
+.tab:hover{color:var(--ink-1);border-bottom-color:var(--border-strong)}
+.tab:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.tab.on{font-weight:600;color:var(--ink-1);border-bottom-color:var(--ink-1)}
+.tab .k{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.tab.on .k{color:var(--ink-2)}
+
+/* meta line: what the numbers mean (findings 2/3) + the D-day legend (finding 7) */
+.meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:10px 0 6px;font-size:var(--text-xs);color:var(--ink-3);line-height:1.6}
+.meta b{font-weight:400;color:var(--ink-2)}
+.legend{display:flex;align-items:center;gap:12px;font-family:var(--font-mono);font-size:var(--text-xs)}
+.legend span{white-space:nowrap}
+.lg0{color:var(--urgency-now-fg);background:var(--urgency-now-bg);padding:1px 6px}
+.lg1{color:var(--urgency-soon)}
+.lg2{color:var(--urgency-near)}
+.lg3{color:var(--urgency-far)}
+
+/* ------------------------------------------------------------------ rows
+   R9 column plan (desktop ≥1120, panel inner 1072) — the row fills the panel and
+   the D-day is flush right (R2's order kept). Only the 회사 column flexes; every
+   value column is a fixed width, so the columns line up across rights types and
+   across the board / strip tables:
+     chip 76 | corp minmax(180px,1fr) | key date 240 | extras 190 | D-day 96
+   and, for a whole panel (tab) in which no row carries extras — the CB / 매수청구
+   tabs, strips included:
+     chip 76 | corp minmax(180px,1fr) | key date 300 | D-day 96
+   walk finding 6 (~450px between the key date and the D-day on every CB row) is
+   fixed by dropping the empty extras column and by pinning the value columns to
+   the row's right edge — the only slack is inside the name column, after the
+   name, where a table is expected to breathe. */
+.rows{list-style:none;margin:0;padding:0}
+.row{position:relative;display:grid;grid-template-columns:76px minmax(180px,1fr) 240px 190px 96px;gap:12px;align-items:center;min-height:44px;margin-inline:-12px;padding:8px 12px;border-bottom:1px dashed var(--border-soft);cursor:pointer;transition:background var(--dur-fast) var(--ease)}
+.rows[data-extras="none"] .row{grid-template-columns:76px minmax(180px,1fr) 300px 96px}
+.rows[data-extras="none"] .extras{display:none}
+.row:hover,.row.hover{background:var(--surface-raised)}
+.row:hover .corp,.row.hover .corp{text-decoration:underline}
+.row:focus-within,.row.focus{background:var(--surface-raised);outline:2px solid var(--focus-ring);outline-offset:-1px}
+.row.changed{box-shadow:inset 2px 0 0 var(--live)}
+.rail{justify-self:end;display:flex;align-items:center;justify-content:flex-end}
+.top{display:contents}
+.corpCell{display:flex;align-items:baseline;gap:8px;min-width:0}
+.corp{font-size:var(--text-base);font-weight:600;color:var(--ink-1);text-decoration:none;overflow-wrap:anywhere}
+/* stretched link: the row is the event's click target, the accessible name stays 회사명 */
+.corp::after{content:"";position:absolute;inset:0}
+.dart{position:relative;z-index:1;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);text-decoration:none}
+.dart:hover{color:var(--ink-2)}
+.rmeta{display:contents}
+.when{display:flex;align-items:baseline;gap:8px;min-width:0}
+.wlabel{font-size:var(--text-sm);color:var(--ink-2);white-space:nowrap}
+.wdate{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-1);white-space:nowrap}
+.extras{display:flex;align-items:baseline;gap:8px;min-width:0}
+.sub{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-2);white-space:nowrap}
+.pend{padding:2px 8px;background:var(--surface-inset);font-size:var(--text-xs);line-height:1.4;color:var(--ink-2);white-space:nowrap}
+
+/* window footer (findings 3 + 4): what a click adds, what is left, and a way back */
+.more{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;padding:16px 0 18px}
+.btn{min-height:36px;padding:0 12px;background:none;border:1px solid var(--border-strong);border-radius:0;font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-2);cursor:pointer;transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.btn:hover{background:var(--surface-inset);border-color:var(--ink-3);color:var(--ink-1)}
+.btn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.rest{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.flat{border:0;padding:0;background:none;font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-3);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.flat:hover{color:var(--ink-1)}
+
+/* pinned strips — the sentence band is raised; the expanded rows sit on the
+   board's own grid so the two tables are one table (finding 5) */
+.strip{margin-inline:-24px;padding:12px 24px;background:var(--surface-raised);border-top:1px solid var(--border-strong)}
+.strip+.strip{border-top:1px solid var(--border-strong)}
+.sline{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0;font-size:var(--text-base);color:var(--ink-2);line-height:var(--leading-base)}
+.live{font-weight:600;color:var(--live)}
+.scount{font-family:var(--font-mono);font-weight:600;color:var(--ink-1)}
+.sbody{margin-top:10px;padding-top:2px;border-top:1px dashed var(--border-soft)}
+.sbody .row{margin-inline:-12px}
+
+/* ---------------------------------------------------------------- ≤1119 */
+@media (max-width:1119px){
+  /* the extras column stays a FIXED width here too: auto would be 0 on a row
+     without extras and ~80px on the row beside it, so one panel would show two
+     column systems (the misalignment walk 5 is about). */
+  .row{grid-template-columns:72px minmax(120px,1fr) 200px 170px 96px}
+  .rows[data-extras="none"] .row{grid-template-columns:72px minmax(120px,1fr) 240px 96px}
+}
+/* ---------------------------------------------------------------- ≤767 (390) */
+@media (max-width:767px){
+  body{padding:12px}
+  .panel{padding:16px 16px 0}
+  .row,.rows[data-extras="none"] .row{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding-block:11px;align-items:center}
+  .top{grid-column:1;grid-row:1;display:flex;align-items:center;gap:8px;min-width:0}
+  .rail{grid-column:2;grid-row:1;align-self:center}
+  .rmeta{grid-column:1/-1;grid-row:2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
+  .extras:not(:empty)::before{content:"·";color:var(--ink-3);margin-right:2px}
+  .btn,.flat{min-height:44px;display:inline-flex;align-items:center}
+  .strip{margin-inline:-16px;padding:12px 16px}
+  .sline{display:block}
+  .sline .btn{width:100%;justify-content:center;margin-top:10px}
+  .more{flex-direction:column;gap:8px}
+}
+
+/* annotation blocks (card furniture, not product) */
+.note{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);line-height:1.8;max-width:1120px}
+.note b{color:var(--ink-2);font-weight:400}
+.note .flag{border-left:2px solid var(--r2);padding-left:10px;margin-top:6px}
+.frame{border:1px solid var(--border-soft);padding:12px;display:grid;gap:8px}
+
+/* 390px frames shown inside a wide card: the ≤767 rules again, scoped to the
+   frame instead of the viewport. Same declarations — one contract. */
+.m390{width:390px}
+.m390 .panel{padding:16px 16px 0}
+.m390 .row,.m390 .rows[data-extras="none"] .row{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding-block:11px;align-items:center}
+.m390 .top{grid-column:1;grid-row:1;display:flex;align-items:center;gap:8px;min-width:0}
+.m390 .rail{grid-column:2;grid-row:1;align-self:center}
+.m390 .rmeta{grid-column:1/-1;grid-row:2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
+.m390 .extras:not(:empty)::before{content:"·";color:var(--ink-3);margin-right:2px}
+.m390 .btn,.m390 .flat{min-height:44px;display:inline-flex;align-items:center}
+.m390 .strip{margin-inline:-16px;padding:12px 16px}
+.m390 .sline{display:block}
+.m390 .sline .btn{width:100%;justify-content:center;margin-top:10px}
+.m390 .more{flex-direction:column;gap:8px}
+.m390 .meta{padding-bottom:8px}

@@ -617,6 +617,49 @@ exception. Verbatim, then the reading the handoff carries:
 Handoff written: `docs/reference/design/rounds/09-landing-board/handoff.md`. Copy in play this
 round, dated 2026-08-23: count/shown/remaining labels, 접기, any refresh-state label.
 
+### R9 landed spec — read back 2026-08-23 (`P8.S4` gate 2), awaiting literal signoff
+
+Read back with DesignSync from "Mijual Design System" and landed **as-is** under
+`docs/reference/design/rounds/09-landing-board/output/` — `result.md`, `build-prompt.md`, cards
+`landing/{Board,BoardRow,BoardStrips,Anchors,HeroSearch,Refresh}.html` + `components/DDayTiers.html`
+(groups `⏳ P8.S4 · Landing` / `⏳ P8.S4 · Components`), the shared geometry source `landing/r9-board.css`
+(the column-plan contract) + row data `landing/r9-rows.jsx`, and the R9-session revision of
+`chrome/AccountSlot.html` (see "outside the round" below). **No token change.** Concreteness check: every
+decision carries geometry, state, and copy; nothing to send back.
+
+What R9 decided (headline; `result.md` §1–§3 is the record):
+
+- **Window 15/+15** (operator q3); footer re-cut to `{step}건 더 보기` + `남은 {n}건` + `처음 15건으로 접기`.
+- **Row column plan** `76 · corp minmax(180,1fr) · 240 · 190 · 96` (no-extras panels `76 · 1fr · 300 · 96`),
+  extras column decided **per panel (tab)**, fixed value columns, D-day flush right in its R2 slot,
+  `min-height 44px`; tablet `72 · 1fr · 200 · 170 · 96`; 390 two-line row as R2. Walk 6's gap closes by not
+  rendering an empty extras column.
+- **Whole-row click = stretched link** on the corp anchor (`↗` stays DART, `z-index:1`); hover raised +
+  corp underline, focus-within ring, press inset; changed-row edge `inset 2px 0 0 --live`.
+- **Meta line** under the tabs — 「탭 숫자는 감시 중 전체 건수입니다 · 아래 목록은 카운트다운 {ranked}건 중 {shown}건」
+  + the **D-day legend** (D-DAY · D-7 이내 · D-30 이내 · 30일 초과; R1 ladder kept, no simplification).
+- **Strips**: `펼치기` ↔ `접기` (+`aria-expanded`); expanded rows on the board grid at the 24px start line;
+  dateless row = label only in the key-date cell, 「추후결정」 in the D-day cell; 390 full-width 44px button.
+- **Countdown card → three stats** in label-left/value-right rows (읽은 실적보고서 dropped, operator 9);
+  **소멸주의보 tie rule** — `{n}개 종목` replaces the corp when several share the earliest 청약 마감, same in the
+  countdown caption (needs `next_lapse.tie_count` or equivalent from `/board/summary`; until then the corp).
+- **Auto-refresh visible contract** — chip-only surface (`갱신됨` beside a new 기준시각, persists to the next
+  refresh), no spinner/button/text, changed rows edged, tab/window/strips/scroll/focus survive, hidden-tab
+  pause, silent failure, stale = R2 handling, reduced-motion = no fade; interval is apply's (design assumes 60s).
+- **Hero plain Enter** — 4-step rule (no highlight → Enter selects the first candidate; highlighted → go; exact
+  match → go on first Enter; no candidates → `GET /stocks?q=`); 390 `word-break: keep-all` + subtitle
+  `text-wrap: balance`, all mono values `nowrap`.
+- **P7 Q9** tabs hover = `--ink-1` + 2px `--border-strong` underline (role="tab" not introduced); **P7 Q10**
+  closed as no-change; **P7 Q11** board controls 36px (≥768) / 44px (≤767), the 481px seam retired.
+- **Copy in play, dated 2026-08-23 — 14 new constants** (`build-prompt.md` §9: `TAB_NOTE_KO`, `shownLine`,
+  `moreKo`, `remainingKo`, `collapseToFirstKo`, `COLLAPSE_KO`, `REFRESHED_KO`, four `LEGEND_*_KO`,
+  `tieCountKo`); deletions `STAT_REPORTS_KO` + the gate-cost/disclaimer constants (P8 Q5).
+
+Outside the round (recorded, not applied by `P8.S5`): the operator asked the session to add a **「의견 보내기」
+row to the account menu** (알림 설정 / 의견 보내기 / 로그아웃) — `chrome/AccountSlot.html` revised in the
+project and landed beside R9's output; `build-prompt.md` §12 names it for "the next chrome slice". No new
+copy (`FEEDBACK_OPEN_KO`). Routed as Operator Question Q12 below.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -687,6 +730,22 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   are visible on `/ops/feedback`. Removing a row from vocky is an outward write no design or plan
   sanctioned, so they were left in place — the operator can delete them there, or keep them as the
   first proof the path works.
+
+- **Q10 — board auto-refresh interval.** R9 designed the visible contract and left the value to apply with a
+  stated assumption of **60 s** (기준시각 is minute-granular). `P8.S5` will use 60 s unless the operator names
+  another value or wants it tied to the backend's actual refresh cadence.
+- **Q11 — 동시 마감 tie count needs an API field.** R9's 소멸주의보 / countdown caption say 「N개 종목」 when
+  several ① events share the earliest 청약 마감. `/board/summary` does not carry that count today;
+  `P8.S5` adds `next_lapse.tie_count` (or renders the corp name until it exists — the design forbids guessing).
+  Operator to confirm the API addition is acceptable in a polish phase (it is derived from data already served).
+- **Q12 — 「의견 보내기」 row in the account menu (operator instruction given inside the R9 design session).**
+  Not in R9's apply scope by the session's own note (`build-prompt.md` §12). Needs a home: a small `fix`/
+  implementation slice in P8 after `P8.S5` (one menu row wired to the existing Feedback panel), or a deferred
+  job. Orchestrator's default if unanswered: insert `P8.S5.5` (risk low → mid tier) right after the R9 apply.
+- **Q13 — grounding snapshot refresh.** R9 could draw only the events the grounding pack names (13 of 15
+  ranked rows, 1 of 4 추후결정, 4 진행 중). The session asks that the next `board-snapshot.md` regeneration
+  include the top 진행 중 rows and all 추후결정 names so later rounds render the strips with real data.
+  Housekeeping for the operator / a later slice; no design consequence.
 
 ## Constraints
 

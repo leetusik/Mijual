@@ -1,0 +1,80 @@
+<!-- @dsCard group="⏳ P8.S4 · Landing" viewport="1280x1780" name="Board" subtitle="15행 창 · 고정폭 열 재구성 (D-day 우측) · 탭/카운트 라벨 + D-day 범례 · 더 보기+남은 건수+접기 · 탭 hover · stale" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r9-rows.jsx"></script>
+<script type="text/babel">
+const cb = R9_ROWS.filter((e) => e.t === 2);
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="lab">전체 탭 · 15행 창 (WINDOW_STEP 30 → 15, 운영자 q3) · 패널 내부 1072 · 기록이 종목명을 담은 실제 이벤트 13행까지만 그렸다 (창은 15행 ≈ 600px)</div>
+<section className="panel">
+  <div className="phead"><h2 className="ptitle">소멸 카운트다운</h2><R9Fresh /></div>
+  <R9Tabs active={0} />
+  <R9Meta total={386} shown={15} />
+  <R9Rows rows={R9_ROWS} />
+  <R9More step={15} rest={371} />
+  <div className="strip"><p className="sline"><span>전환청구 <span className="live">진행 중</span> — 개시일이 지나 지금 전환할 수 있는 전환사채 <span className="scount">60건</span></span><button type="button" className="btn">펼치기</button></p></div>
+  <div className="strip"><p className="sline"><span>일정 추후결정 — 카운트다운 없이 감시 중인 이벤트 <span className="scount">4건</span></span><button type="button" className="btn">펼치기</button></p></div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">한 번 펼친 뒤 (30행) — 「접기」가 나타난다 · 남은 건수만 줄어든다 (16~30행 구간의 꼬리)</div>
+<section className="panel" style={{paddingBottom:0}}>
+  <div className="phead"><h2 className="ptitle">소멸 카운트다운</h2><R9Fresh /></div>
+  <R9Tabs active={0} />
+  <R9Meta total={386} shown={30} />
+  <R9Rows rows={R9_ROWS.slice(9)} />
+  <R9More step={15} rest={356} collapse />
+  <i className="bk"></i>
+</section>
+
+<div className="lab">전환사채 오버행 탭 — extras 열이 없는 변형 (기록이 이름을 담은 ② 3행) · 열 재분배로 키 날짜↔D-day 사이 빈 구간 소멸 · 두 번째 탭에 hover</div>
+<section className="panel">
+  <div className="phead"><h2 className="ptitle">소멸 카운트다운</h2><R9Fresh /></div>
+  <R9Tabs active={2} hover={1} />
+  <R9Meta total={366} shown={15} />
+  <R9Rows rows={cb} extras={false} />
+  <R9More step={15} rest={361} />
+  <div className="strip"><p className="sline"><span>전환청구 <span className="live">진행 중</span> — 개시일이 지나 지금 전환할 수 있는 전환사채 <span className="scount">60건</span></span><button type="button" className="btn">펼치기</button></p></div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">stale — 칩만 경고로 바뀌고 본문은 절대 흐려지지 않는다 (R2 규칙 유지)</div>
+<section className="panel">
+  <div className="phead"><h2 className="ptitle">소멸 카운트다운</h2><R9Fresh stamp="기준 2026-08-22 09:00 KST · 32시간 전 데이터" stale /></div>
+  <p className="notice">데이터가 갱신되지 않고 있습니다. 아래 값은 기준 시각의 공시 기준이며, 그 이후의 정정공시는 반영 전일 수 있습니다.</p>
+  <R9Tabs active={0} />
+  <R9Meta total={386} shown={15} />
+  <R9Rows rows={R9_ROWS.slice(0, 3)} />
+  <i className="bk"></i>
+</section>
+
+<div className="lab">390px — 같은 패널, 같은 규칙 (행 2줄 · D-day는 1줄 우측, 컨트롤 44px, 스트립 버튼 전폭)</div>
+<div className="m390">
+<section className="panel">
+  <div className="phead"><h2 className="ptitle">소멸 카운트다운</h2><R9Fresh stamp="기준 2026-08-23 16:25 KST" /></div>
+  <div className="tabs"><button type="button" className="tab on" aria-pressed="true">전체 <span className="k">488</span></button><button type="button" className="tab">유증 <span className="k">50</span></button><button type="button" className="tab">CB <span className="k">422</span></button><button type="button" className="tab">매수청구 <span className="k">16</span></button></div>
+  <div className="meta"><span>탭 숫자는 감시 중 전체 건수입니다</span><span>카운트다운 <b className="mono">386건</b> 중 <b className="mono">15건</b></span><span className="legend"><span className="lg0">D-DAY</span><span className="lg1">D-7 이내</span><span className="lg2">D-30 이내</span><span className="lg3">30일 초과</span></span></div>
+  <R9Rows rows={R9_ROWS.slice(0, 5)} />
+  <R9More step={15} rest={371} />
+  <div className="strip"><p className="sline"><span>전환청구 <span className="live">진행 중</span> — 개시일이 지나 지금 전환할 수 있는 전환사채 <span className="scount">60건</span></span><button type="button" className="btn">펼치기</button></p></div>
+  <i className="bk"></i>
+</section>
+</div>
+
+<div className="note">
+<b>열 구성 (R9 재컷) —</b> 유형칩 76 · <b>회사 minmax(180, 1fr)</b> · 키 날짜 240 · extras 190 · <b>D-day 96</b>, gap 12. 값 열은 전부 고정폭이고 <b>회사 열만 늘어난다</b> — 행은 패널을 꽉 채우고 D-day는 패널 우변에 붙는다. extras를 가진 행이 <b>패널(탭) 전체에</b> 없을 때만 그 열을 만들지 않는다 (CB·매수청구 탭 — 스트립 포함) → <b>76 · 1fr · 300 · 96</b>. 전체 탭에서는 스트립 행도 보드 행과 같은 열을 쓴다. ≤1119: 72·1fr·220·auto·96 / ≤767: 2줄 (1줄 = 칩+회사+↗ · D-day 우측).<br />
+<b>walk 6의 수정 —</b> 오늘의 구멍은 두 가지가 겹친 것이었다: 빈 extras 열 230px + 1fr 회사 열의 남는 폭. R9는 <b>빈 extras 열을 만들지 않고</b> 값 열을 행의 우변에 못박는다 — 남는 폭은 <b>종목명 뒤 한 곳</b>에만 생기고, 그 자리는 표에서 여백이 있어야 하는 자리다. 값과 값 사이에는 빈 구간이 없다.<br />
+<b>숫자 설명 (walk 2·3) —</b> 탭 아래 한 줄: 「탭 숫자는 감시 중 전체 건수입니다 · 아래 목록은 카운트다운 386건 중 15건」. 푸터는 <b>남은 수를 버튼에서 분리</b>한다 — 버튼 「15건 더 보기」(클릭이 더하는 수) + 「남은 371건」(mono, --ink-3) + 15행 초과 시 「처음 15건으로 접기」.<br />
+<b>D-day 등급 (walk 7) —</b> R1 사다리(>30 dim · ≤30 ink · ≤7 alert · D-DAY 채움) 유지 + 같은 줄 우측에 <b>범례</b>. 임계값을 보이게 하는 쪽을 골랐다 — alert 색조는 소멸·기한 전용이라는 R1 규칙 때문에 「단순화」는 오히려 ≤30일과 ≤7일의 구분을 잃는다.<br />
+<b>행 hover —</b> 배경 --surface-raised + 회사명 밑줄 (지시 문구 없음). 자세한 상태는 BoardRow 카드.<br />
+<b>탭 (P7 Q9 결정) —</b> hover = --ink-1 + 2px --border-strong 밑줄 (활성 밑줄은 --ink-1 그대로라 구별된다), focus-visible = 2px --focus-ring. role="tab" 아님 — aria-pressed 버튼 유지.<br />
+<b>P7 Q11 결정 —</b> 보드의 컨트롤 높이 32 → <b>36px (≥768) / 44px (≤767)</b>. 481px 경계는 없어지고 터치 하한이 태블릿 대역까지 올라간다 (행 그리드 브레이크포인트와 동일).<br />
+<b>데이터 —</b> 모든 행은 board-snapshot.md + 고정 샘플의 실제 이벤트이며 <b>walk 기준일 2026-08-23</b>로 D-day를 다시 계산했다 — 운영자가 실제로 본 화면과 같은 행·같은 등급 (첫 행 계양전기 D-2, D-9은 흰색, D-40 이상은 dim). 발명한 회사·날짜 없음: 기록이 이름을 담은 랭킹 행은 13개라 나머지 2행은 그리지 않았다. 386 = 랭킹 대상 (30 + 356, walk 3), 488 = 감시 중 전체, 366 = CB 탭의 랭킹 대상 (28+338) — CB 패널은 기록이 이름을 담은 3행만 그렸다.
+</div>
+</React.Fragment>);
+</script></body></html>

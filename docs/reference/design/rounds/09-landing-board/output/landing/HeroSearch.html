@@ -1,0 +1,82 @@
+<!-- @dsCard group="⏳ P8.S4 · Landing" viewport="1280x1240" name="HeroSearch" subtitle="390px 히어로 줄바꿈 (부제 고아 해소) · 프리픽스에서의 맨 Enter 규칙 = 추측하지 않는 2단 Enter · P7 Q10 결정" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>.hero{position:relative;display:grid;justify-items:center;text-align:center;padding:36px 24px 40px;border:1px solid var(--border-soft)}
+.h1{margin:0;font-size:52px;font-weight:700;letter-spacing:var(--tracking-tight);line-height:1.15}
+.sub{margin:10px 0 0;font-size:var(--text-lg);font-weight:500;color:var(--ink-2);text-wrap:balance}
+.row{display:flex;gap:8px;margin-top:24px;width:560px;max-width:100%}
+.field{position:relative;display:flex;flex:1 1 auto;min-width:0}
+.qin{font-family:var(--font-sans);font-size:var(--text-md);padding:0 16px;height:52px;flex:1;min-width:0;border:1px solid rgba(163,196,180,.4);background:rgba(8,17,13,.72);color:var(--ink-1);border-radius:0}
+.qin::placeholder{color:rgba(255,255,255,.38)}
+.focused .qin{outline:2px solid var(--focus-ring);outline-offset:-1px}
+.go2{font-family:var(--font-sans);font-size:var(--text-md);font-weight:600;color:#fff;background:var(--live-solid);border:1px solid rgba(95,208,165,.45);padding:0 28px;height:52px;cursor:pointer}
+.lb{position:absolute;top:100%;left:0;right:0;z-index:20;margin:0;padding:0;list-style:none;background-color:var(--paper);background-image:linear-gradient(rgba(8,17,13,.72),rgba(8,17,13,.72));border:1px solid rgba(163,196,180,.4);border-top:none;text-align:left}
+.op{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px;padding-inline:16px;cursor:pointer}
+.op.on{background:var(--surface-inset)}
+.opn{font-size:var(--text-md);color:var(--ink-1)}
+.opc{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-2)}
+.stat{font-family:var(--font-mono);margin:20px 0 0;font-size:var(--text-sm);color:var(--ink-3)}
+.stat b{font-weight:400;color:var(--ink-2)}
+.key{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-2);border:1px solid var(--border-strong);padding:1px 6px}
+.m390 .hero{padding:24px 16px 28px}
+.m390 .h1{font-size:34px}
+.m390 .sub{font-size:var(--text-md)}
+.m390 .qin,.m390 .go2{height:48px}
+.m390 .row{width:100%;margin-top:18px}
+.m390 .stat{font-size:var(--text-xs)}
+.bad .sub{word-break:break-all;text-wrap:auto}
+.two{display:grid;grid-template-columns:390px 390px;gap:24px;align-items:start}
+.steps{display:grid;gap:14px}
+.step{display:grid;gap:6px}
+</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel">
+const { EstimateMarker } = window.MijualDesignSystem_7ce1bb;
+function Stat() {
+  return <p className="stat">2026년 소멸한 신주인수권 가치 <EstimateMarker value="718.1억원" /> · 감시 중 <b className="nowrap">488건</b> · 30일 이내 마감 <b className="nowrap">34건</b></p>;
+}
+function Hero({ q, panel, active, focused }) {
+  return <div className={'hero' + (focused ? ' focused' : '')}>
+    <h1 className="h1">내 종목 조회</h1>
+    <p className="sub">종목명 하나로 놓친 권리와 진행 중인 권리를 조회합니다</p>
+    <div className="row">
+      <span className="field">
+        {q ? <input className="qin" defaultValue={q} readOnly /> : <input className="qin" placeholder="종목명 또는 종목코드 — 예: 계양전기" readOnly />}
+        {panel ? <ul className="lb" role="listbox">
+          <li className={'op' + (active === 0 ? ' on' : '')} role="option" aria-selected={active === 0}><span className="opn">삼성에스디에스</span><span className="opc">018260</span></li>
+          <li className={'op' + (active === 1 ? ' on' : '')} role="option" aria-selected={active === 1}><span className="opn">삼성제약</span><span className="opc">001360</span></li>
+        </ul> : null}
+      </span>
+      <button type="button" className="go2">조회</button>
+    </div>
+    <Stat />
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="lab">390px — 왼쪽: 오늘 (부제가 「…조회합니 / 다」로 끊긴다, walk 10) · 오른쪽: R9 (word-break:keep-all + text-wrap:balance)</div>
+<div className="two">
+  <div className="m390 bad"><Hero /></div>
+  <div className="m390"><Hero /></div>
+</div>
+
+<div className="lab">프리픽스에서의 맨 Enter (walk 11) — 히어로는 추측하지 않는다: Enter①은 첫 후보를 고르고, Enter②가 이동한다</div>
+<div className="steps">
+  <div className="step"><span className="lab">① 「삼성」 입력 — 후보 2건, 아직 아무것도 선택되지 않음 (aria-activedescendant 없음)</span><Hero q="삼성" panel focused /></div>
+  <div className="step"><span className="lab">② <span className="key">Enter</span> — 이동하지 않는다. 첫 후보가 선택된다 (↓와 같은 상태, aria-activedescendant = 첫 후보)</span><Hero q="삼성" panel active={0} focused /></div>
+  <div className="step"><span className="lab">③ 다시 <span className="key">Enter</span> — 선택된 후보로 이동 <span className="mono">/stocks/&lt;corp_code&gt;</span> · <span className="key">Esc</span>는 패널만 닫고 입력은 남긴다</span></div>
+</div>
+
+<div className="note">
+<b>규칙 (히어로 쪽, walk 11) —</b> ① 후보가 떠 있고 <b>선택된 후보가 없으면</b> Enter는 <b>첫 후보를 선택</b>한다 (이동 없음). ② 선택된 후보가 있으면 Enter는 그 후보로 이동한다 (P7 그대로). ③ 입력이 후보의 종목명·종목코드와 <b>정확히 일치</b>하면 첫 Enter가 바로 이동한다 — 모호함이 없을 때 두 번 누르게 하지 않는다. ④ 후보가 <b>하나도 없으면</b> Enter는 오늘처럼 <code>GET /stocks?q=…</code>로 제출한다 (JS 없는 경로 유지). 이 규칙은 「삼성」 같은 프리픽스에서 방금 보여준 후보를 버리고 빈 결과 페이지로 보내는 일을 없애면서, 무엇도 추측하지 않는다.<br />
+<b>/stocks 쪽은 R11 —</b> 「'삼성'와 일치하는 종목이 없습니다」의 조사 오류(와→과)와 그 페이지가 프리픽스 후보를 보여줄지는 <b>표면 4의 라운드</b>에서 결정한다. 이 카드는 진입점만 정한다.<br />
+<b>P7 Q10 결정 (그대로 둔다) —</b> 포커스된 입력의 하이라인과 후보 패널의 상단선은 <b>이미 한 선</b>이다 (패널 <code>border-top:none</code>, P7). 포커스 링은 입력에만 남긴다 — 패널까지 감싸면 2px 링이 목록을 가두어 리스트가 아니라 상자로 읽힌다. 변경 없음으로 종결.<br />
+<b>390px —</b> H1 34 · 부제 15 · 컨트롤 48px · 통계 줄 mono 11. 부제는 <code>word-break:keep-all</code>로 어절 안에서 끊기지 않고 <code>text-wrap:balance</code>로 두 줄이 고르게 나뉜다. 통계 줄의 「N건」은 nowrap 유지 (R2).<br />
+<b>후보 데이터 —</b> 삼성에스디에스 018260 · 삼성제약 001360 — walk가 실제로 본 두 후보 (종목코드는 공개 티커).<br />
+<b>변경 없음 —</b> H1 「내 종목 조회」는 운영자 결정으로 유지 (q6 #12). 히어로 통계 줄, 궤도 링, 검색 행 geometry는 R2/P7 그대로 — walk 12 (후보 패널이 통계 줄을 덮는 것)는 운영자 지시대로 그대로 둔다.
+</div>
+</React.Fragment>);
+</script></body></html>

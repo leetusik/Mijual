@@ -1,0 +1,53 @@
+<!-- @dsCard group="Chrome" viewport="1280x640" name="AccountSlot" subtitle="전체 이메일 + 아이디콘 + 프레임 · 메뉴 3행 (알림 설정 · 의견 보내기 · 로그아웃) · 상태 4종 · 긴 이메일" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;background:radial-gradient(760px 320px at 18% -10%,rgba(95,208,165,.07),transparent),var(--paper);font-family:var(--font-sans);color:var(--ink-1);padding:24px;display:grid;gap:12px}
+a{color:var(--ink-2);text-decoration:none}a:hover{color:var(--ink-1)}
+.lab{font-family:var(--font-mono);font-size:10px;color:var(--ink-3)}
+.strip{height:52px;display:flex;align-items:center;justify-content:flex-end;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.12);position:relative}
+.slot{position:relative;display:flex;align-items:center;gap:8px}
+.acct{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 8px 0 6px;max-width:280px;background:none;border:1px solid var(--border-strong);color:rgba(255,255,255,.82);cursor:pointer}
+.acct.hov{background:rgba(255,255,255,.045);border-color:var(--ink-3);color:var(--ink-1)}
+.acct.open{background:rgba(255,255,255,.045);border-color:var(--ink-2);color:var(--ink-1)}
+.acct.foc{outline:2px solid var(--focus-ring);outline-offset:1px}
+.acct .em{font-family:var(--font-mono);font-size:var(--text-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct .cv{font-size:10px;color:var(--ink-3);flex:none}
+.idc{display:grid;grid-template-columns:repeat(5,1fr);width:20px;height:20px;background:rgba(255,255,255,.06);border:1px solid var(--border-soft);flex:none}
+.idc.b{width:40px;height:40px}
+.idc i{display:block}
+.menu{position:absolute;top:calc(100% + 8px);right:0;min-width:100%;width:max-content;z-index:20;display:flex;flex-direction:column;background:#0e1a15;border:1px solid var(--border-strong);box-shadow:var(--panel-glow)}
+.menu a,.menu button{display:flex;align-items:center;min-height:40px;padding:0 12px;font-family:var(--font-sans);font-size:var(--text-base);color:var(--ink-1);background:none;border:0;text-align:left;cursor:pointer}
+.menu a+*,.menu button+*{border-top:1px solid var(--border-soft)}
+.menu a:hover,.menu button:hover{background:var(--surface-raised)}
+.wrap{position:relative;height:150px}
+.row{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap}
+.demo{border:1px solid var(--border-soft);padding:14px 16px;display:grid;gap:10px;justify-items:start}
+.note{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);line-height:1.75;max-width:1120px}
+.note b{color:var(--ink-2);font-weight:400}
+</style></head><body class="cosmos">
+<div class="lab">프레임 상태 — default / hover / open / focus · 전체 이메일 (축약 없음) · mono 12 · 아이디콘 20px</div>
+<div class="row"><div class="demo"><button class="acct"><span class="idc" data-idc="reader@example.com"></span><span class="em">reader@example.com</span><span class="cv">▾</span></button><span class="lab">default</span></div>
+<div class="demo"><button class="acct hov"><span class="idc" data-idc="reader@example.com"></span><span class="em">reader@example.com</span><span class="cv">▾</span></button><span class="lab">hover</span></div>
+<div class="demo"><button class="acct open" aria-expanded="true"><span class="idc" data-idc="reader@example.com"></span><span class="em">reader@example.com</span><span class="cv">▴</span></button><span class="lab">open</span></div>
+<div class="demo"><button class="acct foc"><span class="idc" data-idc="reader@example.com"></span><span class="em">reader@example.com</span><span class="cv">▾</span></button><span class="lab">focus (2px --focus-ring)</span></div>
+<div class="demo"><button class="acct"><span class="idc" data-idc="jeonghyeon.kim.investor@company.co.kr"></span><span class="em">jeonghyeon.kim.investor@company.co.kr</span><span class="cv">▾</span></button><span class="lab">긴 이메일 — 프레임 max 280px, 말줄임 (title 속성에 전체)</span></div></div>
+
+<div class="lab" style="margin-top:8px">메뉴 열림 — 정렬은 프레임 우변 기준 (right:0), 폭은 프레임 이상. 행 3개: 알림 설정 / 의견 보내기 / 로그아웃 (R9 세션 추가)</div>
+<div class="wrap"><div class="strip"><div class="slot"><button class="acct open" aria-expanded="true"><span class="idc" data-idc="reader@example.com"></span><span class="em">reader@example.com</span><span class="cv">▴</span></button>
+<div class="menu" role="menu"><a role="menuitem" href="#">알림 설정</a><button role="menuitem" type="button">의견 보내기</button><button role="menuitem" type="button">로그아웃</button></div></div></div></div>
+
+<div class="lab">아이디콘 크기 — 20px (바) · 28px (모바일 시트) · 40px (계정 표면 PII 패널)</div>
+<div class="row"><span class="idc" data-idc="reader@example.com"></span><span class="idc" style="width:28px;height:28px" data-idc="reader@example.com"></span><span class="idc b" data-idc="reader@example.com"></span><span class="lab">동일 시드 = 동일 도형·색 (Identicon 카드 참조)</span></div>
+
+<div class="note"><b>R8 변경 (R5 §Chrome 개정 ⑤ 대체) —</b> ① <b>축약 이메일 폐기</b> — 전체 이메일을 그대로 (가짜 정체성 금지 규칙의 반대편: 자기 계정은 자기 눈으로 확인된다). ② <b>아이디콘</b> 20px을 앞에 (계정마다 결정적, 무의미한 아바타 아님). ③ <b>하이라인 프레임</b> 1px --border-strong + ▾ — 「이것은 메뉴다」를 말하는 어포던스. 링크였던 시절의 조용한 텍스트는 클릭 가능성을 말하지 못했다. ④ <b>정렬 수정</b> — 메뉴는 프레임 우변에 붙고 (right:0) 최소 폭 = 프레임 폭. 이메일과 화면 끝 사이에 어긋나 걸리던 문제 해소.<br>
+<b>메뉴 행 (R9 세션 개정) —</b> <b>알림 설정 / 의견 보내기 / 로그아웃</b> 세 행. 「의견 보내기」는 운영자 지시로 추가 — R8이 만든 미주알 소유 의견 표면(<code>chrome/Feedback.html</code>)을 그대로 여는 <b>세 번째 진입점</b>이다 (푸터 링크 · 모바일 시트 행 · 계정 메뉴). 새 표면도 새 카피도 아니며, 라벨은 기존 <code>FEEDBACK_OPEN_KO</code> 그대로. 로그인한 독자에게 푸터까지 내려가지 않는 길을 준다. <b>적용은 다음 크롬 슬라이스</b> (이번 R9 apply 범위 밖 — 운영자 지시). 아래 두 행은 R8 결정 그대로: 「내 포트폴리오」 행 삭제 — 같은 목적지가 nav 「보유 종목」으로 올라갔으므로 (§6 Q3 결정; R5-6 첫 행 조항 대체). 로그아웃은 즉시·다이얼로그 없음 (R5-1) 유지.<br>
+<b>메뉴 표면 —</b> 불투명 #0e1a15 (코스모스가 목적지 목록을 통과해 읽히는 문제 — P3.S7 위젯과 같은 처리). 하이라인 + 상단 글로우만, 그림자·라운드 없음.<br>
+<b>익명 상태 —</b> 「로그인」 조용한 링크 그대로 (R2, 변경 없음). <b>샘플 상태는 없다</b> — R5-4의 「샘플」 칩 + 「샘플 종료」 폐기. 로그아웃 상태의 /portfolio가 샘플 포트폴리오이므로 크롬 슬롯은 로그인/익명 두 상태뿐이다.<br>
+<b>슬롯 상태 —</b> 익명(로그인 링크) · 로그인(프레임) <b>두 가지</b>. 세 번째 상태 없음.<br>
+<b>미해결(데이터) —</b> 아이디콘 시드 = 이메일 해시 vs 계정 저장 시드 (§6 Q5) — 적용 슬라이스의 선택. 시각 결과는 두 경우 모두 동일한 알고리즘.</div>
+<script>
+const IDC_HUES=['var(--r1)','var(--r2)','var(--r3)','var(--live)'];
+function idcHash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h}
+document.querySelectorAll('[data-idc]').forEach(el=>{const seed=el.dataset.idc.trim().toLowerCase();const h=idcHash(seed),hue=IDC_HUES[h%4],bits=idcHash(seed+':cells');let out='';for(let r=0;r<5;r++){const row=[0,1,2].map(c=>((bits>>>(r*3+c))&1)===1);[row[0],row[1],row[2],row[1],row[0]].forEach(on=>{out+='<i style="background:'+(on?hue:'transparent')+'"></i>'})}el.innerHTML=out})
+document.querySelectorAll('.acct').forEach(b=>{const e=b.querySelector('.em');if(e)b.title=e.textContent})
+</script>
+</body></html>

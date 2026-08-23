@@ -1,0 +1,65 @@
+<!-- @dsCard group="⏳ P8.S4 · Components" viewport="1120x760" name="DDay tiers" subtitle="R1 긴급도 사다리를 보이게 만든 범례 · 96px D-day 칸에서의 정렬 · 날짜 없는 행의 「추후결정」 — 컴포넌트 변경 없음" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../landing/r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>.ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.cell{padding:14px 16px;border-left:1px dashed var(--border-soft)}
+.cell:first-child{border-left:0}
+.cell .t{margin-top:10px;font-size:var(--text-sm);color:var(--ink-2)}
+.cell .tok{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);margin-top:4px}
+.railcol{display:grid;gap:0}
+.railcol .r{display:grid;grid-template-columns:1fr 96px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--border-soft)}
+.railcol .r span{justify-self:end;display:flex;justify-content:flex-end;order:2}
+.railcol .r em{font-style:normal;font-size:var(--text-sm);color:var(--ink-2);justify-self:start;text-align:left;order:1}
+</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel">
+const { DDay, StateBadge } = window.MijualDesignSystem_7ce1bb;
+const TIERS = [
+  ['D-DAY', 0, '오늘 마감', '--urgency-now-bg / -fg (채움)'],
+  ['≤ 7일', 2, '소멸 임박', '--urgency-soon = --alert'],
+  ['≤ 30일', 9, '이번 달 안', '--urgency-near = --ink-1'],
+  ['30일 초과', 40, '감시 중', '--urgency-far = --ink-3'],
+  ['지남 (②)', -2, '창이 열려 있음', '--urgency-far · 「종료」 아님'],
+];
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="lab">R1 사다리 — 크기는 하나, 등급은 색으로만 (컴포넌트 코드 변경 없음)</div>
+<section className="panel" style={{ padding: 0 }}>
+  <div className="ladder">{TIERS.map(([k, d, t, tok]) => <div className="cell" key={k}>
+    <DDay days={d} showDate={false} />
+    <div className="t">{k} — {t}</div>
+    <div className="tok">{tok}</div>
+  </div>)}</div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">보드가 그 사다리를 말한다 — 탭 아래 한 줄의 범례 (walk 7: 임계값이 보이지 않던 문제)</div>
+<section className="panel" style={{ padding: '12px 24px' }}>
+  <div className="meta"><span>탭 숫자는 감시 중 전체 건수입니다 · 아래 목록은 카운트다운 <b className="mono">386건</b> 중 <b className="mono">15건</b></span>
+  <span className="legend"><span className="lg0">D-DAY</span><span className="lg1">D-7 이내</span><span className="lg2">D-30 이내</span><span className="lg3">30일 초과</span></span></div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">D-day 칸 — 행의 마지막 열(96px)에서 우측 정렬. 「언제」에 답하는 칸은 행마다 하나뿐이므로 날짜가 없으면 StateBadge가 그 자리에 선다</div>
+<section className="panel" style={{ padding: '6px 24px 12px' }}>
+  <div className="railcol">
+    <div className="r"><span><DDay days={2} showDate={false} /></span><em>계양전기 · 신주인수권증서 매매 마감 2026-08-25</em></div>
+    <div className="r"><span><DDay days={9} showDate={false} /></span><em>HLB제약 · 신주인수권증서 매매 마감 2026-09-01</em></div>
+    <div className="r"><span><DDay days={40} showDate={false} /></span><em>풍전약품 · 전환청구 개시 2026-10-02</em></div>
+    <div className="r"><span><DDay days={-2} showDate={false} /></span><em>삼성제약 · 전환청구 개시 2026-08-21 (진행 중 스트립)</em></div>
+    <div className="r"><span><StateBadge state="tbd" /></span><em>경남제약 · 신주인수권증서 매매 마감 (날짜 없음)</em></div>
+  </div>
+  <i className="bk"></i>
+</section>
+
+<div className="note">
+<b>컴포넌트는 그대로 —</b> <code>DDay.jsx</code>·<code>StateBadge.jsx</code>는 한 줄도 바꾸지 않았다. R9가 더한 것은 ① 사다리를 <b>말해 주는 범례</b>와 ② 사다리를 <b>한 열에 세우는 레일</b>뿐이다. 등급을 단순화(alert vs 보통)하지 않은 이유: alert 색조는 소멸·기한 전용이라 ≤7일과 ≤30일을 한 색으로 합치면 「이번 달」과 「이번 주」의 구분이 사라지고, 그 구분은 이 제품이 파는 정보다.<br />
+<b>정렬 —</b> D-day는 mono 17/600이고 자릿수가 2~3자로 흔들리므로 행의 마지막 96px 열에서 <b>우측 정렬</b>한다 — 숫자의 오른쪽 끝이 한 줄로 서서 색 등급이 위에서 아래로 읽힌다 (R2의 자리 그대로). D-DAY의 채운 배지는 같은 열에서 폭만 커진다.<br />
+<b>「추후결정」이 D-day 칸에 서는 이유 —</b> 날짜 칸을 비워 두면 값이 빠진 것처럼 읽히고 (walk 5), 대시는 이 시스템이 금지한다. 행마다 「언제」에 답하는 칸을 하나로 고정하면 D-N·D+N·추후결정이 같은 자리에서 읽힌다.<br />
+<b>지남 (②) —</b> D+2는 창이 <b>열려 있다</b>는 뜻이며 「종료」·「마감」이라는 낱말은 이 행에 오지 않는다 (ui-traps #5). 색은 far 등급 — 긴급하지 않지만 사실이다.
+</div>
+</React.Fragment>);
+</script></body></html>

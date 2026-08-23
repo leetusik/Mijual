@@ -1,0 +1,67 @@
+<!-- @dsCard group="⏳ P8.S4 · Landing" viewport="1280x1500" name="BoardStrips" subtitle="진행 중 + 추후결정 스트립 — 접힘/펼침, 상태를 읽는 토글, 보드 열과 정렬된 행, desktop + 390px" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r9-rows.jsx"></script>
+<script type="text/babel">
+function OpenLine({ open }) {
+  return <p className="sline">
+    <span>전환청구 <span className="live">진행 중</span> — 개시일이 지나 지금 전환할 수 있는 전환사채 <span className="scount">60건</span></span>
+    <button type="button" className="btn" aria-expanded={open}>{open ? '접기' : '펼치기'}</button>
+  </p>;
+}
+function TbdLine({ open }) {
+  return <p className="sline">
+    <span>일정 추후결정 — 카운트다운 없이 감시 중인 이벤트 <span className="scount">4건</span></span>
+    <button type="button" className="btn" aria-expanded={open}>{open ? '접기' : '펼치기'}</button>
+  </p>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="lab">접힘 — 보드의 마지막 행 아래 두 스트립 (raised 밴드 + 상단 하이라인)</div>
+<section className="panel">
+  <R9Rows rows={R9_ROWS.slice(11)} />
+  <R9More step={15} rest={371} />
+  <div className="strip"><OpenLine /></div>
+  <div className="strip"><TbdLine /></div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">펼침 — 버튼이 「접기」로 바뀌고 (aria-expanded) 행은 위 보드와 같은 열에 선다 (walk 4·5)</div>
+<section className="panel">
+  <R9Rows rows={R9_ROWS.slice(11)} />
+  <R9More step={15} rest={371} />
+  <div className="strip"><OpenLine open />
+    <div className="sbody"><R9Rows rows={R9_OPEN_NOW} /></div>
+  </div>
+  <div className="strip"><TbdLine open />
+    <div className="sbody"><R9Rows rows={R9_TBD} /></div>
+  </div>
+  <i className="bk"></i>
+</section>
+
+<div className="lab">390px — 문장 한 덩어리 아래 전폭 44px 버튼 (혼자 떨어진 32px 버튼 해소, walk 10)</div>
+<div className="m390">
+<section className="panel">
+  <R9Rows rows={R9_ROWS.slice(11, 13)} />
+  <div className="strip"><OpenLine /></div>
+  <div className="strip"><TbdLine open />
+    <div className="sbody"><R9Rows rows={R9_TBD} /></div>
+  </div>
+  <i className="bk"></i>
+</section>
+</div>
+
+<div className="note">
+<b>토글이 상태를 읽는다 (walk 4) —</b> 「펼치기」 ↔ <b>「접기」</b> (이번 라운드에 열린 카피). 라벨이 상태를 말하므로 <code>aria-expanded</code>는 라벨과 어긋나지 않고, 탭을 바꾸지 않고도 돌아올 길이 생긴다. 보드 창의 푸터도 같은 규칙 — 15행을 넘긴 뒤 「처음 15건으로 접기」.<br />
+<b>정렬 (walk 5) —</b> 스트립의 문장 밴드만 raised이고, 펼친 행은 <b>보드 행과 같은 그리드·같은 좌표</b>에 놓인다 (스트립 padding 24 + 행 margin −12/padding 12 → 보드 행과 동일한 24px 시작선). 오늘의 14px 어긋남이 사라지고 두 표가 한 표로 읽힌다. <b>extras 열의 유무는 패널(탭) 단위로 결정한다</b> — 그 탭에 extras를 가진 행이 하나라도 있으면 스트립 행도 같은 열을 쓴다 (진행 중 행의 extras 칸은 비어 있을 뿐이다). 그래서 한 패널 안에서 두 개의 열 체계가 생기지 않는다.<br />
+<b>진행 중 행 —</b> D+n (행의 D-day 칸). 「종료」·「마감」이라는 말은 이 행에 절대 오지 않는다 (ui-traps #5). extras 칸은 비어 있다 (열은 패널이 결정).<br />
+<b>추후결정 행 —</b> 날짜 칸은 라벨만, D-day 칸이 「추후결정」. 「발행가 확정 전」은 extras에 그대로 — 알려질 사실과 일정 미정은 다른 상태다.<br />
+<b>390px —</b> 문장은 한 블록, 버튼은 <b>전폭 44px</b>로 문장 아래. 스트립 행도 보드와 같은 2줄 (D-day는 1줄 우측).<br />
+<b>데이터 —</b> 진행 중 4행 = 개시일이 기준일(2026-08-23) 앞으로 지난 실제 ② 이벤트 (삼성제약 08-21 → D+2, 나머지 08-22 → D+1). 추후결정은 기록이 이름을 담은 <b>경남제약</b> 한 행뿐이라 한 행만 그렸다 (실제 4건) — 나머지 3건의 종목명은 그라운딩 팩에 없으므로 발명하지 않았다. <b>운영자에게: 진행 중 60건·추후결정 4건의 실제 목록이 필요하면 스냅샷 재생성 시 포함을 요청한다.</b>
+</div>
+</React.Fragment>);
+</script></body></html>

@@ -1,0 +1,95 @@
+<!-- @dsCard group="⏳ P8.S4 · Landing" viewport="1280x1180" name="Anchors" subtitle="카운트다운 카드 3지표 재컷 (읽은 실적보고서 삭제) · 회고 카드 · 소멸주의보 = 끊기지 않는 날짜 + 동시 마감 표기 · desktop + 390px" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r9-board.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>@keyframes blink{50%{opacity:0}}.tick{animation:blink 1s step-end infinite}
+@media (prefers-reduced-motion:reduce){.tick{animation:none}}
+.two{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:stretch}
+.m390 .two{grid-template-columns:1fr}
+.eyeb{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);letter-spacing:.08em}
+.big{margin:8px 0 0;font-size:46px;font-weight:700;letter-spacing:var(--tracking-tight);line-height:1.1}
+.m390 .big{font-size:34px}
+.band{font-family:var(--font-mono);margin:10px 0 0;font-size:var(--text-base);color:var(--ink-2)}
+.fact{margin:16px 0 0;font-size:var(--text-md);line-height:var(--leading-base);text-wrap:pretty}
+.cdlab{font-size:var(--text-xs);color:var(--ink-3)}
+.cd{font-family:var(--font-mono);font-size:28px;font-weight:600;color:var(--alert);line-height:1.2;font-variant-numeric:tabular-nums;margin:2px 0 0}
+.cdcap{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);margin:4px 0 0}
+.stats{margin:14px 0 0;padding-top:12px;border-top:1px dashed var(--border-soft);display:grid}
+.st{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--border-soft)}
+.st:last-child{border-bottom:0;padding-bottom:2px}
+.st dt{font-size:var(--text-sm);color:var(--ink-2)}
+.st dd{margin:0;font-family:var(--font-mono);font-size:var(--text-lg);font-weight:600;white-space:nowrap}
+.alertbar{position:relative;display:flex;align-items:center;gap:12px;padding:12px 16px 12px 28px;background:var(--surface-card);border:1px solid var(--alert);box-shadow:var(--panel-glow)}
+.hz{position:absolute;left:0;top:0;bottom:0;width:10px;background:repeating-linear-gradient(-45deg,var(--alert) 0 5px,transparent 5px 10px)}
+.placard{font-family:var(--font-mono);font-size:var(--text-xs);font-weight:600;color:var(--urgency-now-fg);background:var(--alert);padding:3px 9px;letter-spacing:.08em;white-space:nowrap}
+.asent{font-size:var(--text-base);font-weight:500;line-height:var(--leading-base)}
+.asent .n{font-family:var(--font-mono);color:var(--alert);font-weight:600;white-space:nowrap}
+.m390 .alertbar{display:block;padding:12px 14px 12px 26px}
+.m390 .placard{display:inline-block;margin-bottom:8px}
+</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel">
+const { EstimateMarker } = window.MijualDesignSystem_7ce1bb;
+const p2 = (n) => String(n).padStart(2, '0');
+function Cd() {
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
+  let s = Math.max(0, Math.floor((new Date('2026-09-05T00:00:00+09:00').getTime() - now) / 1000));
+  const d = Math.floor(s / 86400); s -= d * 86400;
+  return <div>
+    <div className="cdlab">가장 빠른 소멸까지</div>
+    <p className="cd">{d}일 {p2(Math.floor(s / 3600))}<span className="tick">:</span>{p2(Math.floor(s % 3600 / 60))}<span className="tick">:</span>{p2(s % 60)}</p>
+    <p className="cdcap"><span className="nowrap">청약 마감 2026-09-04</span> (KST) · 3개 종목</p>
+  </div>;
+}
+function Stats() {
+  return <dl className="stats">
+    <div className="st"><dt>감시 중 이벤트</dt><dd>488건</dd></div>
+    <div className="st"><dt>30일 이내 마감</dt><dd>34건</dd></div>
+    <div className="st"><dt>소멸 앞둔 신주인수권</dt><dd>15건</dd></div>
+  </dl>;
+}
+function Value() {
+  return <section className="panel" style={{ padding: '20px 24px', boxSizing: 'border-box' }}>
+    <div className="eyeb">2026년에 소멸한 신주인수권 가치</div>
+    <p className="big"><EstimateMarker value="718.1억원" /></p>
+    <p className="band">밴드 하한 <EstimateMarker value="548.7억원" /> <span style={{ color: 'var(--ink-3)' }}>(권리락 조정 가정)</span></p>
+    <p className="fact">주주에게 배정된 신주인수권증서 <span className="mono" style={{ fontWeight: 600 }}>365,527,824주</span> 가운데 <span className="mono" style={{ fontWeight: 600 }}>14.0%</span>가 청약도 매도도 되지 않고 사라졌습니다.</p>
+    <i className="bk"></i>
+  </section>;
+}
+function Count() {
+  return <section className="panel" style={{ padding: '20px 18px', boxSizing: 'border-box' }}><Cd /><Stats /><i className="bk"></i></section>;
+}
+function Alert() {
+  return <div className="alertbar">
+    <span className="hz" aria-hidden="true"></span>
+    <span className="placard">소멸주의보</span>
+    <span className="asent">지금도 <span className="n">15건</span>의 신주인수권이 소멸을 앞두고 있습니다 — 가장 빠른 청약 마감 <span className="n">2026-09-04</span> <span className="nowrap">(3개 종목)</span></span>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="lab">데스크톱 — 회고 카드 1fr / 카운트다운 카드 340 · 지표는 2×2 → 3행 (「읽은 실적보고서」 삭제, 운영자 9)</div>
+<div className="two"><Value /><Count /></div>
+
+<div className="lab">소멸주의보 — 동시 마감이면 종목명 대신 건수를 말한다 (walk 8) · 날짜는 mono nowrap</div>
+<Alert />
+
+<div className="lab">390px — 카드 스택 (가치 카드 먼저) · 지표 3행 그대로 · 주의보는 플래카드 위, 문장 아래 · 날짜 안 끊김 (walk 10)</div>
+<div className="m390" style={{ display: 'grid', gap: 20 }}>
+  <div className="two"><Value /><Count /></div>
+  <Alert />
+</div>
+
+<div className="note">
+<b>지표 3개의 배치 (운영자 9) —</b> 340px 카드에서 3열은 「소멸 앞둔 신주인수권」이 두 줄로 접히므로, <b>라벨 좌 · 값 우의 3행</b>으로 세웠다 (dashed --border-soft 구분선, 값 mono 17/600). 2×2가 만들던 빈 칸도 사라진다. 히어로의 mono 통계 줄은 건드리지 않았다 (운영자 지시 범위 밖).<br />
+<b>소멸주의보 ↔ 보드 일치 (walk 8) —</b> 같은 정렬 규칙을 두 곳에 두는 대신, <b>동시 마감을 표기</b>한다: 가장 빠른 청약 마감이 여러 건이면 파이프라인 문장의 <code>{'{corp}'}</code> 자리에 「3개 종목」이 들어간다 (문장 형태·낱말은 그대로). 한 건뿐이면 오늘처럼 종목명이 들어간다. 이렇게 하면 보드 ① 탭 상위 세 행과 주의보가 서로를 부정하지 않는다. 카운트다운 카드의 캡션도 같은 규칙 — 「청약 마감 2026-09-04 (KST) · 3개 종목」.<br />
+<b>날짜 (walk 10) —</b> 주의보의 mono 날짜와 「(3개 종목)」은 <code>white-space:nowrap</code>. 한국어 문장은 <code>word-break:keep-all</code> + <code>text-wrap:pretty</code>로 한 음절 고아를 막는다.<br />
+<b>카운트다운 —</b> R2 그대로 mono 28/600 --alert, 콜론만 1s step-end 블링크, reduced-motion에서는 <b>인터벌 자체가 멈춘다</b> (정지된 값). 목표 시각은 서버가 준 절대 KST 인스턴트 — 브라우저는 차이만 뺀다.<br />
+<b>변경 없음 —</b> 회고 카드의 문구·숫자·게이트 비용 부재는 R2/R8 그대로 (게이트 비용·면책 문장은 P8 Q5에서 폐기 — 이 표면에도 두지 않는다).
+</div>
+</React.Fragment>);
+</script></body></html>
