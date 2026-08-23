@@ -532,6 +532,72 @@ and the tailnet, plus a production build; 1440 / 768 / 481 / 480 / 390). Full ev
     so; **a regeneration must re-append it** (or the exporter must learn to read the frontend's
     `copy.ts` files — an engineering question, not a design one).
 
+### R9 walk — surface 2 (landing 관제 현황판 + board), 2026-08-23, operator runtime
+
+Walked by the orchestrator in Chrome desktop at `http://127.0.0.1:3000/` (signed in) and
+`http://100.77.164.42:3000/` (tailnet, signed out — same render), plus a 390px mobile frame, `next dev`.
+Production build not re-run (everything here is client-side behaviour identical in both modes). Fresh
+console after reload: 0 errors, 0 warnings on both origins. First-time-user findings, **not** judged
+against the record; the operator's answers at the `pending` gate decide what R9's handoff carries.
+Screenshots: session scratch `p8s4/r9-walk-desktop-board.jpg`, `p8s4/r9-walk-mobile-390.png`.
+
+**Works as a first-time user expects (verified, no finding):** hero typeahead — no request on mount, type
+「계양」/「삼성」 → candidates after the debounce (name + mono 종목코드), ↑/↓ highlights and wraps, Enter on a
+highlight → `/stocks/<corp_code>` (계양전기 → `/stocks/00102618`), Esc closes and keeps the text, plain
+Enter → `/stocks?q=…` (JS-off path: `<form action="/stocks" method="get">`); the countdown **ticks** over a
+real interval (07 15 39 → 07 15 37 → … 07:10:40 minutes later, colons blink); the 30-row window, 펼치기
+(+30), tab switch resets the window and keeps the scroll position; `↗` = DART 원문 (`noreferrer`,
+aria-label 「계양전기 DART 원문」); freshness chip 「기준 2026-08-23 16:25 KST」, no stale notice; R8 chrome
+sits correctly on the landing (two nav links, account frame + identicon, minimal footer, 의견 보내기 opens);
+mobile 390px — two-line rows, abbreviated tabs (전체 488 / 유증 50 / CB 422 / 매수청구 16), cards stack, footer
+stacks.
+
+1. **Row click target is only the corp name.** `li.row` is inert (`cursor: auto`, no hover rule in any
+   stylesheet); the only link in a row is `a.corp` (plus `↗` to DART). Clicking the key-date / D-day area
+   of 계양전기's row did nothing. A first-time user reads the whole row as one item and expects the row to
+   open the event. (Touches P7 Q9 — hover silence — the board rows have no hover state at all.)
+2. **The board's numbers don't add up for a reader.** Tab 「전체 488」 and the countdown card say 488, but the
+   list beneath shows 30 rows + a footer 「356건 펼치기」, then 진행 중 60건 + 추후결정 4건 → 420, and 68 are
+   nowhere. Tab 「유상증자 신주인수권 50」 shows 14 rows + 2 추후결정 = 16. The tab counts are whole-board
+   counts (R3), the rows are the countdown subset — nothing on the surface says so.
+3. **「356건 펼치기」 is a remaining-count, not a total, and nothing says how many are shown.** After one
+   펼치기 it reads 「326건 펼치기」 (30 → 60 rows). Reader can't tell whether 356 is the total, the remainder,
+   or the window. (Inherits P7 Q3 — is 30 the right `WINDOW_STEP`.)
+4. **The two strip 펼치기 buttons never change label** — after expanding 진행 중 (60 rows) or 추후결정 (2–4
+   rows) the button still reads 「펼치기」; there is no 접기 and the only way back is a tab switch.
+5. **Expanded strip rows don't align with the board's columns** — chip/corp/label columns sit ~14px
+   further right than the board rows above (338 vs 324, 408 vs 394, 620 vs 634), so the expanded strip
+   reads as a different table. 추후결정 rows show the key-date label 「신주인수권증서 매매 마감」 with **no
+   date** beside it, then 「발행가 확정 전」 + 「추후결정」 — the empty date slot reads like a missing value.
+6. **CB rows leave the right-middle of the row empty** — ~450px between 「전환청구 개시 2026-08-26」 and
+   `D-3` on every CB row (422 of 488), because the 청약 + 발행가 cell exists only for 유증. At 1512px the
+   board is mostly whitespace.
+7. **D-day three-tier colouring has no legend** — D-2…D-6 alert red, D-9…D-27 white, D-37+ dim grey. The
+   thresholds are invisible; first-time reading: "why is D-9 white but D-6 red?"
+8. **소멸주의보 names 퓨쳐켐 as 「가장 빠른 청약 마감 2026-09-04」 while the board's first D-2 row is 계양전기**
+   (three rows tie on 2026-09-04; the strip picks one, the board orders another). Minor, but the two
+   disagree one screen apart.
+9. **Countdown card row 「읽은 실적보고서 69건」** — no first-time user knows what an 읽은 실적보고서 is or why it
+   sits next to 소멸 앞둔 신주인수권; the other three stats explain themselves.
+10. **Mobile 390 line breaks**: hero subtitle wraps with a one-syllable orphan (「…조회합니 / 다」); the
+    소멸주의보 strip breaks the mono date across lines (「2026-09- / 04」); the 진행 중 strip's 펼치기 drops
+    under its sentence as a lone 32px button.
+11. **Plain-Enter search with a prefix contradicts the typeahead.** Typing 「삼성」 shows 삼성에스디에스 /
+    삼성제약 as candidates, but plain Enter lands on `/stocks?q=삼성` → 「'삼성'와 일치하는 종목이 없습니다」 —
+    the candidates it just offered are gone, and the particle is wrong (삼성 → 「삼성과」). Surface 4 owns the
+    page, but the entry is the hero.
+12. **Typeahead panel covers the hero's mono stat line** (one candidate hides 「…감시 중 488건 · 30일 이내 마감
+    32건」 partially) — expected for an overlay, noting it as the only overlap on the hero.
+13. **Hover / focus on the four board tabs** — no hover change (P7 Q9); the tabs are `<button aria-pressed>`
+    without `role="tab"` / tablist semantics; fine for a reader, noted for the record.
+
+Inherited items for this surface, to decide at this gate alongside the above: **P7 Q3** (30-row window),
+**P7 Q5** (live data refresh / polling — a deferred job if wanted), **P7 Q6 #12** (the hero H1's name 「내
+종목 조회」 on a page whose board is the 관제 현황판 — the wordmark link is labelled 관제 현황판 and the
+`/stocks` back-link reads 「← 관제 현황판」), **P7 Q9/Q10/Q11** where they touch the board (tabs hover, focused
+hairline vs candidate panel edge, the 481px boundary between SearchRow and Board), and **P8 Q5** (the
+gate-cost / disclaimer sentences R8 removed from the footer — the landing bottom is the proposed home).
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
