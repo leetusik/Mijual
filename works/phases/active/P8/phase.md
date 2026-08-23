@@ -449,6 +449,40 @@ for R8 — copy is in play **only** for the new feedback-send surface and the ho
 Q1 answered in practice (inherited items were decided inside the round: P7 Q1, Q2, Q9, Q6#1, Q6#4, Q7③ closed by the
 answers above; P7 Q10/Q11 untouched and still open).
 
+### R8 landed spec — read back 2026-08-23 (`P8.S2` gate 2), awaiting literal signoff
+
+Landed as-is under `docs/reference/design/rounds/08-foundations-chrome/output/` (`result.md`,
+`build-prompt.md`, `Identicon.prompt.md`); cards stay in the Claude Design project (7 cards,
+`⏳ P8.S2 · Chrome` ×6 + `⏳ P8.S2 · Components` ×1, manifest compiled). **Token delta: none** (remote
+`foundations/tokens.css` byte-equal to the vendored R2 file minus its provenance header). What `P8.S3` builds:
+
+- **Nav = AI 질문 · 보유 종목** (two links; 관제 현황판 link removed — the ring wordmark is that destination;
+  no active underline on `/`); `[의견]` chip gone; R5-4 샘플 chip + 샘플 종료 retired (account slot has two
+  states: anonymous / signed-in). Landing's "샘플로 열어보기 →" link + empty band removed.
+- **AccountSlot**: full email (mono 12, 280px max, ellipsis + title) + 20px Identicon + hairline frame + ▾;
+  menu right-aligned to the frame, opaque `#0e1a15`, rows **알림 설정 / 로그아웃** only.
+- **NavMobile**: overlay sheet (no content push) + backdrop rgba(10,19,16,.72), bar button → × when open
+  (aria-label stays 메뉴), rows AI 질문 / 보유 종목 → account block (28px identicon + email, 알림 설정,
+  로그아웃 | 로그인) → 의견 보내기.
+- **Footer**: prose removed (positioning, provenance, gate-cost, disclaimer); keeps wordmark h17 · 자료:
+  금융감독원 DART 전자공시 · © 미주알 · 의견 보내기 · AI 질문, one row, Pretendard (no mono), 390px 3-row
+  stack.
+- **의견 보내기 surface (new, 미주알-owned)**: desktop 380px panel anchored above the footer entry, mobile
+  full-width bottom sheet + backdrop; 6 states (idle-disabled / typing / sending-no-spinner / sent-202 with
+  접수 번호 / failed-no-alert-colour + retry + kept input / closed); no contact field; 15 new Korean strings
+  (build-prompt §7) enter `chrome/copy.ts` with R8 citation + `grounding/copy-inventory.md`. Browser →
+  same-origin `POST /api/feedback {message}` → server → vocky `POST /api/feedback` with `source.product
+  "mijual"`, `recorded_by "human"`, `channel web|mobile`, `target_type "surface"`, `session_id?`; key only in
+  server `.env` (`VOCKY_API_KEY`, `VOCKY_API_BASE`); 401 = no retry.
+- **Identicon** component (FNV-1a → hue ∈ {--r1,--r2,--r3,--live}, 5×5 mirrored grid, sizes 20/28/40,
+  never --alert/--brand). Delete `VockyTrigger.tsx`(+css), `VockyScript.tsx`, `data-vocky-trigger`.
+
+**Departures the record flags for the operator (result.md §6):** (1) the gate-cost and disclaimer
+sentences leave the product entirely — the session proposes relocating them (landing bottom or an 이용 안내)
+in a later surface round; (2) footer mono → Pretendard; (3) × glyph instead of a 닫기 string; (4) opaque
+`#0e1a15` literal (candidate `--surface-opaque` token later); (5) 샘플 chip/종료 retired; (6) no alert colour
+on failure; (7) identicon seed source = apply-time data decision.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -479,6 +513,13 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   leans on it ("inventing a Korean string is a design change"), but "audit and polish the whole
   thing" plus P7 Q7's four developer-vocabulary strings suggests some rounds need copy explicitly
   **in play, named and dated in that round's handoff**. Blanket answer, or per round?
+
+- **Q5 — gate-cost + disclaimer sentences: relocate or drop?** R8 removes the footer prose on the operator's
+  instruction; the footer was the last placement of 「게이트 비용」 and the only placement of the 면책 문장.
+  The session proposes relocating both (landing bottom / 이용 안내) in a later round. Operator decides; until
+  then `P8.S3` deletes the markup but may keep the constants (build-prompt §4 note).
+- **Q6 — identicon seed: hashed email or a stored per-account seed?** Visual identical; data choice for
+  `P8.S3` (default: hashed email unless the operator prefers a stored seed).
 
 ## Constraints
 
