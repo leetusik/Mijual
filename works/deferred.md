@@ -4,10 +4,10 @@
 
 ## Summary
 
-- Open: `2`
+- Open: `3`
 - Promoted: `2`
 - Dropped: `0`
-- Rebuilt at: `2026-08-23T13:58:13+09:00`
+- Rebuilt at: `2026-08-23T15:00:54+09:00`
 
 ## Open
 
@@ -15,6 +15,7 @@
 |---|---|---|---|---|---|
 | `D2` | `deferred` | De-duplication pass for hint_duplicate versions and hint_split_evidence collided event keys | P2.S3 | if P2.S8 corpus work or P3 event pages trip over them | `works/deferred/open/D2` |
 | `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
+| `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 
 ## Promoted
 

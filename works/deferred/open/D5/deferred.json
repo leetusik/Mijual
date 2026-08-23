@@ -1,0 +1,11 @@
+{
+  "id": "D5",
+  "title": "Favicon + per-route <title>/meta for the reader chrome",
+  "status": "deferred",
+  "source": "P8.S2",
+  "reason": "R8 walk found no favicon (generic tab globe, /favicon.ico 404), one <title> on every route, no meta description/theme-color; operator at the R8 gate: 'leave the favicon for now. defer.'",
+  "trigger": "when the operator wants the tab/branding polish, or before P4 Ship & Submit",
+  "created_at": "2026-08-23T15:00:54+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

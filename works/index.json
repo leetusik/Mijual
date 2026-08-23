@@ -97,8 +97,8 @@
       "done_slice_count": 0
     }
   ],
-  "deferred_open_count": 2,
+  "deferred_open_count": 3,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-23T13:58:13+09:00"
+  "last_rebuilt_at": "2026-08-23T15:00:54+09:00"
 }

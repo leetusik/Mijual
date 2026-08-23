@@ -9,8 +9,8 @@
 - Current slice: `P8.S2`
 - Next slice: `P8.S3`
 - Waiting on operator: `P8.S2`
-- Open deferred jobs: `2`
-- Rebuilt at: `2026-08-23T13:58:13+09:00`
+- Open deferred jobs: `3`
+- Rebuilt at: `2026-08-23T15:00:54+09:00`
 
 ## Active Phases
 
