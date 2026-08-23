@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open",
+      "latest": "v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -51,11 +51,19 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: the agent speaks the product's numerals — the raw-numeral operator call closed, one agent-surface call (a refusal's footer) still open",
           "previous": "v0005_p6_apply_phase_the_ai_agent_exists_an_autonomous_citation-forced_agent_on_every_surface_unlimited_and_anonymous_refusing_rather_than_guessing_the_whole_designed_product_is_now_built"
+        },
+        {
+          "id": "v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing",
+          "path": "docs/versions/product/v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing.md",
+          "created_at": "2026-08-23T10:58:39+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: the nav is two slots (내 종목 조회 lives on the landing hero), the board is read 30 rows at a time, and the search offers candidates while the reader types without the resolver ever guessing",
+          "previous": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open"
         }
       ]
     },
     "experience": {
-      "latest": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact",
+      "latest": "v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -97,11 +105,19 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: the agent's answers print the product's numerals (3,200원) — the raw-numeral catalogue item closed by operator disposition, verbatim quotes still byte-exact",
           "previous": "v0004_p6_apply_phase_the_ai_journey_as_built_and_browser-verified_launcher_widget_dedicated_page_mobile_page_question_strip_the_four_sse_states_and_the_refusal_anatomy"
+        },
+        {
+          "id": "v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product",
+          "path": "docs/versions/experience/v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product.md",
+          "created_at": "2026-08-23T10:56:46+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: the two-slot nav, the board's 30-row window, candidates while typing (the miss rule split from the typing rule), the 조회 caption's narrower stated promise, and the 챙긴 돈 flip measured on the running product",
+          "previous": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact"
         }
       ]
     },
     "architecture": {
-      "latest": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138",
+      "latest": "v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -143,11 +159,19 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: the agent package gains figures.py (presentation-only thousands grouping) and the suite baseline moves to 138",
           "previous": "v0004_p6_apply_phase_the_mijual.agent_package_the_re-aimed_request-path_boundary_no_opendart_anywhere_the_model_only_through_mijual.agent_the_first_streaming_endpoint_and_the_anonymous_conversation_tables"
+        },
+        {
+          "id": "v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route",
+          "path": "docs/versions/architecture/v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route.md",
+          "created_at": "2026-08-23T10:59:02+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: the suite baseline moves to 139 and mijual.web gains one read-only route",
+          "previous": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138"
         }
       ]
     },
     "frontend": {
-      "latest": "v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip",
+      "latest": "v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -181,11 +205,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the AI 질문 surfaces — a module-scoped conversation store outside React, the first streaming client, the Saturn launcher, the 440x620 widget, the frameless /ask page and the preset strip",
           "previous": "v0003_p5_apply_phase_the_next.js_app_as_built_vendored_foundations_the_trust_primitives_chrome_and_eight_signed_surfaces_and_the_fidelity_rules_the_pass_settled"
+        },
+        {
+          "id": "v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor",
+          "path": "docs/versions/frontend/v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor.md",
+          "created_at": "2026-08-23T10:54:41+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: the dev-origin seam and the inverted browser-check rule, the StrictMode module-store trap, the two-slot nav, the 30-row board window, the shared SearchRow combobox, the focus split off text fields, and the verification floor",
+          "previous": "v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip"
         }
       ]
     },
     "backend": {
-      "latest": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans",
+      "latest": "v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -219,6 +251,14 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: agent prose speaks the product's numerals — mijual.agent.figures, value_display beside every contract figure, and the citation gate's release-time respelling outside verbatim spans",
           "previous": "v0003_p6_apply_phase_the_mijual.agent_package_autonomous_loop_five_tools_citation_gate_its_own_model_client_the_sse_ask_transport_with_its_backgroundtask_commit_anonymous_conversation_storage_and_the_identity-free_rate_limiter"
+        },
+        {
+          "id": "v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable",
+          "path": "docs/versions/backend/v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable.md",
+          "created_at": "2026-08-23T10:59:02+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: reads.suggest_corps beside resolve_corp and find_corps, and the route-order rule that keeps GET /stocks/suggest reachable",
+          "previous": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans"
         }
       ]
     },
@@ -269,7 +309,7 @@
       ]
     },
     "api": {
-      "latest": "v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows",
+      "latest": "v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -295,11 +335,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: POST /ask, the first streaming endpoint — its SSE frame vocabulary, session-first handle, no-transform header and pre-stream envelope — plus the three ops conversation tabs now serving real rows",
           "previous": "v0002_p5_apply_phase_the_whole_http_contract_error_envelope_presentation_contract_board_event_stock_reads_auth_portfolio_and_the_thirteen_read-only_ops_routes"
+        },
+        {
+          "id": "v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses",
+          "path": "docs/versions/api/v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses.md",
+          "created_at": "2026-08-23T10:53:57+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: GET /stocks/suggest — the reader's own candidate list before the submit, declared before the handle route; the 내 종목 조회 miss rule restated (the resolver still never guesses)",
+          "previous": "v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows"
         }
       ]
     },
     "operations": {
-      "latest": "v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits",
+      "latest": "v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -349,6 +397,14 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: agent spend as a per-turn ▷ server-log line, the three conversation tabs alive on real rows, the streaming deploy constraints, and the two operator-provided values P4 inherits",
           "previous": "v0005_p5_apply_phase_the_six-stage_beat_with_the_run_log_running_the_api_and_frontend_locally_the_re-derivation_order_and_the_operator_console_as_built"
+        },
+        {
+          "id": "v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product",
+          "path": "docs/versions/operations/v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product.md",
+          "created_at": "2026-08-23T10:57:25+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: MIJUAL_DEV_ORIGINS in the environment table, and the Makefile dev stack as the supported way to run the local product",
+          "previous": "v0006_p6_apply_phase_agent_spend_as_a_per-turn_server-log_line_the_three_conversation_tabs_alive_on_real_rows_the_streaming_deploy_constraints_and_the_two_operator-provided_values_p4_inherits"
         }
       ]
     },
@@ -391,7 +447,7 @@
       ]
     },
     "qa": {
-      "latest": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched",
+      "latest": "v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -433,11 +489,19 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: the suite at 138 — one scripted turn covering the whole figure-grouping rule (grouped in prose, verbatim inside a span, identifiers and dates untouched)",
           "previous": "v0004_p6_apply_phase_the_suite_at_137_four_structural_boundary_scans_plus_the_anonymity_scan_agent_verification_against_a_scripted_model_at_zero_spend_and_the_live-agent_browser_pass_as_a_measured_method"
+        },
+        {
+          "id": "v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build",
+          "path": "docs/versions/qa/v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build.md",
+          "created_at": "2026-08-23T10:57:59+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: the suite at 139, the browser-check origin rule inverted, the dev+prod verification floor and its functional dimension, and the SSE contract captured from a browser on the production build",
+          "previous": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched"
         }
       ]
     },
     "decisions": {
-      "latest": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded",
+      "latest": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -495,9 +559,17 @@
           "source": "P6.REVIEW",
           "summary": "P6.F1: D-23 — agent prose prints the product's numerals (3,200원), operator disposition 2026-08-23; the P6 reading that the agent quotes numerals as-given is superseded",
           "previous": "v0006_p6_apply-phase_decisions_d-20_agent_not_chain_operator_d-21_the_request-path_boundary_re-aimed_d-22_the_operator_contact_honest-unset"
+        },
+        {
+          "id": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing",
+          "path": "docs/versions/decisions/v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing.md",
+          "created_at": "2026-08-23T10:59:57+09:00",
+          "source": "P7.REVIEW",
+          "summary": "P7 fix pass: D-24 the board's 30-row display window, D-25 the hero ring clip on .orbits, D-26 focus indication split off text fields; the six design-collision readings; and the 13 operator calls the phase routed instead of inventing",
+          "previous": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-23T06:18:22+09:00"
+  "last_rebuilt_at": "2026-08-23T11:01:06+09:00"
 }

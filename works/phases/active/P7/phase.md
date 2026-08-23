@@ -1232,3 +1232,45 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   database**, from `P5.S19`. `P7.S9` met it as planned and left it: its own throwaway
   (`p7s9-probe@example.com`) was created and destroyed through the product and is verified gone, and
   `holding` / `lapse_claim` are both 0. Deleting someone else's leftover row is the operator's call.
+
+## Review note — `P7.REVIEW` (verdict recorded by the orchestrator)
+
+**`pass`.** All eleven items closed or correctly routed; every override authorised by `intent.md` and
+scoped; `docs/reference/design/` untouched; **zero Korean minted** (verified against the diff, not the
+reports — the only `copy.ts` changes in the whole phase are two *trims* of existing signed strings);
+trust rules intact. The review re-measured the eleven headline items itself on `127.0.0.1` in
+`next dev` (fresh Chrome profile per run, 1440 + 390) rather than trusting `S1`–`S9`: 30 rows →
+60 → 120 → 124, tab counts frozen at 488/50/422/16; focused input `outline: none` with gap 0 at 924.1
+while all five other tab stops keep `2px rgb(143,178,232)`; 1 suggest request for `계양`, ↓Enter →
+`/stocks/00102618`, `에스` unchosen still declines; 2 로그인 anchors and a 0-document-load click through
+to the form; countdown 12:54 → 11:39 over 75 s with the typed value and a `window` marker intact and
+**0** navigations; one live turn streamed in 6 s (▷ $0.0115, never billed); the 챙겼습니다 flip
+679,575원 unchanged with document height 1533 → 1533; six surfaces with **0** occurrences of
+`localStorage`/`sessionStorage`/`브라우저`; `/_next/*` 403s **0** and HMR **101**; `pytest` **139**,
+typecheck + smoke green, and an isolated production build clean at 16 routes with the dev `.next`
+never touched. Dev stack left up; no account created.
+
+**One finding, closed inside the review rather than as a fix slice: the Doc impact list under-covered
+four docs.** (1) `product.md:98` still claimed a three-slot nav — three slices wrote "product.md needs
+nothing", each answering only for its own topic; (2) `backend.md` enumerates the read layer by name and
+was missing `suggest_corps`; (3) the pytest baseline moved 138 → 139 while `qa.md` (×3) and
+`architecture.md` still said 138; (4) `decisions.md` — the doc that already carries "P5 stated defaults,
+still the operator's to confirm" — had no line for P7's three decisions, six readings and 13-item
+operator catalogue. Docs are the review's to write and none of the four implies a source change, so all
+four were folded into the consolidation. **Rule worth carrying: "doc X needs nothing" is a per-topic
+answer; a phase-wide claim has to be re-checked at the review.**
+
+**Nine doc versions** (not parallel mode, so consolidation happens here): `frontend` v0005 · `api`
+v0004 · `experience` v0006 · `operations` v0007 · `qa` v0006 · `product` v0007 · `architecture` v0006 ·
+`backend` v0005 · `decisions` v0008. Two placement calls the plan left open: the **verification floor's
+mechanism and probe traps live in `frontend`** (where the stale origin note already sat) and its
+**completion rule in `qa`**, pointing at `frontend` rather than repeating it — and both docs' wrong
+`localhost` rule is now struck and inverted in place. `operations` did get the short dev-stack note,
+because `MIJUAL_DEV_ORIGINS` is unusable without `make web-up`. `security` and `data` need nothing.
+
+**Two things the operator must see before P4, both in `result.md` §7 and now durable in
+`decisions.md`:** item 8 is closed only on its `/ask` half — **의견 still has nothing to bind to** and
+no code can close it (catalogue #1); and the **144.7px ragged edge** on 내 포트폴리오's D-day rows is
+the one remaining "not organized" symptom, deliberately not invented because R5 states no geometry
+(catalogue #8). `result.md` also carries a five-minute operator walkthrough written to be handed over
+verbatim. `explain`: not written — run `/explain` for this phase.
