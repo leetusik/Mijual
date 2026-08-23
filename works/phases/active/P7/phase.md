@@ -788,6 +788,109 @@ states the row's parts but no geometry. R2's board pins a fixed grid for exactly
 call is the operator's.
 
 
+### All 11 items closed on the operator's own origins — `P7.S9`'s sweep, and **no code changed**
+
+**The phase's premise is now measured on both sides.** Every one of the 11 operator items was
+re-verified independently (a harness written from scratch, not `S1`–`S8`'s numbers copied) on
+**`127.0.0.1`**, the **tailnet `100.77.164.42`** and **`localhost`**, in **`next dev`** *and* in an
+**isolated production build** on `:3100`, at **1440 / 768 / 481 / 480 / 390** — ~553 scripted Stage-1
+checks, 348 control clicks in the functional sweep, 27 smoke checks, 54 screenshots. Run totals:
+**dev127 113/0 · devTS 114/0 · devLH 106/0 · prod127 113/0 · prodTS 105/1** (the one is the prod
+prefetch reading below, not a defect). Full tables in `slices/P7.S9/result.md`.
+
+**Nothing was fixed, because nothing needed fixing** — and that is a measurement, not a shrug. The
+sweep produced **nine probe FAILs** and every one dissolved when re-measured with a scoped selector:
+six were the probe (see the two harness bugs below), two were correct disabled/validation states, and
+one was the trust rule working as designed (`15,552원` renders **untagged** because it is 대동기어's
+served `conversion_price` with `estimated: false` — *a fact never carries the mark*). Everything that
+could still be improved is a **visual decision**, so it went to the operator catalogue rather than
+being invented in an executor.
+
+**Two browser-probe traps that make a working product look broken — carry these.**
+
+1. **A CDP `Input.dispatchKeyEvent` `keyDown` carrying `text` already generates the keypress.**
+   Dispatching a separate `type: "char"` afterwards fires a **second** keypress which the handler's
+   `preventDefault()` on the keydown cannot suppress. Effect: ↓+Enter on a typeahead candidate
+   submitted the native GET form instead of choosing it, and `P7.S4`'s listbox looked dead. S4's note
+   is right but is only half the recipe — put the text **on the keyDown and nowhere else**.
+2. **`clickAt` below the viewport hits nothing, silently.** The 챙겼습니다 row sits at y≈925 in a
+   900px viewport, and the board's window control walks down the page as rows appear. Both read as
+   dead controls until the probe calls `scrollIntoView` first. Related: a `scrollIntoView` then makes
+   viewport-relative geometry look like a layout shift — compare `rect.y + scrollY`, not `rect.y`.
+
+**The functional dimension P5/P6 never ran, and what it found.** Seven surfaces, **174 visible
+controls per runtime**, each clicked once from a fresh page with cleared storage. Controls must be
+located by a **stable key**, never by index: clicking 샘플로 둘러보기 adds two header controls and a
+삭제 removes rows, which silently shifts every later index — the first pass manufactured six phantom
+mis-clicks that way. Result: **the only genuinely inert controls in the whole product are the three
+vocky triggers** (Q1). Six event-page `[근거]` DART anchors *looked* inert but are simply inside a
+collapsed popover (`grid-template-rows: 0fr` + `overflow: hidden`); open it and the anchor is
+hit-testable and opens a tab. **No keyboard trap and no invisible focus stop** on any surface: the
+event page has 11 focusable elements inside collapsed/hidden ancestors and the **real** tab order
+contains none of them — the zero-height clip takes them out of sequential focus navigation.
+
+**Dev-vs-prod — hunted deliberately, since that difference is the whole reason P7 exists. Three
+found, all benign, none a product defect:** (1) expanding the board to all 386 rows issues **0**
+requests in dev and **366** `GET /events/{rcept_no}?_rsc=` **200**s in prod — Next's `<Link>`
+viewport prefetching, which is production-only and which nothing in this app configures; at **first
+paint** both runtimes issue **0** and render 30 rows with identical geometry, so `P7.S3`'s window
+made the default page *cheaper*, and 366 is only the cost of twelve deliberate clicks. (2) every dev
+surface carries exactly one extra invisible tab stop, `NEXTJS-PORTAL` — Next's own dev overlay; prod
+has **0**. (3) a nav self-link on `/ask` costs 2 RSC requests in dev and none in prod; neither
+navigates, and the active slot carries `aria-current="page"` + weight 600 in both. **No product
+behaviour differed between the runtimes anywhere.**
+
+**What `P7.REVIEW` can trust as measured rather than asserted.** `S1`–`S8`'s headline numbers all
+reproduced independently: board **30 → 12 clicks → 386**, control then gone, strips **30 → 90 → 94 →
+30**, tab counts **488/50/422/16** unmoved; typeahead **0 requests on mount**, 1 per debounced burst,
+`계양`→1 candidate, `에스`→8 + the unchanged 검색 불일치 sentence, panel `dx/dw/dy = 0/0/0`, JS-off
+form intact; **12** text fields with `outline: none` and a brightened hairline while **every** ring
+keeper (four tabs, all three 펼치기 at Tab stops #73/74/75, the checkbox at #16/#18) still wears
+`solid 2px rgb(143,178,232) @2px`; search rows **gap 0** at 924.1 / 656; portfolio document heights
+**1533 / 1574 / 2367** and column offsets **0.0px**; **0** occurrences of `localStorage` /
+`sessionStorage` / `브라우저 세션` / `이 브라우저` / `브라우저` on seven surfaces; launcher present at
+481, absent at 480. Cumulative smoke: **0** horizontal overflow and **0** console errors or hydration
+warnings across 35 surface × width combinations (the only console entry anywhere is the pre-existing
+`/favicon.ico` 404); the `.mono` split rule intact (six distinct sizes, tab counts 11px); all 30
+rendered D-days identical to the served `countdown.dday`; 추후결정 never beside a date (4/4); a past ②
+never 종료 (0/60); 조회 and 포트폴리오 agree to the won on 한화솔루션 500주 = **679,575원**; R2 §Tabs
+and §Freshness verified clause by clause against the live stale corpus (board **never dimmed**,
+opacity 1); R6 §117 launcher hover — frame fixed, mark `scale(1.35)`.
+
+**Item 8 — two live turns, the plan's cap.** Both streamed end to end (도구 행 → 답변 → 인용 → footer
+`근거 1건 · 20260724000546 · 2026-08-23 09:52 KST` → 링크), longest inter-frame gap 3.0 s dev / 1.0 s
+prod. **`P6.S7`'s no-transform fix holds through the production Next router** — captured live:
+`cache-control: no-store, no-transform`, `x-accel-buffering: no`, `transfer-encoding: chunked`, and
+**no `content-encoding`**. ▷ **$0.0115 + $0.0112 = ≈ $0.0227 estimated on 2 turns / 6 calls / 28,568
+tokens, thinking LOW, never billed.**
+
+**Item 5's full round trip** (dev, `127.0.0.1`, throwaway `p7s9-probe@example.com`): 로그인 in the
+chrome → client-side `/auth/login` (0 document loads) → `POST /auth/signup` **201** → slot becomes the
+축약 이메일 with no reload → menu 내 포트폴리오 / 알림 설정 / 로그아웃 → `logout` **200** → `login`
+**200** → 계정 삭제 `DELETE /auth/account` **200** → the same credentials **401**. 10 `GET
+/api/auth/me` across 11 path visits, all 200. **DB clean afterwards**: the throwaway is gone,
+`holding` 0, `lapse_claim` 0, and the only `account` row is still `s19-fidelity@example.com` (id 14) —
+left in place per plan and catalogued for the operator.
+
+**Five new operator questions** joined Q1–Q8 and are consolidated with them in
+`slices/P7.S9/result.md` §7, the list `P7.REVIEW` must put in front of the operator: **(8)** five
+interactive controls have **no hover state** (the four board tabs, the lookup/stock 조회 submit, the
+auth 로그인 submit, the ask send button, the 샘플 chip) while 회사명 / `↗` / 펼치기 on the same panel
+do — checked against the record before judging, and R2 §Tabs draws the active state, the count size
+and the 44px hit and **no hover**, so this is record silence, not a slip; **(9)** the focused input's
+hairline is brighter than the open candidate panel's side edges (`P7.S5` note 1, now measured: hero
+`rgb(163,196,180)` vs `rgba(163,196,180,.4)`); **(10)** two components draw the "mobile" boundary at
+different widths — `SearchRow` switches at 768, the board's 펼치기 at 480, so at 481 a candidate row
+is 44px beside a 32px button (both clear the floor where R5 §Mobile applies); **(11)** the browser's
+own empty-form validation bubble is **English** ("Please fill out this field."), the same class as
+`P5.S19` catalogue #1; **(13)** the `s19-fidelity@example.com` leftover. Q8's five portfolio items
+were all re-confirmed live, including (A)'s 144.7px ragged edge and (C)'s two empty 진행 중인 권리
+cells.
+
+**Every `S9` mention in this file was swept and given a disposition** — the table is in
+`slices/P7.S9/result.md` §8. Nothing was left implicit.
+
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -1003,6 +1106,44 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   design intent. (Recorded by `P7.S8`; `product.md` was checked and needs nothing — it states no
   portfolio layout or claim-persistence rule.)
 
+- `frontend` — **the verification floor this phase established, now exercised end to end and worth
+  stating as the rule for every future browser check** (extend the `P7.S1` line above rather than
+  duplicating it). A check is only complete when it runs **(a)** in `next dev` on the operator's own
+  origins — `127.0.0.1` **and** the Tailscale host, never only `localhost` — **and** in a
+  `next build && next start` production build; **(b)** at 1440 / 768 / **481 / 480** / 390, because
+  the widget's signed boundary sits between the middle two; and **(c)** along the *functional*
+  dimensions `P5.S19`/`P6.S7` never covered: every visible control clicked once and its effect
+  recorded, the whole keyboard path walked for traps and invisible stops, liveness held for ≥60 s
+  (countdown) and ≥120 s (typing), and **every difference between the two runtimes written down** —
+  that difference is precisely the class of defect that let all eleven of the operator's items ship.
+  Recorded with it, because each one made a working product look broken: a **CDP `keyDown` carrying
+  `text` already generates the keypress**, so dispatching a separate `char` event fires a second,
+  unpreventable one and a React `preventDefault` is bypassed (measured: it turned the working
+  typeahead into a native form submit); **a click at a coordinate below the viewport hits nothing
+  silently**, so every probe click must `scrollIntoView` first, and a viewport-relative rectangle read
+  after that scroll looks like a layout shift (compare `rect.y + scrollY`); and **a control list must
+  be keyed, never indexed**, because one click can add or remove controls and shift every later index.
+  (Recorded by `P7.S9`; the full check tables are in `slices/P7.S9/result.md`.)
+- `frontend` — **two production-only behaviours that do not exist in `next dev`**, both Next's own and
+  neither configured by this app, worth recording beside the StrictMode trap so nobody re-discovers
+  them as bugs. **(1) `<Link>` viewport prefetching is production-only.** Revealing all 386 board rows
+  through `펼치기` issues **0** requests in dev and **366** `GET /events/{rcept_no}?_rsc=` **200**s in
+  the production build. At **first paint** both runtimes issue **0** and render the same 30 rows with
+  identical geometry, so `P7.S3`'s display window made the default landing markedly cheaper in
+  production too; the 366 is the cost only of twelve deliberate disclosure clicks. **(2) `next dev`
+  mounts a `NEXTJS-PORTAL` dev-overlay element that is one extra focus stop** — every dev surface
+  measured exactly one invisible tab stop and every production surface **zero**, so an a11y focus
+  audit run only in dev will always report one phantom. (Recorded by `P7.S9`.)
+- `qa` — **the AI 질문 SSE contract holds through the *production* Next router, captured from the
+  browser rather than from `curl`.** A live turn on `next start` returned
+  `content-type: text/event-stream; charset=utf-8`, `cache-control: **no-store, no-transform**`,
+  `x-accel-buffering: no`, `transfer-encoding: chunked` and **no `content-encoding`** — so `P6.S7`'s
+  fix 1 (the gzip-buffering defect that painted a whole turn in one burst) is verified on the path
+  P4 will actually ship, not only in dev. Both turns painted incrementally (frames at 1 s / 2 s / 3 s),
+  longest inter-frame gap **3.0 s** in dev and **1.0 s** in production, and there is still **no
+  heartbeat** — a proxy idle timeout under ~10 s would still cut a legitimate turn. (Recorded by
+  `P7.S9`; ▷ ≈ $0.0227 estimated across the pass's 2 turns, never billed.)
+
 ## Open Questions
 
 - **Q1 — 의견 (vocky) has nothing to bind to.** `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
@@ -1061,3 +1202,33 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   `P7.S8` left it alone because making it conditional adds a **22.6px layout shift** on click,
   which its plan forbids. None of these was changed; all five need the operator, and (A) is the
   one that still answers the original "not organized".
+- **Q9 — five interactive controls have no hover state, and the record is silent (`P7.S9`).** The
+  four board tabs, the `/stocks` and stock-page 조회 submit, the `/auth/login` 로그인 submit, the AI
+  질문 send button and the 샘플 chip show no colour/border/opacity/transform change on hover, while
+  회사명, `↗` and 펼치기 on the *same* board panel all do. Checked against the record before judging:
+  the design record specifies hover in exactly two places — R6 §117 (the launcher mark, verified
+  live: frame fixed, mark `scale(1.35)`) and R2 §vocky (the trigger, verified live) — and R2 §Tabs
+  draws the tabs' active state, their mono-11 counts and their 44px hit and **no hover**. Every one
+  of these controls works on click and wears its 2px focus ring, so this is affordance polish over a
+  silent record, not a defect. Adding a treatment is a visual decision.
+- **Q10 — the focused input's hairline is brighter than the open candidate panel's side edges**
+  (`P7.S5` note 1, measured by `P7.S9`): hero input `rgb(163,196,180)` vs panel sides
+  `rgba(163,196,180,.4)`; `/stocks` input `rgb(157,179,168)` vs `rgba(163,196,180,.32)`. Same hue,
+  different alpha; the panel keeps `border-top: 0` and radius 0. Matching them is one line in
+  `SearchRow.module.css` — which `P7.S5`'s plan forbade touching, and which is a visual call.
+- **Q11 — two components draw the "mobile" boundary at different widths (`P7.S9`).**
+  `SearchRow.module.css` gives a candidate option 44px and drops to 40px at `min-width: 768px`
+  ("R4 §Mobile's touch floor; 40 from the tablet breakpoint"); `Board.module.css` gives 펼치기 32px
+  and raises it to 44px at `max-width: 480px`. So at **481** a candidate row is 44px while the
+  펼치기 beside it is 32px. Both clear the 44px floor wherever R5 §Mobile applies (≤480), so nothing
+  is broken — aligning them is a geometry decision no round made.
+- **Q12 — the browser's own form validation speaks English (`P7.S9`).** Submitting `/auth/login`
+  empty produces Chrome's native bubble 「Please fill out this field.」 and blocks the request (both
+  fields are `required`; 0 requests, focus moves to the field — correct behaviour). It is UA chrome
+  and locale-driven, not our copy, but a reader on a Korean-only surface can reach it. Same class as
+  `P5.S19` catalogue #1 (the English 404 sentence); suppressing it means owning the validation copy,
+  which is new Korean.
+- **Q13 — `s19-fidelity@example.com` (account id 14, one live `auth_session`) is still in the dev
+  database**, from `P5.S19`. `P7.S9` met it as planned and left it: its own throwaway
+  (`p7s9-probe@example.com`) was created and destroyed through the product and is verified gone, and
+  `holding` / `lapse_claim` are both 0. Deleting someone else's leftover row is the operator's call.
