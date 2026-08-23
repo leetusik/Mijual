@@ -2,37 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/lib/motion";
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { ROUTES, isActiveRoute } from "@/lib/routes";
 import { AccountSlotDesktop, AccountSlotSheet } from "./AccountSlot";
-import { MENU_KO, NAV_LINKS, VOCKY_NAV_KO, VOCKY_ROW_KO } from "./copy";
-import { VockyTrigger } from "./VockyTrigger";
+import { CLOSE_GLYPH, MENU_KO, NAV_LINKS, VOCKY_ROW_KO } from "./copy";
+import { FeedbackDialog } from "./Feedback";
 import { Wordmark } from "./Wordmark";
 import styles from "./Nav.module.css";
 
 /**
- * The global nav — R2 §Page shell, on both sides of the 480px breakpoint.
+ * The global nav — R2 §Page shell, **re-cut by R8** on both sides of the 480px
+ * breakpoint (build-prompt §1 and §3; SIGNOFF: R8 supersedes R2's nav
+ * destinations, utility slot and mobile sheet behaviour).
  *
- * > **Nav** 52px, transparent over the cosmos, 1px `rgba(255,255,255,.12)`
- * > bottom. Left: white ring wordmark PNG (h 19px) + links 내 종목 연결 · 관제
- * > 현황판 · 해설 (13.5px; active = 600 + 2px #fff underline; labels
- * > provisional). Right: 로그인 (quiet, `rgba(255,255,255,.68)`) + vocky trigger
- * > `[의견]` (mono, hairline `rgba(255,255,255,.3)`).
- * >
- * > **Mobile**: top bar 52px (white ring wordmark + `메뉴` button, mono, 44px
- * > hit) + sheet menu: rows ≥48px. Sheet close = 200ms fade.
+ * What R2 signed and R8 keeps: the 52px transparent bar with its
+ * `rgba(255,255,255,.12)` bottom hairline, the white ring wordmark at h19, links
+ * at 13.5px with the 2px #fff active underline, hover as a colour change, P7's
+ * focus split, and the 200ms fade.
  *
- * The two provisional labels are **not** rendered as R2 spells them: R2 posed
- * them back and both were settled by later signed rounds, which is what the
- * supersession table in `docs/current/frontend.md` is for — 내 종목 연결 → **내
- * 종목 조회** (R4) and 해설 → **AI 질문** (R6, which also states the final
- * three-slot nav). The labels and their sources live in `./copy.ts`.
+ * What R8 changes:
  *
- * One bar renders both forms: the destinations and the utility slots are the
- * desktop content, the 메뉴 button is the mobile one, and the 480px media query
- * in `Nav.module.css` decides which is visible — the round describes one 52px
- * bar, not two components.
+ * 1. **Two destinations — AI 질문 · 보유 종목.** The 관제 현황판 *link* is gone,
+ *    because "현황판은 랜딩이고 링 워드마크(→ `ROUTES.board`)가 이미 그 목적지다.
+ *    같은 목적지를 바에서 두 번 말하지 않는다." On the landing there is therefore
+ *    **no active link and no underline**, and `aria-current` is not moved onto
+ *    the wordmark — the mark is the identity, not a nav item.
+ * 2. **The `[의견]` chip is gone.** 의견 has two entry points now, the footer and
+ *    the mobile sheet, and both open 미주알's own surface (`Feedback.tsx`).
+ * 3. **The sheet is an overlay with a backdrop.** It used to push the page down;
+ *    now it hangs from the bar over the content, the bar button turns into ×
+ *    while it is open (the label stays 메뉴 — `aria-expanded` carries the state,
+ *    and no 닫기 string was invented), the backdrop closes it on a tap, and the
+ *    body cannot scroll underneath it.
  */
 
 /** R2: "Sheet close = 200ms fade" — the same 200ms as `--dur-base`, which is what
@@ -44,6 +47,8 @@ export function SiteNav() {
   const reducedMotion = useReducedMotion();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetClosing, setSheetClosing] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
 
   /* The close is the animated half. Under `prefers-reduced-motion: reduce` a
    * fade becomes a **cut** — `app/shell.css`'s convention, and the JS half of it
@@ -86,12 +91,20 @@ export function SiteNav() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [sheetOpen, closeSheet]);
 
+  // 「시트 열림 동안 `document.body` 스크롤 잠금」 (R8 §3). An overlay that lets the
+  // page scroll behind it is the half-open state the walk found. The lock is
+  // counted (`lib/scrollLock.ts`) because the 의견 sheet takes one too and the
+  // two overlap by design.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    return lockBodyScroll();
+  }, [sheetOpen]);
+
   return (
     <header className={styles.bar}>
       <div className={`content ${styles.inner}`}>
-        {/* The mark leads to 관제 현황판, which is also a destination in the
-            list — chrome behaviour, not a visual decision: R2 draws the mark and
-            the three links, and says nothing about what the mark does. */}
+        {/* The mark is 관제 현황판's only entry from the chrome now (R8 §1), which
+            is why the round removed the link that said the same thing twice. */}
         <Link href={ROUTES.board} className={styles.brand}>
           <Wordmark height={19} />
         </Link>
@@ -114,27 +127,41 @@ export function SiteNav() {
 
         <div className={styles.utility}>
           <AccountSlotDesktop />
-          <VockyTrigger surface="nav">{VOCKY_NAV_KO}</VockyTrigger>
         </div>
 
         <button
           type="button"
+          ref={menuButton}
           className={styles.menuButton}
+          aria-label={MENU_KO}
           aria-expanded={sheetOpen}
           aria-controls="chrome-sheet"
           onClick={() => (sheetOpen ? closeSheet() : setSheetOpen(true))}
         >
-          {MENU_KO}
+          {sheetOpen ? (
+            <span className={styles.menuGlyph}>{CLOSE_GLYPH}</span>
+          ) : (
+            MENU_KO
+          )}
         </button>
       </div>
 
+      {/* The backdrop belongs to the sheet and closes it on a tap. It is a
+          sibling rather than a wrapper, so a tap on a row is never a tap on it. */}
+      {sheetOpen ? (
+        <div
+          className={[styles.backdrop, sheetClosing ? styles.backdropClosing : null]
+            .filter(Boolean)
+            .join(" ")}
+          onClick={closeSheet}
+          aria-hidden="true"
+        />
+      ) : null}
+
       {/* The sheet stays in the document and is hidden with `display: none` (so
           it is out of the tab order and out of the accessibility tree) rather
-          than mounted on open. Two reasons: the desktop bar must never show it
-          at all, and **vocky's script binds `[data-vocky-trigger]` on its own
-          terms** — an external script that binds once at load would never see a
-          trigger React creates later, so all three triggers exist from the first
-          paint, which is also what R2 §vocky describes. */}
+          than mounted on open: the desktop bar must never show it at all, and
+          keeping one element means the fade has something to fade. */}
       <nav
         id="chrome-sheet"
         aria-label={MENU_KO}
@@ -156,13 +183,36 @@ export function SiteNav() {
           );
         })}
 
-        {/* R5's sheet keeps the destinations and adds a 구분선 before the
-            account area; the utility rows (로그인, and the 의견 보내기 trigger
-            R2 §vocky puts here) sit below it. */}
+        {/* 구분선 → 계정 영역 → 구분선 → 의견 보내기 (R8 §3). */}
         <div className={styles.sheetDivider} />
         <AccountSlotSheet />
-        <VockyTrigger surface="sheet">{VOCKY_ROW_KO}</VockyTrigger>
+        <div className={styles.sheetDivider} />
+        <button
+          type="button"
+          className={styles.sheetAction}
+          aria-haspopup="dialog"
+          aria-expanded={feedbackOpen}
+          onClick={() => {
+            setFeedbackOpen(true);
+            closeSheet();
+          }}
+        >
+          {VOCKY_ROW_KO}
+        </button>
       </nav>
+
+      {/* Outside the sheet on purpose: opening 의견 closes the menu, and the
+          sheet is `display: none` when closed — a dialog inside it would vanish
+          with it. Focus returns to the bar button, which is the control the
+          reader can actually see once the sheet is gone. */}
+      {feedbackOpen ? (
+        <FeedbackDialog
+          channel="mobile"
+          variant="sheet"
+          onClose={() => setFeedbackOpen(false)}
+          returnFocusTo={menuButton}
+        />
+      ) : null}
     </header>
   );
 }

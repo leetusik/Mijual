@@ -221,20 +221,9 @@
   color: var(--ink-3);
 }
 
-/* The landing's own line, at the foot of the page (never in the global footer,
-   which R5 leaves unchanged). */
-.landingSample {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-  text-decoration: none;
-}
-
-.landingSample:hover {
-  color: var(--live);
-}
+/* R5-4's landing line had its own class here; **R8 removed the line** (see
+   `SampleEntry.tsx`), so the style went with it. The 로그인 page's entry above is
+   the placement that survives. */
 
 /* ---------------------------------------------------------------------------
    전환 제안 ① — the offer panel under 조회's results (R5-2)

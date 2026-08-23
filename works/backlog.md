@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P8`
-- Current slice: `P8.S3`
-- Next slice: `P8.S4`
+- Current slice: `P8.S4`
+- Next slice: `P8.S5`
 - Waiting on operator: `none`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-23T15:40:16+09:00`
+- Rebuilt at: `2026-08-23T16:40:43+09:00`
 
 ## Active Phases
 
@@ -22,7 +22,7 @@
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
 | [x] `P7` | `done` | `pass` | 실서비스 정상화 fix pass | `none` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
-| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S3` | `works/phases/active/P8` |
+| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S4` | `works/phases/active/P8` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -135,7 +135,7 @@
 | [x] `P8.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P8/slices/P8.DECOMP` |
 | [x] `P8.S1` | `done` | AskWidget t1 중복 키 — collision-free turn ids after a restored thread | `fix` | `works/phases/active/P8/slices/P8.S1` |
 | [x] `P8.S2` | `done` | R8 폴리시 라운드 — foundations/tokens + global chrome (nav · footer · vocky) | `co-work` | `works/phases/active/P8/slices/P8.S2` |
-| [ ] `P8.S3` | `todo` | Apply R8 — foundations/tokens + global chrome | `implementation` | `works/phases/active/P8/slices/P8.S3` |
+| [x] `P8.S3` | `done` | Apply R8 — foundations/tokens + global chrome | `implementation` | `works/phases/active/P8/slices/P8.S3` |
 | [ ] `P8.S4` | `todo` | R9 폴리시 라운드 — landing 관제 현황판 + board | `co-work` | `works/phases/active/P8/slices/P8.S4` |
 | [ ] `P8.S5` | `todo` | Apply R9 — landing 관제 현황판 + board | `implementation` | `works/phases/active/P8/slices/P8.S5` |
 | [ ] `P8.S6` | `todo` | R10 폴리시 라운드 — event detail ①②③ + trust states | `co-work` | `works/phases/active/P8/slices/P8.S6` |

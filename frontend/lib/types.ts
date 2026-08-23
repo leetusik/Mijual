@@ -741,3 +741,13 @@ export type OpsVocky = {
   reason?: string;
   status?: number;
 };
+
+/**
+ * 의견 보내기's receipt (R8, `POST /feedback`).
+ *
+ * `request_id` is **vocky's own** handle, passed through by this API and rendered
+ * as the 접수 번호; nothing on either side mints one. `accepted_at` is absolute
+ * KST like every other instant this API serves, and it is absent rather than
+ * `null` when vocky did not send one — the surface renders only the number.
+ */
+export type FeedbackReceipt = { request_id: string; accepted_at?: string };

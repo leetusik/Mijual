@@ -34,6 +34,7 @@ import type {
   BoardSummary,
   CorrectionStory,
   EventDetail,
+  FeedbackReceipt,
   Holding,
   Notifications,
   OpsAccuracy,
@@ -228,6 +229,40 @@ export const changeEmail = (email: string) =>
 
 export const deleteAccount = () =>
   request<{ deleted: true; authenticated: false }>("/auth/account", { method: "DELETE" });
+
+// ---------------------------------------------------------------------------
+// 의견 보내기 (P8.S3, R8)
+// ---------------------------------------------------------------------------
+
+/**
+ * One reader message, forwarded server-side to vocky.
+ *
+ * The browser talks to **this app's own origin** and nothing else — R8 keeps the
+ * `vk_` credential in the server's `.env`, so there is no third-party endpoint,
+ * no third-party script and no key in this bundle. `channel` is the entry point
+ * the surface was opened from (footer = `web`, mobile sheet = `mobile`), and
+ * `session` is the anonymous AI 질문 tab handle **only when the browser already
+ * had one**; no identifier is minted for a 의견.
+ *
+ * Failures arrive as an `ApiError` whose `code` says whether 다시 시도 is
+ * offered: `feedback_rejected` / `feedback_unconfigured` cannot be fixed by a
+ * reader (the envelope also carries `retryable: false`), while
+ * `feedback_unavailable` may pass on a second try.
+ */
+export const sendFeedback = (
+  message: string,
+  channel: "web" | "mobile",
+  options: { session?: string; signal?: AbortSignal } = {},
+) =>
+  request<FeedbackReceipt>("/feedback", {
+    method: "POST",
+    json: { message, channel, session_id: options.session },
+    signal: options.signal,
+  });
+
+/** The failure codes above, in one place, so the surface branches on a token
+ * rather than on a status. */
+export const FEEDBACK_NO_RETRY_CODES = ["feedback_rejected", "feedback_unconfigured"];
 
 // ---------------------------------------------------------------------------
 // 내 포트폴리오 (P5.S8) — the product's only gated surface

@@ -13,3 +13,6 @@ export { StateBadge, type StateBadgeProps } from "./StateBadge";
 export { DDay, urgencyClass, type DDayProps } from "./DDay";
 export { RightsChip, type RightsChipProps } from "./RightsChip";
 export { LapseAlert, lapseNumeralClass, type LapseAlertProps } from "./LapseAlert";
+/** R8's account mark — a chrome component by placement, a shared primitive by
+ * shape (the account surface renders it at 40px too). */
+export { Identicon, type IdenticonProps } from "./Identicon";

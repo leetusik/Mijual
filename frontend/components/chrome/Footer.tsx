@@ -1,48 +1,37 @@
 import Link from "next/link";
-import { EstimateMarker } from "@/components";
 import { ROUTES } from "@/lib/routes";
-import {
-  ASK_LABEL_KO,
-  COPYRIGHT_KO,
-  DISCLAIMER_KO,
-  GATE_COST_TAIL_KO,
-  GATE_COST_VALUE_KO,
-  POSITIONING_KO,
-  PROVENANCE_KO,
-  SOURCE_KO,
-  VOCKY_ROW_KO,
-} from "./copy";
-import { VockyTrigger } from "./VockyTrigger";
+import { ASK_LABEL_KO, COPYRIGHT_KO, SOURCE_KO } from "./copy";
+import { FeedbackEntry } from "./Feedback";
 import { Wordmark } from "./Wordmark";
 import styles from "./Footer.module.css";
 
 /**
- * The global footer — R2 §Page shell, verbatim:
+ * The global footer — R2 §Page shell, **re-cut by R8 §4** (SIGNOFF: R8
+ * supersedes R2's footer content and type).
  *
- * > **Footer**: white-on-dark, 1px `rgba(255,255,255,.14)` top. Left col: white
- * > ring wordmark (h 17) + positioning line (mono 11, `rgba(255,255,255,.45)`).
- * > Right col, 12px `rgba(255,255,255,.72)`: ① provenance sentence "모든 수치는
- * > DART 공시에서만 나왔고, 추정치는 [추정] 표시로 구분했습니다." (re-cut, needs
- * > sign-off), ② gate-cost sentence (추정-tagged 49.2억원 — its only remaining
- * > placement), ③ disclaimer. Bottom hairline row: © · 자료: 금융감독원 DART
- * > 전자공시 | 의견 보내기 · 해설 (mono 11).
+ * ```
+ * <footer>            border-top: 1px solid rgba(255,255,255,.14); padding-block: var(--space-6)
+ *   <div class=in>    flex, space-between, gap var(--space-6), wrap
+ *     <div class=id>  워드마크 h17 + "자료: 금융감독원 DART 전자공시 · © 미주알"
+ *     <div class=acts> [의견 보내기 버튼] [AI 질문 링크]
+ * ```
  *
- * All three sentences and the bottom row's chrome copy were **signed at the R2
- * gate** ("the round's new chrome copy … and the footer provenance re-cut"), so
- * the "needs sign-off" note is closed. Their text lives in `./copy.ts` with a
- * citation each; two readings of the record are executed here:
+ * The operator's instruction was "remove the text and keep it simple and clean",
+ * and the round executed it as a deletion of **four sentences** — the positioning
+ * line, the provenance sentence, the gate-cost sentence (with its `EstimateMarker`)
+ * and the disclaimer — plus the separate mono bottom row. What is left is one
+ * hairline, one row, and no numerals at all, which is why the type is Pretendard:
+ * "mono는 숫자 전용(R1)이고 남은 줄에는 숫자가 없다" (result.md §2-14).
  *
- * - the bottom row's 해설 renders **AI 질문** — R6 retired that label and the
- *   supersession table governs a landed record (`P5.DECOMP` note 7);
- * - the gate-cost sentence's `▷` is gone and 49.2억원 carries the **추정 tag**,
- *   which is the same ruling (`▷` retires from the UI) and what the build prompt
- *   itself asks for ("추정-tagged 49.2억원").
+ * **The five deleted constants still exist** in `./copy.ts`, unrendered. R8's own
+ * record asks the operator where the gate-cost and 면책 sentences should go
+ * instead (result.md §6-1, open as P8 Operator Question Q5) and makes deleting
+ * the strings conditional on that answer; deleting the markup is what the round
+ * signs, and this file is that deletion.
  *
- * R5 leaves this surface alone on purpose — "footer unchanged" — so the
- * logged-in chrome changes nothing here. The one later addition the record does
- * put in a footer is R5-4's 샘플 포트폴리오 entry ("진입: 로그인 페이지 하단 +
- * 랜딩 푸터"), which belongs to the **landing** and to the slice that builds the
- * sample (`P5.S15`/`P5.S16`) — not to this global chrome.
+ * 의견 보내기 is no longer a `data-vocky-trigger` — it is the entry point for
+ * 미주알's own surface (`Feedback.tsx`), which anchors its 380px panel to this
+ * button on desktop and becomes a bottom sheet at ≤480.
  */
 export function SiteFooter() {
   return (
@@ -50,49 +39,21 @@ export function SiteFooter() {
       <div className={`content ${styles.inner}`}>
         <div className={styles.identity}>
           <Wordmark height={17} />
-          <p className={styles.positioning}>{POSITIONING_KO}</p>
-        </div>
-
-        <div className={styles.sentences}>
-          <p>{PROVENANCE_KO}</p>
-          <p>
-            {/* The value is derived (it is the gap between the ▷ upper bound and
-                the published total), so it is tagged — `estimated` is passed as
-                the literal `true` here because this figure comes from the landed
-                pack rather than from a payload: `/board/summary` serves no
-                gate-cost figure, and the contract will not invent one. See the
-                note in `P5.S11`'s `result.md`. */}
-            {/* `size="landing"` renders the tag at R2's own 10px literal
-                ("Estimate mark (landing surfaces): a bordered sans 10px 「추정」
-                tag beside the value"). Inheriting 0.56em from this 12px
-                sentence gave 6.72px — the nit `P5.S11` note 9 flagged for
-                `P5.S19`, fixed in the primitive with its citation rather than
-                by restyling here or resizing the signed sentence. */}
-            <EstimateMarker estimated={true} size="landing">
-              <span className="mono">{GATE_COST_VALUE_KO}</span>
-            </EstimateMarker>
-            {GATE_COST_TAIL_KO}
+          <p className={styles.source}>
+            {SOURCE_KO}
+            <span aria-hidden="true" className={styles.dot}>
+              ·
+            </span>
+            {COPYRIGHT_KO}
           </p>
-          <p>{DISCLAIMER_KO}</p>
         </div>
-      </div>
 
-      <div className={`content ${styles.bottom}`}>
-        <span>{COPYRIGHT_KO}</span>
-        <span aria-hidden="true" className={styles.dot}>
-          ·
-        </span>
-        <span>{SOURCE_KO}</span>
-        <span aria-hidden="true" className={styles.pipe}>
-          |
-        </span>
-        <VockyTrigger surface="footer">{VOCKY_ROW_KO}</VockyTrigger>
-        <span aria-hidden="true" className={styles.dot}>
-          ·
-        </span>
-        <Link href={ROUTES.ask} className={styles.bottomLink}>
-          {ASK_LABEL_KO}
-        </Link>
+        <div className={styles.actions}>
+          <FeedbackEntry className={styles.action} />
+          <Link href={ROUTES.ask} className={styles.action}>
+            {ASK_LABEL_KO}
+          </Link>
+        </div>
       </div>
     </footer>
   );

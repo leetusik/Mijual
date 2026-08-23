@@ -7,5 +7,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  padding-bottom: var(--space-16);
+  /* R8 §1 removes "그 빈 밴드" — the ~120px of nothing the walk measured between
+     the board and the footer. It was this 64px tail plus the footer's own
+     `margin-top: var(--space-16)`, which R8 keeps ("margin-top 유지"); the
+     footer's margin is the separation, and a second one below the board was the
+     band. */
 }

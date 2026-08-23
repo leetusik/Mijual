@@ -6,19 +6,22 @@ import { AskProvider, AskSurface } from "@/components/ask";
 import { isOpsPath } from "@/components/ops/routes";
 import { SiteFooter } from "./Footer";
 import { SiteNav } from "./Nav";
-import { VockyScript } from "./VockyScript";
 import styles from "./SiteChrome.module.css";
 
 /**
- * The chrome every **reader** page sits inside — nav, page, footer, and vocky's
- * script.
+ * The chrome every **reader** page sits inside — nav, page, footer.
  *
  * R2 designs the landing *and* "the **global chrome** every later surface lives
  * in (nav, footer, mobile navigation, page shell)", so this is a layout
- * component the root layout wraps every route in: one nav, one footer, one
- * script tag, no matter how many routes a reader walks through. A page renders
- * its own `<main>` — the chrome does not wrap the content in an element that
- * would compete with a surface's own composition.
+ * component the root layout wraps every route in: one nav and one footer, no
+ * matter how many routes a reader walks through. A page renders its own
+ * `<main>` — the chrome does not wrap the content in an element that would
+ * compete with a surface's own composition.
+ *
+ * **R8 removed the third thing that used to live here**, vocky's `<Script>` seam:
+ * the 의견 보내기 surface is 미주알's own and is mounted by its two entry points
+ * (the footer button, the mobile sheet row), so no external script is loaded on
+ * any route and no `data-vocky-trigger` element exists.
  *
  * What it deliberately does not do: nothing here is `position: fixed` and
  * nothing occupies a corner. R2's §6-4 decision is "chrome-level but not
@@ -43,8 +46,8 @@ import styles from "./SiteChrome.module.css";
  * R7's admin surface is "**reader chrome 어디에서도 링크 금지**" and its own
  * pages carry the **ops** chrome instead (the pre-auth door carries no chrome at
  * all: 빈 페이지 가운데 문 하나). So under `/ops` this component renders its
- * children and nothing else — no nav, no footer, no vocky script, and no reader
- * link anywhere in the markup.
+ * children and nothing else — no nav, no footer, and no reader link anywhere in
+ * the markup.
  *
  * That decision has to be made where the path is known, which is why this is a
  * client component: a root layout cannot read the pathname, and the alternative
@@ -63,7 +66,6 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         <SiteNav />
         <div className={styles.page}>{children}</div>
         <SiteFooter />
-        <VockyScript />
         <AskSurface />
       </div>
     </AskProvider>

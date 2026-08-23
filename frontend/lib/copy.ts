@@ -86,3 +86,9 @@ export const RIGHTS_LABEL_COMPACT_KO: Record<RightsType, string> = {
   R2: "CB",
   R3: "매수청구",
 };
+
+/** The 아이디콘's accessible name — R8 build-prompt §5 / `Identicon.prompt.md`:
+ * "`role="img"` + `aria-label`(기본 「계정 아이디콘」)". The mark is decoration
+ * for recognition, so the name says what it *is*; it never spells the address it
+ * was derived from, which the slot renders beside it anyway. */
+export const IDENTICON_LABEL_KO = "계정 아이디콘";

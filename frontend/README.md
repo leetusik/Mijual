@@ -69,10 +69,12 @@ public/
 | `/auth/login` | 로그인 / 계정 만들기 | `P5.S15` — **no page yet**; the nav's 로그인 slot points here |
 | `/ops` | 운영 관제 | `P5.S17` — linked from nowhere in the reader chrome, by design |
 
-`components/chrome/` wraps every route from the root layout: the 52px nav with the three
-signed slots, the mobile top bar + sheet, and the footer. Its two seams are named in the
-files — `AccountSlot.tsx` (the 로그인 slot `P5.S16` swaps for the account menu) and
-`VockyScript.tsx` (the script URL).
+`components/chrome/` wraps every route from the root layout: the 52px nav with **R8's two
+signed destinations** (AI 질문 · 보유 종목 — the ring wordmark is 관제 현황판's own
+destination), the mobile top bar + overlay sheet, the footer, and the 의견 보내기 surface
+(`Feedback.tsx`, which posts to this app's own `/api/feedback`). Its one seam is named in the
+file — `AccountSlot.tsx` (the 로그인 slot `P5.S16` swaps for the account menu, re-cut by R8 as
+the full email + `Identicon` + frame).
 
 ### Environment
 
@@ -80,7 +82,11 @@ files — `AccountSlot.tsx` (the 로그인 slot `P5.S16` swaps for the account m
 |---|---|
 | `MIJUAL_API_ORIGIN` | where `next.config.ts` proxies `/api/*` (default `http://localhost:8000`) |
 | `NEXT_PUBLIC_API_BASE_URL` | overrides the client's base; normally unset, so calls stay same-origin |
-| `NEXT_PUBLIC_VOCKY_SRC` | vocky's script URL. **Unset → no script tag**, and the three `data-vocky-trigger` elements still render. It is read at **build** time (`NEXT_PUBLIC_*` is inlined), so setting it means rebuilding. The real value is `P5.S18`/P4's. |
+
+**`NEXT_PUBLIC_VOCKY_SRC` is retired** (R8 / `P8.S3`): vocky ships no embeddable widget, so
+미주알 owns the 의견 screen and the browser posts to `/api/feedback` on this origin. The
+credential stays server-side in `MIJUAL_VOCKY_API_BASE` / `MIJUAL_VOCKY_API_KEY` — **no vocky
+value is ever inlined into this bundle**.
 
 ### The foundations are vendored, not authored
 

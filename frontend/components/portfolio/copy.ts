@@ -54,16 +54,18 @@ export {
 
 export { SHARES_UNIT_KO, STEP_DEPENDENCY_KO } from "@/components/event/copy";
 
-/** The account menu's three destinations (R5 §Chrome) — the layer's own name,
- * the 알림 surface's name and 로그아웃. They are chrome labels, transcribed
- * beside the rest of the chrome's copy, and this surface re-uses them rather than
- * spelling the same words twice. */
+/** The account destinations (R5 §Chrome) — the layer's own name, the 알림
+ * surface's name and 로그아웃. They are chrome labels, transcribed beside the rest
+ * of the chrome's copy, and this surface re-uses them rather than spelling the
+ * same words twice.
+ *
+ * **R8 retired R5-4's 「샘플」 chip and 샘플 종료** (SIGNOFF), which used to be
+ * re-exported here too: the chrome says nothing about the sample any more, so the
+ * only thing that does is this surface's own `SampleBanner`. */
 export {
   LOGOUT_KO,
   NOTIFICATIONS_LABEL_KO,
   PORTFOLIO_LABEL_KO,
-  SAMPLE_CHIP_KO,
-  SAMPLE_EXIT_KO,
 } from "@/components/chrome/copy";
 
 // ---------------------------------------------------------------------------

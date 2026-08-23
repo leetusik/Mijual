@@ -483,6 +483,55 @@ in a later surface round; (2) footer mono → Pretendard; (3) × glyph instead o
 `#0e1a15` literal (candidate `--surface-opaque` token later); (5) 샘플 chip/종료 retired; (6) no alert colour
 on failure; (7) identicon seed source = apply-time data decision.
 
+### `P8.S3` — R8 applied: what the next surfaces inherit (2026-08-23)
+
+**The chrome R8 signed is built and verified in the operator's runtime** (dev on `127.0.0.1:3000`
+and the tailnet, plus a production build; 1440 / 768 / 481 / 480 / 390). Full evidence in
+`slices/P8.S3/result.md`. What later rounds and apply slices need to know:
+
+1. **vocky is behind Cloudflare, and it bans `Python-urllib`.** Measured 2026-08-23: the default UA
+   gets **403 `error 1010 browser_signature_banned`** on every vocky path; the same request with a
+   `User-Agent` gets 200/202. This had been **silently breaking the P5.S18 observation read** — the
+   `/ops/feedback` tab was reporting 「unreachable」 for an unknown period. `mijual.web.vocky.USER_AGENT`
+   now rides on both calls and the tab serves rows again (3, the test sends below). **R15 / `P8.S17`
+   should walk that tab knowing it only just came back to life.** Anything else this repo ever calls
+   over `urllib` against a Cloudflare-fronted host will hit the same wall.
+2. **The 의견 surface is reusable and it is the chrome's.** `components/chrome/Feedback.tsx` exports
+   `FeedbackDialog` (controlled: `channel`, `variant: "anchored" | "sheet"`, `onClose`,
+   `returnFocusTo`) and `FeedbackEntry` (the footer's button + its anchored panel). A surface that
+   wants its own 의견 entry mounts `FeedbackDialog` **outside** any container that can be
+   `display: none`, passes the entry's ref for focus return, and gets the six states for free. The
+   API is `sendFeedback(message, channel, {session, signal})` in `lib/api.ts`; failures branch on
+   `code` via `FEEDBACK_NO_RETRY_CODES`.
+3. **Body-scroll locks must go through `lib/scrollLock.ts`.** Two overlays now overlap on the same
+   screen (the menu sheet and the 의견 bottom sheet) and a naive save/restore leaves the page locked
+   after both close — measured, then fixed with a counted lock. Any future overlay that locks the
+   page (a modal on 조회, a mobile filter panel) uses the same helper or reintroduces the bug.
+4. **`Identicon` is a shared component with a pure core.** `lib/identicon.ts` (`identicon(seed)` →
+   `{hue, cells}`) is the algorithm R8 pinned "so the mark matches across web and any later surface";
+   `components/Identicon.tsx` only paints it, at 20 / 28 / 40. **R13 (`/portfolio` + 알림 설정) is the
+   surface the record names for the 40px size** ("account surface") — use the component, do not
+   re-derive the hash. Seed = the account email today (Q6's default).
+5. **`/portfolio` no longer redirects.** An anonymous visit renders the sample (`SampleBanner`,
+   `lib/sample.ts` unchanged); the account's own rows are still gated by the API's 401. **R13's walk
+   will meet the surface in that state** — and the account menu no longer carries a 내 포트폴리오
+   row, so the 2층's only chrome entry is the nav's 보유 종목.
+6. **The footer's four sentences exist only in `copy.ts` now** (`POSITIONING_KO`, `PROVENANCE_KO`,
+   `GATE_COST_*`, `DISCLAIMER_KO`), unrendered, waiting on Q5. A round that decides to relocate them
+   should re-use the constants rather than transcribe them again.
+7. **Three clearly-marked test rows are in the operator's vocky project** (`P8.S3 검증 …`,
+   `request_id` `abc458cd…`, one un-captured, `b0071a6a…`). They are the only rows there. Deleting
+   them is an outward write nothing sanctioned, so they were left — see Operator Questions.
+8. **The favicon 404 is still the only console noise** on every reader page, in both runtimes and on
+   both origins (deferred D5, operator-decided at the R8 gate).
+9. **`npm run smoke` globs `lib/*.test.ts` only** — a component's testable core belongs in `lib/`
+   (that is why `lib/identicon.ts` exists), or the test never runs.
+10. **`copy-inventory.md` is generated and now carries a hand-written tail.** R8's build-prompt §7
+    requires registering new surface copy there, but `scripts/export_design_grounding.py` builds the
+    file from the Python side only and would drop the section. It is appended under a comment saying
+    so; **a regeneration must re-append it** (or the exporter must learn to read the frontend's
+    `copy.ts` files — an engineering question, not a design one).
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -490,6 +539,22 @@ in parallel mode, so consolidation happens at the review)._
 
 - `P8.DECOMP`: none — this slice wrote no code and no docs.
 - `P8.S1`: **qa** — `## Regression Checklist` gains `- [ ] AI 질문: ask → reload → ask again renders two distinct turns, no duplicate-key warning, 재시도 hits the right turn (P8)`. No other durable truth moved: `lib/ask.ts`'s persisted shape (`Persisted.v === 1`, legacy `t1…` ids still hydrate) is unchanged, so `frontend` needs no new version for this slice.
+- `P8.S3`: **frontend** — R8 supersedes the chrome. Nav = **two** destinations (AI 질문 · 보유 종목; 관제 현황판 is the ring wordmark, so the landing has no active underline) and the `[의견]` chip is gone; the account slot is a hairline frame with the **full email** + a 20px `Identicon` + ▾, its menu right-aligned/opaque with **two** rows (알림 설정 / 로그아웃); R5-4's 샘플 chip + 샘플 종료 are retired (the slot has two states); the ≤480 sheet is an **overlay + backdrop** that never pushes the page, with a counted body-scroll lock (`lib/scrollLock.ts`); the footer is one hairline / one row / **no mono** with the four prose sentences removed; a new 미주알-owned **의견 보내기** surface (`components/chrome/Feedback.tsx`, six states) replaces the vocky script seam — `VockyTrigger`, `VockyScript`, every `data-vocky-trigger` and `NEXT_PUBLIC_VOCKY_SRC` are **deleted**; new shared component `Identicon` (+ `lib/identicon.ts`); `lib/account.ts`'s `abbreviateEmail` retired with its test. Add supersession rows for R5 §Chrome 개정 ⑤ and R5-4.
+- `P8.S3`: **frontend** — **`/portfolio` signed out renders the sample instead of redirecting to 로그인** (R8 §1). The gate is unchanged (still the API's 401), but the app's only `redirect(ROUTES.login)` is gone, so 「the only login-gated surface」 needs restating: the *account's* rows are still gated, the route is not.
+- `P8.S3`: **api** — new **`POST /feedback`** (write-only, outward): body `{message, channel?: web|mobile, session_id?}`, **202 `{request_id, accepted_at}`** on vocky's 202, `400 feedback_empty`, `502 feedback_rejected` (`retryable:false`), `503 feedback_unavailable` (`retryable:true`) / `503 feedback_unconfigured`. It stores nothing on this side and is deliberately **not** merged with the agent's `save_feedback` queue. `GET /ops/vocky` is therefore no longer "the one read that leaves this service" — there are now one read and one write, both in `mijual/web/vocky.py`.
+- `P8.S3`: **architecture** — `mijual.web`'s outbound row changes from "the one outbound vocky read" to "one outbound vocky read + one outbound vocky capture", still in the single module the AST scan allows (`vocky.py`); no new dependency (stdlib `urllib`), no new layer.
+- `P8.S3`: **security** — the vocky key boundary now covers a **capture** path as well as the read: same `vk_` key, server-only, masked repr, header-not-URL, no redirects, nothing logged (not the key, not the reader's message). New fact to state: a reader's free text now leaves the system by design — the surface has **no contact field**, sends no email/account/IP, and says so in its own copy (「연락처를 받지 않으므로…」); the only correlation handle forwarded is the anonymous AI 질문 tab id **when one already exists**.
+- `P8.S3`: **operations** — the env table's `MIJUAL_VOCKY_API_BASE` / `MIJUAL_VOCKY_API_KEY` row now serves **both** the observation read and the 의견 send (a reader-facing path, so an unset key degrades a *reader* surface, not only the ops tab); **`NEXT_PUBLIC_VOCKY_SRC` is retired** (no vocky script is loaded anywhere). **New deploy-critical fact:** vocky sits behind Cloudflare, which bans `Python-urllib/3.x` by browser signature — both calls must send a `User-Agent` (`mijual.web.vocky.USER_AGENT`), measured 403 `error 1010` without it and 200/202 with it.
+- `P8.S3`: **data** — the env table's vocky row ("the vocky observation read") now covers read **and** capture; no schema change, no new table, no row written on this side by the 의견 path.
+- `P8.S3`: **experience** — the chrome section: nav slots (two, both destinations), the account slot's new shape, the mobile sheet's overlay + backdrop, the footer's re-cut, and **the vocky paragraph is obsolete** (no `data-vocky-trigger`, no external widget — 미주알 owns the screen); 내 포트폴리오's "entry = account menu's first row" becomes a nav slot, and its gated column becomes "the account's rows are gated; the route answers with the sample".
+- `P8.S3`: **product** — 「A judge or a reader can end the sample from anywhere — the 「샘플」 chip and 샘플 종료」 is no longer true: R8 retired both, and 로그인 여부 is the state. The sample is now reached by 보유 종목 without a session (and still by `?sample=1`).
+- `P8.S3`: **qa** — `## Regression Checklist` gains this phase's chrome lines (below), and two counts move: `pytest` **139 → 142** and `npm run smoke` **15/15 → 16/16**.
+  - `- [ ] 크롬: nav has exactly two links (AI 질문 · 보유 종목), no [의견] chip, no 샘플 chip, no data-vocky-trigger in the DOM (P8)`
+  - `- [ ] 보유 종목: signed out renders the sample portfolio with its banner, signed in renders the account's own (P8)`
+  - `- [ ] 의견 보내기: empty input disables 보내기, sending shows no spinner, failure uses no --alert colour, a 202 shows the 접수 번호 (P8)`
+  - `- [ ] ≤480 sheet: overlays without pushing the page, closes on backdrop/Esc/×, body scroll released afterwards (P8)`
+  - `- [ ] 푸터: no mono anywhere, one row, and at 390px 「AI 질문」 is not orphaned on its own line (P8)`
+  - `- [ ] no vocky value in the client bundle: grep .next/static for vk_ / vocky / the key prefix (P8)`
 
 ## Operator Questions
 
@@ -519,7 +584,24 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   The session proposes relocating both (landing bottom / 이용 안내) in a later round. Operator decides; until
   then `P8.S3` deletes the markup but may keep the constants (build-prompt §4 note).
 - **Q6 — identicon seed: hashed email or a stored per-account seed?** Visual identical; data choice for
-  `P8.S3` (default: hashed email unless the operator prefers a stored seed).
+  `P8.S3` (default: hashed email unless the operator prefers a stored seed). _`P8.S3` shipped the default — the mark is derived from the account email (`seed.trim().toLowerCase()`); a stored per-account seed would change nothing visible. Still the operator's to confirm._
+
+- **Q7 — does the 의견 textarea wear the focus ring, or the P7 field hairline?** R8's build-prompt §6
+  gives the textarea 「포커스 2px `--focus-ring`」, while §9 lists 「P7 포커스 분리」 among the round's
+  invariants — and P7's operator override is exactly that text-entry controls do **not** wear the
+  ring. Both cannot hold on a `<textarea>`. `P8.S3` kept the invariant (`outline: none` + the field's
+  own brightened hairline, like every other field in the product) and did not restyle it. If the
+  operator wants the ring on this one field, it is one rule. (Same family as P7 Q2/Q10, still open.)
+- **Q8 — should the account menu close when one of its rows navigates?** Click 알림 설정 and the menu
+  is still open on the new page (Esc or a click outside closes it). This is R5 behaviour that R8 did
+  not change: §2 lists the closes as 「Esc / 외부 클릭」 only, while the mobile sheet beside it gets an
+  explicit 「경로 변경 닫힘」. Left as the record has it rather than invented; it is one effect if the
+  operator wants the sheet's behaviour here too.
+- **Q9 — delete `P8.S3`'s three test rows from vocky?** Verifying the 의견 send end to end put three
+  clearly-marked rows (`P8.S3 검증 …`) into the operator's real vocky project, which had none. They
+  are visible on `/ops/feedback`. Removing a row from vocky is an outward write no design or plan
+  sanctioned, so they were left in place — the operator can delete them there, or keep them as the
+  first proof the path works.
 
 ## Constraints
 

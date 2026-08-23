@@ -37,26 +37,46 @@ export const RING_WORDMARK_NATURAL = { width: 2178, height: 346 } as const;
  * spells it). Not a new string — the name of the thing. */
 export const BRAND_ALT_KO = "미주알";
 
-/** The nav's two remaining destinations, R6's finalized order minus the slot the
- * operator withdrew in P7: **관제 현황판 · AI 질문**.
+/** The surfaces the chrome names, and R8's two nav destinations.
  *
  * R2 landed 내 종목 연결 · 관제 현황판 · 해설 as a three-slot nav and posed the
  * labels back as provisional. Both were then settled by later signed rounds and
  * both are in the supersession table: R4 named the surface **내 종목 조회**
  * ("Naming consequences: nav label 내 종목 연결 → 내 종목 조회"), and R6 "retires
- * the provisional 해설 nav label in favor of 「AI 질문」" — its build prompt puts
- * 「AI 질문」 in "nav 세번째 자리". P7 item 1 then removed the 내 종목 조회 slot
- * itself (an operator override of the signed three-slot nav, not a relabelling):
- * the surface stays reachable from the landing hero's own search, R3's detail
- * link-out, and the AI 질문 link row — see `phase.md`'s P7 Item 1 note. */
+ * the provisional 해설 nav label in favor of 「AI 질문」". P7 item 1 then removed
+ * the 내 종목 조회 slot itself (an operator override, not a relabelling).
+ *
+ * **R8 re-cuts the bar to two destinations — AI 질문 · 보유 종목, in that order**
+ * (build-prompt §1):
+ *
+ * > 「관제 현황판」 링크는 제거한다 — 현황판은 랜딩이고 링 워드마크(→
+ * > `ROUTES.board`)가 이미 그 목적지다. 같은 목적지를 바에서 두 번 말하지 않는다.
+ * > `BOARD_LABEL_KO`는 표면 제목 용도로만 남기고 크롬에서는 미사용.
+ *
+ * So `BOARD_LABEL_KO` and `STOCKS_LABEL_KO` stay exported as **surface names**
+ * (조회's own header, the detail page's ← crumb, the AI 질문 link rows) and the
+ * chrome renders neither. */
 export const STOCKS_LABEL_KO = "내 종목 조회";
 export const BOARD_LABEL_KO = "관제 현황판";
-/** Also the footer's bottom-row link, where R2 landed the retired 해설. */
+/** Also the footer's action link, where R2 landed the retired 해설. */
 export const ASK_LABEL_KO = "AI 질문";
 
+/** R8's new destination slot (build-prompt §1 / §7 — the round's own new
+ * constant): the 2층 surface, under one label whether or not the reader has an
+ * account.
+ *
+ * > `보유 종목`은 로그인 여부와 무관하게 같은 라벨·같은 라우트. 익명이면 표면이
+ * > 샘플 모드로 응답 (`SampleBanner` + `lib/sample.ts` 기존 동작) — nav는 아무
+ * > 배지도 붙이지 않는다.
+ *
+ * The round's own reason for the word (result.md §1): 보유 종목 is a plain noun
+ * phrase whose object is distinct from the hero's 내 종목 **조회** (an act of
+ * looking up), and 내 포트폴리오 is the loanword the operator questioned. */
+export const HOLDINGS_LABEL_KO = "보유 종목";
+
 export const NAV_LINKS = [
-  { label: BOARD_LABEL_KO, href: ROUTES.board },
   { label: ASK_LABEL_KO, href: ROUTES.ask },
+  { label: HOLDINGS_LABEL_KO, href: ROUTES.portfolio },
 ] as const;
 
 /** The nav's right-hand 2층 entry (R2 §Page shell: "Right: 로그인 (quiet …)").
@@ -81,34 +101,55 @@ export const PORTFOLIO_LABEL_KO = "내 포트폴리오";
 export const NOTIFICATIONS_LABEL_KO = "알림 설정";
 export const LOGOUT_KO = "로그아웃";
 
-/**
- * The same slot while a 샘플 포트폴리오 is loaded (R5-4).
- *
- * > 로드 상태: 2층 표면에 inset 배너 + **nav 「샘플」 칩 + 샘플 종료 (로그인 슬롯
- * > 대체 — 메뉴 자리)**.
- *
- * The chip renders **샘플** and its border is the enclosure — `P5.S10` note 4a's
- * convention for the record's own 「」 quoting notation, the same reading the
- * 「예정」 chip gets on the 알림 surface. 샘플 종료 is the round's own control
- * label ("종료: 샘플·브라우저 저장분 삭제 후 로드 전 상태 복귀").
- */
-export const SAMPLE_CHIP_KO = "샘플";
-export const SAMPLE_EXIT_KO = "샘플 종료";
+/* ⚠ **R8 supersedes R5 §Chrome 개정 ⑤ here.** The account menu is now two rows —
+ * 알림 설정 / 로그아웃 — and the 내 포트폴리오 row is deleted, because the same
+ * destination moved up into the bar as 보유 종목 (build-prompt §2:
+ * "`내 포트폴리오` 행 삭제 — `PORTFOLIO_LABEL_KO`는 계정 표면 자체 제목 용도로만
+ * 남기고 크롬에서는 미사용"). The constant stays exported as the 2층 surface's own
+ * name (`components/portfolio/copy.ts` re-exports it); the chrome renders it
+ * nowhere. */
+
+/* **R5-4's 「샘플」 chip and 샘플 종료 button are retired by R8** (SIGNOFF: "R5-4
+ * (샘플 chip + 샘플 종료)" superseded), so their two constants are gone from this
+ * file. The account slot has exactly two states now — anonymous and signed-in —
+ * and the only surface that says a portfolio is a sample is the portfolio itself
+ * (`SampleBanner`). 로그아웃 여부가 곧 상태: 보유 종목 opens the sample when
+ * nobody is signed in, so there is nothing to "end". */
 
 /** The mobile top bar's menu button (R2 §Page shell — "메뉴 button, mono, 44px
  * hit"). It keeps this label while the sheet is open; the open/closed state is
  * carried by `aria-expanded`, because a 닫기 label is copy nobody signed. */
 export const MENU_KO = "메뉴";
 
-/** The nav's vocky trigger, brackets included — R2 writes it `[의견]` every
- * time, exactly as it writes `[근거]` (whose brackets `lib/copy.ts` also keeps).
- * R2 §Copy lists "의견 / 의견 보내기 (vocky trigger)" as signed chrome copy. */
-export const VOCKY_NAV_KO = "[의견]";
+/* **R2's nav `[의견]` chip is removed by R8** (build-prompt §1: "`VockyTrigger
+ * surface="nav"` 제거 (`VOCKY_NAV_KO` 상수도 삭제)"), so that constant is gone.
+ * The 의견 진입점 is the footer button and the mobile sheet row — two places, and
+ * neither is a floating corner button (R2 §6-4, which R8 strengthens). */
 
-/** The same trigger where it is a row or a quiet link — the mobile sheet and the
- * footer's bottom row (R2 §vocky: "nav `[의견]` button, mobile sheet 의견 보내기
- * row, footer 의견 보내기 link"). */
+/** The 의견 보내기 entry point's label, in both remaining placements (R2 §vocky,
+ * kept by R8 build-prompt §7: "기존 `VOCKY_ROW_KO`(「의견 보내기」)는 진입점
+ * 라벨로 재사용"). It is also the surface's own title — see
+ * `FEEDBACK_TITLE_KO`, which the round lists separately in its copy table. */
 export const VOCKY_ROW_KO = "의견 보내기";
+
+/* ---------------------------------------------------------------------------
+   The four footer sentences R8 removed from the surface (build-prompt §4).
+
+   > 삭제할 상수와 마크업: `POSITIONING_KO`, `PROVENANCE_KO`, `GATE_COST_VALUE_KO`,
+   > `GATE_COST_TAIL_KO`, `DISCLAIMER_KO`, 그리고 `EstimateMarker` 임포트. (문장
+   > 자체는 result.md §6-1의 이전 제안 대기 — **상수를 지우기 전에 그 결정을
+   > 확인**.)
+
+   **The markup is gone; the constants stay, deliberately.** R8's own record flags
+   the removal as a departure needing an operator decision (result.md §6-1: the
+   footer was the gate-cost sentence's *last* placement and the disclaimer's only
+   one, and the session proposes relocating both to the landing bottom or an 이용
+   안내). That decision is open as P8 Operator Question **Q5**, and the round's own
+   contract makes deleting the strings conditional on it — so `P8.S3` deleted the
+   footer's markup, which R8 signs, and left the sentences transcribed here for
+   whichever surface round relocates them. **Nothing in the chrome renders any of
+   the five below.**
+   --------------------------------------------------------------------------- */
 
 /** The footer's left-column positioning line (R2 §Page shell: "positioning line
  * (mono 11, `rgba(255,255,255,.45)`)").
@@ -160,8 +201,13 @@ export const GATE_COST_TAIL_KO =
 export const DISCLAIMER_KO =
   "미주알은 투자 자문·권유를 제공하지 않습니다. 모든 정보는 DART 공시 원문 확인을 전제로 제공됩니다.";
 
-/** The bottom hairline row (R2 §Page shell: "© · 자료: 금융감독원 DART 전자공시
+/** The identity line's © (R2 §Page shell: "© · 자료: 금융감독원 DART 전자공시
  * | 의견 보내기 · 해설 (mono 11)", with 해설 → AI 질문 per R6).
+ *
+ * R8 keeps both halves of that row and re-cuts everything around them: one
+ * hairline, one row, and **Pretendard rather than mono** — "mono는 숫자
+ * 전용(R1)이고 남은 줄에는 숫자가 없다" (result.md §2-14). The words are
+ * untouched.
  *
  * The record writes the symbol and no more, and the card that showed the line is
  * in the Claude Design project. `© 미주알` composes R2's own symbol with the
@@ -172,3 +218,50 @@ export const COPYRIGHT_KO = "© 미주알";
 /** The source line in the same row — R2's literal, and the product's one
  * provenance claim in the smallest possible form. */
 export const SOURCE_KO = "자료: 금융감독원 DART 전자공시";
+
+// ---------------------------------------------------------------------------
+// 의견 보내기 — R8's new 미주알-owned surface (build-prompt §6, copy table §7)
+// ---------------------------------------------------------------------------
+
+/**
+ * The fourteen strings R8 signs for the feedback surface, **verbatim from
+ * build-prompt §7** ("카피 (신규 15 — 등재 필요)", of which `HOLDINGS_LABEL_KO`
+ * above is the fifteenth). The round is the copy exception `handoff.md` §2
+ * granted for this surface and this round only, dated 2026-08-23, and the
+ * FeedbackStates card is the 정본.
+ *
+ * The set is deliberately small and it is the whole surface: a title, one guide
+ * line, a placeholder, an empty-input hint, two fine-print sentences, the send
+ * button in its two labels, the accepted line with its receipt label, the failure
+ * line with its "your text is still here" reassurance, 다시 시도 and 닫기. There
+ * is no contact field and therefore no contact copy — **the surface says out loud
+ * that no reply is coming** (`FEEDBACK_FINE_KO`), which is the product's own
+ * "거절하는 것을 소리 내어 말한다" rule rather than a new promise.
+ *
+ * Every string below is registered in
+ * `docs/reference/design/grounding/copy-inventory.md` §R8 additions.
+ */
+export const FEEDBACK_TITLE_KO = "의견 보내기";
+export const FEEDBACK_GUIDE_KO = "잘못된 수치나 바라는 점을 적어 주십시오.";
+export const FEEDBACK_PLACEHOLDER_KO = "예: 계양전기 청약 기간이 공시와 다릅니다";
+export const FEEDBACK_EMPTY_HINT_KO = "내용을 입력하면 보낼 수 있습니다.";
+export const FEEDBACK_FINE_KO =
+  "연락처를 받지 않으므로 답장은 드리지 못합니다. 이메일·계정 정보는 함께 보내지 않습니다.";
+export const FEEDBACK_SEND_KO = "보내기";
+export const FEEDBACK_SENDING_KO = "보내는 중입니다";
+export const FEEDBACK_SENT_KO = "의견이 접수되었습니다.";
+export const FEEDBACK_RECEIPT_LABEL_KO = "접수 번호";
+export const FEEDBACK_RECEIPT_FINE_KO =
+  "접수 번호는 문의 확인용 표기입니다. 답장은 드리지 못합니다.";
+export const FEEDBACK_FAILED_KO = "의견을 보내지 못했습니다. 잠시 후 다시 시도해 주십시오.";
+export const FEEDBACK_KEPT_KO = "입력한 내용은 그대로 남아 있습니다.";
+export const FEEDBACK_RETRY_KO = "다시 시도";
+export const FEEDBACK_CLOSE_KO = "닫기";
+
+/** The close **glyph**, not a label — the same decision `components/ask/copy.ts`
+ * records for the widget header ("the record writes the glyph itself and signs no
+ * 닫기 label"). R8 uses it twice: the feedback header's 28×28 button, and the
+ * mobile bar button while the sheet is open ("바 버튼: 닫힘 `메뉴`, 열림 **`×`**
+ * … `aria-label`은 항상 `메뉴`"). result.md §6-3 logs it as a departure taken
+ * *instead of* inventing Korean: "「닫기」 문구를 만들지 않기 위한 처리". */
+export const CLOSE_GLYPH = "×";

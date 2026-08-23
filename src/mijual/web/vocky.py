@@ -1,4 +1,4 @@
-"""vocky 관찰 뷰 — the read-only proxy onto vocky's real feedback read API.
+"""vocky — the 관찰 뷰 (read) and, since R8, the 의견 보내기 forward (capture).
 
 R7 §6.3 delegated one decision to this build:
 
@@ -24,13 +24,26 @@ needs a human session token rather than a service credential, and
 ``/api/project/usage`` returns the org's **credentials** — key metadata a
 different product's panel has no business rendering (최소 열람).
 
-**Read-only is enforced here, not promised.** The same ``vk_`` key can ``PATCH``
-and ``DELETE`` on that surface — vocky has no read-scoped credential today
-("There are still no per-credential permission scopes: one ``vk_`` key does
-capture and full read+manage across its whole scope") — so this module issues
-``GET`` and nothing else, and there is no code path that could issue another
-method. That is the Mijual-side implementation of 「읽기 전용 (관찰 API의 정의 —
-vocky 상태 변경 없음)」, and the same rule §6.5 already puts on the whole panel.
+**The observation view is read-only, and that is enforced here rather than
+promised.** The same ``vk_`` key can ``PATCH`` and ``DELETE`` on that surface —
+vocky has no read-scoped credential today ("There are still no per-credential
+permission scopes: one ``vk_`` key does capture and full read+manage across its
+whole scope") — so :func:`observe` issues ``GET`` and nothing else, and no code
+path can make it issue another method. That is the Mijual-side implementation of
+「읽기 전용 (관찰 API의 정의 — vocky 상태 변경 없음)」, and the same rule §6.5 already
+puts on the whole panel.
+
+**R8 added a second, opposite surface: capture** (:func:`submit`, ``P8.S3``). The
+signed 의견 보내기 screen is 미주알's own, so the browser posts to *this* service
+and this module forwards one reader message to vocky's ingest endpoint
+(``POST {base}/api/feedback``) with the same credential. It is a write **into
+vocky** and it changes nothing in Mijual: it touches no table, and in particular
+it does not write the AI 질문 agent's ``save_feedback`` queue
+(:mod:`mijual.web.conversationstore`) — R8's handoff left the two paths separate,
+and merging them would put a human-recorded 의견 into an agent-recorded log.
+The two functions share everything that matters — the settings, the masked key,
+the no-redirect opener, one attempt, a short timeout, and the rule that no
+failure ever raises past this module.
 
 **The fields are an allowlist, not a pass-through** (:data:`ROW_FIELDS`). vocky's
 record carries 25 keys, several of which are correlation handles (``user_id``,
@@ -88,19 +101,35 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Mapping, Sequence
 
+from mijual import __version__
 from mijual.config import Settings
 from mijual.web import clock
 
 __all__ = [
+    "USER_AGENT",
+    "CAPTURE_ENDPOINT",
+    "CAPTURE_TIMEOUT_SECONDS",
     "DEFAULT_LIMIT",
     "MAX_LIMIT",
     "ROW_FIELDS",
+    "SOURCE_PRODUCT",
     "TIMEOUT_SECONDS",
     "VOCKY_ENDPOINT",
     "Observation",
+    "Receipt",
     "observe",
     "row_view",
+    "submit",
 ]
+
+#: **Both calls identify themselves, and they have to.** vocky sits behind
+#: Cloudflare, which bans ``Python-urllib/3.x`` by browser signature — measured
+#: 2026-08-23 against the live service: the default UA answers **403 error 1010
+#: "browser_signature_banned"** on every path, and the same request with this
+#: header answers 200. That was silently true of the observation read as well
+#: (the ops 피드백 tab had been reporting 「unreachable」), so one honest product
+#: identifier serves both. It claims to be no browser and hides nothing.
+USER_AGENT = f"mijual/{__version__} (+https://vocky.hi2vi.com)"
 
 #: vocky's project-scoped read. The credential decides the scope; there is no
 #: project parameter on this surface and none is sent.
@@ -249,7 +278,11 @@ def observe(
 
     request = urllib.request.Request(
         _url(base, limit=limit, cursor=cursor),
-        headers={"Authorization": f"Bearer {key}", "Accept": "application/json"},
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Accept": "application/json",
+            "User-Agent": USER_AGENT,
+        },
         method="GET",
     )
     try:
@@ -276,4 +309,154 @@ def observe(
         rows=rows,
         next_cursor=next_cursor if isinstance(next_cursor, str) else None,
         base=base,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Capture — the 의견 보내기 forward (R8 / `P8.S3`)
+# ---------------------------------------------------------------------------
+
+#: vocky's ingest endpoint. The credential carries the project, so — exactly like
+#: the read above — no project parameter is sent.
+CAPTURE_ENDPOINT = "/api/feedback"
+
+#: What every message this product forwards says it came from. R8's contract
+#: fixes it (``source.product "mijual"``) and nothing computes it.
+SOURCE_PRODUCT = "mijual"
+
+#: Longer than the read's 3 s (a reader is waiting on a *write*, and losing an
+#: accepted message to an impatient client is worse than a slow panel), and short
+#: of the surface's own 8 s ceiling so the reader gets this service's honest
+#: answer rather than the browser's abort. One attempt, like the read: a retry is
+#: the reader's 「다시 시도」, not a hidden second POST.
+CAPTURE_TIMEOUT_SECONDS = 6.0
+
+
+@dataclass(frozen=True)
+class Receipt:
+    """What vocky did with one reader message, or the honest reason it did not.
+
+    ``state`` is the whole outcome, and it is deliberately the same vocabulary as
+    :class:`Observation`:
+
+    ==================  ======================================================
+    ``accepted``        vocky answered 202. ``request_id`` is **its** handle,
+                        passed through untouched — the 접수 번호 the surface
+                        shows. Nothing here mints one.
+    ``unconfigured``    no base URL and/or no key. Nothing was sent.
+    ``rejected``        vocky refused this request and a retry cannot help —
+                        a 4xx: the credential (401/403) or the body (400).
+    ``unavailable``     vocky did not answer, or answered 5xx: a timeout, DNS,
+                        a redirect, a malformed body. A retry may work.
+    ==================  ======================================================
+
+    ``retryable`` is derived from that and is the one thing the reader's screen
+    branches on (R8 build-prompt §6: "401 → failed 유지 **재시도 금지** (키 문제는
+    독자가 해결 못 함)").
+    """
+
+    state: str = "unconfigured"
+    request_id: str | None = None
+    accepted_at: str | None = None
+    reason: str | None = None
+    status: int | None = None
+
+    @property
+    def accepted(self) -> bool:
+        return self.state == "accepted"
+
+    @property
+    def retryable(self) -> bool:
+        return self.state == "unavailable"
+
+
+def capture_payload(
+    message: str, *, channel: str, session_id: str | None = None
+) -> dict[str, Any]:
+    """R8's payload, exactly — and **only** those fields.
+
+    > ``{"message": …, "source": {"product": "mijual"}, "recorded_by": "human",
+    > "channel": "web" | "mobile", "target_type": "surface",
+    > "session_id": "<있으면 익명 세션 id>"}``
+    >
+    > ``feedback_value``·``comment``·``tags``·``user_id``·``attachment_ids`` 미사용
+    > (첨부 업로드 엔드포인트 없음).
+
+    ``session_id`` is passed through when the browser already had one (the AI 질문
+    tab handle) and **omitted** otherwise: no identifier is minted for a 의견, and
+    an absent value is left out rather than sent as ``null`` — the same rule
+    :func:`row_view` follows on the way back.
+    """
+    payload: dict[str, Any] = {
+        "message": message,
+        "source": {"product": SOURCE_PRODUCT},
+        "recorded_by": "human",
+        "channel": channel,
+        "target_type": "surface",
+    }
+    if session_id:
+        payload["session_id"] = session_id
+    return payload
+
+
+def submit(
+    settings: Settings,
+    *,
+    message: str,
+    channel: str,
+    session_id: str | None = None,
+) -> Receipt:
+    """Forward one reader message to vocky. **Never raises.**
+
+    Every failure — unset credential, bad URL, timeout, 401, redirect, garbage
+    body — becomes a state, because the route above has to turn it into one of the
+    two things the signed surface can show (접수됨 with a 접수 번호, or 실패 with or
+    without 다시 시도) and must never turn it into a 500 with an upstream
+    exception's text in it.
+
+    The message itself is **never logged** here or anywhere else: it is a reader's
+    own words, and the only copy of it that this system keeps is vocky's.
+    """
+    base = (settings.vocky_api_base or "").strip()
+    key = settings.vocky_api_key
+    if not base or not key:
+        return Receipt(state="unconfigured")
+
+    if urllib.parse.urlparse(base).scheme not in ("http", "https"):
+        return Receipt(state="rejected", reason="UnsupportedScheme")
+
+    body = json.dumps(
+        capture_payload(message, channel=channel, session_id=session_id)
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        f"{base.rstrip('/')}{CAPTURE_ENDPOINT}",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": USER_AGENT,
+        },
+        method="POST",
+    )
+    try:
+        with _OPENER.open(request, timeout=CAPTURE_TIMEOUT_SECONDS) as response:
+            answer = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        # 4xx is this request's fault (the key, or the body) and a reader cannot
+        # fix either; 5xx is vocky's and may pass.
+        state = "rejected" if 400 <= exc.code < 500 else "unavailable"
+        return Receipt(state=state, reason=type(exc).__name__, status=exc.code)
+    except Exception as exc:  # noqa: BLE001 - any transport/decode failure degrades
+        return Receipt(state="unavailable", reason=type(exc).__name__)
+
+    if not isinstance(answer, dict) or not isinstance(answer.get("request_id"), str):
+        # It answered 2xx without the handle the surface has to show. Treat it as
+        # unavailable rather than inventing a 접수 번호.
+        return Receipt(state="unavailable", reason="UnexpectedShape")
+
+    return Receipt(
+        state="accepted",
+        request_id=answer["request_id"],
+        accepted_at=_instant(answer.get("accepted_at")),
     )

@@ -1,0 +1,28 @@
+/* 계정 아이디콘 (R8 build-prompt §5).
+ *
+ * > 렌더: `display:grid; grid-template-columns: repeat(5,1fr); width/height =
+ * > size;` 배경 `rgba(255,255,255,.06)`, `border: 1px solid var(--border-soft)`,
+ * > 셀 = 채워지면 hue, 아니면 투명. … 사각형만, 라운드·그림자·그라디언트 없음.
+ *
+ * The one literal here is the round's own `rgba(255,255,255,.06)` (the same value
+ * `.cosmos` gives `--brand-tint`, but the record writes the frame's fill
+ * directly, so it is transcribed). Everything else is a token. */
+
+.mark {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  /* The declared width/height is the **cell grid**, so a cell is exactly size/5
+     whole pixels — the reason the record allows only 20/28/40. The shell sets
+     `box-sizing: border-box` globally; the hairline sits outside the grid here so
+     it cannot eat 2px out of the 5 columns. */
+  box-sizing: content-box;
+  flex: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-soft);
+  /* R1's square system, stated rather than inherited: no radius, no shadow. */
+  border-radius: var(--radius-0);
+}
+
+.cell {
+  display: block;
+}

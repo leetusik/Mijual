@@ -1,29 +1,36 @@
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { Portfolio } from "@/components/portfolio";
 import type { ResolvedStock } from "@/components/portfolio/AddHolding";
 import { ApiError, getPortfolio, getSamplePortfolio, getStock } from "@/lib/api";
-import { ROUTES } from "@/lib/routes";
 import type { Portfolio as PortfolioPayload } from "@/lib/types";
 import styles from "@/components/portfolio/Portfolio.module.css";
 
 /**
- * `/portfolio` — 내 포트폴리오 (R5), and `?sample=1` — 샘플 포트폴리오 (R5-4).
+ * `/portfolio` — 내 포트폴리오 (R5), 보유 종목 as the nav now names the slot (R8),
+ * and `?sample=1` — 샘플 포트폴리오 (R5-4).
  *
- * ## The gate, and the fact that it is the only one
+ * ## What R8 changed: **an anonymous visit is the sample, not a redirect**
  *
- * > 내 포트폴리오 → 로그인 게이트 (**유일하게 게이트되는 표면**); 그 외 전부 익명
- * > 동작 유지.
+ * R5 made this the product's one gated surface ("내 포트폴리오 → 로그인 게이트
+ * (유일하게 게이트되는 표면)"), and a session-less visit bounced to 로그인. R8 puts
+ * the route in the bar under one label for both states and says what each state
+ * answers with:
  *
- * The gate is the API's own answer rather than a second rule: this page asks for
- * `GET /portfolio` with the request's own cookie forwarded (`P5.S10` note 13 —
- * `credentials` is a browser concept and does nothing in Node) and a
- * `401 unauthenticated` sends the reader to the 로그인 panel, which on a
- * successful login sends them back here (`P5.S15`). One request, one authority,
- * and no way for the page's idea of "logged in" to differ from the service's.
+ * > `보유 종목`은 로그인 여부와 무관하게 같은 라벨·같은 라우트. 익명이면 표면이
+ * > 샘플 모드로 응답 (`SampleBanner` + `lib/sample.ts` 기존 동작) — nav는 아무
+ * > 배지도 붙이지 않는다.
  *
- * Nothing else in the product gained a gate: every other route still answers 200
- * without a cookie, and this file is the only `redirect` to 로그인 in the app.
+ * So a nav slot never leads to a login wall: signed in, the reader's own rows;
+ * signed out, the same surface in the sample mode it already had. **The gate
+ * itself is unchanged** — it is still the API's own answer (`GET /portfolio` with
+ * the request's cookie forwarded; `401 unauthenticated` means no session), and
+ * `GET /portfolio/sample` was always anonymous. What changed is what this page
+ * does with that 401: it renders the sample instead of redirecting, and the
+ * account's rows are still reachable by nobody but the account.
+ *
+ * `?sample=1` keeps working for the signed-in reader who follows R5-4's entry
+ * from the 로그인 page, which is the one case where the mode must outrank a
+ * session.
  *
  * ## The sample is a mode of this route, not a surface of its own
  *
@@ -69,7 +76,15 @@ export default async function PortfolioPage({
   } catch (error) {
     if (!(error instanceof ApiError) || error.status !== 401) throw error;
   }
-  if (payload === null) redirect(ROUTES.login);
+  // No session → the sample (R8 §1), same surface, same banner, no redirect.
+  if (payload === null) {
+    const example = await getSamplePortfolio();
+    return (
+      <main className={`content ${styles.page}`}>
+        <Portfolio payload={example} mode="sample" preselect={null} />
+      </main>
+    );
+  }
 
   const preselect: ResolvedStock | null = add
     ? await getStock(add, { headers })

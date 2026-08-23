@@ -1,5 +1,4 @@
 import { connection } from "next/server";
-import { SampleEntry } from "@/components/auth";
 import { Board, Cosmos, Hero, LapseNotice, RetrospectiveAnchor } from "@/components/landing";
 import { getBoard, getBoardSummary } from "@/lib/api";
 import styles from "./page.module.css";
@@ -40,11 +39,12 @@ export default async function BoardLanding() {
           <RetrospectiveAnchor summary={summary} />
           <LapseNotice summary={summary} />
           <Board board={board} />
-          {/* R5-4's second sample entry — "진입: 로그인 페이지 하단 + 랜딩 푸터".
-              It lands at the foot of the landing *page*: R5 leaves the global
-              footer unchanged ("Footer 불변"), so the sample entry is a landing
-              element rather than chrome (`P5.S11` note 11). */}
-          <SampleEntry variant="landing" />
+          {/* R5-4's landing sample entry stood here. **R8 removed it** (build-prompt
+              §1: "랜딩의 「내 포트폴리오는 어떻게 보이나 — 샘플로 열어보기 →」 링크와
+              그 빈 밴드 제거"), because the nav's 보유 종목 slot now opens the same
+              sample for a reader with no session — one destination instead of a
+              line at the foot of the page. The 로그인 page's entry (R5-4's other
+              placement) is untouched. */}
         </div>
       </main>
     </>

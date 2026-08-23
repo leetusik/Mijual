@@ -1,6 +1,7 @@
 /* The 로그인 slot. R2 §Page shell: "Right: 로그인 (quiet,
- * `rgba(255,255,255,.68)`)" — quieter than the three destinations, because the
- * 2층 is second-class to the anonymous experience (R2 handoff §2). */
+ * `rgba(255,255,255,.68)`)" — quieter than the destinations, because the 2층 is
+ * second-class to the anonymous experience (R2 handoff §2). Anonymous is R8's
+ * one untouched state ("익명(`로그인` 조용한 링크)은 **변경 없음**"). */
 
 .login {
   font-size: var(--text-base);
@@ -25,10 +26,8 @@
 }
 
 /* ---------------------------------------------------------------------------
-   The logged-in slot (R5 §Chrome) — an extension of the same quiet slot, never a
-   restyle of it: same size, same quiet ink, same place. R5-2's "nav 로그인 변경
-   금지" is about the anonymous state, and the menu that replaces it inherits its
-   voice rather than announcing itself.
+   The signed-in slot — R8 build-prompt §2 (superseding R5 §Chrome 개정 ⑤).
+   Every number below is the round's own.
    --------------------------------------------------------------------------- */
 
 .slot {
@@ -38,34 +37,69 @@
   gap: var(--space-2);
 }
 
-/* 축약 이메일 — mono, per the round ("축약 이메일 메뉴(mono, 앞 4자 + … + 도메인
-   끝)"). `.mono` (the shell's rule) carries the family and the 0.95em. */
-.account {
-  padding: 0;
+.frame {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  max-width: 280px;
+  padding: 0 var(--space-2) 0 6px;
   background: none;
-  border: 0;
-  font-size: var(--text-base);
-  color: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-0);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-sans);
   cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 
-.account:hover,
-.account[aria-expanded="true"] {
+/* hover / 열림: 표면 이동 + 보더 밝힘 (색 반전 없음). The open state is louder
+   than hover by one step, which is what tells the reader the menu below belongs
+   to this control. */
+.frame:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--ink-3);
   color: var(--ink-1);
 }
 
-/* 스택 리스트 — a plain stacked list under the slot. Hairline elevation only:
-   the system has no shadows and no radii (R1). */
+.frame[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--ink-2);
+  color: var(--ink-1);
+}
+
+/* 전체 이메일, mono `--text-sm`, 말줄임. `.mono` (the shell's rule) carries the
+   family; the size is stated here, so the `:where(.mono)` 0.95em cannot flatten
+   it (`app/shell.css`'s note). */
+.email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+.caret {
+  flex: none;
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+/* 메뉴: 프레임 우변 기준 right:0, 최소 폭 = 프레임 폭, 오프셋 8px, **불투명**
+   `#0e1a15` — the cosmos reading through a list of destinations is exactly what
+   R8 fixed (result.md §2-11, the same judgement P3.S7 made for the widget). */
 .menu {
   position: absolute;
   top: calc(100% + var(--space-2));
   right: 0;
   z-index: 20;
   display: flex;
-  min-width: 160px;
+  min-width: 100%;
+  width: max-content;
   flex-direction: column;
-  background: var(--surface-card);
+  background: #0e1a15;
   border: 1px solid var(--border-strong);
+  box-shadow: var(--panel-glow);
 }
 
 .menuRow {
@@ -80,6 +114,7 @@
   color: var(--ink-1);
   text-align: left;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -96,34 +131,7 @@
   cursor: default;
 }
 
-/* 「샘플」 칩 — the tinted chip form the system already uses for a state word;
-   the border is the record's 「」 (`P5.S10` note 4a). */
-.sampleChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px var(--space-2);
-  background: var(--live-tint);
-  border: 1px solid var(--live);
-  font-size: var(--text-sm);
-  color: var(--ink-1);
-  text-decoration: none;
-}
-
-.sampleExit {
-  padding: 0;
-  background: none;
-  border: 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  color: rgba(255, 255, 255, 0.68);
-  cursor: pointer;
-}
-
-.sampleExit:hover {
-  color: var(--ink-1);
-}
-
-/* Sheet rows (≥48px, R2 §Page shell mobile; R5: 구분선 + 계정 메뉴 영역). */
+/* Sheet rows (≥48px, R2 §Page shell mobile; R8 §3's account block). */
 .sheetAction {
   display: flex;
   align-items: center;
@@ -138,7 +146,19 @@
   cursor: pointer;
 }
 
+/* The identity row — 표기, 탭 대상 아님, so it takes the round's own padding
+   rather than the 48px row height (nothing here is a tap target). */
+.identityRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
 .sheetEmail {
-  margin-left: var(--space-2);
-  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
 }

@@ -191,9 +191,8 @@ export const SAMPLE_ENTRY_KO = "샘플 포트폴리오로 둘러보기";
 export const SAMPLE_ENTRY_SUB_KO =
   "가입 없이, 실제 공시 4건으로 구성된 예시 포트폴리오를 엽니다 — 클릭 한 번.";
 
-/** The other signed placement — R5-4: "진입: 로그인 페이지 하단 + **랜딩 푸터**",
- * with result.md's literal line. It lands at the foot of the landing *page*, not
- * in the global footer: R5's chrome section says "Footer 불변" and its signoff
- * records the round as extending only the account slot, so the sample entry is a
- * landing/sample element (`P5.S11` note 11). */
-export const SAMPLE_LANDING_KO = "내 포트폴리오는 어떻게 보이나 — 샘플로 열어보기 →";
+/* R5-4's second placement — the landing line 「내 포트폴리오는 어떻게 보이나 —
+ * 샘플로 열어보기 →」 — is **retired by R8** (build-prompt §1: "랜딩의 … 링크와 그
+ * 빈 밴드 제거"), so its constant is gone from this file. The destination did not
+ * disappear with it: the nav's 보유 종목 slot opens the same sample for anyone
+ * without a session, which is what made the line redundant. */

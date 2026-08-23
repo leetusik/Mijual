@@ -40,7 +40,17 @@ from mijual.web.conversationstore import DbConversations
 from mijual.web.csrf import register_csrf_guard
 from mijual.web.deps import dispose_engine, session_factory
 from mijual.web.errors import register_error_handlers
-from mijual.web.routers import ask, auth, board, events, health, ops, portfolio, stocks
+from mijual.web.routers import (
+    ask,
+    auth,
+    board,
+    events,
+    feedback,
+    health,
+    ops,
+    portfolio,
+    stocks,
+)
 
 __all__ = ["app", "create_app"]
 
@@ -132,6 +142,9 @@ def create_app(
     # AI 질문 (R6). The only route that reaches a model, and it does so through
     # `mijual.agent` alone — the re-aimed boundary (`P6` Finding 1).
     app.include_router(ask.router)
+    # 의견 보내기 (R8). Write-only and outward: it forwards one reader message to
+    # vocky and stores nothing here — see `mijual.web.routers.feedback`.
+    app.include_router(feedback.router)
     return app
 
 

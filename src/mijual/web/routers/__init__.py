@@ -8,7 +8,9 @@
 *separate* credential, and the only one that is read-only by rule rather than by
 habit. :mod:`~mijual.web.routers.ask` (`P6.S4`) is AI 질문 — the only route that
 streams, and the only one that reaches a model (through :mod:`mijual.agent`, and
-nowhere else). A router file never spans two signed design surfaces, so a review
+nowhere else). :mod:`~mijual.web.routers.feedback` (`P8.S3`, R8) is 의견 보내기 —
+the only route that writes **outward**: it forwards one reader message to vocky
+and persists nothing on this side. A router file never spans two signed design surfaces, so a review
 can isolate a regression to one of them.
 
 Routers stay thin: they validate the request, call the presentation contract
