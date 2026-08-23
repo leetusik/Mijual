@@ -1200,6 +1200,40 @@ passed · `workflow validate` clean · the whole `## Regression Checklist` re-ru
 lines. `/portfolio` and the landing are unaffected.
 
 
+### R12 walk — surface 5 (auth — 로그인 · 계정 만들기 · 비밀번호 재설정 + conversion moments), 2026-08-24, operator runtime
+
+Walked by the orchestrator at `http://127.0.0.1:3000` **while `P8.S9` was running** (the operator asked
+for the R12 handoff in parallel; handoff pushed first as `05b2ca0`, this record follows S9's close).
+The operator's Chrome is logged in and `/auth/login` redirects to `/portfolio`, so the anonymous
+panels were captured from the server render without a session and viewed at desktop 1456px + 390px;
+the pending / error / notice states, the anonymous `ConversionOffer` / `DeadlineOffer` / nav 로그인 and
+로그아웃 → 「로그아웃되었습니다」 were **not walked** (credentials or a logged-out session needed) — read
+from code. Handoff: `docs/reference/design/rounds/12-auth/handoff.md`. Default for every item: fix,
+Claude Design decides how.
+
+1. **「비밀번호 재설정」 is disabled with no reason** until an address is typed — grey text, nothing on
+   click; a reader who forgot their password reads a dead link.
+2. **No password rule before the error** — 「8자 이상」 appears only as an error after submit (계정
+   만들기 and the reset page). → Q-C.
+3. **Reset page context** — `/auth/reset?token=…` names no account and no state for a bad/expired
+   token beyond the API's error line (가입 여부 비노출 stays).
+4. **Chrome's English validation bubble** (P7 Q12, routed here) — `required` + `type=email`. → Q-A.
+5. **Primary button** 160px min-width, left-aligned under full-width inputs on desktop (full-width
+   at 390); R4/R11 조회 is 48px full-row, R10 환산 44px.
+6. **Sample-entry sub wraps with an orphan** at 390 (「…클릭 한 / 번.」).
+7. **Page composition** — 440px panel centered, no rail/crumb (every other surface has 「← 관제
+   현황판」); sample entry under a hairline. → Q-D.
+8. **Breakpoint** — `Auth.module.css` switches at 480px; R10/R11 settled on 767.
+9. **States** — idle / 확인 중… / error / notice, focus-visible, hover, disabled primary: to be drawn.
+10. **로그아웃 → 「로그아웃되었습니다」** — placement/duration not walked.
+11. **Conversion moments as a set** — `ConversionOffer` (now on R11's lookup page), `DeadlineOffer`
+    (R10 header, `days >= 0`), nav 로그인 — hierarchy, and the post-login landing (always
+    `/portfolio`; the origin is not carried). → Q-B.
+12. **PII inset** tier/voice next to R11's caption tier.
+13. **Headings** — h1 = mode label; PII `aside`; sample `section` unheaded.
+
+Operator decisions routed to the handoff §2b as Q-A–D = **Q35–Q38** below.
+
 ## Operator Questions
 
 _Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._
@@ -1368,6 +1402,16 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   `.ctwhen`-above-`.ctfiled` stagger — i.e. the shortfall is the signed geometry's own height, not a
   fidelity defect. (a) accept the built heights as faithful; (b) open a follow-up density round for
   the ② row and the 놓친 돈 breakdown at 390. Default **(a)** + a deferred job for (b).
+
+- **Q35 (R12 Q-A) — the English validation bubble (P7 Q12).** (a) keep the browser's native messages,
+  (b) `noValidate` + one Korean line in the error slot (dated exception), (c) `noValidate` and let the
+  existing Korean API errors answer. Default **(c)** if the session agrees they cover it; else (b).
+- **Q36 (R12 Q-B) — where login from an offer lands.** Today always `/portfolio`; carrying the origin
+  is feature-ish. Default: **keep `/portfolio`; the offer copy may say where it leads**.
+- **Q37 (R12 Q-C) — a password rule stated up front** (「8자 이상」 hint) — new copy or error-only.
+  Default: session decides; if a hint, one string (dated exception).
+- **Q38 (R12 Q-D) — page frame on the auth pages** — a 「← 관제 현황판」 rail like every other surface,
+  or R5's bare centered panel. Default: session decides (no new copy either way).
 
 ## Constraints
 

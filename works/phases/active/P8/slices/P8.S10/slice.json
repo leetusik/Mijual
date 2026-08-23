@@ -3,11 +3,11 @@
   "phase_id": "P8",
   "name": "R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정)",
   "kind": "co-work",
-  "status": "todo",
+  "status": "pending",
   "order": 10,
   "depends_on": [],
   "created_at": "2026-08-23T13:28:14+09:00",
-  "started_at": null,
+  "started_at": "2026-08-24T04:28:08+09:00",
   "completed_at": null,
   "risk": "high",
   "source": {
