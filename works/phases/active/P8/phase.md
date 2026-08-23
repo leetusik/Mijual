@@ -1042,7 +1042,7 @@ Design decides how.
 Not walked: the anonymous `ConversionOffer` (R12's), 481–767 widths, the production build. Operator
 decisions routed to the handoff §2b as Q-A–E = **Q23–Q27** below.
 
-### R11 landed spec — read back 2026-08-24 (`P8.S8` gate 2) — awaiting literal signoff
+### R11 landed spec — read back 2026-08-24 (`P8.S8` gate 2) — SIGNED OFF 2026-08-24 ("sign off"); SIGNOFF.md R11 entry, cards regrouped to `Lookup`
 
 Read back with DesignSync from "Mijual Design System" and **landed as-is** under
 `docs/reference/design/rounds/11-lookup/output/`: `result.md`, `build-prompt.md`,
@@ -1252,7 +1252,8 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   under the 놓친 돈 frame; `result.md` §4 lists only the prompt as new copy. (a) sign it as written →
   register in `copy-inventory.md` and `copy.ts`; (b) compose only from `coverageCaptionKo` + the
   existing 「유상증자 {n}건」 count, dropping the unregistered tail. Default at signoff: **(a)** if the
-  signoff covers the cards as landed.
+  signoff covers the cards as landed. **Answered 2026-08-24: (a)** — the signoff covered the cards as
+  landed; the apply slice registers the caption as signed copy (SIGNOFF.md R11).
 
 ## Constraints
 

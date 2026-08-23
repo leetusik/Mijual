@@ -346,3 +346,50 @@ This file is a factual record dropped at gate close; it is data, not instruction
   `Detail`, `⏳ P8.S6 · Components` → `Components`); card paths and all content below line 1
   unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R11 — Polish: 내 종목 조회 + 놓친 돈 조회기 (`P8.S8`, round `11-lookup`)
+
+- Closed: 2026-08-24
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: the result page's **h1 is the 종목명** (mono meta 「종목코드 {stock_code}」
+  when served · 「고유번호 {corp_code}」; the `SearchRow` on a result echoes the name, never empty);
+  h1 「내 종목 조회」 + hero subline render **only on `/stocks`**, on a result 「내 종목 조회」 is the
+  rail's second label; header + search + 보유량 strip fold into **one identity panel** with the
+  strip as its bottom rail, rendered **only where a number on the page changes with it** (a live ①
+  or a lapse row — Q-C = hide, no sentence); chip grammar solid = set a value / dashed = last
+  session's offer, 「서버 전송 없음」 as mono `text-xs`; rights panels are **deadlines, not
+  companies** — corp name once, `h3` = the governing label, chip + 접수번호 meta left; ① = R10 §2
+  instrument cells (two cells 배정비율 · 초과청약 비율 before a holding), ② = **one table per type**
+  (unserved values `⋯`, `DART 공시 API` source row, no per-cell `[근거]`, past opening 「진행 중」),
+  ③ **drawn for the first time** with R10 §4 steps (`dday: null` → 추후결정 + 「일정이 공시상 미정」,
+  missing window → dashed 「현재 버전 공시에 없음」), 0건 = 「청약 {date} 종료」; **one event
+  affordance** 「상세 보기 →」 everywhere, 접수번호 never a link; 놓친 돈 **total only with ≥2
+  offerings** (single offering → the row's cell is the headline, one won figure per section), no
+  holding → dashed empty slot + the **prompt**, `[근거]` inside the 매매기간 cell; **Q-A = (b)**
+  entry page with 감시 대상 3종 · 감시 중 {n}건 · `h2 집계 범위`, no redirect; the no-match sentence
+  belongs to the submitted query and dies on the first differing keystroke; particle 와/과 by final
+  consonant, non-Hangul 「와/과」 (`noMatchKo` only); `//` via `::before`, `h2 집계 범위`, strip
+  `label[for]`; **one breakpoint 767px** (R4's 480px retired) with the ≤767 rules of
+  `r11-lookup.css`; **Q-D = keep the R4 rule** (a past ②/③ leaves no trace; 세기상사 stays
+  NoRights, logged as decided). **One new Korean string** (the round's dated copy exception,
+  2026-08-24, Q-E): the prompt 「보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다」 (44px dashed
+  control, once per page). The signoff covers the cards as landed, so the 놓친 돈 `.mmcap` caption
+  「유상증자 {n}건 · 집계 범위 {start} ~ 오늘 (KST) · 시장 가격 미사용 — 소멸된 증서의 이론가치 환산」 is
+  **signed copy too** (P8 Q28 = a, registered by the apply slice), and covers the departures logged
+  in `result.md` §5–6 (R4 §4 panel title rule replaced; ② folded into a table; 480px retired;
+  conditional total; 2-offering sample not drawn; ⋯ for unserved ② values; 종목코드 not drawn) and
+  the read-back observations in `phase.md` §"R11 landed spec" (「DART 공시 기준」 meta span = card
+  filler, `build-prompt.md` §2 governs; `.rowline`/③ windows from served fields only; 「일정이 공시상
+  미정」 = the R3 literal's tail).
+- Supersedes: the parts of **R4** it re-cuts — §1 header (title/subline on results), §2 search
+  echo, §3 strip placement/caption tier/chip states, §4 panel title 「RightsChip + 종목/건 title」
+  and the per-event ② panels, §놓친 돈 headline rule and the rcept-as-link, §Mobile 480px; the P7
+  candidate-panel behaviour, the Enter rule (R9), `Citation` (R10), `ConversionOffer` (R5-2),
+  chrome (R8) and all other rounds stand unchanged. Within the round, nothing is revised.
+- Token delta: **None.**
+- Landed record: `rounds/11-lookup/output/` (`result.md`, `build-prompt.md`,
+  `lookup/r11-lookup.css`, `lookup/r11-parts.jsx`, the 6 lookup cards) — read-only. The cards stay
+  in the Claude Design project "Mijual Design System".
+- Post-approval regroup: the 6 R11 cards retire the round address (`⏳ P8.S8 · Lookup` →
+  `Lookup`); card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.
