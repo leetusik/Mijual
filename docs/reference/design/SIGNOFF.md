@@ -393,3 +393,53 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 6 R11 cards retire the round address (`⏳ P8.S8 · Lookup` →
   `Lookup`); card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R12 — Polish: Auth (로그인 · 계정 만들기 · 비밀번호 재설정) + 전환 제안 (`P8.S10`, round `12-auth`)
+
+- Closed: 2026-08-24
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: **Q-A = (b)** `noValidate` + Korean — **two** lines 「이메일과 비밀번호를
+  입력해 주세요.」 / 「이메일 주소 형식이 올바르지 않습니다.」 (default (c) rejected: `invalid_email`
+  has no signed Korean, so 계정 만들기's empty submit would render nothing); **Q-B** = every login
+  lands `/portfolio`, origin not carried, offer copy not extended; **Q-C** = one token 「8자 이상」
+  mono `text-xs` on the 비밀번호 label row, **계정 만들기 + 재설정 only** (never 로그인); **Q-D** =
+  rail 「← 관제 현황판」 as the 480px column's first row on both auth pages, panel stays R5's
+  centered panel. 재설정 is **never disabled for an empty address** — clicking focuses the 이메일
+  field (R11's prompt→focus grammar); `disabled` only while pending. Primary button **full-width
+  48px at every viewport** (R5's 160px min-width + left-align retired). **One breakpoint 767px**
+  (R5's 480px block retired). Four states drawn: 확인 중… = label swap + disabled + opacity .72 (no
+  spinner) · error `--ink-1` · notice `--ink-2`, one `p role="status"` slot, `--alert` never on
+  this layer; focus-visible inputs offset −1, buttons/quiet/rail offset 2, hover = colour only.
+  로그아웃되었습니다 = flash band **above the h1**, no timer (first keystroke/submit/navigation
+  clears it). Reset page: one 비밀번호 field + rule, **no 이메일 field, no sample entry**;
+  `invalid_reset_token` → 「이 재설정 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청해
+  주세요.」 + quiet 「로그인」 in that state only; success = sessions revoked, new session,
+  `/portfolio`, **no completion screen**; no `?token` → redirect (unchanged). Conversion ladder
+  (surface = rank): page numbers > **`ConversionOffer` as an inset band** (CraftPanel dropped; 닫기
+  44×44, CTA 44px; placed after the last data section, **before 집계 범위/프로비넌스**) >
+  `DeadlineOffer` one-line link (R10, untouched, renders nothing until session known) > nav 로그인
+  (R8, untouched). **Four new Korean strings** (dated copy exception 2026-08-24): `PASSWORD_RULE_KO`
+  「8자 이상」, `ERR_FIELDS_REQUIRED_KO`, `ERR_INVALID_EMAIL_KO`, `ERR_RESET_TOKEN_KO` — the latter
+  two map `invalid_email` / `invalid_reset_token` in `authErrorKo`. **Operator removals taken in
+  session**: the PII inset on both auth pages (`PII_RECEIVES_KO`, `PII_NOT_STORED_KO`,
+  `PiiInset.tsx` — withdraws R5-1's 「PII 패널은 로그인 화면 상시 요소」 clause), `CONVERT_STAY_KO`,
+  and `CONVERT_BODY_KO`'s trailing clause → 「계정에 저장하면 마감이 다가올 때 이메일로 알립니다.」
+  The coverage-boundary caption is struck **on the R12 Offers card only** — the lookup surface
+  keeps it per R11's record (P8 Q39, default keep). The signoff covers the departures logged in
+  `result.md` §4 (two lines vs one; disabled retired, not re-labelled; 480px block and 160px
+  min-width deleted; offer demoted panel → band; Q-B default + copy left alone; no sample entry on
+  reset; success drawn as a statement) and the read-back observations in `phase.md` §"R12 landed
+  spec" (the Offers card's `.m390 .hd` order overrides are card-harness-only; `.pii*` and `.aostay`
+  stay in the canon unused).
+- Supersedes: the parts of **R5** it re-cuts — R5-1's auth panel geometry (480px breakpoint, 160px
+  primary), the PII-inset 상시 요소 clause, and the validation/disabled behaviours; R5-2's
+  `ConversionOffer` surface (panel → inset band) and its 카피 list (two strings removed, body
+  shortened); R5-4's sample-entry sub geometry (balance + 34ch). `DeadlineOffer` (R10), nav (R8),
+  and all other rounds stand unchanged. Within the round, nothing is revised.
+- Token delta: **None.**
+- Landed record: `rounds/12-auth/output/` (`result.md`, `build-prompt.md`, `account/r12-auth.css`,
+  `account/r12-parts.jsx`, the 3 account cards) — read-only. The cards stay in the Claude Design
+  project "Mijual Design System"; `account/Auth.html` replaces the R5 card at that path.
+- Post-approval regroup: the 3 R12 cards retire the round address (`⏳ P8.S10 · Account` →
+  `Account`); card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.

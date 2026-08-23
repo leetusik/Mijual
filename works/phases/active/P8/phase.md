@@ -253,7 +253,7 @@ operator override of the standard mixed-phase shape. There is no `P8.DECOMP2`.**
   does something; focus/hover/keyboard incl. browser defaults; liveness watched over a real interval;
   type-and-wait on anything live) — in the operator's runtime **and** the production build when they
   differ, at every viewport the manifest names. Re-runs the **whole** `## Regression Checklist`.
-  Anything the record never settled is **catalogued on `### R12 landed spec — read back 2026-08-24 (`P8.S10` gate 2), awaiting literal signoff
+  Anything the record never settled is **catalogued on `### R12 landed spec — read back 2026-08-24 (`P8.S10` gate 2) — SIGNED OFF 2026-08-24 ("sign off"); SIGNOFF.md R12 entry, cards regrouped to `Account`
 
 Read back with DesignSync from "Mijual Design System" and **landed as-is** under
 `docs/reference/design/rounds/12-auth/output/`: `result.md`, `build-prompt.md`,
