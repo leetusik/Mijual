@@ -253,7 +253,75 @@ operator override of the standard mixed-phase shape. There is no `P8.DECOMP2`.**
   does something; focus/hover/keyboard incl. browser defaults; liveness watched over a real interval;
   type-and-wait on anything live) — in the operator's runtime **and** the production build when they
   differ, at every viewport the manifest names. Re-runs the **whole** `## Regression Checklist`.
-  Anything the record never settled is **catalogued on `## Operator Questions` below, never
+  Anything the record never settled is **catalogued on `### R12 landed spec — read back 2026-08-24 (`P8.S10` gate 2), awaiting literal signoff
+
+Read back with DesignSync from "Mijual Design System" and **landed as-is** under
+`docs/reference/design/rounds/12-auth/output/`: `result.md`, `build-prompt.md`,
+`account/r12-auth.css` (geometry canon), `account/r12-parts.jsx` (parts + copy), and the three
+cards `account/{Auth,Reset,Offers}.html` (line-1 `@dsCard group="⏳ P8.S10 · Account"`). Token
+delta **none**. In the Claude Design project `account/Auth.html` **replaces the R5 card at the
+same path**; the repo keeps both records (R5's landed output dir is untouched).
+
+**Operator decisions as taken (Q35–Q38 answered, marked below):** Q-A = **(b)** `noValidate` +
+Korean lines — **two**, not one (빈 입력 vs 형식 오류 are different facts; the handoff default (c)
+was rejected because `invalid_email` has no signed Korean, so 계정 만들기's empty submit would
+render nothing). Q-B = **default kept** — every login lands `/portfolio`, origin not carried, offer
+copy NOT extended. Q-C = **yes, one token** 「8자 이상」 mono text-xs on the 비밀번호 label row —
+계정 만들기 + 재설정 only, never 로그인. Q-D = **rail** — 「← 관제 현황판」 as the 480px column's
+first row; panel stays R5's centered panel.
+
+**Binding decisions (the apply slice `P8.S11` builds these, RESPECT THE DESIGN):**
+
+1. **One breakpoint 767px** — delete `Auth.module.css`'s `@media (min-width: 480px)` block; the
+   auth surface joins R10 §0.
+2. **Primary button full-width 48px at every viewport** — `min-width:160px` + left-align retired.
+3. **`noValidate` + client gating in order**: empty → `ERR_FIELDS_REQUIRED_KO` (new); regex
+   `/^[^@\s]+@[^@\s]+\.[^@\s]+$/` fail → `ERR_INVALID_EMAIL_KO` (new); signup short →
+   `ERR_PASSWORD_TOO_SHORT_KO`; else POST → `authErrorKo`. Remove `required`/`pattern`; keep
+   `type`/`autoComplete`.
+4. **재설정 never disabled for an empty address** — click focuses the email input, no request, no
+   line; `disabled` only while pending. (R11's prompt→focus grammar.)
+5. **Four states, one slot** — 확인 중… label swap + disabled + opacity .72 (no spinner); error
+   `--ink-1`, notice `--ink-2`, one `p role="status"`; `--alert` never on this layer. Focus-visible:
+   inputs offset −1, buttons/quiet/rail offset 2; hover = colour only.
+6. **로그아웃되었습니다 = flash band above the h1** (surface-inset), no timer — cleared by first
+   keystroke, submit, or navigation.
+7. **Reset page** — one 비밀번호 field + rule, no 이메일 field, no sample entry;
+   `invalid_reset_token` → `ERR_RESET_TOKEN_KO` (new) + quiet 「로그인」 → `/auth/login` in that
+   state only; success = revoke sessions, new session, `/portfolio`, **no completion screen**; no
+   `?token` → redirect (unchanged).
+8. **Rail on both auth pages**; sample entry on 로그인 only; sample sub gets `text-wrap:balance` +
+   `max-width:34ch` (390 orphan fix).
+9. **PII inset deleted from both auth pages** (operator instruction in session) — remove
+   `PiiInset.tsx`, `PII_RECEIVES_KO`, `PII_NOT_STORED_KO`; withdraws R5-1's 상시 요소 clause. The
+   `.pii*` rules stay in the canon unused (restorable without re-deciding tier).
+10. **`ConversionOffer` → inset band** (drop CraftPanel): surface-inset + border-soft, head row =
+    session line + 닫기 44×44, one body line, CTA 44px `--live-solid` (≤767 full width). **No stay
+    line** — `CONVERT_STAY_KO` deleted; `CONVERT_BODY_KO` → 「계정에 저장하면 마감이 다가올 때
+    이메일로 알립니다.」 Placement on `/stocks/{corp}`: **after the last data section, before 집계
+    범위/프로비넌스**. Conditions unchanged (anonymous, ready, once per session, dismissible).
+11. **`DeadlineOffer` untouched** (R10 geometry, renders nothing until session known, labels exact,
+    `days >= 0` gate stays); **nav 로그인 untouched** (R8).
+12. **Copy**: 4 new constants (`PASSWORD_RULE_KO`, `ERR_FIELDS_REQUIRED_KO`, `ERR_INVALID_EMAIL_KO`,
+    `ERR_RESET_TOKEN_KO`); map `invalid_email`/`invalid_reset_token` in `authErrorKo` and update its
+    header note (two of three recorded gaps closed; `csrf_required` + transport stay unmapped).
+13. **Regression checklist** — build-prompt §6 items 1–12, verified in the operator runtime
+    (127.0.0.1 + tailnet) and the production build.
+
+**Read-back observations (for the record):**
+
+- `COVERAGE_BOUNDARY_KO` is struck **on the R12 Offers card only** (a local coverage block); R11's
+  landed `lookup/*` cards and the live lookup surface keep the caption. `result.md` §4b.3 explicitly
+  asks whether the removal is meant for the 조회 surface itself → **Q39**.
+- The Offers card's `.m390 .hd .cdlab/.ddayslot/.win/.offer/.dart` order overrides exist to undo an
+  R10/R11 sheet-order collision **inside the card harness only** — not a product change; the product
+  keeps R10's own module CSS.
+- `.aostay` (the deleted stay line's rule) and `.pii*` stay in the canon unused, by design.
+- Departures logged in `result.md` §4 (two lines vs one, disabled retired not re-labelled, R5 480px
+  block and 160px min-width deleted, offer demoted from panel to band, no sample entry on reset,
+  success drawn as a statement).
+
+## Operator Questions` below, never
   invented**; Doc impact goes on the running list, and only the review versions docs.
 - **`P8.S1` (`fix`)** — the `t1` collision, below.
 
@@ -1403,15 +1471,22 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   fidelity defect. (a) accept the built heights as faithful; (b) open a follow-up density round for
   the ② row and the 놓친 돈 breakdown at 390. Default **(a)** + a deferred job for (b).
 
-- **Q35 (R12 Q-A) — the English validation bubble (P7 Q12).** (a) keep the browser's native messages,
+- **Q35 (R12 Q-A) — _(answered in the R12 session, 2026-08-24 — see §"R12 landed spec")_ — the English validation bubble (P7 Q12).** **Taken: (b), two lines** (empty vs malformed; default (c) rejected — `invalid_email` has no signed Korean). (a) keep the browser's native messages,
   (b) `noValidate` + one Korean line in the error slot (dated exception), (c) `noValidate` and let the
   existing Korean API errors answer. Default **(c)** if the session agrees they cover it; else (b).
-- **Q36 (R12 Q-B) — where login from an offer lands.** Today always `/portfolio`; carrying the origin
+- **Q36 (R12 Q-B) — _(answered in the R12 session, 2026-08-24)_ — where login from an offer lands.** **Taken: keep `/portfolio`**, origin not carried, offer copy NOT extended. Today always `/portfolio`; carrying the origin
   is feature-ish. Default: **keep `/portfolio`; the offer copy may say where it leads**.
-- **Q37 (R12 Q-C) — a password rule stated up front** (「8자 이상」 hint) — new copy or error-only.
+- **Q37 (R12 Q-C) — _(answered in the R12 session, 2026-08-24)_ — a password rule stated up front.** **Taken: yes** — one token 「8자 이상」 (`PASSWORD_RULE_KO`), 계정 만들기 + 재설정 only. (「8자 이상」 hint) — new copy or error-only.
   Default: session decides; if a hint, one string (dated exception).
-- **Q38 (R12 Q-D) — page frame on the auth pages** — a 「← 관제 현황판」 rail like every other surface,
+- **Q38 (R12 Q-D) — _(answered in the R12 session, 2026-08-24)_ — page frame on the auth pages.** **Taken: rail** 「← 관제 현황판」 on both auth pages; panel stays centered. — a 「← 관제 현황판」 rail like every other surface,
   or R5's bare centered panel. Default: session decides (no new copy either way).
+- **Q39 (R12 read-back) — does the coverage-boundary caption removal extend to the lookup surface?**
+  The R12 session struck 「놓친 돈은 집계 범위 안에서만 계산됩니다 · …」 **on the Offers card only**;
+  `COVERAGE_BOUNDARY_KO` still renders on `/stocks` and `/stocks/{corp_code}` per R11's signed
+  record. `result.md` §4b.3: "If the removal is meant for the 조회 surface itself it belongs in
+  R11's record and `lookup/r11-parts.jsx` — say so and it moves." (a) keep the caption on the lookup
+  surface (R11 record stands); (b) strike it product-wide (update R11's record + `copy.ts` +
+  the lookup views in a fix slice). Default **(a)** until the operator says otherwise.
 
 ## Constraints
 

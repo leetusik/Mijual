@@ -1,0 +1,179 @@
+/* R12 (P8.S10) — 로그인 · 계정 만들기 · 비밀번호 재설정 + 전환 제안 geometry canon.
+   This file IS the contract: the cards render nothing that is not in here. Tokens only.
+   One breakpoint — 767px (R10 §0 common rule; R5's 480px block is retired) — and the
+   same declarations scoped to .m390 for 390px frames shown inside a wide card.
+
+   Three rules carried from landed rounds, not taste:
+   - 오류는 본문 잉크 한 줄. `--alert` means expiring/lost only (R1/R5), so a failure on
+     this surface never turns red and never touches a field border.
+   - 사각 · 하이라인. No radius, no shadow beyond the craft panel's own glow.
+   - 아무것도 position:fixed 아니다. 게이트 화면·강제 모달 금지 (R5-2). The offer is a
+     block in normal flow, one tier *below* the data panels that produced the number.
+
+   r12 classes are prefixed `a`/`ao` so this sheet can load beside ../lookup/r11-lookup.css
+   and ../detail/r10-detail.css (the Offers card borrows both surfaces verbatim). */
+
+body{margin:0;padding:24px;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(19,66,52,.35),transparent 72%),var(--paper);font-family:var(--font-sans);color:var(--ink-1);word-break:keep-all;text-wrap:pretty}
+*,*::before,*::after{box-sizing:border-box}
+#root{display:grid;gap:20px;max-width:1120px}
+a{color:var(--ink-1)}a:hover{color:var(--live)}
+.lab{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em;line-height:1.7}
+.note{font-size:var(--text-sm);line-height:1.75;color:var(--ink-2);border-top:1px dashed var(--border-soft);padding-top:12px}
+.note b{color:var(--ink-1);font-weight:600}
+.note code{font-family:var(--font-mono);font-size:.92em;color:var(--ink-1)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.cases{display:flex;gap:24px;flex-wrap:wrap;align-items:start}
+.case{display:grid;gap:8px;align-content:start}
+
+/* craft panel (R2.1) — hairline + glow + four brackets */
+.panel{position:relative;background:var(--surface-card);border:1px solid var(--border-strong);box-shadow:var(--panel-glow)}
+.panel::before,.panel::after,.panel>.bk::before,.panel>.bk::after{content:"";position:absolute;width:9px;height:9px}
+.panel::before{left:-1px;top:-1px;border-left:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel::after{right:-1px;top:-1px;border-right:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel>.bk::before{left:-1px;bottom:-1px;border-left:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+.panel>.bk::after{right:-1px;bottom:-1px;border-right:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+
+/* ------------------------------------------------------------------ 페이지 프레임 */
+/* Q-D = 레일. Every other surface carries 「← 관제 현황판」, and on this one it is the
+   only way out for a reader who arrived from an offer and does not want an account —
+   so the auth page stops being the product's one dead end. The column stays R5's
+   centered 480px; the rail is its first row, not a full-width bar. */
+.acol{display:grid;gap:16px;width:100%;max-width:480px}
+.arail{display:flex;align-items:center;min-height:44px}
+.arail a{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-2);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;white-space:nowrap}
+.arail a:hover{color:var(--live)}
+.arail a:focus-visible,.arail a.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+.ap{display:grid;gap:16px;padding:24px}
+.ahead{display:grid;gap:6px}
+.ah1{margin:0;font-size:var(--text-2xl);font-weight:700;line-height:var(--leading-tight);letter-spacing:var(--tracking-tight)}
+.aintro{margin:0;font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-2)}
+
+/* 로그아웃되었습니다 (finding 10) — the previous action's receipt, so it lands ABOVE the
+   title, in its own band. The line under the form belongs to *this* form's answers; a
+   notice about a logout sitting there would read as a response to a submit that never
+   happened. Cleared by the first keystroke or a submit — no timer, nothing fades out. */
+.flash{margin:0;padding:10px 14px;background:var(--surface-inset);border:1px solid var(--border-soft);font-size:var(--text-sm);color:var(--ink-1)}
+
+/* --------------------------------------------------------------------------- 폼 */
+.aform{display:grid;gap:12px}
+.afield{display:grid;gap:6px}
+.alrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.albl{font-size:var(--text-sm);color:var(--ink-2)}
+/* Q-C = 규칙을 앞에 놓는다. 「8자 이상」 is R5-1's own rule text, mono because it is a
+   number, on the label row so it reads as the field's constraint and not as an error
+   that already happened. 계정 만들기 + 재설정에만 — 로그인에는 없다 (그 화면에서 길이는
+   규칙이 아니라 틀린 비밀번호다). */
+.arule{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);white-space:nowrap}
+.ainput{font:inherit;font-size:var(--text-md);color:var(--ink-1);background:var(--surface-inset);border:1px solid var(--border-strong);padding:0 14px;height:48px;width:100%}
+.ainput::placeholder{color:var(--ink-3)}
+.ainput:focus-visible,.ainput.f{outline:2px solid var(--focus-ring);outline-offset:-1px}
+/* finding 5 — the primary is not a row-mate here. R4/R11's 조회 is 48px *beside* an
+   input; this button is the form's last field, so it takes the field's width at both
+   breakpoints. 160px left-aligned under two full-width inputs is retired. */
+.asubmit{font:inherit;font-size:var(--text-md);font-weight:600;color:#fff;background:var(--live-solid);border:1px solid rgba(95,208,165,.45);height:48px;width:100%;margin-top:4px;cursor:pointer}
+.asubmit:disabled{opacity:.72;cursor:default}
+.asubmit:focus-visible,.asubmit.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* one live region, one slot: 오류와 알림이 같은 자리에서 말한다 (R5-1: 본문 한 줄, 필드
+   옆 금지). 오류는 ink-1, 알림은 ink-2 — 색이 아니라 무게가 둘을 가른다. */
+.aline{margin:0;font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-1)}
+.aline.soft{color:var(--ink-2)}
+
+/* 조용한 행 — 전환 링크 + 재설정. Both are buttons: one swaps the panel's mode, the
+   other posts a request; neither navigates. */
+.aquiet{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px}
+.aq{font:inherit;font-size:var(--text-sm);color:var(--ink-2);background:none;border:0;padding:0;min-height:44px;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap;transition:color var(--dur-fast) var(--ease)}
+.aq:hover:not(:disabled),.aq.hov{color:var(--ink-1)}
+.aq:focus-visible,.aq.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* finding 1 — 재설정은 더 이상 disabled 되지 않는다. 주소가 없을 때 눌리면 요청을 보내는
+   대신 이메일 칸으로 포커스가 간다 (R11의 프롬프트 → 입력 포커스와 같은 문법): 죽은 링크
+   대신, 필요한 것을 가리키는 컨트롤. disabled는 요청이 날아가는 동안에만 존재한다. */
+.aq:disabled{color:var(--ink-3);cursor:default;text-decoration-color:var(--border-soft)}
+
+/* --------------------------------------------------------------------- PII inset */
+/* 운영자 지시 (2026-08-24, 이 세션): PII inset 두 줄 **삭제** — R5-1의 「PII 패널은 로그인
+   화면 상시 요소」 조항이 이로써 회수된다. 규칙(그 자리에 다시 무엇을 놓을 때의 티어)만
+   남긴다 — 어느 카드도 런타임에 렌더하지 않는다. */
+.pii{background:var(--surface-inset);border:1px solid var(--border-soft);padding:14px 16px;display:grid;gap:6px}
+.pii1{margin:0;font-size:var(--text-sm);font-weight:600;color:var(--ink-1);line-height:var(--leading-base)}
+.pii2{margin:0;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base)}
+
+/* ------------------------------------------------------------------- 샘플 진입 */
+.asample{display:grid;gap:2px;padding-top:16px;border-top:1px solid var(--border-soft)}
+.aslink{font-size:var(--text-base);color:var(--ink-1);text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px;justify-self:start}
+.aslink:hover{color:var(--live)}
+.aslink:focus-visible,.aslink.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* finding 6 — 390의 「클릭 한 / 번.」 고아. keep-all은 body에서 이미 걸리고, balance가
+   마지막 줄을 끌어올린다. 34ch 상한은 데스크톱에서도 같은 세 줄을 유지시킨다. */
+.assub{margin:0;font-size:var(--text-sm);color:var(--ink-3);line-height:var(--leading-base);text-wrap:balance;max-width:34ch}
+
+/* ------------------------------------------------------- 전환 제안 ① (offer band) */
+/* finding 11 — 서열은 표면이 만든다: 데이터 패널(브래킷 + 글로우) > 제안(inset 밴드,
+   브래킷 없음) > 상세 한 줄 링크 > nav 로그인. 제안이 자기가 응답하는 숫자보다 커 보이면
+   그건 제안이 아니라 게이트다. */
+.aoffer{background:var(--surface-inset);border:1px solid var(--border-soft);display:grid;gap:8px;padding:16px 20px}
+.aohead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.aolead{margin:0;font-size:var(--text-base);font-weight:600;color:var(--ink-1)}
+.aobody{margin:0;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base);max-width:62ch}
+.aodismiss{font:inherit;flex:none;font-size:var(--text-sm);color:var(--ink-3);background:none;border:0;min-height:44px;min-width:44px;margin:-11px -10px -11px 0;cursor:pointer}
+.aodismiss:hover{color:var(--ink-1)}
+.aodismiss:focus-visible,.aodismiss.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+.aocta{font-size:var(--text-base);font-weight:600;color:#fff;background:var(--live-solid);border:1px solid rgba(95,208,165,.45);min-height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-self:start;text-decoration:none;margin-top:2px}
+.aocta:hover{color:#fff}
+.aocta:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* 운영자 지시 (2026-08-24, 이 세션): 밴드의 「지금처럼 로그인 없이 계속 쓸 수 있습니다」
+   삭제 (R5-2 카피 회수) — 제안이 게이트가 아니라는 사실은 문장이 아니라 동작이 말한다:
+   닫기, 세션당 1회, 익명 표면 무변경. 티어 규칙만 남긴다. */
+.aostay{margin:0;font-size:var(--text-xs);color:var(--ink-3)}
+
+/* nav 로그인 (R8) — the quietest tier of the set, unchanged and shown for the ladder */
+.abar{height:52px;display:flex;align-items:stretch;gap:24px;border-bottom:1px solid rgba(255,255,255,.12);padding:0 20px;background:transparent}
+.abar .brand{display:inline-flex;align-items:center;flex:none}
+.abar .wm{height:19px;display:block}
+.abar .links{display:flex;align-items:stretch;gap:20px}
+.abar .links a{display:inline-flex;align-items:center;font-size:var(--text-base);color:var(--ink-1);text-decoration:none;border-bottom:2px solid transparent}
+.abar .util{display:flex;align-items:center;margin-inline-start:auto;flex:none}
+.abar .login{font-size:var(--text-base);color:rgba(255,255,255,.68);text-decoration:none}
+.abar .login:hover{color:var(--ink-1)}
+
+/* ------------------------------------------------- 빌려온 R10 헤더의 390 스택 순서 */
+/* Offers 카드는 r10-detail.css와 r11-lookup.css를 함께 싣는다. 두 시트는 `.m390 .win`을
+   같은 특이도로 정의하고 (R10 order:7 · R11 order:5) 나중에 실리는 r11이 이긴다 — 그래서
+   빌려온 헤더가 라벨 → 창 → D-day로 뒤집혔다. 이 시트가 마지막에 실리므로 헤더 안의
+   순서만 R10 서명값(라벨 → D-day → 창 → 담기 → DART)으로 되돌린다. 헤더 밖의 R11 권리
+   패널은 그대로 R11 순서를 쓴다. */
+.m390 .hd .cdlab{order:5}
+.m390 .hd .ddayslot{order:6}
+.m390 .hd .win{order:7}
+.m390 .hd .offer{order:8}
+.m390 .hd .dart{order:9}
+@media (max-width:767px){
+  .hd .cdlab{order:5}
+  .hd .ddayslot{order:6}
+  .hd .win{order:7}
+  .hd .offer{order:8}
+  .hd .dart{order:9}
+}
+
+/* --------------------------------------------------------------- 재설정 페이지 tail */
+/* finding 3 — 성공은 이 페이지의 상태가 아니다: 세션이 재발급되고 /portfolio로 간다.
+   카드는 그 사실을 화면으로 위장하지 않고 문장으로 적는다. */
+.aexit{display:grid;gap:6px;padding:14px 16px;background:var(--surface-raised);border:1px solid var(--border-soft)}
+.aexitlead{margin:0;font-size:var(--text-sm);font-weight:600;color:var(--ink-1)}
+.aexitsub{margin:0;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);line-height:1.7}
+
+/* ------------------------------------------------------------------ ≤767 (390) */
+@media (max-width:767px){
+  body{padding:12px}
+  .acol{max-width:none}
+  .ap{padding:20px 16px}
+  .aoffer{padding:14px 16px}
+  .aocta{width:100%;justify-content:center}
+  .cases{gap:16px}
+}
+
+/* 390px frames inside a wide card — the ≤767 declarations again, scoped to the frame. */
+.m390{width:390px}
+.m390 .acol{max-width:390px}
+.m390 .ap{padding:20px 16px}
+.m390 .aoffer{padding:14px 16px}
+.m390 .aocta{width:100%;justify-content:center}

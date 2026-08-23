@@ -1,0 +1,58 @@
+<!-- @dsCard group="⏳ P8.S10 · Account" viewport="1280x2000" name="Reset" subtitle="/auth/reset?token=… — 한 칸 + 규칙(8자 이상) · idle · 확인 중… · 8자 미만 · 만료·사용된 링크(신규 카피, 로그인으로 돌아가는 길) · 성공은 화면이 아니라 이동 · 390" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r12-auth.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r12-parts.jsx"></script>
+<script type="text/babel">
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<div className="cases">
+  <ACase label="idle — h1은 모드 이름, 칸은 비밀번호 하나. 이메일 칸이 없다: 링크가 곧 자격증명이고, 주소를 다시 물으면 다른 주소일 수도 있다는 뜻이 된다. 규칙은 라벨 행에 (Q-C)">
+    <AReset id="i" pw="" />
+  </ACase>
+  <ACase label="확인 중… — 로그인 패널과 같은 문법 (라벨 교체 + disabled, 스피너 없음)">
+    <AReset id="p" bare pw="newpassword" pending />
+  </ACase>
+</div>
+
+<div className="cases">
+  <ACase label="8자 미만 — 서명된 줄. 규칙은 제출 전에 이미 라벨 행에 있었다">
+    <AReset id="s" bare pw="1234" line={A_ERR_SHORT} />
+  </ACase>
+  <ACase label="만료·사용된 링크 (finding 3 · 신규 카피) — 이전에는 아무 줄도 없이 제출이 조용히 실패했다. 문장이 상태를 말하고, 조용한 행의 「로그인」이 새 링크를 요청할 수 있는 화면으로 돌려보낸다">
+    <AReset id="t" bare pw="newpassword" line={A_NEW_TOKEN} back />
+  </ACase>
+</div>
+
+<ALab>성공 (finding 3) — 이 페이지의 상태가 아니다. 비밀번호가 바뀌면 기존 세션이 전부 무효화되고 새 세션이 발급된 뒤 보유 종목 페이지로 간다. 카드는 그 사실을 가짜 완료 화면으로 위장하지 않는다</ALab>
+<div className="panel" style={{padding:'18px 20px',maxWidth:560}}><i className="bk" aria-hidden="true"></i>
+  <div className="aexit">
+    <p className="aexitlead">성공 = 화면이 아니라 이동 — 보유 종목 페이지</p>
+    <p className="aexitsub">POST /auth/reset/confirm → 기존 세션 전부 폐기 · 새 세션 발급 · /portfolio<br />재설정 페이지에 「완료되었습니다」 화면 없음 (메일함 통제를 증명하고 비밀번호를 고른 독자를 다시 로그인 패널로 돌려보내는 것은 의식일 뿐)</p>
+  </div>
+</div>
+
+<ALab>토큰이 없는 주소 — 화면이 아니라 리다이렉트 (/auth/login). 이 카드에 그릴 표면이 없다는 사실이 설계다</ALab>
+<div className="panel" style={{padding:'18px 20px',maxWidth:560}}><i className="bk" aria-hidden="true"></i>
+  <div className="aexit">
+    <p className="aexitlead">?token 없음 → 로그인 페이지</p>
+    <p className="aexitsub">토큰 유효성은 제출 시점에만 알 수 있다 — 렌더 시점에 「이 링크는 유효합니다」라고 말하지 않는다</p>
+  </div>
+</div>
+
+<div className="cases">
+  <div className="m390"><AReset id="m1" pw="" /></div>
+  <div className="m390"><AReset id="m2" pw="newpassword" line={A_NEW_TOKEN} back /></div>
+</div>
+
+<div className="note">
+<b>이 페이지가 독자에게 말하는 것과 말하지 않는 것 (finding 3) —</b> 말하는 것: 무엇을 하는 화면인지(<code>h1</code> 비밀번호 재설정), 규칙(8자 이상), 실패했다면 무엇이 실패했는지(8자 미만 · 만료·사용된 링크). <b>말하지 않는 것</b>: 계정 이름·이메일 주소(링크가 곧 자격증명이므로 화면에 주소를 다시 그리면 노출면이 늘어난다), 가입 여부, 링크의 남은 유효시간(서버가 서지 않는 값이므로 발명하지 않는다).<br />
+<b>신규 카피 1건 —</b> 「이 재설정 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청해 주세요.」 <code>copy.ts</code>가 <code>invalid_reset_token</code>을 <b>기록된 빈자리</b>로 남겨둔 상태(줄 없이 idle로 복귀)를 메운다. R10 Q-A의 한국어 404와 같은 등급의 예외 — 상태는 있는데 문장이 없던 자리다. 이유는 말하지 않는다(만료인지 사용인지 구분하지 않는 것이 곧 토큰 상태 비노출).<br />
+<b>돌아가는 길 —</b> 만료 상태에서만 조용한 행에 「로그인」 한 줄이 선다. 새 링크는 로그인 패널의 「비밀번호 재설정」이 발급하므로, 이 줄은 그 화면으로 가는 유일한 안내다. 라벨은 서명된 모드 이름 그대로 (신규 카피 아님).<br />
+<b>기하는 로그인 패널과 하나 —</b> 480 열 · 레일 · 48px 칸 · 전폭 48px 주 버튼 · 오류/알림 한 슬롯 · 767px 하나. 샘플 진입은 <b>없다</b> (R5-1은 그것을 로그인 화면의 하단 고정 요소로 서명했고, 재설정은 이미 계정이 있는 독자의 화면이다).
+</div>
+</React.Fragment>);
+</script></body></html>
