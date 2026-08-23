@@ -321,6 +321,21 @@ first row; panel stays R5's centered panel.
   block and 160px min-width deleted, offer demoted from panel to band, no sample entry on reset,
   success drawn as a statement).
 
+### R13 walk — surface 6 (내 포트폴리오 + 알림 설정), 2026-08-24 — SSR + code + P7 measurements (Chrome bridge down)
+
+The Chrome extension was disconnected at walk time (three attempts), so this walk is the rendered
+SSR markup of `http://127.0.0.1:3000/portfolio` (anonymous = 샘플 모드, real payload), the module
+source + CSS, and P7's browser-measured geometry (P7 Q8). Account-only states were read from code;
+the handoff says so and `P8.S13` verifies everything in the real runtime. Full findings (14) and
+required cards live in `docs/reference/design/rounds/13-portfolio/handoff.md` (commit 5142b83,
+pushed). Headlines: the D-day rows' un-designed desktop geometry (P7 Q8-A — the decomposition's
+last "not organized" symptom); empty 진행 중인 권리 cells in 2 of 4 rows; no 기준 line on 지나간
+마감; R5-4's 샘플 종료 orphaned since R8 (sample edits permanent, `clearSample` only on migrate);
+no conversion moment on the anonymous sample surface; 「실제 공시 4건」 vs 5 D-day rows;
+`carryOverKo`'s 세션 vocabulary; two 480px media queries vs the settled 767; `/portfolio/
+notifications` frameless (no h1, no rail); 수신 주소 변경 silently inherits R12's `invalid_email`
+line. §2b decisions routed as **Q41–Q45** below.
+
 ## Operator Questions` below, never
   invented**; Doc impact goes on the running list, and only the review versions docs.
 - **`P8.S1` (`fix`)** — the `t1` collision, below.
@@ -1590,6 +1605,17 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   product-wide in a later round, since P7 Q2/Q10 (「how far no-selected-focus goes」, 「focused
   hairline vs. panel edge」) are the same question and are still open. Default **(a)** until the
   operator says otherwise.
+
+- **Q41 (R13 Q-A / P7 Q4) — a 챙겼습니다 row: stays in 지나간 마감 re-labelled (signed R5-8) or
+  disappears?** Default **stays**.
+- **Q42 (R13 Q-B / P7 Q8-D) — 「놓친 돈 상세 →」 on a checked row:** keep (default) or change/remove.
+- **Q43 (R13 Q-C / P7 Q7④+fifth) — `carryOverKo`'s 세션 wording** (keep the promise as-is, default,
+  or re-say in reader language — one dated exception) **and the account caption** (keep 「본인 표시 ·
+  계정에 저장」, default, or drop to 「본인 표시」).
+- **Q44 (R13 Q-D) — does a sample reset/종료 control return?** R5-4's signed 종료 has no home since
+  R8. Default: the behaviour returns, the session picks the home.
+- **Q45 (R13 Q-E) — does the R12 conversion band render on the anonymous sample portfolio?**
+  Default: session decides placement under the R12 ladder rules.
 
 ## Constraints
 

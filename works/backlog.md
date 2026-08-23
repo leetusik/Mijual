@@ -8,9 +8,9 @@
 - Current phase: `P8`
 - Current slice: `P8.S12`
 - Next slice: `P8.S13`
-- Waiting on operator: `none`
+- Waiting on operator: `P8.S12`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-24T05:28:17+09:00`
+- Rebuilt at: `2026-08-24T05:28:45+09:00`
 
 ## Active Phases
 
@@ -145,7 +145,7 @@
 | [x] `P8.S9` | `done` | Apply R11 — 내 종목 조회 + 놓친 돈 조회기 | `implementation` | `works/phases/active/P8/slices/P8.S9` |
 | [x] `P8.S10` | `done` | R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정) | `co-work` | `works/phases/active/P8/slices/P8.S10` |
 | [x] `P8.S11` | `done` | Apply R12 — auth (로그인 · 비밀번호 재설정) | `implementation` | `works/phases/active/P8/slices/P8.S11` |
-| [ ] `P8.S12` | `todo` | R13 폴리시 라운드 — 내 포트폴리오 + 알림 설정 | `co-work` | `works/phases/active/P8/slices/P8.S12` |
+| [~] `P8.S12` | `pending` | R13 폴리시 라운드 — 내 포트폴리오 + 알림 설정 | `co-work` | `works/phases/active/P8/slices/P8.S12` |
 | [ ] `P8.S13` | `todo` | Apply R13 — 내 포트폴리오 + 알림 설정 | `implementation` | `works/phases/active/P8/slices/P8.S13` |
 | [ ] `P8.S14` | `todo` | R14 폴리시 라운드 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `co-work` | `works/phases/active/P8/slices/P8.S14` |
 | [ ] `P8.S15` | `todo` | Apply R14 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `implementation` | `works/phases/active/P8/slices/P8.S15` |
