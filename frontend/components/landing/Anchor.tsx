@@ -7,7 +7,6 @@ import {
   BAND_ASSUMPTION_KO,
   BAND_FLOOR_KO,
   STAT_LAPSE_PENDING_KO,
-  STAT_REPORTS_KO,
   STAT_WATCHING_KO,
   STAT_WITHIN_30D_KO,
   VALUE_EYEBROW_KO,
@@ -28,6 +27,13 @@ import styles from "./Anchor.module.css";
  * > **Countdown/stats card**: countdown + 2×2 live stats (감시 중 이벤트 · 30일
  * > 이내 마감 · 소멸 앞둔 신주인수권 · 읽은 실적보고서) — fed live from the same
  * > summary the board uses.
+ *
+ * **R9 re-cut the stats card** (build-prompt §6, walk finding 9 + the operator's
+ * "9. drop."): 읽은 실적보고서 is gone — no reader knows what one is, and the
+ * other three explain themselves — and the remaining three are **label-left /
+ * value-right rows** rather than a 2×2 grid, because 소멸 앞둔 신주인수권 folds
+ * onto two lines in a 340px column. `summary.performance_reports` is still on the
+ * contract and simply not rendered: the field stays, the row goes.
  *
  * Every number on both cards comes from **one** `/board/summary` object, which is
  * the point of that shape: the two cards, the hero's stat line and the 소멸주의보
@@ -89,7 +95,6 @@ export function RetrospectiveAnchor({ summary }: { summary: BoardSummary }) {
           <Stat label={STAT_WATCHING_KO} value={summary.watching} />
           <Stat label={STAT_WITHIN_30D_KO} value={summary.within_30d} />
           <Stat label={STAT_LAPSE_PENDING_KO} value={summary.lapse_pending} />
-          <Stat label={STAT_REPORTS_KO} value={summary.performance_reports} />
         </dl>
       </CraftPanel>
     </section>

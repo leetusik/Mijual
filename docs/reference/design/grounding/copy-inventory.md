@@ -177,3 +177,48 @@ covers it): `VOCKY_NAV_KO`「[의견]」 · `SAMPLE_CHIP_KO`「샘플」 ·
 **no longer rendered anywhere** but are still transcribed in `copy.ts`, because
 where the gate-cost and 면책 sentences go instead is an open operator decision
 (P8 Operator Question Q5).
+
+
+## R9 additions — 관제 현황판 + 보드 (hand-registered, `P8.S5`)
+
+<!-- HAND-WRITTEN, like the R8 section above. The generator
+     (`scripts/export_design_grounding.py`) builds this file from the Python side
+     only and does not read the frontend's `copy.ts` files, so a round's new
+     *surface* copy is registered here by hand — R9's build-prompt §9/§10-9
+     requires it ("14개 전부 `copy-inventory.md` 꼬리에 등재한다"). **A
+     regeneration of this file drops this section; re-append it.** -->
+
+R9 (round `09-landing-board`, signed 2026-08-23) is the second **dated copy
+exception** of the P8 polish pass: its handoff opened count / shown / remaining
+labels, 접기, and the refresh-state label for the landing board and nothing else.
+Fourteen strings entered the product with it — `build-prompt.md` §9's own table,
+verbatim — and they live in `frontend/components/landing/copy.ts` with the
+citation beside each one.
+
+| 상수 | 문자열 | 어디에 |
+|---|---|---|
+| `TAB_NOTE_KO` | 탭 숫자는 감시 중 전체 건수입니다 | 탭 아래 메타 줄 (좌) |
+| `shownLine.before` | 아래 목록은 카운트다운 ␣ | 〃 |
+| `shownLine.middle` | 건 중 ␣ | 〃 |
+| `shownLine.after` | 건 | 〃 |
+| `moreKo(step)` | {step}건 더 보기 | 창 푸터 버튼 — 클릭이 더하는 수 |
+| `remainingKo(n)` | 남은 {n}건 | 창 푸터 — 남은 수 (버튼과 분리) |
+| `collapseToFirstKo(step)` | 처음 {step}건으로 접기 | 창 푸터 — 15행을 넘겼을 때만 |
+| `COLLAPSE_KO` | 접기 | 스트립 토글 (열림). `EXPAND_KO`「펼치기」와 짝 |
+| `REFRESHED_KO` | 갱신됨 | 기준시각 칩 옆 — 자동 갱신의 유일한 문구 |
+| `LEGEND_DDAY_KO` | D-DAY | D-day 범례 (채운 배지) |
+| `LEGEND_SOON_KO` | D-7 이내 | 범례 (--urgency-soon) |
+| `LEGEND_NEAR_KO` | D-30 이내 | 범례 (--urgency-near) |
+| `LEGEND_FAR_KO` | 30일 초과 | 범례 (--urgency-far) |
+| `tieCountKo(n)` | {n}개 종목 | 소멸주의보 — 동시 마감이면 종목명 자리 |
+
+**Retired by the same round** (the strings leave the product, and R9's signoff
+covers it): `STAT_REPORTS_KO`「읽은 실적보고서」 (operator answer 9 — the
+countdown card is three stats now; `summary.performance_reports` stays on the
+contract and is simply not rendered), and — **closing P8 Operator Question Q5
+("p8 q5: drop.")** — the four footer sentences R8 had left transcribed in
+`components/chrome/copy.ts`: `POSITIONING_KO`, `PROVENANCE_KO`,
+`GATE_COST_VALUE_KO` + `GATE_COST_TAIL_KO`, `DISCLAIMER_KO`. They are dropped,
+not relocated, and land nowhere on the landing. The identically-named constants
+in `lookup/copy.ts` and `event/copy.ts` are those surfaces' own strings, still
+rendered, and were not touched.

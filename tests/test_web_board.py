@@ -196,6 +196,9 @@ def test_the_summary_is_one_object_with_the_headline_and_its_freshness(client) -
     assert body["lapsed_value"] == {"value": "20635460625", "estimated": True}
     assert body["lapsed_warrants"]["estimated"] is False  # a cited count is a fact
     assert body["lapse_pending"] == 1  # the ① whose 청약 has not closed
+    # 동시 마감 (R9 §6): one offering pending, so the strip names it rather than
+    # counting — the tie count is that same list's head-date population.
+    assert body["next_lapse"]["tie_count"] == 1
     # The countdown ticks to the end of the 청약 day, as an absolute KST instant.
     assert body["next_lapse"]["target"] == f"{client.today + timedelta(days=14)}T00:00:00+09:00"
     fresh = body["freshness"]

@@ -90,12 +90,19 @@ export const factSentence = {
   after: "가 청약도 매도도 되지 않고 사라졌습니다.",
 } as const;
 
-/** The countdown/stats card's 2×2 live stats, R2 verbatim: "감시 중 이벤트 488건
- * · 30일 이내 마감 34건 · 소멸 앞둔 신주인수권 15건 · 읽은 실적보고서 69건". */
+/**
+ * The countdown/stats card's live stats, R2 verbatim: "감시 중 이벤트 488건 ·
+ * 30일 이내 마감 34건 · 소멸 앞둔 신주인수권 15건 · 읽은 실적보고서 69건".
+ *
+ * **R9 cut the card to three** (`rounds/09-landing-board/output/build-prompt.md`
+ * §6, operator answer 9 at the R9 gate: "9. drop."): `STAT_REPORTS_KO`
+ * (읽은 실적보고서) is deleted and `summary.performance_reports` is no longer
+ * rendered — the contract field stays, the screen loses the row. The remaining
+ * three are label-left / value-right rows, not a 2×2 grid.
+ */
 export const STAT_WATCHING_KO = "감시 중 이벤트";
 export const STAT_WITHIN_30D_KO = "30일 이내 마감";
 export const STAT_LAPSE_PENDING_KO = "소멸 앞둔 신주인수권";
-export const STAT_REPORTS_KO = "읽은 실적보고서";
 
 // ---------------------------------------------------------------------------
 // 소멸주의보 (R2 §소멸주의보 strip — "발표용 문장 4 with live numbers")
@@ -112,6 +119,11 @@ export const STAT_REPORTS_KO = "읽은 실적보고서";
  * 계양전기; the live tie-break names 퓨쳐켐 (three offerings share 청약 마감
  * 2026-09-04 and the API orders by 접수번호 — `P5.S3` note 9). Live data
  * governs: the round asks for live numbers by contract.
+ *
+ * **R9 supersedes the `{corp}` slot** (build-prompt §6, walk finding 8): naming
+ * one of three tied offerings made the strip and the board's first row disagree
+ * one screen apart, so a tie prints `tieCountKo(n)` — 「3개 종목」 — instead of a
+ * name. The template itself is unchanged; only what fills the slot moved.
  */
 export const lapseSentence = {
   before: "지금도 ",
@@ -187,10 +199,87 @@ export const tbdSentence = {
 } as const;
 
 /**
- * The strips' disclosure button (R2 §Board, R3 §추후결정 board strip).
+ * The strips' disclosure button (R2 §Board, R3 §추후결정 board strip), now the
+ * **closed** half of a pair.
  *
- * It keeps this label while the strip is open and carries its state in
- * `aria-expanded` — the same decision `components/chrome/copy.ts` records for the
- * 메뉴 button, and for the same reason: a 접기 label is copy nobody signed.
+ * R2 kept this one label open or closed because "a 접기 label is copy nobody
+ * signed". **R9 signed it** (build-prompt §5: "라벨이 상태를 읽는다 — 닫힘
+ * `펼치기` / 열림 `접기`", and `result.md` §3-4: "이번 라운드에 카피가 열렸으므로
+ * 「서명되지 않은 라벨」이라는 R2의 근거가 사라졌다"), so the toggle now says
+ * what it does and `aria-expanded` agrees with the label instead of standing in
+ * for it. The board's own window footer follows the same rule
+ * (`collapseToFirstKo`).
  */
 export const EXPAND_KO = "펼치기";
+
+// ---------------------------------------------------------------------------
+// R9 — 관제 현황판 폴리시 (round `09-landing-board`, signed 2026-08-23)
+//
+// R9 is a **dated copy exception**: its handoff opened count / shown / remaining
+// labels, 접기, and the refresh-state label for this one surface and nothing
+// else. The fourteen constants below are `build-prompt.md` §9's own table,
+// transcribed verbatim ("아래 신규 상수 14개가 전부이며, 그 밖의 제품 문구는
+// 잠긴 상태 그대로다"), and all fourteen are registered in
+// `docs/reference/design/grounding/copy-inventory.md`.
+// ---------------------------------------------------------------------------
+
+/** The meta line's first half — what the tab numbers count
+ * (`build-prompt.md` §9 / §4, walk findings 2·3). */
+export const TAB_NOTE_KO = "탭 숫자는 감시 중 전체 건수입니다";
+
+/**
+ * The meta line's second half — what the list beneath the tabs shows
+ * (`build-prompt.md` §9): "아래 목록은 카운트다운 {ranked}건 중 {shown}건".
+ *
+ * `{ranked}` is the current tab's ranked row count and `{shown}` the window's
+ * `min(shown, rows.length)` — the two numbers walk finding 3 said the reader
+ * could not tell apart from the tab's whole-board count.
+ */
+export const shownLine = {
+  before: "아래 목록은 카운트다운 ",
+  middle: "건 중 ",
+  after: "건",
+} as const;
+
+/** The window footer's button — **what one click adds**, not what is left
+ * (`build-prompt.md` §4/§9). */
+export const moreKo = (step: string | number) => `${step}건 더 보기`;
+
+/** The window footer's remainder, separated from the button so the two numbers
+ * stop being read as one (`build-prompt.md` §4/§9, walk finding 3). */
+export const remainingKo = (remaining: string | number) => `남은 ${remaining}건`;
+
+/** The way back out of an expanded window (`build-prompt.md` §4/§9) — shown once
+ * the window is past its first step. */
+export const collapseToFirstKo = (step: string | number) => `처음 ${step}건으로 접기`;
+
+/** The strips' disclosure button, **open** (`build-prompt.md` §5/§9). Pairs with
+ * `EXPAND_KO`. */
+export const COLLAPSE_KO = "접기";
+
+/**
+ * The auto-refresh's whole visible vocabulary (`build-prompt.md` §7/§9): it sits
+ * beside a **new** 기준시각 and stays until the next refresh that brings one.
+ *
+ * There is no other refresh copy — no spinner, no button, no 새로고침, no failure
+ * sentence. An 기준시각 that stops moving is how a failing refresh says so.
+ */
+export const REFRESHED_KO = "갱신됨";
+
+/** The D-day legend under the tabs (`build-prompt.md` §4/§9, walk finding 7) —
+ * R1's four-step urgency ladder, made visible in its own colours. */
+export const LEGEND_DDAY_KO = "D-DAY";
+export const LEGEND_SOON_KO = "D-7 이내";
+export const LEGEND_NEAR_KO = "D-30 이내";
+export const LEGEND_FAR_KO = "30일 초과";
+
+/**
+ * 동시 마감 (`build-prompt.md` §6/§9, walk finding 8).
+ *
+ * When several ① offerings share the earliest 청약 마감, the 소멸주의보 sentence's
+ * `{corp}` slot says how many there are instead of naming one of them — the
+ * sentence's shape and words are otherwise untouched. With a single offering it
+ * still names the company. The count is served (`next_lapse.tie_count`); the
+ * screen never guesses it.
+ */
+export const tieCountKo = (count: string | number) => `${count}개 종목`;

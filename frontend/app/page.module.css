@@ -1,3 +1,17 @@
+/* The landing's own line breaking (R9 §8, walk finding 10).
+ *
+ * Korean breaks between 어절, not inside one — without this the hero's subtitle
+ * ended a line on a single syllable (「…조회합니 / 다」) at 390px. R9 asks for it
+ * "랜딩 산문에 전역으로" and its own geometry source puts it on `body`; it is
+ * scoped to this page's `<main>` instead, because the surfaces R9 did not design
+ * (event detail, 조회, 포트폴리오, AI 질문, 계정) are other rounds' business.
+ * `overflow-wrap: anywhere` on the board's corp names still applies — it is what
+ * catches a single word too long for its column, which `keep-all` alone would
+ * let overflow. */
+.landing {
+  word-break: keep-all;
+}
+
 /* The landing's own stacking. The hero runs full-bleed (its orbit rings need the
  * whole width), so it carries its own content column; everything below it — the
  * anchor panels, the 소멸주의보 placard and the board — sits in the shared 1120px

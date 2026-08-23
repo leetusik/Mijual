@@ -163,6 +163,12 @@ class BoardSummary:
     #: The soonest 소멸 — its calendar day and whose it is (소멸주의보 strip).
     next_lapse_date: str | None = None
     next_lapse_corp_name: str | None = None
+    #: How many offerings share that earliest 청약 마감 (R9 §6, ``P8.S5``). ``1``
+    #: when only the named one does. The surface prints 「N개 종목」 instead of a
+    #: company name when it is more, so the strip and the board's own first rows
+    #: stop naming different companies for the same date; deriving it here keeps
+    #: the count and the name from ever being computed against different lists.
+    next_lapse_tie_count: int | None = None
     #: The absolute KST instant the browser ticks down to. ``None`` until the
     #: 소멸 instant is known — the *policy* for turning ``next_lapse_date`` into an
     #: instant belongs to the service (``P5.S3``'s settings), never to this layer.
@@ -192,7 +198,12 @@ class BoardSummary:
             "target": instant(self.countdown_target),
         }
         if any(value is not None for value in next_lapse.values()):
-            out["next_lapse"] = {k: v for k, v in next_lapse.items() if v is not None}
+            payload = {k: v for k, v in next_lapse.items() if v is not None}
+            # The tie count is part of *this* object or of nothing: it describes
+            # the 마감 the three keys above name.
+            if self.next_lapse_tie_count is not None:
+                payload["tie_count"] = self.next_lapse_tie_count
+            out["next_lapse"] = payload
         if self.freshness is not None:
             out["freshness"] = self.freshness.payload()
         return out
@@ -211,6 +222,7 @@ def board_summary(
     lapse_rate: Decimal | None = None,
     next_lapse_date: date | str | None = None,
     next_lapse_corp_name: str | None = None,
+    next_lapse_tie_count: int | None = None,
     countdown_target: datetime | None = None,
     now: datetime | None = None,
     stale_after_hours: int = DEFAULT_STALE_AFTER_HOURS,
@@ -264,6 +276,7 @@ def board_summary(
         ),
         next_lapse_date=iso_day(next_lapse_date),
         next_lapse_corp_name=next_lapse_corp_name,
+        next_lapse_tie_count=next_lapse_tie_count,
         countdown_target=countdown_target,
         freshness=(
             freshness(as_of, now=now, stale_after_hours=stale_after_hours)

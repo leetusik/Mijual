@@ -1,0 +1,10 @@
+/* 소멸주의보's own two rules — the strip itself is `LapseAlert`'s (R1/R2).
+ *
+ * R9 §6 / walk finding 10: the sentence carries two things that must not break
+ * across lines at 390px — the mono 청약 마감 date (which broke as 「2026-09- /
+ * 04」 on the walk) and, on a tie, the 「N개 종목」 phrase that stands where a
+ * company name used to. The date is covered by `LapseAlert`'s own `.num`; this
+ * is the tie phrase. */
+.tie {
+  white-space: nowrap;
+}

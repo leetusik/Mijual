@@ -193,7 +193,10 @@ export type BoardSummary = {
   lapsed_warrants?: Figure;
   issued_warrants?: Figure;
   lapse_rate?: Figure;
-  next_lapse?: { date?: string; corp_name?: string; target?: string };
+  /** `tie_count` is how many offerings share that 청약 마감 (R9 §6): 1 when only
+   * `corp_name`'s does, and the surface says 「N개 종목」 instead of a name when it
+   * is more. Optional because it is `P8.S5`'s addition to an older contract. */
+  next_lapse?: { date?: string; corp_name?: string; target?: string; tie_count?: number };
   freshness?: Freshness;
 };
 

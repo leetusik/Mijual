@@ -133,73 +133,29 @@ export const MENU_KO = "메뉴";
 export const VOCKY_ROW_KO = "의견 보내기";
 
 /* ---------------------------------------------------------------------------
-   The four footer sentences R8 removed from the surface (build-prompt §4).
+   The four footer sentences R8 removed from the surface (build-prompt §4) —
+   **and the constants R9 deleted with them.**
 
-   > 삭제할 상수와 마크업: `POSITIONING_KO`, `PROVENANCE_KO`, `GATE_COST_VALUE_KO`,
-   > `GATE_COST_TAIL_KO`, `DISCLAIMER_KO`, 그리고 `EstimateMarker` 임포트. (문장
-   > 자체는 result.md §6-1의 이전 제안 대기 — **상수를 지우기 전에 그 결정을
-   > 확인**.)
+   R8 took the markup out and left the five strings transcribed here, because its
+   own record made deleting them conditional on an operator decision (result.md
+   §6-1: the footer was the gate-cost sentence's *last* placement and the
+   면책 sentence's only one, so the session proposed relocating both). That
+   decision came back at the R9 gate — **P8 Operator Question Q5: "p8 q5: drop."**
+   — and R9's build-prompt §9 executes it: 「삭제: … 푸터에서 R8이 뺀 게이트
+   비용/면책 상수 (P8 Q5: 폐기, 재배치 없음 — 랜딩 어디에도 두지 않는다)」.
 
-   **The markup is gone; the constants stay, deliberately.** R8's own record flags
-   the removal as a departure needing an operator decision (result.md §6-1: the
-   footer was the gate-cost sentence's *last* placement and the disclaimer's only
-   one, and the session proposes relocating both to the landing bottom or an 이용
-   안내). That decision is open as P8 Operator Question **Q5**, and the round's own
-   contract makes deleting the strings conditional on it — so `P8.S3` deleted the
-   footer's markup, which R8 signs, and left the sentences transcribed here for
-   whichever surface round relocates them. **Nothing in the chrome renders any of
-   the five below.**
+   So `POSITIONING_KO`, `PROVENANCE_KO`, `GATE_COST_VALUE_KO`,
+   `GATE_COST_TAIL_KO` and `DISCLAIMER_KO` are **gone from this module**
+   (`P8.S5`) — exactly the five R8's build-prompt §4 named for deletion, none of
+   them rendered anywhere since `P8.S3`, and none of them imported by anything.
+
+   Two same-named constants elsewhere are **different surfaces' own strings and
+   are untouched**: `lookup/copy.ts`'s `DISCLAIMER_KO` + `PROVENANCE_KO` (the
+   놓친 돈 card and the /stocks pages render them) and `event/copy.ts`'s
+   `PROVENANCE_KO` (the detail page's). The sentences themselves also survive in
+   the design record — R2's build prompt, `grounding/copy-inventory.md` and the
+   operator's own brief — so nothing was lost, only unshipped.
    --------------------------------------------------------------------------- */
-
-/** The footer's left-column positioning line (R2 §Page shell: "positioning line
- * (mono 11, `rgba(255,255,255,.45)`)").
- *
- * The sentence itself is **locked context**, not R2's to write: R2's handoff §3
- * lists "the positioning sentence" among the locked items and §1 states it —
- * "Positioning: 시장 전체의 소멸 임박 권리를 감시하는 관제 서비스 + 내 종목
- * 연결" — as does R1's handoff §1 and the operator's own brief
- * (`docs/reference/challenge/00_HANDOFF.md`).
- *
- * ⚠ It contains the words 내 종목 연결, and R4 superseded that as **a nav
- * label**. The supersession table's row is about the label; this is the
- * operator's positioning sentence, locked before any surface had a name, so it
- * is transcribed verbatim rather than re-written — rewriting locked copy is a
- * design change. Recorded for `P5.S19`/`P5.REVIEW` as a fidelity question. */
-export const POSITIONING_KO =
-  "시장 전체의 소멸 임박 권리를 감시하는 관제 서비스 + 내 종목 연결";
-
-/** Footer sentence ① — the provenance line, quoted verbatim in R2's build prompt
- * and signed at the gate ("the footer provenance re-cut").
- *
- * `[추정]` here is **prose describing the mark**, not the mark itself: R2.1 note
- * 5 re-cut the sentence when the estimate mark became the bordered tag. So it is
- * rendered as characters, and the tag primitive is not used on it. */
-export const PROVENANCE_KO =
-  "모든 수치는 DART 공시에서만 나왔고, 추정치는 [추정] 표시로 구분했습니다.";
-
-/** Footer sentence ② — the gate-cost line, and **the footer is its only
- * remaining placement**: R2.1 note 4 removed it from the value card, and R2's
- * build prompt says so again ("its only remaining placement").
- *
- * R2 §Copy landed it re-cut as "▷ 49.2억원은 할인율 인용이 게이트를 통과하지
- * 못해 총액에서 제외했습니다". The `▷` is retired from every UI surface (R2's
- * gate ruling, executed in R3 — supersession table), and the build prompt states
- * the replacement in the same breath: the value is **추정-tagged**. So the
- * sentence renders with `EstimateMarker` on 49.2억원 and no `▷`; the words are
- * otherwise untouched, including the missing full stop.
- *
- * The figure is `grounding/headline-numbers.md`'s "▷ 게이트가 포기한 금액
- * 49.2억원" (= 767.3억 upper bound − 718.1억 total, the three offerings whose
- * 할인율 failed its citation gate). It is a **dated pack number**: the
- * presentation contract serves no gate-cost figure, so unlike the landing's
- * headline this one cannot be live today — see `P5.S11`'s note in `phase.md`. */
-export const GATE_COST_VALUE_KO = "49.2억원";
-export const GATE_COST_TAIL_KO =
-  "은 할인율 인용이 게이트를 통과하지 못해 총액에서 제외했습니다";
-
-/** Footer sentence ③ — the disclaimer, R2 §Copy verbatim, signed at the gate. */
-export const DISCLAIMER_KO =
-  "미주알은 투자 자문·권유를 제공하지 않습니다. 모든 정보는 DART 공시 원문 확인을 전제로 제공됩니다.";
 
 /** The identity line's © (R2 §Page shell: "© · 자료: 금융감독원 DART 전자공시
  * | 의견 보내기 · 해설 (mono 11)", with 해설 → AI 질문 per R6).

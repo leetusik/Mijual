@@ -660,6 +660,61 @@ row to the account menu** (알림 설정 / 의견 보내기 / 로그아웃) — 
 project and landed beside R9's output; `build-prompt.md` §12 names it for "the next chrome slice". No new
 copy (`FEEDBACK_OPEN_KO`). Routed as Operator Question Q12 below.
 
+### `P8.S5` — R9 applied: what the landing now is, and what the next surfaces inherit (2026-08-23)
+
+**R9 is built as signed and verified in the operator's runtime** — `next dev` on `127.0.0.1:3000` and
+the tailnet, **plus a production build** on `:3100`; 1512 / 1280 / 1119 / 1024 / 802 / 768 / 767 / 481 /
+390. Every §11 box passes. Full evidence in `slices/P8.S5/result.md`. What later rounds and apply
+slices need to know:
+
+1. **The board's geometry is now `r9-board.css` ported into `Board.module.css`, and the one rule that
+   holds it together is that *every row is its own grid container*.** A track that sizes to content
+   (`auto`) therefore resolves per row and the columns stop lining up — walk finding 5's misalignment.
+   So value columns are fixed widths, only 회사 flexes, and `data-extras` is a **panel-level**
+   attribute on the `<ol>` (the tab's ranked rows **and** both strips), never per row. Measured: the
+   D-day right edge is identical for every row of a panel at every one of the nine widths.
+   `minmax(0, N)` (R9's numbers with a shrink floor) rather than a bare `N` is deliberate — bare fixed
+   widths overflow the padded panel below ~802px, which is `P5.S19`'s measured 41px scrollbar bug.
+2. **The refresh hook is reusable in shape, and it lives inside `Board` on purpose.** `page.tsx` keeps
+   its server fetch as the first render, the client re-reads only `/board` (`getBoard()` through the
+   same-origin rewrite) every **60 s** (`REFRESH_INTERVAL_MS`, one constant, Q10's assumption), and
+   the pattern any later live surface should copy is: compare the **served** `as_of` and do nothing at
+   all when it has not moved; keep the reader's state (tab / window / disclosure / scroll / focus) in
+   component state and never rebuild it from the payload; key rows by a **served id** so the DOM
+   survives; pause on `document.hidden` and read once on becoming visible; fail silently. A surface
+   that remounts the countdown fails the "seconds do not jump" test — the tick is a sibling of the
+   refresh, not a child of it.
+3. **`next_lapse.tie_count` now ships** (`/board/summary`, derived from the ordered pending list, added
+   only when `next_lapse` exists). Live value today is **3** — the three-way 2026-09-04 tie the walk
+   found — and the 소멸주의보 says 「3개 종목」 instead of naming 퓨쳐켐. Any surface that names "the
+   soonest" of a tied set should say the count rather than pick one; the field is there now.
+4. **`SearchRow`'s Enter rule is R9's and R11 must keep it**: no candidates → the plain GET submit
+   (the JS-off path); a highlight → go; an **exact** 종목명/종목코드 → go on the first Enter; otherwise
+   Enter **selects the first candidate** and navigates nowhere. It is one shared component with
+   `/stocks`, so R11 changes the *page*, not this rule.
+5. **R2's 「a 접기 label is copy nobody signed」 is dead** — R9 signed 접기, and the same reasoning
+   (a label that reads the state, with `aria-expanded` agreeing rather than standing in) now applies
+   to the board's window footer. The chrome's 메뉴 button still carries R2's original rule; a later
+   chrome round can revisit it, but nothing in R9 did.
+6. **P8 Q5 is executed, not deferred**: `POSITIONING_KO`, `PROVENANCE_KO`, `GATE_COST_*` and
+   `DISCLAIMER_KO` are **deleted** from `components/chrome/copy.ts` (nothing imported them). The
+   same-named constants in `lookup/copy.ts` and `event/copy.ts` are those surfaces' own, still
+   rendered, untouched. The sentences survive in the design record; they are simply not in the product.
+7. **`copy-inventory.md` now carries two hand-written tails** (R8's and R9's), and both say so: the
+   exporter builds the file from the Python side only, so **a regeneration drops them and they must be
+   re-appended** (or the exporter must learn to read the frontend's `copy.ts` files — still an
+   engineering question, not a design one).
+8. **Landing prose is `word-break: keep-all` from `<main>` down** (`app/page.module.css` `.landing`),
+   the hero subtitle is `text-wrap: balance`, and every mono value on the surface is `nowrap`. The
+   other surfaces are **not** covered — a later round that wants Korean line breaking fixed on event
+   detail / 조회 / 포트폴리오 has to say so, and can then decide whether the rule belongs in
+   `app/shell.css` for everyone.
+9. **The API runs without `--reload`**, so a change under `src/mijual/**` needs a restart before the
+   browser can see it: api pid 65992 → **3182** (web 13009 untouched). Same trap `P8.S3` hit.
+10. **The favicon 404 is still the only console noise** on the landing, in both runtimes and on both
+    origins (deferred D5). 0 page exceptions, 0 React warnings anywhere in this slice's runs.
+
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -683,6 +738,21 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] ≤480 sheet: overlays without pushing the page, closes on backdrop/Esc/×, body scroll released afterwards (P8)`
   - `- [ ] 푸터: no mono anywhere, one row, and at 390px 「AI 질문」 is not orphaned on its own line (P8)`
   - `- [ ] no vocky value in the client bundle: grep .next/static for vk_ / vocky / the key prefix (P8)`
+
+- `P8.S5`: **frontend** — R9 supersedes the landing board and anchors. The window is **15/+15** (P7 Q3 closed by the operator's "q3: 15") with the footer re-cut to 「{step}건 더 보기」 + 「남은 {n}건」 + 「처음 {step}건으로 접기」 and **no controls at all** when nothing is hidden; the row column plan is `76 · corp minmax(180,1fr) · 240 · 190 · 96` (no-extras panels `76 · 1fr · 300 · 96`, decided **per panel**, ≤1119 `72 · 1fr · 200 · 170 · 96`, ≤767 R2's two-line row), values fixed-width with `minmax(0,N)` floors, rows `min-height:44px` centred; **the whole row is the click target** (stretched link on the corp anchor, `↗` above it) with hover / `:focus-within` / press states and a `--live` edge + per-value fade on refreshed rows; a **meta line** + the four-step **D-day legend** sit under the tabs (tabs gain hover per P7 Q9); strips are 펼치기 ↔ **접기** with rows on the board grid and dateless rows rendering the label only; the countdown card is **three stats** (`performance_reports` no longer rendered); 소멸주의보 says 「N개 종목」 on a tie; **board auto-refresh** exists as a client behaviour with a stated visible contract (chip-only 갱신됨, no spinner/button/text, changed-row edge, tab/window/strips/scroll/focus survive, hidden-tab pause, silent failure, stale = R2, reduced-motion = no fade) at a **60 s** interval; the hero's Enter rule is R9's four-step rule in the shared `SearchRow`; board control heights are **36px (≥768) / 44px (≤767)** and the 481px seam is retired; landing prose is `word-break: keep-all` with a balanced hero subtitle and `nowrap` mono values. Copy: **14 new constants** in `components/landing/copy.ts` (§9's table) and the deletions `STAT_REPORTS_KO` + `POSITIONING_KO` / `PROVENANCE_KO` / `GATE_COST_VALUE_KO` / `GATE_COST_TAIL_KO` / `DISCLAIMER_KO` (**P8 Q5 = drop, no relocation**). Add supersession rows for R2 §Board (columns, window, footer, tabs hover, control heights), R3 §board strip (fixed 펼치기 label; dateless row) and R2 §Anchors (2×2 stats; 소멸주의보 `{corp}`).
+- `P8.S5`: **api** — `GET /board/summary`'s `next_lapse` gains **`tie_count`**: how many ① offerings share that earliest 청약 마감 (1 when only the named one does; today **3**). Derived from the same ordered pending list `lapse_pending` counts, so the strip and the board can never disagree; the key is present only when `next_lapse` is.
+- `P8.S5`: **qa** — `## Regression Checklist` gains this surface's lines (below). No count moves: `pytest` **142** and `npm run smoke` **16/16** are the numbers `P8.S3`'s lines already correct.
+  - `- [ ] 관제 현황판: the first screen shows 15 ranked rows + 「15건 더 보기」 + 「남은 N건」; one click → 30 + 「처음 15건으로 접기」; a tab switch resets the window (P8)`
+  - `- [ ] 보드 행: clicking anywhere on a row opens the event detail, 「↗」 still opens DART, Tab draws the focus ring around the row (P8)`
+  - `- [ ] 보드 열: every row's D-day is flush with the panel's right edge and the expanded strip rows share the board rows' x-coordinates, at 1512 / 1119 / 768 / 390 (P8)`
+  - `- [ ] 스트립: 펼치기 ↔ 접기 with aria-expanded, and a 추후결정 row shows the label with no date and no dash, 「추후결정」 in the D-day cell (P8)`
+  - `- [ ] 카운트다운 카드: three stats, and 「읽은 실적보고서」 is absent from the DOM (P8)`
+  - `- [ ] 소멸주의보: on a tied 청약 마감 the sentence says 「N개 종목」 instead of a company name, and matches /board/summary's next_lapse.tie_count (P8)`
+  - `- [ ] 자동 갱신: leave the landing open for two intervals — no spinner, no layout move; a new 기준시각 shows 「갱신됨」 + a --live edge on the changed rows, an unchanged one shows nothing; the tab, window, expanded strips and scroll survive and the countdown does not jump (P8)`
+  - `- [ ] 히어로 Enter: 「삼성」 + Enter selects the first candidate without navigating, a second Enter goes; an exact name goes on the first Enter; with no candidates it still submits GET /stocks?q= (P8)`
+  - `- [ ] 390px 랜딩: the hero subtitle breaks between 어절 with no one-syllable orphan, no mono date splits across lines, and the strip button is a full-width 44px control under its sentence (P8)`
+- `P8.S5`: **experience** — the landing section: the board's window is 15/+15 and its footer names three things; the numbers on the surface are now *explained* (tab = whole board, list = countdown's ranked subset) with a visible D-day ladder; a row is a single click target; the strips say 접기 when open; the countdown card carries three stats, not four; and the page **refreshes itself while it is open**, with the 기준시각 chip as the only place that says so.
+- `P8.S5`: **product** — 「the board shows 30 rows at a time」 is no longer true (15), and the landing is no longer a static render: the 관제 현황판 keeps itself current while a reader watches it, without asking them to reload. The 소멸주의보 headline names a count instead of one company when several offerings close on the same day.
 
 ## Operator Questions
 
@@ -746,6 +816,13 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   ranked rows, 1 of 4 추후결정, 4 진행 중). The session asks that the next `board-snapshot.md` regeneration
   include the top 진행 중 rows and all 추후결정 names so later rounds render the strips with real data.
   Housekeeping for the operator / a later slice; no design consequence.
+
+- **Q14 — the countdown card's caption and label.** R9's `Anchors.html` draws 「가장 빠른 소멸까지」 above the
+  countdown and 「청약 마감 2026-09-04 (KST) · 3개 종목」 under it, and §6 says the tie rule applies to that
+  caption too — but the product's countdown has **never** had either string, §6 also says 「카운트다운 자체
+  불변」, and neither string is among §9's fourteen. `P8.S5` therefore built the tie rule where a corp is
+  actually printed (소멸주의보) and **did not mint the caption**. The operator (or a later round) decides:
+  add the label + caption as new copy, or leave the countdown wordless as it is today.
 
 ## Constraints
 

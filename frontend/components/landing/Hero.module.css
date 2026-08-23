@@ -142,6 +142,9 @@
   font-size: var(--text-lg); /* R2: sub 17px */
   line-height: var(--leading-base);
   color: rgba(255, 255, 255, 0.78);
+  /* R9 §8 (walk finding 10): two even lines at 390px instead of a last line
+     carrying one syllable. `word-break: keep-all` is the page's (`page.module.css`). */
+  text-wrap: balance;
 }
 
 /* The search row: console input + solid 조회, 560px total, 48px on mobile and

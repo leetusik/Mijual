@@ -35,12 +35,29 @@ export type SearchRowClassNames = {
  * carries its `corp_code` and a chosen one is navigated to as
  * `/stocks/{corp_code}` (`stockPath`), never re-resolved from its name.
  *
- * **The form is still a plain GET.** Typing and pressing Enter *without*
- * choosing submits `?q=` to `/stocks` exactly as before — the four-tier resolver,
- * the redirect onto the handle on a hit, R4's locked 검색 불일치 sentence on a
- * miss (an ambiguous prefix included). The typeahead is an addition on top of a
- * row that works with JavaScript off, which is the property `P5.S12` and R4 §2
- * both state.
+ * **The form is still a plain GET.** With no candidates on screen, Enter submits
+ * `?q=` to `/stocks` exactly as before — the four-tier resolver, the redirect
+ * onto the handle on a hit, R4's locked 검색 불일치 sentence on a miss (an
+ * ambiguous prefix included). The typeahead is an addition on top of a row that
+ * works with JavaScript off, which is the property `P5.S12` and R4 §2 both state.
+ *
+ * ## Enter, in four steps (R9 §8, walk finding 11)
+ *
+ * Typing 「삼성」 offered 삼성에스디에스 and 삼성제약 and then a plain Enter threw
+ * both away, landing on `/stocks?q=삼성`'s 「일치하는 종목이 없습니다」. R9's rule
+ * keeps the offer without guessing which one is meant:
+ *
+ * 1. candidates open, **nothing highlighted** → Enter **selects the first**
+ *    (no navigation, no submit — the same state as one ↓);
+ * 2. something highlighted → Enter goes there (P7's rule, unchanged);
+ * 3. the typed text is **exactly** a candidate's 종목명 or 종목코드 → the first
+ *    Enter goes, because there is nothing to disambiguate;
+ * 4. no candidates at all → the plain GET submit above.
+ *
+ * The rule lives here, in the one shared row, so the hero and R4's header cannot
+ * drift apart — R11 owns what the `/stocks` **page** then says (its 불일치
+ * sentence, its 조사, whether it lists prefix candidates of its own), and this
+ * round touched none of it.
  *
  * ## The unsigned element, in the signed idiom
  *
@@ -132,11 +149,36 @@ export function SearchRow({
       return;
     }
     if (event.key === "Enter") {
-      const chosen = shown && active >= 0 ? candidates[active] : undefined;
-      // Nothing highlighted → the plain GET submit, exactly as before.
-      if (!chosen) return;
+      // No candidates on screen → the plain GET submit, exactly as before, and
+      // the JS-off path with it (R9 §8, rule 4).
+      if (!shown) return;
+
+      if (active >= 0) {
+        // Something is highlighted → go there (P7's rule, unchanged; rule 2).
+        event.preventDefault();
+        choose(candidates[active]);
+        return;
+      }
+
+      // Nothing highlighted. R9 §8 rule 3: an input that is *exactly* one of the
+      // candidates is not ambiguous, so the first Enter goes — matching the name
+      // as typed, or the 종목코드 case-insensitively (a ticker is a handle, not a
+      // word). Otherwise rule 1: Enter **selects the first candidate** and goes
+      // nowhere, which is the same state as one ↓. The hero never guesses, and it
+      // never throws away the list it just offered (walk finding 11).
       event.preventDefault();
-      choose(chosen);
+      const typedText = query.trim();
+      const exact = candidates.find(
+        (candidate) =>
+          candidate.corp_name?.trim() === typedText ||
+          candidate.stock_code?.toLowerCase() === typedText.toLowerCase() ||
+          candidate.corp_code.toLowerCase() === typedText.toLowerCase(),
+      );
+      if (exact) {
+        choose(exact);
+        return;
+      }
+      setActive(0);
       return;
     }
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;

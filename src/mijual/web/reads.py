@@ -411,6 +411,13 @@ def load_summary(
     totals = lapse_totals([r.lapse for r in stored if isinstance(r.lapse, Mapping)])
     pending = _pending_lapses(session, today=today)
     soonest = pending[0] if pending else (None, None, None)
+    # 동시 마감 (R9 §6): how many offerings share that earliest 청약 마감. The list
+    # is ordered by (마감일, 접수번호), so the head's date is the earliest and the
+    # count is simply how many entries carry it. The 소멸주의보 strip names the
+    # company when it is one and says 「N개 종목」 when it is not — the screen must
+    # not have to guess, and the board's own first row would otherwise look like
+    # a contradiction (three offerings tie on 2026-09-04 today).
+    tie_count = sum(1 for _, end, _ in pending if end == soonest[1]) if pending else None
 
     return board_summary(
         views,
@@ -423,6 +430,7 @@ def load_summary(
         issued_warrants=totals.issued,
         next_lapse_date=soonest[1],
         next_lapse_corp_name=soonest[2],
+        next_lapse_tie_count=tie_count,
         countdown_target=countdown_target(soonest[1], cutoff=cutoff),
         now=now,
         stale_after_hours=stale_after_hours,

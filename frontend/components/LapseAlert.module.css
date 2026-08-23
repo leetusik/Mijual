@@ -68,8 +68,13 @@
 }
 
 /* R1: the strip's numerals are mono 600 in --alert. Compose the live numbers
- * with <span class="mono num"> so 소멸 counts read as the loss they are. */
+ * with <span class="mono num"> so 소멸 counts read as the loss they are.
+ *
+ * R9 §6 (walk finding 10) adds `nowrap`: at 390px the 청약 마감 date broke across
+ * two lines as 「2026-09- / 04」, and a date split in half is not a date. Every
+ * mono value on the landing is `nowrap` for the same reason. */
 .body .num {
   font-weight: 600;
   color: var(--alert);
+  white-space: nowrap;
 }

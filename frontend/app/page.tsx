@@ -33,7 +33,7 @@ export default async function BoardLanding() {
   return (
     <>
       <Cosmos />
-      <main>
+      <main className={styles.landing}>
         <Hero summary={summary} />
         <div className={`content ${styles.stack}`}>
           <RetrospectiveAnchor summary={summary} />

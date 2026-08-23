@@ -1,14 +1,32 @@
-/* The board (R2 §Board 소멸 카운트다운, R3 §추후결정 board strip).
+/* The board (R2 §Board 소멸 카운트다운, R3 §추후결정 board strip), **re-cut by R9**
+ * (`docs/reference/design/rounds/09-landing-board/`).
  *
- * The round states this surface in measurements — a 17px/700 title, a mono 11
- * freshness chip, ≥44px tab hits with a 2px active underline, a desktop row grid
- * of `86px 1fr 300px 230px 96px` at 9px vertical padding with dashed separators,
- * a two-line mobile row at 11px, and the two pinned strips on `--surface-raised`
- * with a hairline top. Those numbers are the contract; everything else here is
- * tokens. */
+ * R2 stated this surface in measurements and R9 restates the row: the geometry
+ * source of truth is now `rounds/09-landing-board/output/landing/r9-board.css`
+ * — "the column-plan contract … the numbers can be read off it directly" — and
+ * the declarations below are ported from it rather than re-derived. What R9 did
+ * **not** touch (the 17px/700 title, the mono 11 freshness chip, the ≥44px tab
+ * hits and their 2px active underline, the strips' raised band, the mobile
+ * two-line row) is R2's and stands unchanged.
+ *
+ * The one thing to know before editing: **every row is its own grid container**,
+ * so a track that sizes to content (`auto`) resolves differently row by row and
+ * the columns stop lining up — which is exactly walk finding 5. Every value
+ * column is therefore a fixed width, only the 회사 column flexes, and whether the
+ * extras column exists at all is decided **per panel** (`data-extras`), never per
+ * row. */
 
 .board {
-  padding: var(--space-6);
+  /* R9's panel: the strips bleed to the panel's edge and the last one ends at
+     its bottom hairline (`r9-board.css`: `.panel{padding:18px 24px 0}` +
+     `.strip{margin-inline:-24px}`). With no strip on the panel at all — a tab
+     with neither 진행 중 nor 추후결정 rows — the padding comes back, so the last
+     row never touches the frame. */
+  padding: var(--space-6) var(--space-6) 0;
+}
+
+.board:not(:has(.strip)) {
+  padding-bottom: var(--space-6);
 }
 
 .header {
@@ -27,6 +45,14 @@
   color: var(--ink-1);
 }
 
+/* R9 §7: the 기준시각 chip and the 갱신됨 badge are one group — the whole visible
+   surface of the auto-refresh (`r9-board.css` `.fresh`). */
+.fresh {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 /* R2: mono 11 `기준 YYYY-MM-DD HH:MM KST` in --ink-3 … */
 .freshness {
   font-family: var(--font-mono);
@@ -42,6 +68,18 @@
   color: var(--alert);
 }
 
+/* R9 §7: 갱신됨 beside a **new** 기준시각 — mono 11, --live on --live-tint, 2×8.
+   It is not a toast: it stays until the next refresh that brings a new 기준시각.
+   An unchanged 기준시각 puts nothing on the screen at all. */
+.updated {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+  background: var(--live-tint);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
 /* The stale notice above the tabs. The board content itself never dims. */
 .notice {
   margin: var(--space-4) 0 0;
@@ -54,14 +92,14 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Tabs
+   Tabs — R2's, with the hover state R9 adds (P7 Q9 answered).
    --------------------------------------------------------------------------- */
 
 .tabs {
   display: flex;
   align-items: stretch;
   gap: var(--space-4);
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
   border-bottom: 1px solid var(--border-soft);
   /* Mobile: the strip scrolls rather than wrapping (R2). */
   overflow-x: auto;
@@ -87,6 +125,21 @@
   color: var(--ink-2);
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+/* R9 §4 (P7 Q9): the tabs answer the pointer. The active underline stays
+   --ink-1, so hover and active never read as the same state. */
+.tab:hover {
+  color: var(--ink-1);
+  border-bottom-color: var(--border-strong);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
 }
 
 /* R2: active = 600 + 2px --ink-1 underline. */
@@ -101,12 +154,97 @@
   color: var(--ink-3);
 }
 
+.tabActive .tabCount {
+  color: var(--ink-2);
+}
+
 .tabCompact {
   display: none;
 }
 
 /* ---------------------------------------------------------------------------
-   Rows
+   Meta line + D-day legend (R9 §4, walk findings 2·3·7)
+
+   One line under the tabs that says what the two numbers are — the tab count is
+   the whole board, the list below is the countdown's ranked subset — with R1's
+   urgency ladder spelled out on the right in its own inks.
+   --------------------------------------------------------------------------- */
+
+.metaLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 10px 0 6px;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--ink-3);
+  /* Korean prose breaks between 어절, never inside one (R9 §8). */
+  word-break: keep-all;
+}
+
+/* The two live numbers, mono in --ink-2 (`r9-board.css` `.meta b`). */
+.metaValue {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.legend span {
+  white-space: nowrap;
+}
+
+/* R1's ladder, unsimplified: D-DAY filled · ≤7d alert · ≤30d ink · >30d dim. */
+.lg0 {
+  padding: 1px 6px;
+  background: var(--urgency-now-bg);
+  color: var(--urgency-now-fg);
+}
+
+.lg1 {
+  color: var(--urgency-soon);
+}
+
+.lg2 {
+  color: var(--urgency-near);
+}
+
+.lg3 {
+  color: var(--urgency-far);
+}
+
+/* ---------------------------------------------------------------------------
+   Rows — R9's column plan (desktop ≥1120)
+
+     chip 76 | corp minmax(180px,1fr) | key date 240 | extras 190 | D-day 96
+
+   and, for a whole panel in which no row carries extras (the CB / 매수청구 tabs,
+   strips included):
+
+     chip 76 | corp minmax(180px,1fr) | key date 300 | D-day 96
+
+   The row fills the panel and the D-day is flush right in R2's own last slot;
+   the only slack is inside the name column, after the name. Walk finding 6's
+   ~450px hole between the key date and the D-day on every CB row was an **empty
+   extras column** plus a 1fr name column, so it goes away by not making the
+   column.
+
+   `minmax(0, N)` rather than a bare `N` on the value tracks is `P5.S19`'s
+   measured fix carried forward: between 768px and ~802px the five R9 widths plus
+   four 12px gaps exceed the padded panel, and a bare fixed width would push the
+   document into a horizontal scrollbar (41px of overflow, measured then). The
+   tracks shrink together and identically for every row of a panel — they are
+   never `auto`, which is the thing R9 forbids and the thing that would misalign
+   the rows.
    --------------------------------------------------------------------------- */
 
 .rows {
@@ -115,21 +253,90 @@
   list-style: none;
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  /* R2 mobile: 11px vertical padding, two lines. */
-  padding-block: 11px;
-  border-bottom: 1px dashed var(--border-soft);
+.rows:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
-/* The chip keeps its own width in both layouts: the 86px column is the space it
-   sits in, not a box it fills (a grid item would otherwise stretch to it). */
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    76px minmax(180px, 1fr) minmax(0, 240px)
+    minmax(0, 190px) 96px;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 44px;
+  margin-inline: -12px;
+  padding: 8px 12px;
+  border-bottom: 1px dashed var(--border-soft);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.rows[data-extras="none"] .row {
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(0, 300px) 96px;
+}
+
+/* An empty span left in the grid would still take a track and push the D-day
+   onto the next line, so the cell is removed rather than emptied. */
+.rows[data-extras="none"] .extras {
+  display: none;
+}
+
+/* R9 §3 (walk finding 1): the whole row is the event's click target, hover says
+   so with the surface and the underline, and no 「상세」 instruction is added. */
+.row:hover {
+  background: var(--surface-raised);
+}
+
+.row:hover .corp {
+  text-decoration: underline;
+}
+
+.row:focus-within {
+  background: var(--surface-raised);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+/* Press: inset, never a colour inversion (R1). */
+.row:active {
+  background: var(--surface-inset);
+}
+
+/* R9 §7: a row whose values changed in a refresh, or one that just entered the
+   window, carries a --live edge for one cycle. */
+.changed {
+  box-shadow: inset 2px 0 0 var(--live);
+}
+
+/* … and only the values that actually changed fade in (--dur-base). Reduced
+   motion cuts the fade to nothing through `app/shell.css`'s global floor while
+   the edge above stays — the edge is information, the fade is motion. */
+.row [data-changed="true"] {
+  animation: valueIn var(--dur-base) var(--ease);
+}
+
+@keyframes valueIn {
+  from {
+    opacity: 0;
+  }
+}
+
 .chip {
   flex: none;
   justify-self: start;
+}
+
+/* On desktop the two wrappers disappear and their children become the grid's
+   own cells; at ≤767 they are the two lines of R2's mobile row. */
+.top {
+  display: contents;
+}
+
+.rmeta {
+  display: contents;
 }
 
 .corpCell {
@@ -140,18 +347,28 @@
 }
 
 .corp {
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--ink-1);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
-.corp:hover {
-  text-decoration: underline;
+/* The stretched link (R9 §3): the corp anchor covers the row, so the row has one
+   link and its accessible name is still the company's. A row with no filing
+   number renders a `span` instead and gets no overlay — there is nothing to
+   open, and an inert overlay would swallow the row's own hover. */
+a.corp::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
-/* R2: the ↗ original-filing link, mono 11 --ink-3. */
+/* R2: the ↗ original-filing link, mono 11 --ink-3 — and it stays above the
+   stretched link so DART is still one click away. */
 .dart {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--ink-3);
@@ -160,19 +377,6 @@
 
 .dart:hover {
   color: var(--ink-2);
-}
-
-/* R2's mobile row is two lines — [chip + corp … DDay] / [label + date · extras]
-   — so the DDay is pulled up beside the name and this wrapper takes the whole
-   second line. On desktop the wrapper disappears and its two children become
-   grid cells 3 and 4. */
-.meta {
-  display: flex;
-  flex: 1 0 100%;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  order: 2;
 }
 
 .when {
@@ -185,10 +389,14 @@
 .whenLabel {
   font-size: var(--text-sm); /* R2: label 12px --ink-2 */
   color: var(--ink-2);
+  white-space: nowrap;
 }
 
+/* R9 §8 / walk 10: a mono value never breaks across lines. */
 .whenDate {
+  font-size: var(--text-sm);
   color: var(--ink-1);
+  white-space: nowrap;
 }
 
 .extras {
@@ -199,7 +407,9 @@
 }
 
 .subscription {
+  font-size: var(--text-sm);
   color: var(--ink-2);
+  white-space: nowrap;
 }
 
 /* R2: chip 발행가 확정 전 — sans 11, --surface-inset, 2×8. */
@@ -212,63 +422,108 @@
   white-space: nowrap;
 }
 
-.ddayCell {
+.rail {
+  justify-self: end;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  margin-left: auto;
-  order: 1;
 }
 
-/* Mobile keeps the extras beside the countdown on line two, separated by the
-   round's own middot. */
-.extras:not(:empty)::before {
-  content: "·";
+/* ---------------------------------------------------------------------------
+   The window footer (R9 §4, walk findings 3·4)
+
+   Three controls, and each says one thing: the button says what a click adds,
+   the mono tail says what is left, and the text button is the way back to the
+   first window. Nothing left to show → none of the three.
+   --------------------------------------------------------------------------- */
+
+.more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 16px 0 18px;
+}
+
+/* R2's hairline button, at R9's control height (P7 Q11): 36px from the tablet
+   breakpoint up, 44px below it. The 32px form and the 481px seam are retired. */
+.btn {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.btn:hover {
+  background: var(--surface-inset);
+  border-color: var(--ink-3);
+  color: var(--ink-1);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.rest {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   color: var(--ink-3);
 }
 
-/* The ranked list's display-window disclosure (`P7.S3`, operator item 4a).
- *
- * Deliberately **not** a third pinned strip: `--surface-raised` + a hairline top
- * is R2's treatment for the two pinned sections, and a third raised band between
- * the rows and the ② strip would read as a section the round never drew. This is
- * one line of breathing room under the last dashed row carrying the strips' own
- * `.expand` button and `.stripCount` — same button class, so the same hairline,
- * the same hover and the same 44px mobile floor come with it.
- *
- * Centred, because the count + button carry no sentence: left-aligned they would
- * sit under the RightsChip column and read as a half-drawn row. `--space-5`
- * above and the ② strip's own `--space-4` margin below keep the two controls
- * apart at both widths. */
-.more {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin: 0;
-  padding-top: var(--space-5);
+.flat {
+  min-height: 36px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.flat:hover {
+  color: var(--ink-1);
 }
 
 /* ---------------------------------------------------------------------------
    Pinned strips (② 진행 중, 일정 추후결정)
+
+   R2's raised sentence band, bled to the panel's edge; R9 puts the expanded rows
+   back on the board's own grid so the two tables read as one (walk finding 5).
    --------------------------------------------------------------------------- */
 
 .strip {
-  margin-top: var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  margin-inline: -24px;
+  padding: 12px 24px;
   background: var(--surface-raised);
   border-top: 1px solid var(--border-strong);
 }
 
 .stripLine {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
   margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-base);
   color: var(--ink-2);
+  word-break: keep-all;
 }
 
 /* R2: 진행 중 in --live 600, the count mono 600. */
@@ -280,24 +535,121 @@
 .stripCount {
   font-weight: 600;
   color: var(--ink-1);
+  white-space: nowrap;
 }
 
-/* R2: 펼치기 as a hairline button. */
-.expand {
-  min-height: 32px;
-  padding: 0 var(--space-3);
-  background: none;
-  border: 1px solid var(--border-strong);
-  border-radius: 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-  cursor: pointer;
+/* The expanded list: one dashed hairline between the sentence and the rows, and
+   the rows on the board's own start line (strip padding 24 − row margin 12 + row
+   padding 12 = the board row's own 24px). */
+.sbody {
+  margin-top: 10px;
+  padding-top: 2px;
+  border-top: 1px dashed var(--border-soft);
 }
 
-.expand:hover {
-  background: var(--surface-inset);
-  border-color: var(--ink-3);
+/* ---------------------------------------------------------------------------
+   768–1119 — the same plan, narrower. The extras track stays a fixed width here
+   too: `auto` would be 0 on a row without extras and ~80px on the row beside it,
+   and one panel would show two column systems.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 1119px) {
+  .row {
+    grid-template-columns:
+      72px minmax(120px, 1fr) minmax(0, 200px)
+      minmax(0, 170px) 96px;
+  }
+
+  .rows[data-extras="none"] .row {
+    grid-template-columns: 72px minmax(120px, 1fr) minmax(0, 240px) 96px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   ≤767 (390) — R2's two-line mobile row, and R9's 44px touch floor.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .board {
+    padding: var(--space-4) var(--space-4) 0;
+  }
+
+  .board:not(:has(.strip)) {
+    padding-bottom: var(--space-4);
+  }
+
+  .row,
+  .rows[data-extras="none"] .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-1) var(--space-3);
+    padding-block: 11px;
+    align-items: center;
+  }
+
+  .top {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .rail {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .rmeta {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  /* The extras keep their own middot on the second line (R2). */
+  .extras:not(:empty)::before {
+    content: "·";
+    color: var(--ink-3);
+    margin-right: 2px;
+  }
+
+  .btn,
+  .flat {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .strip {
+    margin-inline: -16px;
+    padding: 12px 16px;
+  }
+
+  /* R9 §5 / walk 10: the sentence is one block and the button is full width
+     under it — no lone 32px button floating beside the text. */
+  .stripLine {
+    display: block;
+  }
+
+  .stripLine .btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .more {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .metaLine {
+    padding-bottom: var(--space-2);
+  }
 }
 
 @media (max-width: 480px) {
@@ -307,46 +659,5 @@
 
   .tabCompact {
     display: inline;
-  }
-
-  .expand {
-    min-height: 44px;
-  }
-}
-
-/* ---------------------------------------------------------------------------
-   Desktop row grid — R2's own columns.
-   --------------------------------------------------------------------------- */
-
-@media (min-width: 768px) {
-  .row {
-    display: grid;
-    /* R2's own columns: `86px 1fr 300px 230px 96px`. The two wide ones are
-     * `minmax(0, …)` so they are the widths R2 gives wherever the content
-     * column can pay for them and shrink instead of pushing the page into a
-     * horizontal scrollbar in the 768–830px band, where 86+300+230+96 plus four
-     * 12px gaps (760px) exceeds the padded content width. Measured at
-     * `P5.S19`: exactly 41px of document overflow at 768px before this, 0
-     * after, with the row wrapping rather than truncating any value. */
-    grid-template-columns: 86px minmax(0, 1fr) minmax(0, 300px) minmax(0, 230px) 96px;
-    align-items: baseline;
-    gap: var(--space-3);
-    padding-block: 9px; /* R2: 9px v-pad */
-  }
-
-  /* The wrapper stops being a box so `when` and `extras` are grid cells 3 and 4
-     while staying one flex line on mobile; the mobile reordering goes with it,
-     so the columns follow the DOM. */
-  .meta {
-    display: contents;
-  }
-
-  .ddayCell,
-  .meta {
-    order: 0;
-  }
-
-  .extras:not(:empty)::before {
-    content: none;
   }
 }
