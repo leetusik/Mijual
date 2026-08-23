@@ -6,7 +6,8 @@ import { Identicon } from "@/components";
 import { logout as logoutRequest } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { writeFlash } from "@/lib/session";
-import { LOGIN_KO, LOGOUT_KO, NOTIFICATIONS_LABEL_KO } from "./copy";
+import { LOGIN_KO, LOGOUT_KO, NOTIFICATIONS_LABEL_KO, VOCKY_ROW_KO } from "./copy";
+import { FeedbackDialog } from "./Feedback";
 import { useAccount } from "./useAccount";
 import styles from "./AccountSlot.module.css";
 
@@ -34,7 +35,11 @@ import styles from "./AccountSlot.module.css";
  * 3. **The menu is two rows** — 알림 설정 / 로그아웃. 내 포트폴리오 left the menu
  *    because the same destination is now a nav slot (보유 종목), and the menu is
  *    aligned to the frame's right edge and **opaque** so the cosmos cannot read
- *    through a list of destinations.
+ *    through a list of destinations. **R9's session added a third row**, 의견
+ *    보내기, between them (build-prompt §12, card `chrome/AccountSlot.html`):
+ *    「메뉴는 `알림 설정 / 의견 보내기 / 로그아웃` 세 행이 된다 … R8이 만든 미주알
+ *    소유 의견 표면을 여는 세 번째 진입점이며 … 새 표면도 새 카피도 없다」 — the
+ *    label is the existing `VOCKY_ROW_KO`, the behaviour is the footer's.
  * 4. **The 샘플 state is gone.** R5-4's chip and 샘플 종료 are retired: the slot
  *    has exactly two states, anonymous and signed-in, and 「샘플임을 말하는 자리」
  *    is the portfolio surface's own banner. `lib/sample.ts` still runs the mode —
@@ -86,7 +91,28 @@ export function AccountSlotDesktop() {
   const account = useAccount();
   const logout = useLogout();
   const [open, setOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const slot = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLButtonElement>(null);
+
+  // ≤480 the whole desktop slot is `display: none` (`Nav.module.css` `.utility`)
+  // and the 의견 row's job passes to the sheet's own row — so an open panel would
+  // go invisible **with its ancestor** while `FeedbackDialog`'s mobile branch
+  // still holds the counted body-scroll lock. Measured before this effect
+  // existed: at 400px the dialog was in the DOM with `offsetParent === null`,
+  // a zero-size rect and `body { overflow: hidden }`, i.e. exactly the lock
+  // `P8.S3` note 3 warns about, with nothing on screen to close. Closing at the
+  // breakpoint is the honest end of that panel: its entry point is gone.
+  useEffect(() => {
+    if (!feedbackOpen) return;
+    const media = window.matchMedia("(max-width: 480px)");
+    const sync = () => {
+      if (media.matches) setFeedbackOpen(false);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [feedbackOpen]);
 
   // An open menu closes on Escape and on a click outside it — an overlay floor,
   // the same one `Nav.tsx` gives the mobile sheet.
@@ -122,6 +148,7 @@ export function AccountSlotDesktop() {
     <div className={styles.slot} ref={slot}>
       <button
         type="button"
+        ref={frame}
         className={styles.frame}
         aria-expanded={open}
         aria-haspopup="menu"
@@ -140,6 +167,24 @@ export function AccountSlotDesktop() {
           <Link className={styles.menuRow} role="menuitem" href={ROUTES.notifications}>
             {NOTIFICATIONS_LABEL_KO}
           </Link>
+          {/* 의견 보내기 — the third entry point to the surface 미주알 already
+              owns (R9 §12). 메뉴를 먼저 닫고 다이얼로그를 연다, in that order and
+              for the reason `Nav.tsx` gives its sheet row: the menu closes on an
+              outside click, so a dialog living inside it would be closed by its
+              own first click. */}
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.menuRow}
+            aria-haspopup="dialog"
+            aria-expanded={feedbackOpen}
+            onClick={() => {
+              setOpen(false);
+              setFeedbackOpen(true);
+            }}
+          >
+            {VOCKY_ROW_KO}
+          </button>
           <button
             type="button"
             role="menuitem"
@@ -150,6 +195,20 @@ export function AccountSlotDesktop() {
             {LOGOUT_KO}
           </button>
         </div>
+      ) : null}
+
+      {/* Outside the menu and inside the slot: the menu is unmounted by the time
+          this opens, and `.slot` is the `position: relative` box the anchored
+          panel hangs off — `placement="below"`, because this entry point is in
+          the top bar. Focus returns to the frame, the control still on screen. */}
+      {feedbackOpen ? (
+        <FeedbackDialog
+          channel="web"
+          variant="anchored"
+          placement="below"
+          onClose={() => setFeedbackOpen(false)}
+          returnFocusTo={frame}
+        />
       ) : null}
     </div>
   );

@@ -286,3 +286,21 @@
     min-height: 48px;
   }
 }
+
+/* 계정 메뉴에서 열 때만 — 프레임 **아래**, 우변 정렬 (R9 build-prompt §12의 세 번째
+   진입점). The footer's entry sits at the bottom of the page, so R8 hung the panel
+   above it; the account slot's entry is in the 52px top bar, where "above" is
+   off-screen. Same 10px offset, same right edge, nothing else about the panel
+   changes — the footer and the nav never carry this class.
+
+   `.asPanel.asPanelBelow` rather than `.asPanelBelow`: it outranks `.asPanel` by
+   **specificity rather than source order**, the rule `Nav.module.css` states for
+   `.sheet.sheetOpen`. The ≥481 gate leaves the ≤480 bottom-sheet form above
+   untouched (the desktop account slot does not exist below the breakpoint —
+   `Nav.module.css` `.utility { display: none }`). */
+@media (min-width: 481px) {
+  .asPanel.asPanelBelow {
+    top: calc(100% + 10px);
+    bottom: auto;
+  }
+}

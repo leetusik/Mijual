@@ -33,10 +33,13 @@ import styles from "./Feedback.module.css";
  * > **미주알 자체 API**에만 말하고 키는 서버 `.env`에만 있다.
  *
  * That replaces R2's whole vocky contract: there is no third-party script, no
- * `data-vocky-trigger` seam and no widget this app does not draw. The two entry
- * points are the footer button and the mobile sheet row — **never a floating
- * corner button**, because the bottom-right corner is the AI 질문 launcher's
- * (R2 §6-4, restated by R8: "우하단 모서리는 비운다").
+ * `data-vocky-trigger` seam and no widget this app does not draw. The entry
+ * points are the footer button, the mobile sheet row and — since R9's session
+ * instruction (build-prompt §12, `chrome/AccountSlot.html`) — the desktop
+ * account menu's 의견 보내기 row: 「R8이 만든 미주알 소유 의견 표면을 여는 세 번째
+ * 진입점이며 … 새 표면도 새 카피도 없다」. **Never a floating corner button**,
+ * because the bottom-right corner is the AI 질문 launcher's (R2 §6-4, restated
+ * by R8: "우하단 모서리는 비운다").
  *
  * ## The two forms are one component
  *
@@ -90,11 +93,20 @@ function useMobile(): boolean {
 type Phase = "editing" | "sending" | "sent" | "failed";
 
 export type FeedbackDialogProps = {
-  /** vocky's own field: which entry point opened this (footer / mobile sheet). */
+  /** vocky's own field: which entry point opened this (footer / mobile sheet /
+   * the account menu, which is the desktop web chrome and therefore `web`). */
   channel: "web" | "mobile";
   /** `anchored` = the footer's 380px panel (a bottom sheet below 480px);
    * `sheet` = the nav's, which is the bottom sheet at every width it exists at. */
   variant: "anchored" | "sheet";
+  /** Which side of its entry point the anchored panel hangs off. R8 drew one
+   * entry point — the footer, at the bottom of the page — so the panel goes
+   * **above** it, and that stays the default: the footer and the nav are
+   * untouched by this prop existing. The account menu (R9 build-prompt §12) is
+   * the third entry point and sits in the 52px top bar, where "above" is
+   * off-screen, so it asks for `below`. Ignored by `variant="sheet"` and below
+   * 480px, where the panel is the viewport's own bottom sheet. */
+  placement?: "above" | "below";
   onClose: () => void;
   /** Where focus goes when the dialog closes — its entry point. */
   returnFocusTo?: React.RefObject<HTMLElement | null>;
@@ -103,6 +115,7 @@ export type FeedbackDialogProps = {
 export function FeedbackDialog({
   channel,
   variant,
+  placement = "above",
   onClose,
   returnFocusTo,
 }: FeedbackDialogProps) {
@@ -184,7 +197,10 @@ export function FeedbackDialog({
   const surface = [
     styles.surface,
     variant === "sheet" ? styles.asSheet : styles.asPanel,
-  ].join(" ");
+    variant !== "sheet" && placement === "below" ? styles.asPanelBelow : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <>

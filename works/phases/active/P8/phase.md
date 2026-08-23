@@ -764,6 +764,40 @@ operator's. The handoff carries the orchestrator's defaults (Q15 design a Korean
 why; Q16 keep the value, presentation in play; Q17 leave, log; Q18 literals stay).
 
 
+### `P8.S5.5` — the account menu's 의견 row, and one lock it uncovered (2026-08-23)
+
+R9 build-prompt **§12** (an operator instruction given inside the R9 session, drawn in
+`chrome/AccountSlot.html`) is executed, closing **Q12**: the desktop account menu is
+**알림 설정 / 의견 보내기 / 로그아웃**, and the new row opens R8's own `FeedbackDialog` — no new
+surface, no new copy, no restyle. Verified signed-in on `127.0.0.1:3000`, the tailnet origin and a
+production build. Evidence in `slices/P8.S5.5/result.md`. What later chrome work needs to know:
+
+1. **`FeedbackDialog` now takes `placement?: "above" | "below"`, defaulting to `above`.** R8's anchored
+   panel hangs *above* its entry (`.asPanel { bottom: calc(100% + 10px) }`) because the only entry it
+   drew was the footer. A future entry point in the **top bar** must pass `placement="below"` (the
+   mirror rule `.asPanel.asPanelBelow`, `top: calc(100% + 10px)`, gated `@media (min-width: 481px)`);
+   the footer and the nav sheet pass nothing and are unchanged. The override wins **by specificity,
+   not source order** (`.asPanel.asPanelBelow`) — the convention `Nav.module.css` states for
+   `.sheet.sheetOpen`, and the reason the rule lives in `Feedback.module.css` rather than reaching
+   across CSS-module files.
+2. **An overlay mounted inside `.utility` disappears at ≤480 — and its body-scroll lock does not.**
+   Measured at 400px before the fix: the account panel was in the DOM with `offsetParent === null`,
+   a zero-size rect and `body { overflow: hidden }`, i.e. an unscrollable page with nothing on screen
+   to close. `AccountSlotDesktop` now closes the panel when `(max-width: 480px)` matches. Any future
+   overlay hung off a **breakpoint-hidden** container needs the same close, on top of `P8.S3` note 3's
+   counted lock.
+3. **Two 의견 panels can be open at once** (footer's + the account menu's = 2 `[role=dialog]`; Esc
+   closes both). Each entry point owns its own state and the record never asked for a single-owner
+   rule, so nothing was invented — see **Q19**.
+4. **The 의견 send was deliberately not re-exercised** from the new entry: it is R8's path, proven end
+   to end by `P8.S3`, and another send would add another row to the operator's real vocky project
+   (Q9). The new row hands `FeedbackDialog` the footer's exact props (`channel="web"`).
+5. **A signed-in browser check costs nothing durable.** The recipe `P8.S3` used still works and is now
+   scripted: create a throwaway account through 계정 만들기, do the checks, delete it through
+   알림 설정 → 계정 삭제 in the same run. If a run dies mid-way, the orphan can still be removed through
+   the product — 재설정 요청 puts the link in `var/stack/api.log` (`ConsoleMailer`), and the reset lands
+   already signed in. The database was left exactly as found (accounts 14 and 25 only).
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -802,6 +836,8 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] 390px 랜딩: the hero subtitle breaks between 어절 with no one-syllable orphan, no mono date splits across lines, and the strip button is a full-width 44px control under its sentence (P8)`
 - `P8.S5`: **experience** — the landing section: the board's window is 15/+15 and its footer names three things; the numbers on the surface are now *explained* (tab = whole board, list = countdown's ranked subset) with a visible D-day ladder; a row is a single click target; the strips say 접기 when open; the countdown card carries three stats, not four; and the page **refreshes itself while it is open**, with the 기준시각 chip as the only place that says so.
 - `P8.S5`: **product** — 「the board shows 30 rows at a time」 is no longer true (15), and the landing is no longer a static render: the 관제 현황판 keeps itself current while a reader watches it, without asking them to reload. The 소멸주의보 headline names a count instead of one company when several offerings close on the same day.
+- `P8.S5.5`: **frontend** — the desktop **account menu is three rows** — 알림 설정 / **의견 보내기** / 로그아웃 — executing R9 build-prompt §12 (the operator instruction given inside the R9 session; card `chrome/AccountSlot.html`) and closing P8 Q12. The new row is the **third entry point** to R8's own 의견 surface (footer · 모바일 시트 · 계정 메뉴): existing label `VOCKY_ROW_KO`, no new copy, no new surface, R8's panel with its six states unchanged. `FeedbackDialog` gains one additive prop, `placement?: "above" | "below"` (default `above`, so the footer and the nav sheet are untouched) — the account menu's entry is in the top bar, so its panel hangs **below** the frame, right edges aligned, same 10px offset (`.asPanel.asPanelBelow`, ≥481 only). `P8.S3`'s "the account slot's menu has **two** rows (알림 설정 / 로그아웃)" and "the 의견 진입점 is the footer button and the mobile sheet row — two places" are both superseded by three.
+
 
 ## Operator Questions
 
@@ -861,6 +897,8 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   Not in R9's apply scope by the session's own note (`build-prompt.md` §12). Needs a home: a small `fix`/
   implementation slice in P8 after `P8.S5` (one menu row wired to the existing Feedback panel), or a deferred
   job. Orchestrator's default if unanswered: insert `P8.S5.5` (risk low → mid tier) right after the R9 apply.
+  _Executed as `P8.S5.5` (2026-08-23): the row is built and verified — 알림 설정 / 의견 보내기 / 로그아웃, opening
+  R8's own panel. Nothing is left to decide here; the review routes this as **done**, not as a question._
 - **Q13 — grounding snapshot refresh.** R9 could draw only the events the grounding pack names (13 of 15
   ranked rows, 1 of 4 추후결정, 4 진행 중). The session asks that the next `board-snapshot.md` regeneration
   include the top 진행 중 rows and all 추후결정 names so later rounds render the strips with real data.
@@ -882,6 +920,13 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   (default, log as decided) or add a one-line notice?
 - **Q18 — locked R3 absence literals (R10, finding 10).** 「현재 버전 공시에 없음」 / 「카운트다운 없음 — 일정이 공시상
   미정」 stay verbatim; only presentation moves in R10. Confirm.
+
+- **Q19 — may two 의견 panels be open at once?** Measured in `P8.S5.5`: open the footer's 의견 패널, scroll
+  up, open the account menu and click 의견 보내기 → **two** `[role="dialog"]` panels on screen at the same
+  time (Esc closes both; each entry point owns its own state). R8 drew one entry point and R9 §12 added a
+  third without saying anything about mutual exclusion, so nothing was invented. Default if unanswered:
+  leave it — a later chrome round decides whether opening one 의견 진입점 closes the others (it is the same
+  question for the ≤480 sheet row, and the fix would be one shared owner in the chrome, not three local ones).
 
 ## Constraints
 

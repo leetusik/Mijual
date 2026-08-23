@@ -222,3 +222,24 @@ contract and is simply not rendered), and — **closing P8 Operator Question Q5
 not relocated, and land nowhere on the landing. The identically-named constants
 in `lookup/copy.ts` and `event/copy.ts` are those surfaces' own strings, still
 rendered, and were not touched.
+
+
+## R9 세션 지시 — 「의견 보내기」의 세 번째 진입점 (hand-registered, `P8.S5.5`)
+
+<!-- HAND-WRITTEN, like the two sections above. **A regeneration of this file
+     drops it; re-append it.** -->
+
+**No string enters the product with this one.** R9's build-prompt §12 records an
+operator instruction given inside the R9 session — 「계정 메뉴에 「의견 보내기」 행
+추가 … 새 표면도 새 카피도 없다 — 라벨은 기존 `FEEDBACK_OPEN_KO` 그대로」 — and the
+card `chrome/AccountSlot.html` draws the menu as three rows. The constant the
+build-prompt calls `FEEDBACK_OPEN_KO` is this repo's **`VOCKY_ROW_KO`**
+(「의견 보내기」, `frontend/components/chrome/copy.ts`, R2 §vocky, kept by R8
+build-prompt §7 as the entry-point label). Its 어디에 column simply grows:
+
+| 상수 | 문자열 | 어디에 |
+|---|---|---|
+| `VOCKY_ROW_KO` | 의견 보내기 | 푸터 진입점 · 모바일 시트 행 · **데스크톱 계정 메뉴 행** (R9 §12) |
+
+The surface it opens is unchanged — R8's `Feedback.tsx`, the same six states and
+the same fifteen strings registered in the R8 section above.
