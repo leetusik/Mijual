@@ -277,3 +277,73 @@ and the rest of the round reuses strings already registered above.
 팝오버와 정정 이력 버튼의 닫기 표기 (읽히는 낱말이 아니라 접근 가능한 이름);
 `FIELD_ABSENT_KO`「현재 버전 공시에 없음」과 「추후결정」은 **문구 잠금 유지** —
 R10이 바꾼 것은 표기(점선 프레임 칩)뿐이다 (라운드 Q-D 확인).
+
+## R11 additions — 내 종목 조회 · 놓친 돈 조회기 (hand-registered, `P8.S9`)
+
+<!-- HAND-WRITTEN, like the sections above. **A regeneration of this file drops
+     it; re-append it.** -->
+
+R11 (`rounds/11-lookup`, signed 2026-08-24) is a **polish** round: no new field,
+no new calculation, no new payload. Its `result.md` §4 declares **one** new
+sentence, and the gate additionally signed the 놓친 돈 caption as landed (P8
+Q28 = a). Everything else below is **label tier** — the cell and column names the
+round's contract (`build-prompt.md` §2/§4/§5) writes and its six cards draw,
+registered here rather than typed at a call site.
+
+**New — the round's one sentence** (dated copy exception, 2026-08-24, Q-E):
+
+| 상수 | 문자열 | 어디에 |
+|---|---|---|
+| `MISSED_PROMPT_KO` | 보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다 | 보유량이 없을 때의 **입력 프롬프트** — 44px 점선 컨트롤, 누르면 strip 입력에 포커스, **페이지당 한 번** (살아 있는 ① 블록의 `.chainfoot`, 없으면 놓친 돈 `.mmhead`). 어휘는 전부 기존 서명 문구의 것: 「보유 주식 수」(R4 §3) + 「…와 금액을 환산합니다」(R4 발행가 확정 전 문장) + 「보유량 환산」(프로비넌스) |
+
+**New — the caption the gate signed as landed** (P8 Q28 = (a); `MISSED_CAPTION_TAIL_KO`
++ `missedCaptionKo`):
+
+| 문자열 | 어디에 |
+|---|---|
+| 유상증자 {n}건 · 집계 범위 {start} ~ 오늘 (KST) · **시장 가격 미사용 — 소멸된 증서의 이론가치 환산** | 놓친 돈 `.mmcap`. 앞 두 조각은 기존 등록분(`COL_OFFERING_KO` + `coverageCaptionKo`)이고, **굵은 꼬리만 신규**다 — 「이 금액은 시세인가?」에 섹션 자리에서 답한다 |
+
+**New — label tier** (the contract's own cell/column names; not sentences):
+
+| 상수 | 문자열 | 어디에 · 출처 |
+|---|---|---|
+| `COVERAGE_SECTION_KO` | 집계 범위 | 경계 패널의 `h2` (§8). 서명된 캡션 「집계 범위 {start} ~ 오늘 (KST)」의 명사를 제목으로 올린 것 — `result.md` §4가 신규 문자열이 아니라고 명시 |
+| `STOCK_CODE_KO` / `CORP_CODE_KO` | 종목코드 / 고유번호 | 아이덴티티 패널의 모노 메타 (§2). 종목코드가 서빙되면 먼저 |
+| `FILED_SUFFIX_KO` | 공시 | 「{공시일} 공시」 패널 메타 + ② 표의 첫 열 머리 (§4). R3 「최초 공시」(`FIRST_FILED_KO`)의 머리말 — 버전을 구별하는 「최초」는 상세 헤더의 것이다 |
+| `HOLDING_CELL_KO` | 보유 | ① 환산 셀 (§4). R4 §3 `HOLDING_LABEL_KO`「보유 주식 수」의 머리 — 전체 라벨은 한 패널 위 strip이 든다 |
+| `ALLOTMENT_RATIO_CELL_KO` | 배정비율 (1주당) | ① 환산 셀 (§4). R3 `ALLOTMENT_RATIO_KO` + 라운드의 한정어 — 셀은 **보유 1주당** 비율을 찍는다 |
+| `EXCESS_RATIO_KO` | 초과청약 비율 | 보유량 없을 때의 두 번째 ① 셀 (§4). 이 파일 §Field keys가 `excess_subscription`에 대해 이미 쓰는 이름이며, **서빙된 비율만** 그린다 (한도는 보유량이 있어야 존재한다) |
+| `COL_LAPSE_MARKET_KO` | 소멸 계산 (시장 전체) | breakdown 머리 행 (§5). `COL_LAPSE_KO` + 라운드의 한정어 — 그 칸의 계산은 **시장의 것**이고, 독자의 보유량에 의존하는 칸은 마지막 열이다 |
+| `CONVERTIBLE_SOURCE_KO` | DART 공시 API — 전환가액 · 전환 시 주식수 · 오버행 | ② 표 하단 출처 줄 (§4). `FACT_SOURCE_KO` + R4-4가 지명한 세 사실의 기존 상수 조합 — 칸마다 `[근거]`를 달지 않는다 (R10 §3) |
+| `MISSING_VALUE` | ⋯ | 서빙되지 않은 ② 값 (§4). **낱말이 아니라 활자 부재** — 0도, 대시 문장도, 이유도 아니다 (D-14) |
+
+**Derived, not typed** — 하나의 정의만 두기 위해 기존 상수에서 갈라 쓴 것들:
+`TRADING_OPEN_KO`「거래 가능」 = `tradingOpenKo`「거래 가능 · 마감 D-n」의 머리
+(패널 헤드가 D-day를 이미 들고 있어 카드는 D-day 없이 찍는다);
+`NO_SCHEDULE_KO`「일정이 공시상 미정」 = R3 잠금 문구 `NO_COUNTDOWN_KO`「카운트다운
+없음 — 일정이 공시상 미정」의 꼬리; `subscriptionClosedParts` / `pendingLapseParts`
+= 서명된 한 슬롯 문장을 자기 값 주위로 쪼갠 것 (날짜를 모노로 찍기 위해서이며,
+문장 자체는 그대로다). **조사**(`josa`)는 신규 문자열이 아니라 서명된 문장의 기계적
+굴절이다: 한글이면 `(code − 0xAC00) % 28`, 아니면 「와/과」 병기.
+
+**Reused, not new**: `RIGHTS_SECTION_KO` · `MISSED_SECTION_KO` · `MISSED_FRAME_KO` ·
+`DISCLAIMER_KO` · `ZERO_MISSED_KO` · `pendingLapseKo` · `subscriptionClosedKo` ·
+`calcFooterKo` · `perHoldingCaption` · `perHoldingColumnKo` · `pastPeriodChipKo` ·
+`coverageCaptionKo` · `COVERAGE_BOUNDARY_KO` · `coverageFromKo` · `NO_RIGHTS_KO` ·
+`WATCH_TARGETS_KO` · `HERO_STAT_WATCHING_KO` · `PROVENANCE_KO` · `DETAIL_LINK_KO` ·
+`RCEPT_NO_KO` · `HOLDING_LABEL_KO` · `HOLDING_CAPTION_KO` · `restoreChipKo` ·
+`PRICE_PENDING_KO` · `pricePendingLineKo` · `CONVERTED_VALUE_KO` ·
+`allotmentCaptionKo` · `ALLOTTED_SHARES_KO` · `EXCESS_LIMIT_KO` · `excessLimitKo` ·
+`LAPSE_FLOOR_KO` · `CONVERSION_PRICE_KO` · `CONVERTED_SHARES_KO` · `OVERHANG_KO` ·
+`CONVERSION_OPEN_KO` · `FIELD_ABSENT_KO` · `PAST_STEP_KO` · `STEP_ONE_KO` /
+`STEP_TWO_KO` · `DISSENT_NOTICE_KO` · `APPRAISAL_EXERCISE_KO` · `STEP_DEPENDENCY_KO` ·
+`WARRANTS_ISSUED_KO` / `WARRANTS_EXERCISED_KO` / `WARRANTS_LAPSED_KO` ·
+`MISMATCH_*`. 「현재 버전 공시에 없음」과 「추후결정」은 **문구 잠금 유지**.
+
+**Superseded (R4 §들, `SIGNOFF.md` R11 우선순위)** — 문자열이 아니라 **배치**가 바뀐 것들:
+h1이 결과 페이지에서 「내 종목 조회」 → **종목명**이 되고 그 문구는 레일 라벨로 내려간다;
+히어로 서브라인은 진입 페이지에만; 패널 제목의 「RightsChip + 종목/건 title」이 **지배
+라벨 `h3`**로 대체된다 (회사명은 h1에 한 번); 놓친 돈 헤드라인은 **2건 이상일 때만**;
+breakdown의 **접수번호 링크(`metaLink`)는 은퇴**하고 이벤트로 가는 길은 「상세 보기 →」
+하나다; `.mmcap` 아래 R4가 쓰던 별도 coverage 캡션은 캡션 하나로 합쳐진다;
+**480px 브레이크포인트 은퇴** (경계는 767px 하나).

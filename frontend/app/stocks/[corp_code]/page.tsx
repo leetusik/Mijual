@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { LookupHeader, StockView } from "@/components/lookup";
+import { LookupRail, StockView } from "@/components/lookup";
 import { ApiError, getBoardSummary, getStock } from "@/lib/api";
 import { PROVENANCE_KO } from "@/components/lookup/copy";
 import type { BoardSummary } from "@/lib/types";
@@ -26,6 +26,12 @@ import styles from "@/components/lookup/Lookup.module.css";
  * the one place this surface states a number it does not otherwise hold (감시 중
  * N건). A stock with rights or a 소멸 row never pays for that request, and a
  * summary that fails costs the line rather than the page.
+ *
+ * **R11 §1–2** re-cut what sits above the result: the crumb rail, then one
+ * identity panel whose `h1` is the 종목명, whose search row echoes that name and
+ * whose bottom rail is the 보유량 strip. 「내 종목 조회」 and the hero subline are
+ * the *entry* page's — a reader holding a result does not need the page
+ * explained to them a second time.
  */
 export default async function StockPage({
   params,
@@ -50,7 +56,9 @@ export default async function StockPage({
 
   return (
     <main className={`content ${styles.page}`}>
-      <LookupHeader />
+      {/* R11 §1: on a result the page's own name is the rail's second label, not
+          an `h1` — the `h1` is the stock, inside the identity panel below. */}
+      <LookupRail here />
       {/* Keyed by the issuer: a different stock is a different holding, and its
           session memory must be read fresh rather than inherited. */}
       <StockView key={page.stock.corp_code} page={page} summary={summary} />

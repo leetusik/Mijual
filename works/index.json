@@ -80,9 +80,9 @@
       "order": 3.8,
       "path": "works/phases/active/P8",
       "review_status": "pending",
-      "current_slice": "P8.S9",
+      "current_slice": "P8.S10",
       "slice_count": 20,
-      "done_slice_count": 10
+      "done_slice_count": 11
     },
     {
       "id": "P4",
@@ -100,5 +100,5 @@
   "deferred_open_count": 3,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-24T03:31:03+09:00"
+  "last_rebuilt_at": "2026-08-24T04:27:41+09:00"
 }

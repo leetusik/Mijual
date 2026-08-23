@@ -998,6 +998,24 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] mono: no date or figure splits across lines at 1512 / 1440 / 1280 / 768 / 767 / 481 / 390 (P8)`
 - `P8.S7`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — four new strings (`NOT_FOUND_TITLE_KO` · `NOT_FOUND_LINE_KO` · `NOT_FOUND_BACK_KO` · `NOTICE_WINDOW_KO`), one supersession (`PORTFOLIO_ADD_KO` 「보유 종목에 담기 →」 replaces R5-2's 「내 포트폴리오에 담기 →」), and the reuse notes for `FACT_SOURCE_KO` · `SECTION_PROCEDURE_KO` · `DART_LINK_KO`/`dartSourceLabelKo` · `CLOSE_KO`/`CLOSE_GLYPH`. 「현재 버전 공시에 없음」 and 「추후결정」 stay verbatim — only their presentation moved.
 
+- `P8.S9`: **frontend** — R11 supersedes the whole 내 종목 조회 / 놓친 돈 surface. A resolved stock opens with an **identity panel** (`h1` = 종목명, `.idmeta` 종목코드 → 고유번호, the shared `SearchRow` pre-filled with the name) and the crumb rail carries 「내 종목 조회」 as a label, so the words appear once per page and the entry hero's subline never follows a reader onto a result; the **보유량 strip is conditional** (Q-C — inside the identity panel, rendered only when a live ① `offering` or a 놓친 돈 row exists, with no disabled control and no sentence where it is hidden); ① panels are **the deadline** (`h3` = `countdown.label_ko`, chip/접수번호/공시 demoted to `.rmeta`, R10's three countdown forms kept) closed by a hairline 환산 chain; **every ② row of a stock is one table** at the first ② row's rank with a per-table `.ctsrc` source line, `⋯` (`.ctmiss`) for an unserved fact and `data-l` → `::before` column labels at ≤767; ③ gains R10's **2단계 절차** block; 놓친 돈 renders a **total only at ≥2 offerings with a holding** (one offering prints its figure once, in the row) with **one `.calcfoot` per row**; 「상세 보기 →」 is the **only** affordance out of a row and the 놓친 돈 prompt renders **once per page** (first live ① chain foot, else the 놓친 돈 head, never with a holding); `/stocks` with no query renders 감시 대상 3종 + 감시 중 {n}건 + the 집계 범위 section (Q-A = b, no redirect); 집계 범위 is now an `h2` section and the strip has a real `label`, so no block on the surface is unnamed and no accessible name contains `//`. **One breakpoint at 767px — R4's 480px seam is retired.** `Conversion`/`Dilution` stay byte-identical for `/portfolio`; the new `ConversionChain`/`ConvertibleTable` are built beside them. Add supersession rows for R4 §1 (the page had no stock identity), R4 §strip (unconditional own panel), R4 §2 (panel titles / per-row ② panels), R5 §놓친 돈 (unconditional total, rcept-as-link) and R4's 480px breakpoint.
+- `P8.S9`: **frontend** — **a shared class and a module class on one element are ordered differently in `next dev` and in the production bundle.** `<main class="content page narrow">` measured R11's 960/620px in dev and **1120px in production**, because `app/shell.css`'s `.content { max-width: var(--bp-lg) }` landed last there. The surface states its two widths at doubled-class specificity (`.page.page` / `.narrow.narrow`) so neither order can win. Durable rule for every later surface: a module width that must beat a shared layout class is stated at a specificity that does not depend on stylesheet order, and any width claim is measured in a production build, not only in `next dev`.
+- `P8.S9`: **product** — 「a resolved stock page never names the stock」 is no longer true: the result page's `h1` **is** the 종목명, with 종목코드/고유번호 under it and the search box echoing the name — 세기상사's page, which carried no company name at all, now identifies itself. And **`/stocks` with no query is no longer a void**: it states what the product watches (3종), how much of it (감시 중 {n}건) and the 집계 범위 boundary, out of elements other surfaces already signed.
+- `P8.S9`: **experience** — the 조회 section: one page still, but the reader is told which stock they are on before any number appears; the 보유량 field exists only where a number on the page moves with it; a stock's 전환사채 rows read as one table instead of one panel each; a 놓친 돈 total appears only when there is more than one offering to total; and the page offers exactly one way out of a row (상세 보기 →).
+- `P8.S9`: **qa** — `## Regression Checklist` gains R11's boxes (below). No count moves: `pytest` **142**, `npm run smoke` **16/16**, `npm run build` green.
+  - `- [ ] 조회 정체성: a resolved stock's h1 is the 종목명 with 종목코드/고유번호 under it, the search box echoes the name, and 「내 종목 조회」 appears exactly once on the page (P8)`
+  - `- [ ] 보유량 스트립: present on a stock with a live ① or a 놓친 돈 row, absent on a ②-only stock (풍전약품) and a no-rights stock (세기상사) — with no disabled control and no explanatory sentence (P8)`
+  - `- [ ] ② 표: every 전환사채 row of one stock renders in a single table with one 「DART 공시 API — … | N건」 source line, the corp name printed once, and an unserved fact shown as 「⋯」 (never 0) (P8)`
+  - `- [ ] ③ 절차: 아시아나's 2단계 절차 block shows two numbered steps — dated windows when served, otherwise the dashed 「현재 버전 공시에 없음」 chip — and the two notations never mix in one block (P8)`
+  - `- [ ] 놓친 돈 합계: a 1건 stock prints its figure once in the row with no total above it; a ≥2건 stock prints the total only after a holding is entered; each row carries its own 배정비율 line (P8)`
+  - `- [ ] 조회 출구: 「상세 보기 →」 is the only link out of a 놓친 돈 row, and the 놓친 돈 prompt appears once per page and disappears once a holding exists (P8)`
+  - `- [ ] 검색 불일치: /stocks?q=삼성 renders 「‘삼성’과 일치하는 종목이 없습니다」 with the correct 과/와 particle, and the first differing keystroke removes the line (P8)`
+  - `- [ ] 빈 /stocks: with no query the page shows 감시 대상 3종 + 감시 중 N건 + the 집계 범위 section, and never a placeholder count when /board/summary fails (P8)`
+  - `- [ ] 조회 390: no interactive target under 44px on any stock page or the entry, no horizontal overflow, and 767→768 is the only breakpoint on the surface (P8)`
+  - `- [ ] 조회 신뢰: 계양전기 (발행가 확정 전) shows no 원 amount before or after a holding is entered while share counts still convert, no untagged 원 anywhere, and typing a holding fires no request carrying the number (P8)`
+  - `- [ ] 프로덕션 폭: /stocks and /stocks/{corp_code} measure 960px / 620px in a production build, not only in next dev (P8)`
+- `P8.S9`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R11's one new sentence (`MISSED_PROMPT_KO`), the gate-signed `.mmcap` caption (Q28 = a), and the label-tier strings the build prompt and cards print (보유 · 배정비율 (1주당) · 초과청약 비율 · 공시 · 소멸 계산 (시장 전체) · 종목코드 · 고유번호 · 접수 · 집계 범위). Two constants are **derived, not typed** — `TRADING_OPEN_KO` from `tradingOpenKo()`'s head and `NO_SCHEDULE_KO` from the tail of R3's locked 「카운트다운 없음 — 일정이 공시상 미정」 — so neither can drift. `noMatchKo` gains the build-prompt §7 josa rule (non-Hangul → 「와/과」). Supersessions: the `h1` moves from 내 종목 조회 to the 종목명, per-② panel titles retire, rcept-as-link retires, and R4's 480px breakpoint retires.
+
 ### R11 walk — surface 4 (내 종목 조회 + 놓친 돈 조회기), 2026-08-24, operator runtime
 
 Walked by the orchestrator at `http://127.0.0.1:3000` (Chrome desktop 1456px + 390px same-origin
@@ -1118,6 +1136,69 @@ index).
   code as in `P8.S7`.
 - Q23–Q27 are answered by the session (Q-A b · Q-B yes · Q-C hide · Q-D keep the rule · Q-E one
   prompt string); marked below.
+
+### `P8.S9` — R11 applied: what 조회 is now, and what the next surfaces inherit (2026-08-24)
+
+Full record in `slices/P8.S9/result.md`. The short version:
+
+**The surface.** `Lookup.module.css` is the round's `geometry-canon.css` ported onto module class
+names **mobile-first** (base = the canon's ≤767 block, `@media (min-width: 768px)` = desktop), so
+R11's single 767px breakpoint is structural rather than a rule that happens to fire. A resolved
+stock is: identity panel (`h1` 종목명 · 종목코드/고유번호 · the pre-filled `SearchRow` · the
+conditional 보유량 rail) → 진행 중인 권리 (panels whose `h3` **is** the deadline; one table for all
+of a stock's ②; R10's 2단계 절차 for ③) → 놓친 돈 (total only at ≥2건 with a holding; one
+`.calcfoot` per row; 「상세 보기 →」 the only way out of a row) → `h2 집계 범위` → provenance. The
+prompt sentence renders **once per page** and only where the input it focuses exists. `/stocks`
+with no query is the same watch panel a no-rights stock shows, plus the boundary section.
+
+**Three things later surfaces inherit.**
+
+1. **R12 (auth) is unmoved.** `ConversionOffer` still renders last in normal flow on a stock page
+   and is still gated on `lib/holding.ts`'s own `convert()` returning a non-null value — "값 계산
+   직후" is asked of the one multiplication site, not answered a second way in the view, so an
+   unpriced ① cannot produce an offer beside numbers that do not exist.
+2. **Specificity, not stylesheet order, holds a module width against a shared layout class.**
+   `<main class="content page narrow">` measured 960/620px in `next dev` and **1120px in the
+   production bundle**, where `app/shell.css`'s `.content { max-width: var(--bp-lg) }` landed last.
+   Fixed with `.page.page` / `.narrow.narrow`. Any later surface that puts a module width on an
+   element already carrying `content` (or any shared layout class) must do the same — and **must
+   measure it in a production build**, because `next dev` cannot show this bug class at all. A
+   63-class × 5-page × 3-width computed-style diff after the fix showed no dev/production
+   differences.
+3. **A read-only scratch proxy is the way to walk states the corpus cannot reach.** Rewriting the
+   upstream JSON in flight and pointing the scratch production copy at it with `MIJUAL_API_ORIGIN`
+   reached five otherwise-unreachable branches (② past-open 「진행 중」, ① 「기한 지남」, dated ③
+   steps, ≥2-offering `.total`, unserved ② facts `⋯`) without touching the repo, the dev server or
+   the database. Today's corpus: **32 lapse reports across 32 distinct corps, 0 with ≥2**, and every
+   ② row serves all three facts — so R11's total rule and its `⋯` cell are stub-verified, the same
+   treatment `P8.S7` gave the ② past-open state (Q22).
+
+**What the route does not serve** (evidence for Q29–Q32, cross-checked in `src/mijual/web/reads.py`):
+`offering.subscription` is typed `unknown` and read by no surface, there is no `subscription_agents`
+field and no 일반공모 window, so `.rowline` is omitted; 아시아나's R3 row arrives with `fields: {}`,
+so both ③ steps show the dashed chip; `_lapse_row` composes no 결의일, so `.bofftitle` is 「유상증자」
+alone; `lapse.coverage` rides `GET /stocks/{corp_code}` only, so the entry page states the boundary
+without dating it. **No payload was extended** — R11 is polish.
+
+**Card sample data is not contract.** 「매매기간」/「행사기간」 prefixes on `.win` and the third
+`.idmeta` span 「DART 공시 기준」 appear in the cards but not in build-prompt §2, so they are omitted;
+the build prompt governs and the card illustrates. Same reading for `r11-parts.jsx`'s extra josa
+branch — build-prompt §7's rule is what shipped.
+
+**Verified** at `http://127.0.0.1:3000` **and** `http://100.77.164.42:3000` in `next dev`, and again
+against a production build served on `:3100`, at 1456 / ~600 / 390 — build-prompt §10 boxes 0–12,
+all green: `h1` = 종목명 on all five stocks, one ② table with 0 `⋯` in real data, ③ two dashed
+chips, citation as the third child of `.bwin` with the popover fully in view at 390, 679,575원
+printed once with no total, no strip on 풍전/세기, the 과/와 particle, `headSlash: 0` matching R10's
+baseline, **zero** sub-44px targets at 390, one breakpoint, and no 원 amount on 계양전기 before
+확정발행가. Heights at 390 fell 8.8% (한화) and 15.5% (풍전) but do **not** reach the record's
+≈1,250/≈1,150 — the canon's own `.ctrow` measures 252px against the product's 273px in a `file://`
+harness, so the residual is the signed geometry, not the build (Q34).
+
+**Gates:** `npm run typecheck` clean · `npm run smoke` 16/16 · `npm run build` green · `pytest` 142
+passed · `workflow validate` clean · the whole `## Regression Checklist` re-run, not only R11's
+lines. `/portfolio` and the landing are unaffected.
+
 
 ## Operator Questions
 
@@ -1254,6 +1335,39 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   existing 「유상증자 {n}건」 count, dropping the unregistered tail. Default at signoff: **(a)** if the
   signoff covers the cards as landed. **Answered 2026-08-24: (a)** — the signoff covered the cards as
   landed; the apply slice registers the caption as signed copy (SIGNOFF.md R11).
+- **Q29 (`P8.S9`) — ① 구주주 청약 · 일반공모 windows are drawn but not served.** R11 §2's `.rowline`
+  prints the two subscription windows; the stock route serves no `subscription_agents` field and no
+  일반공모 window, and `offering.subscription` is typed `unknown` and read by no surface. The apply
+  slice **omitted the line** (the signed read-back says "rendered from served fields only … no new
+  payload"). (a) leave it omitted and drop `.rowline` from the record at the next round; (b) extend
+  `GET /stocks/{corp_code}` in a later phase so the designed line can render. Default **(a)**.
+- **Q30 (`P8.S9`) — ③ step windows are `fields: {}` on this route.** 아시아나's 2단계 절차 renders
+  with two dashed 「현재 버전 공시에 없음」 chips, because the only ③ in the corpus arrives with no
+  fields on `/stocks/{corp_code}` (the same filing **does** carry them on the event detail route).
+  (a) accept the dashed form as the honest state here; (b) file a job to carry the ③ procedure
+  fields onto the stock route so 조회 and 상세 agree. The dated form is browser-verified via a
+  read-only stub, so (b) is presentation-ready. Default **(a)** + a deferred job for (b).
+- **Q31 (`P8.S9`) — `.bofftitle` has no 결의일 to print.** The card prints 「2026-03-26 결정
+  유상증자」; `_lapse_row` composes no 결의일, and reintroducing the corp name is exactly the
+  repetition R11 §5 removed. Rendered as 「유상증자」 alone. (a) keep it; (b) carry the 결의일 onto the
+  lapse row later so the designed title can render in full. Default **(a)**.
+- **Q32 (`P8.S9`) — 집계 범위 on the entry page has no dates to state.** `lapse.coverage` rides
+  `GET /stocks/{corp_code}` only and `/board/summary` carries none, so `/stocks` renders the
+  boundary **sentence** with no dated rows. (a) keep the undated sentence; (b) serve the coverage
+  dates on a stockless read so the entry page can date its own boundary. Default **(a)**.
+- **Q33 (`P8.S9`) — the label-tier R11 strings, registered under the Q28 precedent.** 보유 · 배정비율
+  (1주당) · 초과청약 비율 · 공시 · 소멸 계산 (시장 전체) · 종목코드 · 고유번호 · 접수 appear in
+  build-prompt §2/§4/§5 and in the landed cards, but the round's `result.md` §4 lists only the prompt
+  sentence as new copy. They were registered in `copy.ts` + the `copy-inventory.md` R11 tail on the
+  same reasoning that answered Q28 (the gate signed the cards **as landed**). Confirm that reading,
+  or name any label to be reworded. Default: **confirm**.
+- **Q34 (`P8.S9`) — 390px heights fall short of the record's targets, and the canon is why.** R11
+  targets ≈1,250 (한화) / ≈1,150 (풍전); the built pages measure 1,572 / 1,754 — real reductions of
+  8.8% / 15.5%, but not the numbers. Measured against the canon itself in a `file://` harness, the
+  canon's own `.ctrow` is 252px at 390 where the product's is 273px, with the same
+  `.ctwhen`-above-`.ctfiled` stagger — i.e. the shortfall is the signed geometry's own height, not a
+  fidelity defect. (a) accept the built heights as faithful; (b) open a follow-up density round for
+  the ② row and the 놓친 돈 breakdown at 390. Default **(a)** + a deferred job for (b).
 
 ## Constraints
 

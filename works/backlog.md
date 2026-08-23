@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P8`
-- Current slice: `P8.S9`
-- Next slice: `P8.S10`
+- Current slice: `P8.S10`
+- Next slice: `P8.S11`
 - Waiting on operator: `none`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-24T03:31:03+09:00`
+- Rebuilt at: `2026-08-24T04:27:41+09:00`
 
 ## Active Phases
 
@@ -22,7 +22,7 @@
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
 | [x] `P7` | `done` | `pass` | 실서비스 정상화 fix pass | `none` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
-| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S9` | `works/phases/active/P8` |
+| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S10` | `works/phases/active/P8` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -142,7 +142,7 @@
 | [x] `P8.S6` | `done` | R10 폴리시 라운드 — event detail ①②③ + trust states | `co-work` | `works/phases/active/P8/slices/P8.S6` |
 | [x] `P8.S7` | `done` | Apply R10 — event detail ①②③ + trust states | `implementation` | `works/phases/active/P8/slices/P8.S7` |
 | [x] `P8.S8` | `done` | R11 폴리시 라운드 — 내 종목 조회 + 놓친 돈 조회기 | `co-work` | `works/phases/active/P8/slices/P8.S8` |
-| [ ] `P8.S9` | `todo` | Apply R11 — 내 종목 조회 + 놓친 돈 조회기 | `implementation` | `works/phases/active/P8/slices/P8.S9` |
+| [x] `P8.S9` | `done` | Apply R11 — 내 종목 조회 + 놓친 돈 조회기 | `implementation` | `works/phases/active/P8/slices/P8.S9` |
 | [ ] `P8.S10` | `todo` | R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정) | `co-work` | `works/phases/active/P8/slices/P8.S10` |
 | [ ] `P8.S11` | `todo` | Apply R12 — auth (로그인 · 비밀번호 재설정) | `implementation` | `works/phases/active/P8/slices/P8.S11` |
 | [ ] `P8.S12` | `todo` | R13 폴리시 라운드 — 내 포트폴리오 + 알림 설정 | `co-work` | `works/phases/active/P8/slices/P8.S12` |

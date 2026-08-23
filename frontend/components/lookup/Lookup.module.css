@@ -1,50 +1,1147 @@
-/* 내 종목 조회 (R4).
+/* 내 종목 조회 — **R11** (`rounds/11-lookup`, signed 2026-08-24) over R4.
  *
- * The round states this surface in measurements: a header with the hero's own
- * subline, a console search row, a craft-panel 보유량 strip with a mono
- * right-aligned input and 44px targets on mobile, `// ` mono section eyebrows,
- * a four-column breakdown grid that becomes label/value lines at ≤480px, and a
- * mono 10px provenance line. Those numbers are the contract.
+ * The geometry canon is `rounds/11-lookup/output/lookup/r11-lookup.css`; this
+ * file is that canon on this module's class names. Every number below is the
+ * round's, and everything that is not a number is a token — `--live` means
+ * 살아있는 가치 and `--alert` means expiring/lost, so a hue chosen here rather
+ * than taken from a token would be a claim about the data.
  *
- * Everything else is tokens. No colour is a literal — `--live` means 살아있는
- * 가치 and `--alert` means expiring/lost, so a hue chosen here rather than taken
- * from a token would be a claim about the data — and nothing sets a radius or a
- * shadow (R1: square system, hairline elevation).
+ * ## One breakpoint, and which way it points
  *
- * Mobile-first, per R4 §Mobile: "Single column … 52px top bar → search → 보유량
- * panel (44px input + full-width chips) → sections stacked; breakdown as
- * label/value lines; '상세 보기 →' as a 44px full-width link. **No accordions.**"
+ * R4 drew this surface at **480px** while `SearchRow` (R9/P7) and the event
+ * detail (R10) were already at **767px**, so 481–767 rendered a desktop layout
+ * on a ~600px screen. R11 retires 480: there is exactly one boundary here now,
+ * and no intermediate layout.
+ *
+ * The canon is written desktop-first (`@media (max-width: 767px)`); this file is
+ * **mobile-first**, like `SearchRow.module.css` beside it — the base rules are
+ * the canon's ≤767 block and `@media (min-width: 768px)` carries the desktop
+ * values it overrides. Same two states, stated from the smaller one.
+ *
+ * ## The floors
+ *
+ * Hit targets: **44px ≤767px, 32px desktop** (R10 §0, adopted here). Korean
+ * prose is `word-break: keep-all`; mono values are `nowrap` and tabular.
  */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  padding-block: var(--space-6) var(--space-16);
+  gap: var(--space-4);
+  width: 100%;
+  margin-inline: auto;
+  padding-block: var(--space-2) var(--space-16);
+}
+
+/* R11 §1's two column widths — **stated at a specificity the shared `.content`
+ * column (1120px, `app/shell.css`) cannot outrank whatever order the two
+ * stylesheets land in.** A single class tied here: `next dev` happened to emit
+ * the module last and rendered 960/620, while the production bundle emitted
+ * `shell.css` last and rendered both routes at 1120. Measured on the same commit
+ * at `:3000` and `:3100` — which is exactly why a width claim is verified in the
+ * operator's runtime *and* in a production build. */
+.page.page {
+  max-width: 960px;
+}
+
+/* The entry page is a narrower column: one question, no result to lay out. */
+.narrow.narrow {
+  max-width: 620px;
 }
 
 /* ---------------------------------------------------------------------------
-   Header + search row (R4 §1–2)
+   크럼 레일 (R11 §1) — on a result the page title is not the headline, the stock
+   is; 「내 종목 조회」 keeps its place as the rail's second label.
    --------------------------------------------------------------------------- */
 
-.header {
+.rail {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
 }
 
 .crumb {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-size: var(--text-sm);
   color: var(--ink-2);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .crumb:hover {
+  color: var(--live);
+}
+
+.here {
+  white-space: nowrap;
+}
+
+.here::before {
+  content: "·";
+  margin-right: var(--space-2);
+}
+
+/* ---------------------------------------------------------------------------
+   종목 아이덴티티 (R11 §2) — one panel answers "what am I looking at", "search
+   again" and "with how many shares". The strip is its bottom rail (§3).
+   --------------------------------------------------------------------------- */
+
+.idp {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  padding: 14px 16px 12px;
+}
+
+.idbox {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.corp {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
   color: var(--ink-1);
+  min-width: 0;
+}
+
+.idmeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.idmeta > span {
+  white-space: nowrap;
+}
+
+/* The separator belongs to the item that *follows* it, so a wrap takes the dot
+   with it and never orphans one at the end of a line (R10 §1's rule). */
+.idmeta > span + span::before {
+  content: "·";
+  margin-right: var(--space-2);
+}
+
+/* The search field on a result echoes the resolved stock — never empty, never a
+   second h1. The same `SearchRow`, surface variant, on one line. */
+.idsearch {
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  position: relative;
+}
+
+.idsearch .input,
+.idsearch .submit {
+  height: 44px;
+}
+
+.idsearch .submit {
+  min-width: 0;
+  padding-inline: var(--space-4);
+}
+
+/* ---------------------------------------------------------------------------
+   보유량 strip (R11 §3) — rendered only where a number on this page changes with
+   it (a live ① or a 놓친 돈 row). Absence says it without a sentence.
+   --------------------------------------------------------------------------- */
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-raised);
+}
+
+.striplab {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* Mono, right-aligned, comma-grouped — a holding is an exact integer (R4-2). */
+.num {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 96px;
+  height: 44px;
+  padding-inline: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
+  color: var(--ink-1);
+  text-align: right;
+}
+
+.unit {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* Two chip grammars, one rule (R11 §3): a **solid** hairline is a value you can
+   set; **dashed** is an offer carried in from a previous session. Selected is
+   the inset surface + ink-1, not a colour change — `--live` is not a state. */
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  background: none;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.preset:hover {
+  background: var(--surface-inset);
+  color: var(--ink-1);
+}
+
+.preset[aria-pressed="true"] {
+  background: var(--surface-inset);
+  border-color: var(--ink-2);
+  color: var(--ink-1);
+}
+
+/* The restore chip is an **offer**: pressing it fills the field, and nothing
+   fills it on its own. At ≤767px it takes its own full-width row on purpose —
+   last session's suggestion must not read at the weight of a preset. */
+.restore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  background: none;
+  border: 1px dashed var(--border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.restore:hover {
+  background: var(--surface-inset);
+  color: var(--ink-1);
+}
+
+/* The promise moves off the 10px caption tier (R11 §3) — it is a term of the
+   surface, not a footnote. */
+.stripcap {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   섹션 제목 (R11 §8) — a real `h2`, with the `// ` drawn by CSS so the accessible
+   name is 「진행 중인 권리 — 1건」 and not 「// 진행 중인 권리 — 1건」. Chrome puts
+   generated content into the name, so the element also carries an `aria-label`
+   (R10's finding, `P8.S7`).
+   --------------------------------------------------------------------------- */
+
+.section {
+  display: grid;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+.eyebrow::before {
+  content: "// ";
+}
+
+.panels {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------------------------------------------------------------------------
+   권리 패널 (R11 §4) — on a single-stock page a panel is a **deadline, not a
+   company**: chip + 접수번호 meta left, the governing label as the `h3` right.
+   The corp name is the page's `h1`, once.
+   --------------------------------------------------------------------------- */
+
+.rhead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: 14px 16px 10px;
+}
+
+/* ≤767px the two sides dissolve into the head's own grid, so the ordering
+   below can read chip → meta → label + D-day (one row) → window line. */
+.rid,
+.rwhen {
+  display: contents;
+}
+
+.rchip {
+  order: 1;
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.rmeta {
+  order: 2;
+  grid-column: 1 / -1;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.rmeta > span {
+  white-space: nowrap;
+}
+
+.rmeta > span + span::before {
+  content: "·";
+  margin-right: var(--space-2);
+}
+
+.whenlab {
+  order: 3;
+  grid-column: 1;
+  justify-self: start;
+  text-align: left;
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+/* The D-day (or the 추후결정 badge) sits on the label's own row, right — the
+   same rank R10's header uses, and the reason the head does not stack four deep
+   at 390px. */
+.rwhen > :not(.whenlab):not(.win) {
+  order: 4;
+  grid-column: 2;
+  justify-self: end;
+}
+
+.win {
+  order: 5;
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  text-align: left;
+  margin: 0;
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.dates {
+  white-space: nowrap;
+}
+
+/* An open window is alive — and for an already-open ②, saying so is the whole
+   point (`ui-traps.md` #5: never 종료). */
+.live {
+  color: var(--live);
+}
+
+/* History, never alert-coloured: `--alert` means expiring/lost, and a window
+   that has closed is simply behind us. The word is ③'s own step chip. */
+.past {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  background: var(--surface-inset);
+  padding: 2px var(--space-2);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   ①의 환산 셀 (R11 §4) — R10 §2's instrument row in this surface's copy.
+   --------------------------------------------------------------------------- */
+
+.chainwrap {
+  margin-inline: 16px;
+  margin-bottom: var(--space-1);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-soft);
+}
+
+.chain {
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  gap: var(--space-1) var(--space-3);
+  align-content: start;
+  min-width: 0;
+  min-height: 44px;
+  padding: 11px 14px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.cell:first-child {
+  border-top: 0;
+}
+
+.clab {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.cval {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  text-align: right;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+/* A mono value inside a composed line: it never breaks across lines, so a date
+   or a figure is always read whole (R10 §0, adopted by R11). */
+.v {
+  white-space: nowrap;
+}
+
+.cval .v {
+  white-space: nowrap;
+}
+
+/* 배정비율 prints to its full ten decimals — it is what the multiplication used,
+   and a rounded one would not reproduce the number beside it (R3 §6-1). */
+.ratio {
+  font-size: var(--text-base);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.chainfoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.chainnote {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.rowline {
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-top: 1px dashed var(--border-soft);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.rowline .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   입력 프롬프트 (R11 §6) — the round's one new string, and a **control**: it
+   focuses the strip's input, and it renders once per page.
+   --------------------------------------------------------------------------- */
+
+.prompt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding-inline: 14px;
+  background: none;
+  border: 1px dashed var(--border-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.prompt:hover {
+  background: var(--surface-inset);
+  color: var(--ink-1);
+}
+
+.arw {
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   이벤트로 가는 길 (R11 §4) — one affordance on every section. The 접수번호 stays
+   mono meta text; it is an identifier, never the link.
+   --------------------------------------------------------------------------- */
+
+.golink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.golink:hover {
+  color: var(--live);
+}
+
+.rowfoot {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  padding: var(--space-1) 16px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+/* ---------------------------------------------------------------------------
+   ② 전환사채 표 (R11 §4) — three identical panels of one issuer became three
+   columns you can compare. ② is context, never money (R4-4), so it is tabular;
+   ① and ③ carry a deadline a reader can act on and stay panels.
+   --------------------------------------------------------------------------- */
+
+.ctab {
+  margin: 0;
+}
+
+.ctop {
+  padding: 14px 16px 0;
+}
+
+.ctrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px var(--space-3);
+  padding: 12px 16px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.ctrow:first-of-type {
+  border-top: 0;
+}
+
+/* ≤767px the table folds into one card per filing: the head row goes, and each
+   value carries its own label through `::before`. */
+.cthead {
+  display: none;
+}
+
+.ctfiled {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ctdate {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.ctrcept {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.ctval,
+.ctmiss {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-height: 32px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ctval {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+/* A value the API row does not carry is **emptied**, never zeroed and never
+   explained (R11 §4, D-14). */
+.ctmiss {
+  font-size: var(--text-md);
+  color: var(--ink-3);
+}
+
+.ctval::before,
+.ctmiss::before {
+  content: attr(data-l);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+/* The fact a reader reads first is in the card's own header row, right. */
+.ctwhen {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 2px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.ctrow > .golink {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+/* One source line for the table, not one `[근거]` per cell (R10 §3's tier rule). */
+.ctsrc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 7px 16px;
+  border-top: 1px dashed var(--border-soft);
+  background: var(--surface-inset);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   ③ 2단계 절차 (R11 §4) — R10 §4's block, drawn on this surface for the first
+   time. A step whose window the filing does not carry says so in a **dashed**
+   chip; 추후결정 is a solid badge. The dotted/solid difference is the contract.
+   --------------------------------------------------------------------------- */
+
+.steps {
+  margin-inline: 16px;
+  margin-bottom: var(--space-1);
+  border: 1px solid var(--border-soft);
+  background: var(--surface-raised);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  border-top: 1px dashed var(--border-soft);
+}
+
+.step:first-of-type {
+  border-top: 0;
+}
+
+.snum {
+  display: grid;
+  justify-items: center;
+  padding: 15px 0 0;
+}
+
+.snum > span {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding-inline: var(--space-2);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.pastStep .snum > span {
+  color: var(--ink-3);
+  border-color: var(--border-soft);
+}
+
+.sbody {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: var(--space-3) var(--space-5) 14px 0;
+}
+
+.sHead {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stitle {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.pastStep .stitle {
+  color: var(--ink-2);
+}
+
+.swin {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.pastStep .swin {
+  color: var(--ink-3);
+}
+
+.sdep {
+  margin: 0;
+  padding: 0 16px 14px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* 「현재 버전 공시에 없음」 — dashed, because the filing does not carry the field
+   (a solid badge would mean the filing answered 추후결정). No reason is given. */
+.absent {
+  justify-self: start;
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px dashed var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* 0건 — a closed offering leaves a factual line, not a bare section. */
+.closed {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.closed + .closed {
+  padding-top: 0;
+}
+
+.closed .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   2026년 놓친 돈 (R11 §5)
+   --------------------------------------------------------------------------- */
+
+.mmhead {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 16px 14px;
+}
+
+/* The conditional frame: this is what the number *would* be, not a claim about
+   the reader — which is why the disclaimer footnote sits under the same block. */
+.frame {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* The sum is drawn only when it sums **more than one row** (R11 §5). On a
+   single-offering stock the row's own figure IS the headline, so no won amount
+   is ever printed twice on this surface. */
+.total {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+}
+
+/* 소멸 is the one thing this product calls lost. */
+.totalAmount {
+  color: var(--alert);
+}
+
+.totalFloor {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.mmhead .prompt {
+  justify-self: start;
+}
+
+.mmcap {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.bkd {
+  border-top: 1px solid var(--border-soft);
+}
+
+.brow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 14px 16px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.bhead {
+  display: none;
+}
+
+.boff {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  min-width: 0;
+}
+
+.bofftitle {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.bmeta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+
+.bwin {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  width: 100%;
+}
+
+.bwin .dates {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+/* R10's popover trigger, inside the cell it cites — the 매매기간 quote belongs to
+   the 매매기간 column, and no citation line spans the row (R11 §5). */
+.bcite {
+  min-width: 0;
+  font-size: var(--text-xs);
+}
+
+.bcalc {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.bcalc .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.lapsed {
+  color: var(--alert);
+  font-weight: 600;
+}
+
+.bmine {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  text-align: left;
+  min-width: 0;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.bmine .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--alert);
+  white-space: nowrap;
+}
+
+.bmine .big {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+}
+
+.bmine .cap {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.floorline {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* No holding: a **dashed empty slot**, never 0원 and never a dash. The layout
+   itself says the number is missing, and the prompt above says what fills it. */
+.bslot {
+  width: 100%;
+  min-height: 44px;
+  border: 1px dashed var(--border-soft);
+}
+
+.calcfoot {
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-raised);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.calcfoot .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+
+.disc {
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px dashed var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.zero {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 16px;
+}
+
+.zerolead {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.zerosub {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.zerosub .v {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   NoRights · 감시 대상 · 집계 범위 (R11 §1, §8)
+   --------------------------------------------------------------------------- */
+
+.empty {
+  display: grid;
+  gap: var(--space-3);
+  padding: 18px 16px;
+}
+
+.emptylead {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+}
+
+.watch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.watchlab {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* The 감시 중 count under the chips, and the 배정 caption inside a 놓친 돈 cell —
+   the same caption tier, at the two sizes the round draws it. */
+.cap {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.cvg {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.cvgrows {
+  display: flex;
+  gap: 10px var(--space-6);
+  flex-wrap: wrap;
+}
+
+.cvgrow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   진입 페이지 (R11 §1, Q-A = b) — with no query the page still says what it looks
+   up, out of elements the product already signed. No new copy, no redirect.
+   --------------------------------------------------------------------------- */
+
+.entry {
+  display: grid;
+  gap: 10px;
+  max-width: none;
 }
 
 .title {
@@ -58,27 +1155,35 @@
 
 .sub {
   margin: 0;
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   color: var(--ink-2);
 }
 
-/* The console row R2 designs for the hero and R4 reuses here. */
-.search {
+.entrysearch {
   display: flex;
-  width: 100%;
-  max-width: 560px;
-  margin-top: var(--space-2);
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  position: relative;
 }
 
+.entrysearch .input,
+.entrysearch .submit {
+  height: 48px;
+}
+
+.entrysearch .submit {
+  padding-inline: 18px;
+}
+
+/* The console field R2 designs for the hero and this surface reuses. */
 .input {
   flex: 1 1 auto;
   min-width: 0;
-  height: 48px; /* R4 §Mobile: 44px floor; R2's console row is 52 on desktop. */
   padding-inline: var(--space-3);
   background: var(--surface-inset);
   border: 1px solid var(--border-strong);
-  border-right: 0;
-  font-size: var(--text-base);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   color: var(--ink-1);
 }
 
@@ -88,245 +1193,43 @@
 
 .submit {
   flex: none;
-  min-width: 88px;
-  height: 48px;
-  padding-inline: var(--space-4);
+  min-width: 0;
   background: var(--live-solid);
-  border: 1px solid var(--live-solid);
+  border: 1px solid rgba(95, 208, 165, 0.45);
   font-family: var(--font-sans);
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--ink-1);
+  color: #fff;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-/* The 검색 불일치 line: a result, not an error — body ink, no alert colour. */
+/* The 검색 불일치 line: a result, not an error — body ink, no alert colour. It
+   belongs to the **submitted** query and dies on the first differing keystroke
+   (R11 §7), so a candidate panel can never open over a stale sentence. */
 .noMatch {
-  margin: 0;
-  font-size: var(--text-base);
+  margin: 2px 0 0;
+  font-size: var(--text-sm);
   line-height: var(--leading-base);
   color: var(--ink-2);
 }
 
 /* ---------------------------------------------------------------------------
-   보유량 strip (R4 §3)
+   Provenance (R4 §6) — mono 10px, the round's own measurement.
    --------------------------------------------------------------------------- */
 
-.stock {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
-
-.holding {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-}
-
-.holdingLabel {
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-.holdingField {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-/* Mono, right-aligned, comma-grouped — a holding is an exact integer (R4-2). */
-.holdingInput {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 260px;
-  height: 44px;
-  padding-inline: var(--space-3);
-  background: var(--surface-inset);
-  border: 1px solid var(--border-strong);
-  font-size: var(--text-xl);
-  text-align: right;
-  color: var(--ink-1);
-}
-
-.holdingUnit {
-  font-size: var(--text-base);
-  color: var(--ink-2);
-}
-
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.preset,
-.restore {
-  flex: 1 1 auto; /* R4 §Mobile: full-width chips. */
-  min-height: 44px;
-  padding-inline: var(--space-3);
-  background: none;
-  border: 1px solid var(--border-strong);
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--ink-1);
-  cursor: pointer;
-}
-
-.preset[aria-pressed="true"] {
-  border-color: var(--live);
-  color: var(--live);
-}
-
-/* The restore chip is quiet: it offers a number, it does not assert one. */
-.restore {
-  border-style: dashed;
-  color: var(--ink-2);
-}
-
-.preset:hover,
-.restore:hover {
-  border-color: var(--ink-2);
-}
-
-.holdingCaption {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-}
-
-/* ---------------------------------------------------------------------------
-   Sections (R4 §4–5) — `// ` mono eyebrows, R3's own convention.
-   --------------------------------------------------------------------------- */
-
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.eyebrow {
+.provenance {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  color: var(--ink-3);
-}
-
-.panels {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-
-.panelHead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.panelIdentity {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.panelTitle {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--ink-1);
-}
-
-.panelMeta {
-  margin: 0;
-  flex-basis: 100%;
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-}
-
-.panelWhen {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  align-items: flex-start;
-}
-
-.whenLabel {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-.panelDDay {
-  align-items: flex-start;
-}
-
-.windowLine {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-3);
-}
-
-/* An open window is alive — and for an already-open ②, saying so is the whole
-   point (`ui-traps.md` #5: never 종료). */
-.live {
-  color: var(--live);
-  font-weight: 600;
-}
-
-.dependency {
-  margin: 0;
-  font-size: var(--text-sm);
+  font-size: 10px;
   line-height: var(--leading-base);
-  color: var(--ink-2);
-}
-
-/* R4 §Mobile: "상세 보기 →" as a 44px full-width link. */
-.detailLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding-inline: var(--space-3);
-  border: 1px solid var(--border-strong);
-  font-size: var(--text-sm);
-  color: var(--ink-1);
-  text-decoration: none;
-}
-
-.detailLink:hover {
-  border-color: var(--live);
-  color: var(--live);
-}
-
-.closedLines {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.closedLine {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
 
 /* ---------------------------------------------------------------------------
-   The N주 conversion (R4 §The N주 conversion)
+   내 포트폴리오와 공유하는 조각 (R5 §D-day 목록: "금액 = R4 계약 그대로")
+   `Conversion` and `Dilution` render on 보유 종목 with these styles, so R11 leaves
+   them exactly as R4 drew them and builds its own ① cells beside them.
    --------------------------------------------------------------------------- */
 
 .conversion {
@@ -386,7 +1289,7 @@
 }
 
 /* R2's signed chip — a known-later fact, never a dash and never a money number
-   beside it. */
+   beside it. R11's `.chainfoot` wears the same one. */
 .pending {
   display: inline-block;
   padding: 2px var(--space-2);
@@ -409,99 +1312,6 @@
   border-top: 1px dashed var(--border-soft);
 }
 
-/* ---------------------------------------------------------------------------
-   2026년 놓친 돈 (R4 §놓친 돈 breakdown)
-   --------------------------------------------------------------------------- */
-
-.total {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-/* The conditional frame: this is what the number *would* be, not a claim about
-   the reader — which is also why the disclaimer footnote sits under the block. */
-.frame {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-.totalValue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-3);
-  margin: 0;
-}
-
-/* R4: the total is alert-inked — 소멸 is the one thing this product calls lost. */
-.totalAmount {
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  color: var(--alert);
-}
-
-.grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-/* ≤480px the four columns are label/value lines, so the header row is not drawn
-   at all — each cell carries its own label instead (R4 §Mobile). */
-.gridHead {
-  display: none;
-}
-
-.gridRow {
-  display: grid;
-  gap: var(--space-2);
-  grid-template-columns: minmax(0, 1fr);
-  padding-block: var(--space-3);
-  border-top: 1px dashed var(--border-soft);
-}
-
-.cell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.cellLabel {
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-}
-
-.cellTitle {
-  margin: 0;
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--ink-1);
-}
-
-.cellMeta {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-}
-
-/* The breakdown row's own way back to the filing's page. Mobile-first it is a
-   44px target like every other link on this surface; on desktop it settles back
-   into the meta line it belongs to. */
-.metaLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--ink-3);
-  text-decoration: none;
-}
-
-.metaLink:hover {
-  color: var(--live);
-}
-
 .cellLine {
   display: flex;
   flex-wrap: wrap;
@@ -512,38 +1322,8 @@
   color: var(--ink-1);
 }
 
-.cellCite {
-  /* The citation gets its own line: a collapsed `Citation` still contributes its
-     quote's width to a flex or grid line (`P5.S13` note 6), so a 130-character
-     매매기간 quote inside a four-column grid would render one character per
-     line. */
-  min-width: 0;
-  font-size: var(--text-xs);
-}
-
-/* History, never alert-coloured (R4: "faint chip 기간 지남 · D+{n}"). */
-.pastChip {
-  align-self: flex-start;
-  padding: 2px var(--space-2);
-  background: var(--surface-inset);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--ink-3);
-  white-space: nowrap;
-}
-
-.holdingAmount {
-  font-size: var(--text-xl);
-  font-weight: 600;
-}
-
-.calcFooter {
-  margin: 0;
-  font-size: var(--text-xs);
-  line-height: var(--leading-base);
-  color: var(--ink-3);
-}
-
+/* 발행사 기재 불일치 (`ui-traps.md` #2) — a payload rule, so it rides on a
+   breakdown row too: both readings, each cited, never reconciled. */
 .mismatch {
   display: flex;
   flex-direction: column;
@@ -566,145 +1346,251 @@
   font-size: var(--text-sm);
 }
 
-.disclaimer {
-  margin: 0;
-  font-size: var(--text-xs);
-  line-height: var(--leading-base);
-  color: var(--ink-3);
-}
-
-.zero {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.zeroLine {
-  margin: 0;
-  font-size: var(--text-base);
-  color: var(--ink-2);
-}
-
 /* ---------------------------------------------------------------------------
-   Empty states (R4 §Empty states)
+   ≥768px — the desktop composition R11 draws. One boundary, and this is it.
    --------------------------------------------------------------------------- */
 
-.empty {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-
-.emptyLine {
-  margin: 0;
-  font-size: var(--text-base);
-  color: var(--ink-1);
-}
-
-.watchTargets {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.coverage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  background: var(--surface-raised);
-}
-
-.coverageRows {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-}
-
-.coverageRow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-2);
-}
-
-/* ---------------------------------------------------------------------------
-   Provenance (R4 §6) — mono 10px, the round's own measurement.
-   --------------------------------------------------------------------------- */
-
-.provenance {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: var(--leading-base);
-  color: var(--ink-3);
-}
-
-/* ---------------------------------------------------------------------------
-   ≥480px — the desktop composition R4 draws.
-   --------------------------------------------------------------------------- */
-
-@media (min-width: 480px) {
-  .panelHead {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--space-6);
-  }
-
-  .panelWhen {
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  .panelDDay {
-    align-items: flex-end;
-  }
-
-  .detailLink {
-    align-self: flex-start;
-    min-height: 0;
-    padding-inline: 0;
-    border: 0;
-  }
-
-  .metaLink {
-    min-height: 0;
-  }
-
-  .preset,
-  .restore {
-    flex: 0 0 auto;
-  }
-
-  /* R4's breakdown grid: 유상증자 / 증서 매매기간 / 소멸 계산 / N주 기준. The
-     calc footer spans all four, because it explains the row rather than a cell. */
-  .gridHead,
-  .gridRow {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+@media (min-width: 768px) {
+  .page {
     gap: var(--space-4);
   }
 
-  .gridHead {
+  .idp {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+    gap: var(--space-3) var(--space-6);
+    padding: var(--space-4) var(--space-5) 14px;
+  }
+
+  .corp {
+    font-size: var(--text-2xl);
+  }
+
+  .strip {
+    gap: 10px;
+    padding: 10px var(--space-5);
+  }
+
+  .num {
+    flex: none;
+    width: 116px;
+    min-width: 0;
+  }
+
+  .presets {
+    display: flex;
+    width: auto;
+  }
+
+  .preset {
+    min-height: 36px;
+  }
+
+  .restore {
+    width: auto;
+    min-height: 36px;
+  }
+
+  .stripcap {
+    width: auto;
+    margin-left: auto;
+  }
+
+  .rhead {
+    align-items: start;
+    gap: var(--space-3) var(--space-6);
+    padding: var(--space-4) var(--space-5) var(--space-3);
+  }
+
+  .rid {
     display: grid;
-    padding-bottom: var(--space-2);
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .rid > *:first-child {
+    justify-self: start;
+  }
+
+  .rwhen {
+    display: grid;
+    gap: 6px;
+    justify-items: end;
+    text-align: right;
+    align-content: start;
+  }
+
+  .rchip,
+  .rmeta,
+  .whenlab,
+  .win,
+  .rwhen > :not(.whenlab):not(.win) {
+    order: 0;
+    grid-column: auto;
+  }
+
+  .whenlab {
+    justify-self: auto;
+    text-align: right;
+  }
+
+  .win {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .chainwrap,
+  .steps {
+    margin-inline: var(--space-5);
+  }
+
+  .chain {
+    grid-auto-flow: column;
+  }
+
+  .cell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: var(--space-1);
+    min-height: 0;
+    padding: var(--space-3) var(--space-4);
+    border-top: 0;
+    border-left: 1px dashed var(--border-soft);
+  }
+
+  .cell:first-child {
+    border-left: 0;
+  }
+
+  .cval {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .chainfoot,
+  .rowline {
+    padding-inline: var(--space-4);
+  }
+
+  .rowline {
+    padding-inline: var(--space-5);
+  }
+
+  .prompt {
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .golink {
+    min-height: 32px;
+  }
+
+  .rowfoot,
+  .closed,
+  .mmhead,
+  .ctsrc,
+  .calcfoot,
+  .disc,
+  .empty,
+  .cvg,
+  .zero,
+  .ctop {
+    padding-inline: var(--space-5);
+  }
+
+  .sdep {
+    padding: 0 var(--space-5) 14px;
+  }
+
+  .ctrow {
+    grid-template-columns: minmax(0, 1.1fr) 0.8fr 0.9fr 0.62fr minmax(0, 1.25fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 11px var(--space-5);
+  }
+
+  .cthead {
+    display: grid;
+    padding-block: var(--space-2);
+    border-top: 0;
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.08em;
+    font-size: 10px;
+    letter-spacing: 0.04em;
     color: var(--ink-3);
   }
 
-  /* On desktop the column header names the cell, so the in-cell label would be
-     the same word twice on one line. */
-  .cellLabel {
-    display: none;
+  .ctfiled {
+    grid-column: auto;
   }
 
-  .calcFooter {
-    grid-column: 1 / -1;
+  .ctval,
+  .ctmiss {
+    grid-column: auto;
+    display: block;
+    min-height: 0;
+  }
+
+  .ctval::before,
+  .ctmiss::before {
+    content: none;
+  }
+
+  .ctwhen {
+    grid-column: auto;
+    grid-row: auto;
+    justify-self: auto;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: var(--space-2);
+  }
+
+  .ctrow > .golink {
+    grid-column: auto;
+  }
+
+  .brow {
+    grid-template-columns: minmax(0, 1.5fr) 0.95fr minmax(0, 1.7fr) minmax(0, 1.1fr);
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .bhead {
+    display: grid;
+    padding-block: var(--space-2);
+    border-top: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+  }
+
+  .bhead .r {
+    justify-self: end;
+  }
+
+  .bcalc,
+  .bwin {
+    width: auto;
+  }
+
+  .bmine {
+    justify-items: end;
+    text-align: right;
+    width: auto;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .total {
+    font-size: var(--text-3xl);
+  }
+
+  .entry {
+    max-width: 620px;
+  }
+
+  .entrysearch .submit {
+    padding-inline: 28px;
   }
 }

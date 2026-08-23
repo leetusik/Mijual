@@ -41,11 +41,14 @@ export {
  */
 export {
   ALLOTMENT_RATIO_KO,
+  APPRAISAL_EXERCISE_KO,
   CONFIRMED_PRICE_KO,
   CONVERSION_OPEN_KO,
   CONVERSION_PRICE_KO,
   CONVERTED_SHARES_KO,
   DISSENT_NOTICE_KO,
+  FACT_SOURCE_KO,
+  FIELD_ABSENT_KO,
   LAPSE_FLOOR_KO,
   MISMATCH_DERIVED_KO,
   MISMATCH_FOOTER_KO,
@@ -55,10 +58,25 @@ export {
   PRICE_PENDING_KO,
   SHARES_UNIT_KO,
   STEP_DEPENDENCY_KO,
+  STEP_ONE_KO,
+  STEP_TWO_KO,
   UNIT_VALUE_KO,
   WARRANTS_EXERCISED_KO,
   WARRANTS_ISSUED_KO,
   WARRANTS_LAPSED_KO,
+} from "@/components/event/copy";
+
+/** The event-surface constants R11 **composes with** rather than only passing
+ * through — a re-export does not put a name in this module's own scope, and the
+ * derived strings below (the open-window phrase, the 추후결정 tail, the ② source
+ * row) are built from these exact definitions so there is one of each. */
+import {
+  CONVERSION_PRICE_KO,
+  CONVERTED_SHARES_KO,
+  FACT_SOURCE_KO,
+  NO_COUNTDOWN_KO,
+  OVERHANG_KO,
+  tradingOpenKo,
 } from "@/components/event/copy";
 
 // ---------------------------------------------------------------------------
@@ -77,7 +95,31 @@ export {
  * The typographic quotes are the record's own.
  */
 export const noMatchKo = (query: string) =>
-  `‘${query}’와 일치하는 종목이 없습니다 — 종목명 또는 종목코드로 다시 검색해 주세요.`;
+  `‘${query}’${josa(query)} 일치하는 종목이 없습니다 — 종목명 또는 종목코드로 다시 검색해 주세요.`;
+
+/**
+ * The particle in front of that sentence, **R11 §7 / walk finding 10**.
+ *
+ * > 조사: ‘{q}’ 뒤는 한글이면 `(code−0xAC00) % 28 !== 0 ? '과' : '와'`,
+ * > **한글이 아니면 `와/과` 병기**.
+ *
+ * Korean picks 와/과 by the **final consonant** of the preceding syllable, and
+ * a Hangul syllable block carries it in its own code point: the 28 jongseong of
+ * `U+AC00`–`U+D7A3` cycle every 28 code points, so `(code − 0xAC00) % 28` is 0
+ * exactly when the syllable ends in a vowel. That is arithmetic on the query, not
+ * a new sentence — R11 `result.md` §4 calls it "서명된 문장의 기계적 굴절"
+ * and the sentence body stays locked.
+ *
+ * A **non-Hangul** query (`012320`, `KOSPI`) prints both forms rather than
+ * guessing a Latin word's or a numeral's reading aloud — build-prompt §7's own
+ * rule, and the reason the round refuses to inflect what it cannot pronounce.
+ */
+function josa(query: string): string {
+  const last = query.charCodeAt(query.length - 1);
+  const hangul = last >= 0xac00 && last <= 0xd7a3;
+  if (!hangul) return "와/과";
+  return (last - 0xac00) % 28 !== 0 ? "과" : "와";
+}
 
 // ---------------------------------------------------------------------------
 // 보유량 strip (R4 §3, decision R4-2 / R4-6)
@@ -189,7 +231,13 @@ export const perHoldingColumnKo = (shares: string) => `${shares}주 기준`;
 export const pastPeriodChipKo = (dday: string) => `기간 지남 · ${dday}`;
 
 /** R4: 소멸 계산 "발행 − 청약 = 소멸 {k}주 ({rate}%)". The minus sign is the
- * record's own `−` (U+2212), the same one R3's 발행 − 청약 reading uses. */
+ * record's own `−` (U+2212), the same one R3's 발행 − 청약 reading uses.
+ *
+ * **R11 §5 unfolds this into the two readings it composes** — 「발행 {n}주 −
+ * 청약 {n}주」 over 「= 소멸 {k}주 ({rate})」 — so the breakdown shows the counts
+ * the 실적보고서 actually attests instead of only their difference. The words and
+ * the operators are this constant's; only the arrangement moved, and the sentence
+ * is kept here as the one definition of both. */
 export const lapseCalcKo = (lapsed: string, rate: string) =>
   `발행 − 청약 = 소멸 ${lapsed}주 (${rate})`;
 
@@ -256,3 +304,131 @@ export const coverageFromKo = (date: string) => `${date}부터`;
  * holding times a disclosed ratio. */
 export const PROVENANCE_KO =
   "모든 값은 DART 공시에서만 나왔습니다 · 보유량 환산은 공시된 배정비율과의 곱셈이며, 시장 가격을 사용하지 않습니다";
+
+// ---------------------------------------------------------------------------
+// R11 (`rounds/11-lookup`, signed 2026-08-24) — 내 종목 조회 polish
+//
+// R11 is a polish round: it adds **one** sentence (the prompt, its own dated
+// copy exception) and one caption the gate signed as landed (P8 Q28 = a). What
+// follows besides those two are the round's **cell and column labels**, written
+// into `build-prompt.md` §2/§4/§5 — the contract the SIGNOFF names as governing
+// — and drawn in the six cards. They are registered here rather than typed at a
+// call site, and listed in `copy-inventory.md`'s R11 tail beside their citation.
+// Everything else this surface says is still R4's, verbatim, above.
+// ---------------------------------------------------------------------------
+
+/**
+ * The round's **one new string** (R11 `result.md` §4, dated exception
+ * 2026-08-24, Q-E; `build-prompt.md` §6).
+ *
+ * > `보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다`
+ *
+ * It is a **control, not a caption**: a 44px dashed button that focuses the
+ * 보유량 input, rendered **once per page** — in the ① 환산 block's `.chainfoot`
+ * when there is a live ① on the page, otherwise in 놓친 돈's head — and gone the
+ * moment a holding exists. Its vocabulary is entirely borrowed from strings this
+ * surface already signed: 「보유 주식 수」 (R4 §3's label), 「…와 금액을
+ * 환산합니다」 (R4's 발행가 확정 전 line) and 「보유량 환산」 (the provenance
+ * sentence). The round's own reason: 놓친 돈 opened with no number and nothing on
+ * screen said why it was empty or what would fill it.
+ */
+export const MISSED_PROMPT_KO = "보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다";
+
+/** The boundary panel's own heading (R11 §1/§8, walk finding 12). The noun is
+ * already inside `coverageCaptionKo`'s signed caption 「집계 범위 2026-01-01 ~
+ * 오늘 (KST)」 — R11 `result.md` §4 states it is that noun promoted to a title,
+ * not a new string. */
+export const COVERAGE_SECTION_KO = "집계 범위";
+
+/** The identity panel's mono meta (R11 §2). 종목코드 comes **first when the API
+ * serves one** (계양전기 `012200`), 고유번호 follows; the separator is the CSS
+ * `::before` of the span that follows, never a character in either string. */
+export const STOCK_CODE_KO = "종목코드";
+export const CORP_CODE_KO = "고유번호";
+
+/** 「{공시일} 공시」 in a rights panel's meta line, and the ② table's first
+ * column header (R11 §4). The word is the head of R3's own 「최초 공시」
+ * (`event/copy.ts#FIRST_FILED_KO`) — the lookup panel prints the served
+ * `original_rcept_dt`, so the qualifier 최초 belongs to the detail header that
+ * distinguishes versions, and this surface names the act. */
+export const FILED_SUFFIX_KO = "공시";
+
+/** ①'s instrument cells (R11 §4, `lookup/Result.html`'s `Chain`).
+ *
+ * - 「보유」 restates the reader's own input beside the numbers it drives — the
+ *   head of R4 §3's `HOLDING_LABEL_KO` 「보유 주식 수」, which the strip carries in
+ *   full one panel above.
+ * - 「배정비율 (1주당)」 is R3's `ALLOTMENT_RATIO_KO` with the round's own
+ *   qualifier: the cell prints the ratio *per one held share*, which is what
+ *   makes the 배정 신주 cell beside it readable.
+ * - 「초과청약 비율」 is the filing's own field name for `excess_ratio`
+ *   (`copy-inventory.md` §Field keys), and it renders **only** the served ratio —
+ *   never the 한도 it becomes once a holding exists. */
+export const HOLDING_CELL_KO = "보유";
+export const ALLOTMENT_RATIO_CELL_KO = "배정비율 (1주당)";
+export const EXCESS_RATIO_KO = "초과청약 비율";
+
+/** ①'s open-window phrase, R11 §4's 「열림이면 `--live` 문구」 (`lookup/Rights.html`
+ * renders 「거래 가능」).
+ *
+ * Derived from the detail header's own `tradingOpenKo` 「거래 가능 · 마감 D-n」
+ * rather than re-typed, so the two surfaces cannot drift: on this surface the
+ * D-day is already on the row, in the `DDay` directly above the window line, and
+ * the card prints the phrase without it. One source, one wording. */
+export const TRADING_OPEN_KO = tradingOpenKo("").split("·")[0].trim();
+
+/** The line under a 추후결정 badge (R11 §4: 「일정이 공시상 미정」).
+ *
+ * The **tail** of R3's locked 「카운트다운 없음 — 일정이 공시상 미정」: the head
+ * half is the detail page's own framing of an empty countdown slot, and this
+ * surface's slot already shows the badge. Derived from the one constant, so the
+ * locked literal has exactly one definition (`phase.md` §"R11 landed spec"). */
+export const NO_SCHEDULE_KO = NO_COUNTDOWN_KO.split(" — ")[1] ?? NO_COUNTDOWN_KO;
+
+/**
+ * 놓친 돈's caption (R11 §5, **signed as landed** — P8 Q28 = (a)).
+ *
+ * > 유상증자 {n}건 · 집계 범위 {start} ~ 오늘 (KST) · 시장 가격 미사용 — 소멸된
+ * > 증서의 이론가치 환산
+ *
+ * Composed, not re-typed: the count uses R4's own column noun 유상증자, the
+ * middle is `coverageCaptionKo` unchanged, and only the tail below is new — the
+ * caption's own answer to 「이 금액은 시세인가?」, which the provenance line makes
+ * once for the page and this section now makes where the money is.
+ */
+export const MISSED_CAPTION_TAIL_KO = "시장 가격 미사용 — 소멸된 증서의 이론가치 환산";
+export const missedCaptionKo = (offerings: string, start: string) =>
+  `${COL_OFFERING_KO} ${offerings}건 · ${coverageCaptionKo(start)} · ${MISSED_CAPTION_TAIL_KO}`;
+
+/** The breakdown's 소멸 계산 column, qualified by R11 §5's own head row: the
+ * calculation in it is the **market's**, not the reader's, and the last column is
+ * the one that depends on a holding. `COL_LAPSE_KO` alone still names the fact. */
+export const COL_LAPSE_MARKET_KO = `${COL_LAPSE_KO} (시장 전체)`;
+
+/** The ② table's source row (R11 §4), composed from the three facts R4-4 named
+ * and the API tier they come from — the same 「DART 공시 API」 the detail page's ②
+ * strip closes with, and the same one-line-per-section rule R10 §3 set. */
+export const CONVERTIBLE_SOURCE_KO = `${FACT_SOURCE_KO} — ${CONVERSION_PRICE_KO} · ${CONVERTED_SHARES_KO} · ${OVERHANG_KO}`;
+
+/** 「⋯」 — R11 §4's mark for a value the filing's API row does not carry. It is a
+ * **typographic absence**, not a word: never a 0, never a dash sentence and never
+ * a reason (D-14). */
+export const MISSING_VALUE = "⋯";
+
+/**
+ * Two signed one-slot sentences, split around their **own** value.
+ *
+ * R11 renders the date inside 「청약 {date} 종료」 and 「… 청약 종료({date}) …」 in
+ * mono (`lookup/Rights.html`'s `.closed .v`, `r11-parts.jsx`'s `Zero`), which a
+ * call site can only do if it holds the sentence in halves. Splitting the signed
+ * builder around a placeholder keeps **one** definition of each sentence — a
+ * second transcription is exactly how a locked literal drifts.
+ */
+const splitAround = (build: (value: string) => string) => {
+  const mark = "\u0000";
+  const [before, after = ""] = build(mark).split(mark);
+  return { before, after } as const;
+};
+
+export const subscriptionClosedParts = splitAround(subscriptionClosedKo);
+export const pendingLapseParts = splitAround(pendingLapseKo);

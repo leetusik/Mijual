@@ -1,13 +1,17 @@
+import type { ReactNode } from "react";
 import { Citation, EstimateMarker } from "@/components";
-import { count, won } from "@/lib/format";
+import { count, percent, won } from "@/lib/format";
 import { convert, type ConversionFactors } from "@/lib/holding";
 import type { Figure } from "@/lib/types";
 import {
+  ALLOTMENT_RATIO_CELL_KO,
   ALLOTMENT_RATIO_KO,
   ALLOTTED_SHARES_KO,
   CONFIRMED_PRICE_KO,
   CONVERTED_VALUE_KO,
   EXCESS_LIMIT_KO,
+  EXCESS_RATIO_KO,
+  HOLDING_CELL_KO,
   LAPSE_FLOOR_KO,
   PRICE_PENDING_KO,
   SHARES_UNIT_KO,
@@ -155,4 +159,144 @@ export function Conversion({
       )}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// R11 §4 — the same factors as instrument cells
+// ---------------------------------------------------------------------------
+
+/**
+ * ①'s 환산 block on 내 종목 조회, **R11 §4**.
+ *
+ * The arithmetic is unchanged and still `lib/holding.ts`'s — this is the same
+ * `convert()` the component above calls, so 조회 and 보유 종목 cannot print two
+ * readouts of one number. What R11 re-cut is the **shape**: R10 §2's instrument
+ * cells (a hairline row of label-over-value cells, dashed rules between them,
+ * column-flow on desktop and 44px label/value rows at ≤767px) instead of R4's
+ * stacked factor lines.
+ *
+ * Two states, and the reason for each:
+ *
+ * - **With a holding** — 보유 · 배정비율 (1주당) · 배정 신주 (carrying its own
+ *   `= {n}주 × {ratio} · 1주 미만 버림` under it) · 초과청약 한도. Four cells, and
+ *   the caption sits in the cell whose number it explains.
+ * - **Without one** — exactly **two** cells, 배정비율 (1주당) and 초과청약 비율,
+ *   both of them things the filing itself said. R4 left 배정비율 hanging alone on
+ *   a line (finding 15); a pair reads as a row. Where the filing serves no
+ *   `excess_ratio` there is one cell, because the alternative is inventing the
+ *   second.
+ *
+ * The foot carries the **price state** on the left — 확정발행가 exists → R4's
+ * 환산액 line (a won amount, always tagged, with its 하한); it does not → the
+ * 발행가 확정 전 chip and its due date, and **no money number at all**, not even a
+ * 예정발행가 (the very number the chip exists to withhold) — and the R11 §6
+ * **prompt** on the right, while there is no holding to convert.
+ */
+export function ConversionChain({
+  factors,
+  shares,
+  finalPriceDate,
+  confirmedPrice,
+  prompt,
+}: {
+  factors: ConversionFactors;
+  shares: number | null;
+  finalPriceDate?: string;
+  confirmedPrice?: Figure;
+  /** R11 §6's control, rendered once per page and owned by `StockView`. */
+  prompt?: ReactNode;
+}) {
+  const conversion = convert(factors, shares);
+  const ratio = factors.allotment_ratio;
+  const excessRatio = factors.excess_ratio;
+  // Belt and braces with the seam's own gate: the price renders only where the
+  // contract says it is fixed, so a stale `confirmed_price` beside
+  // `price_confirmed: false` could never reach the page as a won amount.
+  const priced = factors.price_confirmed === false ? undefined : confirmedPrice;
+
+  const cells: CellSpec[] =
+    shares !== null
+      ? [
+          { label: HOLDING_CELL_KO, value: `${count(shares)}${SHARES_UNIT_KO}` },
+          ...(ratio
+            ? [{ label: ALLOTMENT_RATIO_CELL_KO, value: String(ratio.value), ratio: true }]
+            : []),
+          ...(conversion.allotted !== null
+            ? [
+                {
+                  label: ALLOTTED_SHARES_KO,
+                  value: `${count(conversion.allotted)}${SHARES_UNIT_KO}`,
+                  sub: ratio
+                    ? allotmentCaptionKo(count(shares), String(ratio.value))
+                    : undefined,
+                },
+              ]
+            : []),
+          ...(conversion.excess !== null
+            ? [{ label: EXCESS_LIMIT_KO, value: excessLimitKo(count(conversion.excess)) }]
+            : []),
+        ]
+      : [
+          ...(ratio
+            ? [{ label: ALLOTMENT_RATIO_CELL_KO, value: String(ratio.value), ratio: true }]
+            : []),
+          ...(excessRatio
+            ? [{ label: EXCESS_RATIO_KO, value: excessPercent(String(excessRatio.value)) }]
+            : []),
+        ];
+
+  if (cells.length === 0 && !priced && !finalPriceDate && !prompt) return null;
+
+  return (
+    <div className={styles.chainwrap}>
+      {cells.length > 0 ? (
+        <div className={styles.chain}>
+          {cells.map((cell) => (
+            <div key={cell.label} className={styles.cell}>
+              <p className={styles.clab}>{cell.label}</p>
+              <p className={styles.cval}>
+                <span className={cell.ratio ? `${styles.v} ${styles.ratio}` : styles.v}>{cell.value}</span>
+              </p>
+              {cell.sub ? <p className={styles.clab}>{cell.sub}</p> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className={styles.chainfoot}>
+        {priced && conversion.value !== null ? (
+          <p className={styles.chainnote}>
+            <span className={styles.factorLabel}>{CONVERTED_VALUE_KO}</span>
+            <EstimateMarker estimated={conversion.valueEstimated}>
+              <span className={`mono ${styles.derivedValue}`}>{won(conversion.value)}</span>
+            </EstimateMarker>
+            {conversion.valueFloor !== null ? (
+              <span className={styles.floor}>
+                {LAPSE_FLOOR_KO}{" "}
+                <EstimateMarker estimated={conversion.floorEstimated}>
+                  <span className="mono">{won(conversion.valueFloor)}</span>
+                </EstimateMarker>
+              </span>
+            ) : null}
+          </p>
+        ) : priced ? null : (
+          <p className={styles.chainnote}>
+            <span className={styles.pending}>{PRICE_PENDING_KO}</span>
+            {finalPriceDate ? <span>{pricePendingLineKo(finalPriceDate)}</span> : null}
+          </p>
+        )}
+
+        {prompt}
+      </div>
+    </div>
+  );
+}
+
+type CellSpec = { label: string; value: string; sub?: string; ratio?: boolean };
+
+/** The card prints 「20%」, not 「20.0%」: the product's one percentage formatter at
+ * its default precision, with a bare trailing `.0` dropped. A ratio that is not a
+ * whole percent keeps its decimal — a disclosed factor is never rounded away. */
+function excessPercent(value: string): string {
+  return percent(value, 1).replace(/\.0%$/, "%");
 }
