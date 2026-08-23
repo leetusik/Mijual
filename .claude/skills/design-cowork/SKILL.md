@@ -69,7 +69,9 @@ read-back — …`, with the `pending` window between them.
   decomposition assumed. In a mixed phase `DECOMP2` **is** that re-shaping, which is why it exists; in a
   design-only or apply phase — and for anything `DECOMP2` itself missed — cut new slices at fractional
   orders afterward. **Do not over-plan before the gate:** you do not know what the operator will design.
-- A **design-fidelity fix** slice is part of the normal shape, not a failure.
+- A **design-fidelity fix** slice — for a departure from the record *or* a dead, no-op or
+  unreachable control the functional sweep found (*Verifying*, below) — is part of the normal
+  shape, not a failure.
 
 ## The handoff — say what to design, decide nothing
 
@@ -225,7 +227,88 @@ empty/error states. **Do not drop, simplify, restyle, or "improve" a designed el
 effort** — that is a correctness failure, not a shortcut. Where an exact value isn't specified, pick
 the option closest to the designed intent, **never a plainer fallback**. If the design implies backend
 or data work that doesn't exist, **build the backing** and surface the choice — don't quietly drop the
-feature. Put this rule in the implement slice's `plan.md` **and** the executor's dispatch prompt.
+feature. Put this rule in the implement slice's `plan.md` **and** the executor's dispatch prompt — and
+name the operator's runtime (`## Operator Runtime` in the operations doc) in both, because an
+implement slice that claims a real browser has to have used the operator's.
+
+## Verifying — RESPECT THE DESIGN, and does it work
+
+Fidelity slices are judged on **two yardsticks, both mandatory**:
+
+1. **Matches the record** — rendered values, tokens, layout, states, measured against the signed
+   record.
+2. **Works as a product** — the record is the **floor** of what to check, never the ceiling, and
+   **matching it is not acceptance**. A screen can be pixel-perfect and dead; an element the record
+   drew is not thereby a good element in the flesh.
+
+An apply phase changes operator-visible surfaces by definition, so its gate is
+`acceptance.required: true` and the operator sees the running product before its review can pass.
+The review's gate stages and the acceptance walkthrough live in the `review-phase` skill and the
+contract — this section is the **design-side** spec the fidelity slice itself follows, and what the
+review then spot-checks.
+
+**The functional sweep.** Beyond conformance, and **each item a defect when it fails even if the
+pixels are perfect**:
+
+- **Every visible interactive element does something observable.** Go control by control — buttons,
+  toggles, expanders, tabs, links, menus. A control that no-ops is a defect, not a "not wired yet".
+- **Interaction states** — focus, hover, keyboard path — on every input and control, **including the
+  browser defaults the record never drew**. An ugly focus ring, or one the adjacent button covers,
+  is a finding, not "unspecified".
+- **Liveness over time.** Watch a timer tick for a real interval instead of reading its code; check
+  that polling or auto-refresh does not destroy in-progress input, and that data arriving mid-action
+  does not throw the user out of what they were doing.
+- **Type into it and wait.** Anything implying live behaviour — search, typeahead, validation,
+  autosave — is exercised by **typing and waiting**, not only by submitting. "Nothing happens while
+  I type" is a finding no submit-only check can make.
+
+**Where it runs.** In the runtime and access path **`## Operator Runtime`** (the operations doc)
+describes — the exact run command(s), the mode, the origin/host the operator browses, the
+devices/viewports/browsers — **and additionally in the production build when the two differ**. The
+executor's most convenient runtime is not the operator's, and whole bug classes live in the gap:
+dev-only behaviour (StrictMode double-effects that strand a probe, Fast-Refresh reloads that wipe
+in-progress typing) and access-path differences (a LAN or tunnel origin, a small viewport rendering
+a different product — or none of it). Verify at **every viewport the manifest names**: a surface the
+design renders differently at one, or deliberately not at all, is verified at that one too. If the
+section is **absent, or still carries its `UNFILLED` marker**, the slice does not guess — it returns
+`needs_operator` asking the operator to fill it (the orchestrator sets it `pending`). Never assume
+localhost, never assume the production build, never assume headless.
+
+**Re-run the whole list.** A fidelity slice re-runs **all** of `## Regression Checklist` (the qa
+doc's cumulative product smoke list) — every earlier phase's headline behaviours, not only this
+phase's surfaces. That is not ceremony: a later phase touching shared chrome silently invalidates an
+earlier phase's pass, and nothing else is looking. Then append this phase's headline lines in the
+shipped shape `- [ ] <surface>: <one observable behaviour> (P<N>)` via the phase's "Doc impact" list
+— the review consolidates the docs.
+
+**What a fidelity slice may fix, and what it may not.** A **departure from the record** is a
+faithful-implementation fix: make it in the slice, or cut a `fix` slice. Anything that is a **design
+question** — something the record drew that is bad in the flesh, something it never drew at all — is
+**not fixed silently and not "improved"**; it goes through the gap channel below. RESPECT THE DESIGN
+does not move here: verification adds *"and catalogue what the record never settled"*, it never
+licenses inventing.
+
+**Evidence, terse.** The headline checks plus screenshots at the manifest's viewports, and that is
+the bar — the contract's small-test-files rule applies to verification too. A 230-assertion
+conformance suite is not what makes a phase safe; the sweep, the operator's runtime, and the
+operator's own eyes are.
+
+### When the record never drew it
+
+Every state the record never settled — focus treatment, empty/loading/error states, pagination or
+virtualisation behaviour, typeahead, browser-default styling, copy that reads fine in a mockup and
+wrong in the product — is **catalogued, never invented**. Catalogued means **delivered**:
+
+- Write each one as a **one-line question on `phase.md`'s `## Operator Questions` list** — not only
+  in `result.md`, where a catalogue quietly dies unread.
+- The review **routes** every entry: folded into the operator's acceptance walkthrough as a decision
+  to take, or filed as a deferred job. An unrouted entry blocks the pass.
+- **Questions get asked, not archived.**
+
+And the sentence this whole gate exists for: **signing the cards is not accepting the product.** The
+operator approved a design; they meet the thing itself at the acceptance gate, and they are allowed
+to change their mind there. That is a `changes_requested` plus a new round or a `fix` slice — not a
+fidelity failure, and never something to argue out of with the record.
 
 ## Never
 
@@ -239,6 +322,10 @@ feature. Put this rule in the implement slice's `plan.md` **and** the executor's
 - Port another product's design and call it a design system.
 - Delegate a DesignSync call, or dispatch the design slice.
 - Write implementation code in a design slice.
+- Verify only against the record, or only in whichever runtime is convenient for you — the
+  functional sweep and the manifest's runtime are both mandatory.
+- Fix a design gap silently, or "improve" it — catalogue it on `## Operator Questions` so the
+  operator is actually asked.
 - Edit the returned record — or touch anything below line 1 of a card during the SIGNOFF regroup.
 - Regroup **before** the operator has approved. The round's address stays on the groups for the whole
   review; taking it off early is removing the operator's way of finding the cards.

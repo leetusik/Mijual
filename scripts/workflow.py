@@ -484,6 +484,46 @@ def phase_execution(data) -> dict:
     return execution
 
 
+def new_acceptance() -> dict:
+    """A fresh, undeclared operator acceptance gate. Five fields, no more."""
+    return {"required": None, "walkthrough": None, "requested_at": None, "cleared_at": None, "note": None}
+
+
+def phase_acceptance(data) -> dict:
+    """The phase's operator acceptance gate, or None when the phase carries none (legacy).
+
+    Shape (stamped by `new_phase` on every phase created from workspace v32 on):
+
+        "acceptance": {
+          "required": null,        # null = undeclared | true = operator-visible | false = waived
+          "walkthrough": null,     # the concrete walkthrough text, recorded when the gate opens
+          "requested_at": null,    # stamped by `accept-gate <P> --open`
+          "cleared_at": null,      # stamped by `accept-gate <P> --clear`
+          "note": null             # the operator's clearing note, or the waive reason
+        }
+
+    Absence of the whole block means legacy (an installer `--update` never touches `works/`):
+    `review-phase --verdict pass` is allowed, with one advisory line and nothing more. Read the
+    block only through this helper so every caller agrees on what "gated" means.
+    """
+    if not isinstance(data, dict):
+        return None
+    acceptance = data.get("acceptance")
+    if not isinstance(acceptance, dict):
+        return None
+    required = acceptance.get("required")
+    if not (required is None or isinstance(required, bool)):
+        return None
+    return acceptance
+
+
+def acceptance_gate_is_open(data) -> bool:
+    """True when the phase is waiting on the operator to walk the running product."""
+    acceptance = phase_acceptance(data)
+    return bool(acceptance and acceptance.get("required") is True
+                and acceptance.get("requested_at") and not acceptance.get("cleared_at"))
+
+
 def git_current_branch() -> str:
     """The checkout's current branch name, or None (detached HEAD, no git, not a repo).
 
@@ -693,6 +733,22 @@ def validate() -> int:
                 consolidation = execution.get("consolidation")
                 if consolidation is not None and consolidation not in CONSOLIDATION_STATES:
                     errors.append(f"phase {p['id']} has invalid execution.consolidation {consolidation!r}; expected one of {sorted(CONSOLIDATION_STATES)} or null")
+        # Optional operator acceptance gate. Absent = legacy phase = nothing to check and
+        # NO warning: nagging every pre-v32 phase on every run would clutter the dashboards.
+        if "acceptance" in p:
+            acceptance = p.get("acceptance")
+            if not isinstance(acceptance, dict):
+                errors.append(f"phase {p['id']} has a non-object acceptance block: {acceptance!r}")
+            else:
+                required = acceptance.get("required")
+                if not (required is None or isinstance(required, bool)):
+                    errors.append(f"phase {p['id']} has invalid acceptance.required {required!r}; expected true (operator-visible), false (waived) or null (undeclared)")
+                for field in ("walkthrough", "note", "requested_at", "cleared_at"):
+                    value = acceptance.get(field)
+                    if value is not None and not isinstance(value, str):
+                        errors.append(f"phase {p['id']} has invalid acceptance.{field} {value!r}; expected a string or null")
+                if p["status"] == "done" and required is True and not acceptance.get("cleared_at"):
+                    errors.append(f"phase {p['id']} is done but its operator acceptance gate was never cleared; the operator must walk the running product (accept-gate {p['id']} --open/--clear)")
         if not (ACTIVE / p["id"] / "intent.md").exists():
             warnings.append(f"phase {p['id']} has no intent.md (expected {p['id']}/intent.md); capture operator intent via the create-phase skill")
         for s in p["slices"]:
@@ -812,11 +868,12 @@ def new_phase(args: argparse.Namespace) -> None:
         "id": phase_id, "name": args.name, "objective": args.objective, "status": "planned", "order": order,
         "created_at": now_iso(), "started_at": None, "completed_at": None,
         "review": {"status": "pending", "reviewed_at": None, "reviewer": None, "note": None},
+        "acceptance": new_acceptance(),
         "paths": {"phase_md": "phase.md", "intent_md": "intent.md", "slices_dir": "slices"},
         "archive": {"archived": False, "archived_at": None, "archive_path": None},
     }
     write_json(pdir / "phase.json", phase_data)
-    write_text(pdir / "phase.md", f"# Phase {phase_id}: {args.name}\n\n_Intent: see [intent.md](intent.md)._\n\n## Objective\n\n{args.objective}\n\n## Context\n\n## Decomposition\n\n_Slice breakdown and rationale — filled by the `{phase_id}.DECOMP` slice._\n\n## Findings & Notes\n\n_Durable findings and cross-slice notes; `DECOMP` seeds this, and each slice appends when it finishes._\n\n## Constraints\n\n## Open Questions\n\n-\n")
+    write_text(pdir / "phase.md", f"# Phase {phase_id}: {args.name}\n\n_Intent: see [intent.md](intent.md)._\n\n## Objective\n\n{args.objective}\n\n## Context\n\n## Decomposition\n\n_Slice breakdown and rationale — filled by the `{phase_id}.DECOMP` slice._\n\n## Findings & Notes\n\n_Durable findings and cross-slice notes; `DECOMP` seeds this, and each slice appends when it finishes._\n\n## Operator Questions\n\n_Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._\n\n## Constraints\n\n## Open Questions\n\n-\n")
     write_text(pdir / "intent.md", render_template(load_template("intent.md"), PHASE_ID=phase_id, CAPTURED_AT=now_iso(), ORIGIN="operator"))
     create_slice(phase_id, f"{phase_id}.DECOMP", "decompose phase", "decomposition", 0, "high", source={"type": "new_phase", "id": phase_id})
     create_slice(phase_id, f"{phase_id}.REVIEW", "phase review", "review", 9999, "high", source={"type": "new_phase", "id": phase_id})
@@ -905,12 +962,47 @@ def set_phase_status(args: argparse.Namespace) -> None:
     print(f"phase {args.phase}: {old} -> {args.status}")
 
 
+def _require_acceptance_cleared(phase_id: str, data: dict) -> None:
+    """Refuse a passing review while the operator acceptance gate is undeclared or uncleared.
+
+    Called before `review_phase` writes anything. Only `pass` is ever refused: an operator's
+    failure report must stay recordable as `changes_requested` (or `blocked`).
+    """
+    acceptance = phase_acceptance(data)
+    if acceptance is None:
+        if "acceptance" in data:
+            print(f"acceptance: phase {phase_id} has a malformed gate block -- treated as legacy (run: python3 scripts/workflow.py validate)")
+        else:
+            print("acceptance: legacy phase (no gate block) -- pass recorded without an operator acceptance gate")
+        return
+    required = acceptance.get("required")
+    if required is None:
+        raise SystemExit(
+            f"phase {phase_id} has not declared whether the operator must accept it; a pass cannot be recorded yet:\n"
+            f"  python3 scripts/workflow.py accept-gate {phase_id} --require                     (operator-visible: the operator walks the running product)\n"
+            f"  python3 scripts/workflow.py accept-gate {phase_id} --waive --note \"why\"          (nothing the operator can see)")
+    if required is True and not acceptance.get("cleared_at"):
+        raise SystemExit(
+            f"phase {phase_id} requires operator acceptance and the gate is not cleared; show the operator the running product first:\n"
+            f"  python3 scripts/workflow.py accept-gate {phase_id} --open --walkthrough \"...\"    (orchestrator, after the review executor's validation and judgment)\n"
+            f"  python3 scripts/workflow.py accept-gate {phase_id} --clear --note \"...\"          (after the operator walks it; --note is optional)")
+
+
 def review_phase(args: argparse.Namespace) -> None:
     if args.verdict not in REVIEW_VERDICTS:
         raise SystemExit(f"verdict must be one of: {', '.join(sorted(REVIEW_VERDICTS))}")
     pdir = require_phase(args.phase)
     data = read_json(pdir / "phase.json")
+    # Gate check first, before anything is written: a refused pass must leave no trace.
+    if args.verdict == "pass":
+        _require_acceptance_cleared(args.phase, data)
     data["review"] = {"status": args.verdict, "reviewed_at": now_iso(), "reviewer": args.reviewer, "note": args.note}
+    if args.verdict == "changes_requested":
+        acceptance = phase_acceptance(data)
+        if acceptance is not None:
+            # The phase is about to change again, so the gate re-opens for the re-review.
+            # `required` and the operator's note survive; the walked script does not.
+            acceptance.update({"walkthrough": None, "requested_at": None, "cleared_at": None})
     # Verdict drives phase status so the lifecycle stays consistent.
     status_map = {"pass": "done", "changes_requested": "in_progress", "blocked": "blocked"}
     new_status = status_map[args.verdict]
@@ -934,6 +1026,114 @@ def review_phase(args: argparse.Namespace) -> None:
     elif args.verdict == "pass":
         print(f"phase {args.phase} is done and stays in active/. Do NOT archive a single phase now.")
         print("Archive all phases together with `archive-all` only once every active phase is done (the last review slice is complete).")
+
+
+def _ensure_acceptance(data: dict) -> dict:
+    """The phase's acceptance block, created on demand -- this is how an adopter opts a legacy
+    phase in. Inserted right after `review` so phase.json keeps reading naturally; a malformed
+    block is replaced by a fresh one."""
+    acceptance = phase_acceptance(data)
+    if acceptance is not None:
+        return acceptance
+    acceptance = new_acceptance()
+    ordered = {}
+    for key, value in data.items():
+        if key == "acceptance":
+            continue
+        ordered[key] = value
+        if key == "review":
+            ordered["acceptance"] = acceptance
+    ordered.setdefault("acceptance", acceptance)
+    data.clear()
+    data.update(ordered)
+    return acceptance
+
+
+def _print_acceptance(phase_id: str, acceptance) -> None:
+    print(f"phase={phase_id}")
+    if acceptance is None:
+        print("acceptance=none (legacy phase: no gate block, so review-phase --verdict pass is allowed)")
+        print(f"declare one with: python3 scripts/workflow.py accept-gate {phase_id} --require | --waive --note \"why\"")
+        return
+    print(f"required={json.dumps(acceptance.get('required'))}")
+    print(f"requested_at={acceptance.get('requested_at') or 'none'}")
+    print(f"cleared_at={acceptance.get('cleared_at') or 'none'}")
+    print(f"note={acceptance.get('note') or 'none'}")
+    walkthrough = acceptance.get("walkthrough")
+    if walkthrough:
+        print("walkthrough:")
+        print(walkthrough)
+    else:
+        print("walkthrough=none")
+
+
+def accept_gate(args: argparse.Namespace) -> None:
+    """Declare, open, clear or show a phase's operator acceptance gate.
+
+    Orchestrator/operator command: executors never run it. The review executor returns the
+    walkthrough text; the orchestrator opens the gate with it and STOPS until the operator
+    has walked the running product.
+    """
+    pdir = require_phase(args.phase)
+    data = read_json(pdir / "phase.json")
+    if args.walkthrough is not None and not args.open_gate:
+        raise SystemExit(f"--walkthrough belongs to --open: python3 scripts/workflow.py accept-gate {args.phase} --open --walkthrough \"...\"")
+    if not (args.require or args.waive or args.open_gate or args.clear):
+        _print_acceptance(args.phase, phase_acceptance(data))  # show only: writes nothing
+        return
+    acceptance = phase_acceptance(data)
+    message = None
+    if args.require:
+        acceptance = _ensure_acceptance(data)
+        acceptance["required"] = True
+        event = "acceptance_required"
+        message = f"phase {args.phase}: operator acceptance REQUIRED -- review-phase --verdict pass refuses until the gate is opened and cleared"
+    elif args.waive:
+        if not args.note:
+            raise SystemExit(f"accept-gate {args.phase} --waive requires --note \"why this phase changes nothing the operator can see\"")
+        acceptance = _ensure_acceptance(data)
+        acceptance["required"] = False
+        acceptance["note"] = args.note
+        event = "acceptance_waived"
+        message = f"phase {args.phase}: operator acceptance WAIVED -- {args.note}"
+    elif args.open_gate:
+        if acceptance is None or acceptance.get("required") is not True:
+            raise SystemExit(
+                f"phase {args.phase} has not declared that the operator must accept it; declare it first:\n"
+                f"  python3 scripts/workflow.py accept-gate {args.phase} --require")
+        if not (args.walkthrough or "").strip():
+            raise SystemExit(f"accept-gate {args.phase} --open requires --walkthrough \"the concrete script: URLs to open, actions to try, in the operator runtime\"")
+        acceptance["walkthrough"] = args.walkthrough
+        acceptance["requested_at"] = now_iso()
+        acceptance["cleared_at"] = None
+        event = "acceptance_opened"
+    else:  # --clear
+        if acceptance is None or not acceptance.get("requested_at"):
+            raise SystemExit(
+                f"phase {args.phase} has no open acceptance gate (requested_at is unset); nothing to clear:\n"
+                f"  python3 scripts/workflow.py accept-gate {args.phase} --open --walkthrough \"...\"")
+        acceptance["cleared_at"] = now_iso()
+        if args.note:
+            acceptance["note"] = args.note
+        event = "acceptance_cleared"
+    write_json(pdir / "phase.json", data)
+    # Opening/clearing rides the existing `pending` halt -- no second halt state.
+    if args.open_gate or args.clear:
+        status = "pending" if args.open_gate else "in_progress"
+        old = _set_phase_status(pdir, status)
+        append_event("phase_status_changed", phase=args.phase, old_status=old, new_status=status)
+    append_event(event, phase=args.phase)
+    rebuild_index_and_state()
+    if args.open_gate:
+        print(f"phase {args.phase}: acceptance gate OPEN -- phase is pending [~]; do not start, finish, or advance past it")
+        print("WALKTHROUGH (the operator runs this against the running product):")
+        print(args.walkthrough)
+        print(f"Then clear it: python3 scripts/workflow.py accept-gate {args.phase} --clear")
+        print("Add --note \"...\" to record what the operator reported.")
+    elif args.clear:
+        print(f"phase {args.phase}: acceptance gate CLEARED -- phase is in_progress again; review-phase --verdict pass is now allowed")
+    else:
+        print(message)
 
 
 def _git(cmd: list, cwd=None, check: bool = True):
@@ -1495,11 +1695,25 @@ def cmd_next(args: argparse.Namespace) -> None:
     if waiting:
         kind = "slice" if "." in waiting else "phase"
         clear = f"set-slice-status {waiting} in_progress" if kind == "slice" else f"set-phase-status {waiting} in_progress"
+        # An open acceptance gate is the same `pending` halt with a concrete script attached:
+        # print the walkthrough, and clear through accept-gate so cleared_at gets stamped.
+        gate = None
+        if kind == "phase" and (ACTIVE / waiting / "phase.json").exists():
+            pdata = read_json(ACTIVE / waiting / "phase.json")
+            if acceptance_gate_is_open(pdata):
+                gate = phase_acceptance(pdata)
+                clear = f"accept-gate {waiting} --clear"
         print(f"current_phase={state.get('current_phase')}")
         print(f"waiting_on_operator={waiting}")
         print(f"WAITING ON OPERATOR: {kind} {waiting} is pending [~] -- operator co-work needed (validation or an operator-run action).")
         print("Do not start, finish, or advance past it. Report what you need, then wait for the operator.")
+        if gate:
+            print(f"acceptance_gate=open (requested_at={gate.get('requested_at')}) -- the operator must walk the running product before this phase's review can pass.")
+            print("WALKTHROUGH:")
+            print(gate.get("walkthrough") or "(none recorded)")
         print(f"After the operator approves, clear it: python3 scripts/workflow.py {clear}")
+        if gate:
+            print("Add --note \"...\" to record what the operator reported.")
         return
     current_slice = state.get("current_slice")
     if not current_slice:
@@ -1798,6 +2012,17 @@ def main(argv=None) -> int:
     p.add_argument("--reviewer", default=None)
     p.add_argument("--note", default=None)
     p.set_defaults(func=review_phase)
+
+    p = sub.add_parser("accept-gate", help="Operator acceptance gate for a phase: declare (--require/--waive), open it at the review (--open), clear it (--clear), or show it (bare). Orchestrator/operator command -- executors never run it")
+    p.add_argument("phase")
+    g = p.add_mutually_exclusive_group()
+    g.add_argument("--require", action="store_true", help="declare the phase operator-visible: review-phase --verdict pass refuses until the gate is opened and cleared (creates the gate block on a legacy phase). No status change")
+    g.add_argument("--waive", action="store_true", help="declare the phase NOT operator-visible; --note is mandatory and records why")
+    g.add_argument("--open", action="store_true", dest="open_gate", help="open the gate at the review: record --walkthrough, set the phase pending, print the operator instructions (needs --require first)")
+    g.add_argument("--clear", action="store_true", help="the operator walked the product: stamp cleared_at, return the phase to in_progress")
+    p.add_argument("--walkthrough", default=None, help="the concrete script the operator runs (URLs to open, actions to try, in the operator runtime); use with --open")
+    p.add_argument("--note", default=None, help="mandatory reason with --waive; optional record of what the operator reported with --clear")
+    p.set_defaults(func=accept_gate)
 
     p = sub.add_parser("parallel-start", help="Opt a planned phase into parallel execution: stamp it, commit the stamp, and cut its phase branch + git worktree")
     p.add_argument("phase")

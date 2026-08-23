@@ -106,6 +106,12 @@ python3 scripts/workflow.py review-phase <P> --verdict pass --reviewer slice-exe
 A `changes_requested` or `blocked` verdict behaves as always — fix slices on the branch, then
 re-review. Only a `pass` opens the integration below.
 
+**The operator acceptance gate needs no parallel-mode special case:** on a phase whose gate is
+`required: true`, it opens (`accept-gate <P> --open --walkthrough "..."`) and is cleared
+(`accept-gate <P> --clear`) here on the branch, against the branch's running product, before the
+`pass` above can be recorded — so `parallel-gate`'s "branch phase `done` + review `pass`" already
+implies the operator accepted what is about to be merged.
+
 ## 5. Integrate — agent-run, after the review passes
 
 The orchestrator runs this sequence itself; it is not a set of manual operator clicks. **If anything
