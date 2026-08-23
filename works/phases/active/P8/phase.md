@@ -617,7 +617,7 @@ exception. Verbatim, then the reading the handoff carries:
 Handoff written: `docs/reference/design/rounds/09-landing-board/handoff.md`. Copy in play this
 round, dated 2026-08-23: count/shown/remaining labels, 접기, any refresh-state label.
 
-### R9 landed spec — read back 2026-08-23 (`P8.S4` gate 2), awaiting literal signoff
+### R9 landed spec — read back 2026-08-23 (`P8.S4` gate 2) — SIGNED OFF 2026-08-23 ("sign off"); SIGNOFF.md R9 entry, cards regrouped to `Landing` / `Components`
 
 Read back with DesignSync from "Mijual Design System" and landed **as-is** under
 `docs/reference/design/rounds/09-landing-board/output/` — `result.md`, `build-prompt.md`, cards

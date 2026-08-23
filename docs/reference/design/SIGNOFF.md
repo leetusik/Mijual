@@ -252,3 +252,47 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 7 R8 cards retire the round address (`⏳ P8.S2 · Chrome` → `Chrome`,
   `⏳ P8.S2 · Components` → `Components`); card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R9 — Polish: Landing 관제 현황판 + Board (`P8.S4`, round `09-landing-board`)
+
+- Closed: 2026-08-23
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: board window **15/+15** (operator q3) with the footer re-cut to 「{step}건
+  더 보기」 + 「남은 {n}건」 + 「처음 {step}건으로 접기」; row column plan `76 · corp minmax(180,1fr) ·
+  240 · 190 · 96` (no-extras panels `76 · 1fr · 300 · 96`, decided per tab), fixed value columns,
+  D-day flush right in its R2 slot, rows ≥44px; **whole row = click target** (stretched link on
+  the corp anchor, `↗` stays DART) with hover / focus-within / press states and a `--live` edge on
+  refreshed rows; meta line under the tabs (「탭 숫자는 감시 중 전체 건수입니다 · 아래 목록은
+  카운트다운 {ranked}건 중 {shown}건」) + the four-step **D-day legend** (R1 ladder kept); strips
+  펼치기 ↔ **접기** with rows on the board grid, dateless rows = label only + 「추후결정」 in the
+  D-day cell, 390 full-width 44px button; countdown card → **three stats** (읽은 실적보고서
+  dropped, operator 9); 소멸주의보 and the countdown caption say 「{n}개 종목」 on a tie; the
+  **auto-refresh visible contract** (operator q5: chip-only 「갱신됨」, no spinner/button/text,
+  changed-row edge, tab/window/strips/scroll/focus survive, hidden-tab pause, silent failure,
+  stale = R2, reduced-motion = no fade; interval left to apply, assumed 60 s); hero plain-Enter
+  4-step rule (Enter① selects the first candidate, Enter② goes, exact match goes at once, no
+  candidates → `GET /stocks?q=`), 390 `word-break: keep-all` + balanced subtitle, mono values
+  `nowrap`; P7 Q9 tabs hover (`--ink-1` + 2px `--border-strong`), Q10 closed no-change, Q11 board
+  controls 36px (≥768) / 44px (≤767); **14 new Korean strings** (the round's dated copy exception,
+  `build-prompt.md` §9) and the deletion of `STAT_REPORTS_KO` + the gate-cost / disclaimer
+  constants (P8 Q5 "drop"). The signoff covers the departures logged in `result.md` §6 (row slack
+  stays after the corp name on CB panels — payload untouched; legend as new copy; refresh
+  interval unfixed; tie count needs `next_lapse.tie_count`; stretched link; rows not named by
+  the grounding pack not drawn; card D-days recomputed to 2026-08-23) and records, outside the
+  round's apply scope, the operator's in-session instruction to add a 「의견 보내기」 row to the
+  account menu (`chrome/AccountSlot.html` revised; P8 Operator Question Q12).
+- Supersedes: the parts of **R2 §Board** it re-cuts (row column plan and widths, window footer,
+  the 30-row P7 override → 15, tabs hover, control heights), **R3 §board strip** (fixed 펼치기
+  label → 펼치기/접기 pair; dateless row rendering), **R2 §Anchors** (2×2 stats → three rows;
+  소멸주의보 `{corp}` → tie rule), and adds the refresh layer R2 never drew. The hero H1, stat line,
+  orbits, retrospective card, chrome (R8) and all other rounds stand unchanged. Within the round,
+  nothing is revised.
+- Token delta: **None.**
+- Landed record: `rounds/09-landing-board/output/` (`result.md`, `build-prompt.md`,
+  `landing/r9-board.css`, `landing/r9-rows.jsx`, the 7 cards, and the R9-session revision of
+  `chrome/AccountSlot.html`) — read-only. The cards stay in the Claude Design project "Mijual
+  Design System".
+- Post-approval regroup: the 7 R9 cards retire the round address (`⏳ P8.S4 · Landing` →
+  `Landing`, `⏳ P8.S4 · Components` → `Components`); card paths and all content below line 1
+  unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.
