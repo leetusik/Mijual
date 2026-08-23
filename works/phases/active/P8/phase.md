@@ -598,6 +598,25 @@ Inherited items for this surface, to decide at this gate alongside the above: **
 hairline vs candidate panel edge, the 481px boundary between SearchRow and Board), and **P8 Q5** (the
 gate-cost / disclaimer sentences R8 removed from the footer — the landing bottom is the proposed home).
 
+### R9 interview — operator answers (2026-08-23, `P8.S4` gate 1)
+
+Operator answered the inherited items first, then accepted the orchestrator's proposed default
+for the 13 walk findings ("all go into R9 as fix — Claude Design decides how") with one
+exception. Verbatim, then the reading the handoff carries:
+
+| item | operator (verbatim) | reading → R9 handoff |
+|---|---|---|
+| P7 Q3 board window | "q3: 15" | `WINDOW_STEP` 30 → **15**, 펼치기 +15; design for a 15-row first screen |
+| P7 Q5 live refresh | "q5: refresh" | **auto-refresh** the board data while the page is open (orchestrator's stated assumption: automatic, not a manual control — unchallenged); the visible behaviour is R9's, the interval/fetch is `P8.S5`'s; a build item, not a deferred job |
+| P7 Q6 #12 hero H1 | "q6 #12: its intended." | 「내 종목 조회」 stays — locked |
+| P7 Q9/Q10/Q11 | "q9-11 :idk" | left to the session — decide or explicitly leave, log which |
+| P8 Q5 gate-cost / disclaimer | "p8 q5: drop." | **dropped, not relocated**; `P8.S5` deletes the constants; Q5 answered |
+| walk 1–8, 10–13 | (default accepted) | fix — Claude Design decides how; 12 = leave; 11's `/stocks` side → R11 |
+| walk 9 읽은 실적보고서 | "9. drop." | the countdown card loses the stat; card re-cut to three |
+
+Handoff written: `docs/reference/design/rounds/09-landing-board/handoff.md`. Copy in play this
+round, dated 2026-08-23: count/shown/remaining labels, 접기, any refresh-state label.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -645,7 +664,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   thing" plus P7 Q7's four developer-vocabulary strings suggests some rounds need copy explicitly
   **in play, named and dated in that round's handoff**. Blanket answer, or per round?
 
-- **Q5 — gate-cost + disclaimer sentences: relocate or drop?** R8 removes the footer prose on the operator's
+- **Q5 — gate-cost + disclaimer sentences: relocate or drop?** _Answered at the R9 gate (2026-08-23): "drop." — `P8.S5` deletes the constants; no relocation._ R8 removes the footer prose on the operator's
   instruction; the footer was the last placement of 「게이트 비용」 and the only placement of the 면책 문장.
   The session proposes relocating both (landing bottom / 이용 안내) in a later round. Operator decides; until
   then `P8.S3` deletes the markup but may keep the constants (build-prompt §4 note).
