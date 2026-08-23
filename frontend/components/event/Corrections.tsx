@@ -5,7 +5,9 @@ import { Citation } from "@/components";
 import { dartUrl, getCorrections } from "@/lib/api";
 import type { CorrectionStory, EventDetail } from "@/lib/types";
 import { FieldValue } from "./Fields";
+import { CLOSE_GLYPH } from "@/lib/copy";
 import {
+  COLLAPSE_KO,
   CORRECTION_HISTORY_KO,
   CURRENT_VERSION_KO,
   MOVE_AFTER_KO,
@@ -16,8 +18,8 @@ import {
 import styles from "./Event.module.css";
 
 /**
- * The 정정 strip and the CorrectionStory it opens (R3 §Page anatomy 5,
- * §CorrectionStory view).
+ * The 정정 밴드 and the CorrectionStory it opens (R3 §Page anatomy 5,
+ * §CorrectionStory view, re-cut by **R10 §7**).
  *
  * > **정정 strip** (footer, `--surface-raised`): "정정공시 반영 — 최근:
  * > {interpretation.summary key figures} · {schedule_impact}" + "정정 이력"
@@ -27,11 +29,21 @@ import styles from "./Event.module.css";
  *
  * R3 calls it a *view* opened by a button, and the button is the only navigation
  * the round draws. A route would need its own way back, and the only crumb this
- * product owns says "← 관제 현황판" — which is the board, not this event; writing
- * a second crumb would be inventing copy for a signed surface. So the story
- * opens under the strip, the reader keeps the card they came from, and the
- * button carries its state in `aria-expanded` (the same decision the chrome's
- * 메뉴 and the landing's 펼치기 record: a 접기 label is copy nobody signed).
+ * product owns says "← 관제 현황판" — which is the board, not this event. So the
+ * story opens under the band and the reader keeps the card they came from.
+ *
+ * ## R10: the trigger reads its own state
+ *
+ * The label used to stay 「정정 이력」 while the rail and the diff were open below
+ * it (walk finding 3) — the same defect R9 fixed on the board's strips. It now
+ * flips to **「접기」** + `×` and holds the inset surface while its panel is open,
+ * so `aria-expanded` **agrees with** the label instead of standing in for it.
+ * R3's note that "a 접기 label is copy nobody signed" is superseded: R9 signed
+ * that word and R10 re-uses it here.
+ *
+ * The band sentence is an `h2` (§5), and the diff below drops its arrow column
+ * for the **two tagged sides** this surface now uses wherever a value moved (§7,
+ * and the 철회 evidence with it).
  *
  * The rail is a second request (`GET /events/{rcept_no}/corrections`), made on
  * first open: the version list, the field moves and the interpretation are a
@@ -68,7 +80,7 @@ export function Corrections({ detail }: { detail: EventDetail }) {
   return (
     <section className={styles.correctionStrip}>
       <div className={styles.correctionHead}>
-        <p className={styles.correctionTeaser}>
+        <h2 className={styles.correctionTeaser}>
           {correctionStripKo.title}
           {/* A corrected filing whose interpretation has no summary still says
               that it was corrected; the "최근:" clause is dropped rather than
@@ -86,7 +98,7 @@ export function Corrections({ detail }: { detail: EventDetail }) {
               ) : null}
             </>
           ) : null}
-        </p>
+        </h2>
         <button
           type="button"
           className={styles.historyButton}
@@ -94,7 +106,12 @@ export function Corrections({ detail }: { detail: EventDetail }) {
           aria-controls={panelId}
           onClick={toggle}
         >
-          {CORRECTION_HISTORY_KO}
+          {open ? COLLAPSE_KO : CORRECTION_HISTORY_KO}
+          {open ? (
+            <span aria-hidden="true" className={styles.historyMark}>
+              {CLOSE_GLYPH}
+            </span>
+          ) : null}
         </button>
       </div>
 
@@ -192,29 +209,31 @@ function Story({
 
       {moves.length > 0 ? (
         <div className={styles.moves}>
-          <p className={styles.moveHead}>
-            <span>{MOVE_BEFORE_KO}</span>
-            <span aria-hidden="true">→</span>
-            <span>{MOVE_AFTER_KO}</span>
-          </p>
           {moves.map((move, index) => {
             const fieldKey = typeof move.field_key === "string" ? move.field_key : "";
             const label = koreanNames[fieldKey];
             return (
               <div key={`${index}-${fieldKey}`} className={styles.move}>
                 {label ? <p className={styles.moveLabel}>{label}</p> : null}
-                <div className={styles.moveCols}>
-                  <div className={styles.moveCol}>
-                    <FieldValue fieldKey={fieldKey} value={move.old} moved />
+                {/* Two tagged sides, no arrow column (R10 §7 · walk findings 4
+                    and 9): the tags say the direction, so nothing has to be
+                    squeezed into three columns at 390px — the sides stack and
+                    the same markup serves both widths. */}
+                <div className={styles.movePair}>
+                  <div className={styles.moveSide}>
+                    <p className={styles.moveTag}>{MOVE_BEFORE_KO}</p>
+                    <div className={styles.moveValue}>
+                      <FieldValue fieldKey={fieldKey} value={move.old} moved />
+                    </div>
                   </div>
-                  <span aria-hidden="true" className={styles.moveArrow}>
-                    →
-                  </span>
-                  <div className={styles.moveCol}>
+                  <div className={`${styles.moveSide} ${styles.moveAfter}`}>
+                    <p className={styles.moveTag}>{MOVE_AFTER_KO}</p>
                     {move.new === null || move.new === undefined ? (
                       <p className={styles.moveDeleted}>{MOVE_DELETED_KO}</p>
                     ) : (
-                      <FieldValue fieldKey={fieldKey} value={move.new} moved />
+                      <div className={styles.moveValue}>
+                        <FieldValue fieldKey={fieldKey} value={move.new} moved />
+                      </div>
                     )}
                   </div>
                 </div>

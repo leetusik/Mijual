@@ -1,82 +1,189 @@
-/* Citation (R1) — per-field [근거] chip → inset panel with the verbatim quote.
- *   chip:  mono 11, --live, dotted underline
- *   panel: inset panel, 2px left rule --live, quote pre-wrap, scroll > 180px,
- *          link https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcept_no}
- *   motion: 320ms height + fade (R1); reduced motion turns it into a cut via
- *          shell.css, so nothing here needs a second media query.
+/* Citation — per-field `[근거]` chip → the filing's own words, **R10 re-cut**
+ * (`rounds/10-event-detail/output/components/Citation.jsx` + build-prompt §6).
+ *
+ * R1 drew the quote as an inset panel that opened *in the row*, pushing every
+ * value below it down the page. R10 makes it an **overlay popover**: the row it
+ * belongs to does not move, so a reader scanning values never loses their place.
+ *   trigger: mono text-xs/500 `--live`, dotted underline, hit **32px desktop /
+ *            44px ≤767px** (padding out, the same value back as negative margin,
+ *            so the row rhythm and the chip's position are unchanged);
+ *            hover / open = `--live-tint` fill and no underline.
+ *   popover: absolute under the trigger, 380px (mobile `calc(100vw - 44px)`, max
+ *            340px), **opaque `#0e1a15`** + 1px `--border-strong` + 2px `--live`
+ *            left edge + `--panel-glow`, quote `pre-wrap` scrolling past 200px,
+ *            `×` 28px (44px mobile) top-right, `DART 원문 {rcept} ↗` at the foot
+ *            (mobile: a full-width 44px hairline row).
+ *
+ * The one colour literal in this file is the record's own (`#0e1a15`), the same
+ * opaque surface R8 gave the chrome's overlays: a popover that lets the value
+ * behind it show through is not readable, and no token names that surface yet
+ * (`P8.S3` logged the candidate `--surface-opaque`). Everything else is a token.
+ *
+ * R10 retires the R1 height animation with the inline panel it animated — an
+ * overlay has nothing to push, so there is nothing to ease.
  */
+
+/* The positioning context for the popover. `inline-block` so a chip that sits at
+ * the end of a value keeps flowing with it. */
+.wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
 .chip {
-  display: inline;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  /* Hit 32px, drawn at the record's own scale: the padding makes the target and
+     the equal negative margin gives the space back to the row. */
+  min-height: 32px;
+  padding: 8px 6px;
+  margin: -8px -2px;
   border: 0;
   background: none;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1;
   color: var(--live);
   text-decoration: underline dotted;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
 
-/* The 320ms height animation, done with grid rather than max-height so the panel
- * opens to its own height instead of to a guessed one. */
-.wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows var(--dur-slow) var(--ease),
-    opacity var(--dur-slow) var(--ease);
+.chip:hover {
+  background: var(--live-tint);
+  text-decoration: none;
 }
 
-.open {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.chip:focus-visible {
+  /* R10 §6 draws the ring on the chip's own edge — the chip is already inset by
+     its negative margin, so the 2px offset the shell gives every other control
+     would draw the ring on the neighbouring value. */
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 0;
+  text-decoration: none;
 }
 
-.clip {
-  overflow: hidden;
+/* The open state lives on the trigger (`--live-tint` fill + `aria-expanded`) —
+ * no 「닫기」 word was invented for it, and the same button closes the popover. */
+.chip[aria-expanded="true"] {
+  background: var(--live-tint);
+  text-decoration: none;
 }
 
-/* `display: block` on spans throughout: a Citation sits inline inside a field
- * row, so the whole subtree is phrasing content — a <div> or a <p> in there
- * would be reparented by the HTML parser and break hydration. */
-.panel {
+.pop {
   display: block;
-  margin-top: var(--space-2);
-  padding: var(--space-3);
-  background: var(--surface-inset);
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 380px;
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 10px 12px 8px;
+  background: #0e1a15;
+  border: 1px solid var(--border-strong);
   border-left: 2px solid var(--live);
+  box-shadow: var(--panel-glow);
+  text-align: left;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The scroll is on the passages as a whole: several addends are one citation and
+ * scroll as one, exactly as a single quote does. */
+.quotes {
+  display: block;
+  min-width: 0;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 /* The filing's own words: never paraphrased, corrected or re-punctuated, so the
- * whitespace it was filed with survives too. Quotes run from one line to 600
- * characters, hence the scroll floor R1 fixes at 180px. */
+ * whitespace it was filed with survives too. */
 .quote {
   display: block;
   margin: 0;
-  max-height: 180px;
-  overflow-y: auto;
   white-space: pre-wrap;
+  word-break: break-all;
   font-family: var(--font-sans);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   line-height: var(--leading-base);
   color: var(--ink-1);
 }
 
 /* A citation the filing printed as several cells that add up. Each addend is
  * shown whole and separately — joining them would produce a sentence the
- * document does not contain (P5.S20). */
+ * document does not contain (`P5.S20`). */
 .part + .part {
   margin-top: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px dashed var(--border-soft);
 }
 
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--ink-1);
+}
+
 .link {
-  display: inline-block;
-  margin-top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: 6px;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--live);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ≤767px — R10's one breakpoint for this affordance. Everything that can be
+ * touched clears 44px. */
+@media (max-width: 767px) {
+  .chip {
+    min-height: 44px;
+    padding: 13px 8px;
+    margin: -8px -4px;
+  }
+
+  .pop {
+    left: auto;
+    right: 0;
+    width: calc(100vw - 44px);
+    max-width: 340px;
+  }
+
+  .close {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .link {
+    width: 100%;
+    min-height: 44px;
+    margin-top: var(--space-2);
+    justify-content: center;
+    border: 1px solid var(--border-soft);
+  }
 }

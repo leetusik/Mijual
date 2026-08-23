@@ -171,9 +171,15 @@ export const DISMISS_KO = "닫기";
 
 /** R5-2's second placement: "상세 D-day 아래 한 줄 링크 (로그인 시 "내
  * 포트폴리오에 담기 →"로 교체)", with the anonymous literal in result.md's copy
- * list. One line, two states, and it gates nothing either way. */
+ * list. One line, two states, and it gates nothing either way.
+ *
+ * ⚠ The signed-in label is **R10's**, and it supersedes R5-2's: 「보유 종목에
+ * 담기 →」 (SIGNOFF R10, an in-session operator direction — 「포트폴리오」 was
+ * retired by R8 and the line now matches the nav's own noun, 보유 종목). The
+ * constant keeps its name because the destination did not change; only the words
+ * did. The anonymous line is R5-2's, untouched. */
 export const DEADLINE_OFFER_KO = "이 마감 알림 받기 →";
-export const PORTFOLIO_ADD_KO = "내 포트폴리오에 담기 →";
+export const PORTFOLIO_ADD_KO = "보유 종목에 담기 →";
 
 // ---------------------------------------------------------------------------
 // 샘플 포트폴리오 (R5-4)

@@ -33,24 +33,32 @@ import styles from "./Auth.module.css";
  * exists to avoid. R5-2 places the line "상세 D-day 아래" without qualifying it,
  * so the gate is a reading rather than a rule — see `Header.tsx`.
  */
-export function DeadlineOffer({ corpCode }: { corpCode?: string | null }) {
+export function DeadlineOffer({
+  corpCode,
+  className,
+}: {
+  corpCode?: string | null;
+  /** The host surface's own class for the line. R10 gives it the detail header's
+   * geometry (`.offer`: an underlined secondary text link, 32px desktop / 44px
+   * ≤767px, and its own place in the 390px stack) — the placement is the
+   * surface's, the line is R5-2's. */
+  className?: string;
+}) {
   const auth = useAuthState();
 
   if (auth === null) return null;
+  const classes = className ? `${styles.deadlineOffer} ${className}` : styles.deadlineOffer;
 
   if (auth.authenticated) {
     return (
-      <Link
-        className={styles.deadlineOffer}
-        href={corpCode ? portfolioAddPath(corpCode) : ROUTES.portfolio}
-      >
+      <Link className={classes} href={corpCode ? portfolioAddPath(corpCode) : ROUTES.portfolio}>
         {PORTFOLIO_ADD_KO}
       </Link>
     );
   }
 
   return (
-    <Link className={styles.deadlineOffer} href={ROUTES.login}>
+    <Link className={classes} href={ROUTES.login}>
       {DEADLINE_OFFER_KO}
     </Link>
   );

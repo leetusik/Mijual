@@ -1,0 +1,73 @@
+/* The not-found surface — **R10 §8**, a port of the round's own geometry
+ * (`detail/r10-detail.css` `.nf*`, drawn in `detail/States.html`).
+ *
+ * Four things in one column, and nothing else: the title, one sentence, the
+ * address the reader asked for, and the way back. No reason, no distinction
+ * between a filing that is not exposable and an address that never existed —
+ * why a page is missing is internal (`states-and-trust.md` §4, D-14), and the
+ * only fact this screen may state is the one the reader typed.
+ */
+
+.nf {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+  padding: 56px 20px;
+  word-break: keep-all;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink-1);
+}
+
+.line {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* The requested address, in mono and **without a label**: an address is a fact,
+   and a label would start to explain. It breaks anywhere, because a pasted URL
+   can be longer than the column. */
+.path {
+  margin: 0;
+  padding: 6px 10px;
+  max-width: 100%;
+  background: var(--surface-inset);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  word-break: break-all;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border-strong);
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+  text-decoration: none;
+}
+
+.back:hover {
+  background: var(--surface-inset);
+}
+
+@media (max-width: 767px) {
+  .nf {
+    padding: 40px 16px;
+  }
+
+  .back {
+    width: 100%;
+    justify-content: center;
+  }
+}

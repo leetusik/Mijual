@@ -58,6 +58,29 @@ export const ESTIMATE_TAG_KO = "추정";
  * border, and the record writes it in square brackets every time. */
 export const CITATION_CHIP_KO = "[근거]";
 
+/** The DART 원문 link's words — R3 §2's own link label ("DART 원문 ↗"), which
+ * R10 puts at the foot of the citation popover as `DART 원문 {rcept_no} ↗`
+ * (build-prompt §6) and at the foot of a section as `.secsrc` (§5).
+ *
+ * It lives here because the **primitive** renders it now: the same two words the
+ * ask surface already composes (`components/ask/copy.ts` `dartSourceLabel`) and
+ * the landing's board row uses for its `↗`'s accessible name. Not new copy —
+ * one string with one home for everything that is not a surface. */
+export const DART_LINK_KO = "DART 원문";
+export function dartSourceLabelKo(rceptNo: string): string {
+  return `${DART_LINK_KO} ${rceptNo} ↗`;
+}
+
+/** The close **glyph** and the name a screen reader hears for it.
+ *
+ * R8 signed the glyph rather than a 「닫기」 label on a button ("「닫기」 문구를
+ * 만들지 않기 위한 처리", `components/chrome/copy.ts` `CLOSE_GLYPH`), and R10's
+ * popover carries the same `×`. 「닫기」 itself is signed copy — R5's `DISMISS_KO`
+ * and R8's `FEEDBACK_CLOSE_KO` are the same word — so the accessible name is a
+ * reuse, not an invention, and nothing new is drawn on the screen. */
+export const CLOSE_GLYPH = "×";
+export const CLOSE_KO = "닫기";
+
 /** The 소멸주의보 sub-brand badge (R1 `brand/Subbrand.html`, kept by R2). */
 export const LAPSE_ALERT_KO = "소멸주의보";
 

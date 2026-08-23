@@ -40,3 +40,57 @@ export function fieldRank(key: string): number {
   const index = FIELD_ORDER.indexOf(key);
   return index === -1 ? FIELD_ORDER.length : index;
 }
+
+/**
+ * R10 §5 — **which rows carry a `[근거]`**, as data rather than as a decision
+ * scattered through the markup.
+ *
+ * The operator's rule, given inside the R10 session: a citation chip belongs
+ * where **the value on the screen differs from the filing's words** — a date, a
+ * figure or a ratio *extracted* from prose, or an input a derived value was
+ * built from. Where the value **is** the filer's sentence, printed 1:1, the
+ * quote panel would only re-print what the reader is already looking at; those
+ * rows carry no chip, and the section closes with one mono `DART 원문 {rcept} ↗`
+ * line instead (`.secsrc`). Provenance does not shrink — every value is still
+ * one tap from the 원문 — but the number of chips on a page stops tracking the
+ * number of rows.
+ *
+ * The two lists below are R10's own, mapped onto the payload's field keys:
+ *
+ * | R10 names | key | chip |
+ * |---|---|---|
+ * | 매매기간 | `warrant_trading_period` | yes |
+ * | 초과청약 비율 | `excess_subscription` | yes |
+ * | 보호예수 해제일 | `lockup_release` | yes |
+ * | 발행가액 산정방법 | `issue_price_formula` | no |
+ * | 청약 취급처 표 | `subscription_agents` | no |
+ * | 리픽싱 조건 | `refixing_terms` | no |
+ * | 콜·풋 스케줄 | `option_schedule` | no |
+ * | 통지 방법 · 접수처 | `dissent_notice_procedure` | no |
+ *
+ * 확정발행가 · 할인율 · 청약 결과 수치 · 정정 요약 · 철회 근거 are the rule's
+ * other half and are not rows: they are `Figure`s in the 환산 chain, the 청약
+ * 결과 inset, the 정정 story and the 철회 evidence, each of which cites its own
+ * value where the payload carries a quote (`P8.S7`: the live 확정발행가 carries
+ * none, so it renders no chip — `Citation` refuses to promise evidence it does
+ * not have).
+ *
+ * A key in **neither** list falls to the reading below: chip when the payload
+ * carries a quote at all. Two live keys are in that position and both are
+ * genuinely the first kind — `forfeited_share_method` renders a normalised
+ * sentence while its quote is a different passage of the filing, and
+ * `appraisal_price` renders a number extracted from one.
+ */
+const VERBATIM_FIELDS = new Set([
+  "issue_price_formula",
+  "subscription_agents",
+  "refixing_terms",
+  "option_schedule",
+  "dissent_notice_procedure",
+]);
+
+/** Does this field's row carry a `[근거]`? `hasQuote` is the payload's answer to
+ * "is there anything to cite at all" — a field with no quote never had a chip. */
+export function fieldCites(fieldKey: string, hasQuote: boolean): boolean {
+  return hasQuote && !VERBATIM_FIELDS.has(fieldKey);
+}

@@ -25,8 +25,12 @@ export { BOARD_LABEL_KO } from "@/components/chrome/copy";
 // ---------------------------------------------------------------------------
 
 /** R3 §2: "corp name (text-2xl bold) + **DART 원문 ↗** (mono link …)". The `↗`
- * is rendered beside it, the same mark R2's board row uses. */
-export const DART_LINK_KO = "DART 원문";
+ * is rendered beside it, the same mark R2's board row uses.
+ *
+ * Re-exported rather than transcribed again: R10 gives the same two words to the
+ * citation popover's foot and to every section's `.secsrc` line, so the string
+ * moved into `lib/copy.ts` where the primitive that renders it lives. */
+export { DART_LINK_KO, dartSourceLabelKo } from "@/lib/copy";
 
 /** The header's mono meta line — R3 §2: "mono meta line (접수번호 · 최초 공시
  * `original_rcept_dt` · 정정 반영 when versions > 1)". */
@@ -129,6 +133,14 @@ export const FACE_AMOUNT_KO = "권면총액";
 export const ISSUE_METHOD_KO = "발행방법";
 export const MATURITY_KO = "만기";
 
+/** The ② fact strip's own source row (R10 §3 / result.md §2-8): the strip is
+ * **API tier** — an API row has no character offsets, so it can carry no
+ * `[근거]` — and the row states that tier once, under the frame, beside the
+ * filing number. Not new copy: the words are the sparse-② closing line's own
+ * ("위 값은 **DART 공시 API** 기준입니다"), which is why R10's copy list carries
+ * four strings and not five. */
+export const FACT_SOURCE_KO = "DART 공시 API";
+
 /** The sparse-② closing line, R3 §Type-specific rules verbatim: an ② with zero
  * 본문 fields closes with one factual line and **no placeholders**. */
 export const SPARSE_CLOSING_KO =
@@ -138,8 +150,11 @@ export const SPARSE_CLOSING_KO =
  * appear ONLY here — "Never a plain 기간, never a bar" (`ui-traps.md` #1: those
  * two dates bracket a *recurring* claim right, and the value that states the
  * convention is the filer's own `detail` string). */
-export const optionWindowCaptionKo = (start: string, end: string) =>
-  `청구 가능 구간 ${start} ~ ${end} — 연속 기간 아님 · 행사 가능일은 위 조건이 정함`;
+export const optionWindowCaptionKo = {
+  before: "청구 가능 구간 ",
+  range: (start: string, end: string) => `${start} ~ ${end}`,
+  after: " — 연속 기간 아님 · 행사 가능일은 위 조건이 정함",
+} as const;
 
 /** 콜·풋 — the two option kinds, spelled as the served field's own `korean_name`
  * spells them (`콜·풋 세부 스케줄`) and as R3's record names the blocks
@@ -160,6 +175,14 @@ export const OPTION_KIND_KO: Record<string, string> = { put: "풋", call: "콜" 
  * this product's shorthand for the three *rights types* and R1's revision
  * removed them from the UI, so re-introducing them here would print the ① of
  * 유상증자 beside a 매수청구 event. */
+/** The ③ 절차 block's section heading (R10 §5 · `detail/Procedure.html`:
+ * `<h2 className="eyebrow">2단계 절차</h2>`). R3 names the structure with these
+ * words too ("2단계 절차 as numbered structure", and `experience.md` repeats
+ * them), so this is a transcription of the record's own name for the block, not
+ * a new sentence: R10 gives the block an `h2` of its own because the two steps
+ * are `h3`s under it and a page outline cannot start at h3. */
+export const SECTION_PROCEDURE_KO = "2단계 절차";
+
 export const STEP_ONE_KO = "1단계";
 export const STEP_TWO_KO = "2단계";
 export const DISSENT_NOTICE_KO = "반대의사 통지";
@@ -169,6 +192,14 @@ export const PAST_STEP_KO = "기한 지남";
 
 /** ③'s two sub-rows, R3's record: "통지 방법/접수처 rows" (the served field's own
  * `method` and `recipient` values). */
+/** The window row's label on a ③ page whose `dissent_notice_procedure` is **not
+ * in the current version** of the filing (R10 §10 box 6 · `detail/Procedure.html`
+ * draws the 아시아나 case as `<Row label="반대의사 통지 접수기간">` + the dashed
+ * absence chip). Nothing is minted here: the string is the signed round's own,
+ * and it is used only to say that the field is missing — never as a heading over
+ * a value. */
+export const NOTICE_WINDOW_KO = "반대의사 통지 접수기간";
+
 export const NOTICE_METHOD_KO = "통지 방법";
 export const NOTICE_RECIPIENT_KO = "접수처";
 
@@ -218,6 +249,13 @@ export const correctionStripKo = {
  * Questions). R3's literal is what renders until the operator settles it. */
 export const CORRECTION_HISTORY_KO = "정정 이력";
 
+/** The **open** label of that button (R10 §7): 「정정 이력」 ↔ **「접기」** + `×`.
+ * R9 signed 접기 for the board's own strips and R10 re-uses that word here, so
+ * `Corrections.tsx`'s R3-era note — "a 접기 label is copy nobody signed" — is
+ * superseded: the label now reads the state and `aria-expanded` agrees with it
+ * instead of standing in for it. Re-exported from the round that signed it. */
+export { COLLAPSE_KO } from "@/components/landing/copy";
+
 /** The version rail's live badge, R3 §CorrectionStory verbatim: "only
  * `is_current_readable` gets the filled marker + live badge '현재 읽는 버전'". */
 export const CURRENT_VERSION_KO = "현재 읽는 버전";
@@ -245,3 +283,21 @@ export const PROVENANCE_KO =
 
 /** The unit every share count in this product carries. */
 export const SHARES_UNIT_KO = "주";
+
+// ---------------------------------------------------------------------------
+// 404 (R10 §8) — the one screen in this product that used to be English
+// ---------------------------------------------------------------------------
+
+/** R10's three new Korean strings, its dated copy exception (2026-08-23,
+ * `result.md` §4 · SIGNOFF R10), rendered by `app/not-found.tsx`.
+ *
+ * They live in this surface's module because R10 — the event-detail round —
+ * designed the page, and it is `/events/{rcept_no}`'s `notFound()` that a reader
+ * reaches it through. **The page says no reason**: flagged, incomplete, a
+ * 실적보고서 rcept and a typo all get this screen, and the gate's reason exists
+ * only on the operator's surface (`states-and-trust.md` §4, D-14). The requested
+ * path is echoed in mono with **no label** — an address is a fact; why it has no
+ * page is not one this product tells. */
+export const NOT_FOUND_TITLE_KO = "이 주소에 해당하는 공시가 없습니다";
+export const NOT_FOUND_LINE_KO = "관제 현황판에서 감시 중인 공시를 확인하실 수 있습니다.";
+export const NOT_FOUND_BACK_KO = "관제 현황판으로 →";

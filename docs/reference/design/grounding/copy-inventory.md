@@ -243,3 +243,37 @@ build-prompt §7 as the entry-point label). Its 어디에 column simply grows:
 
 The surface it opens is unchanged — R8's `Feedback.tsx`, the same six states and
 the same fifteen strings registered in the R8 section above.
+
+
+## R10 additions — 이벤트 상세 · 404 (hand-registered, `P8.S7`)
+
+<!-- HAND-WRITTEN, like the sections above. **A regeneration of this file drops
+     it; re-append it.** -->
+
+R10 (`rounds/10-event-detail`, signed) is the first round since R3 to add copy on
+this surface. Four strings enter the product, one label supersedes an R5-2 one,
+and the rest of the round reuses strings already registered above.
+
+**New strings** — all four are the signed round's own words (`build-prompt.md`
+§1/§8 · the `detail/States.html` and `detail/Header.html` cards):
+
+| 상수 | 문자열 | 어디에 |
+|---|---|---|
+| `NOT_FOUND_TITLE_KO` | 이 주소에 해당하는 공시가 없습니다 | `app/not-found.tsx` — 미주알 자신의 404 (R10 §8, P8 Q15 = b). 그 전까지 이 자리는 Next의 영어 화면이었다 |
+| `NOT_FOUND_LINE_KO` | 관제 현황판에서 감시 중인 공시를 확인하실 수 있습니다. | 같은 화면의 한 문장. **이유는 말하지 않는다** — flagged · incomplete · `no_document` · 실적보고서 rcept · 오타가 모두 이 한 화면이다 (`states-and-trust.md` §4, D-14) |
+| `NOT_FOUND_BACK_KO` | 관제 현황판으로 → | 같은 화면의 되돌아가는 버튼 (≤767px 전폭 44px) |
+| `NOTICE_WINDOW_KO` | 반대의사 통지 접수기간 | ③에서 `dissent_notice_procedure`가 **현재 버전 공시에 없을 때만** 쓰는 행 라벨 (`detail/Procedure.html`의 아시아나 케이스 · §10 box 6). 값 위의 제목으로는 쓰지 않는다 |
+
+**Superseded** — `PORTFOLIO_ADD_KO` 「내 포트폴리오에 담기 →」 (R5-2) → **「보유
+종목에 담기 →」**. R8이 「포트폴리오」를 nav에서 물리쳤으므로 헤더의 담기 줄도 nav
+라벨과 같은 명사구를 쓴다 (R10 §1 · 세션 중 운영자 지시). 게이트(`days >= 0`)는
+그대로다.
+
+**Reused, not new** (R10이 새로 배치했을 뿐 문자열은 이미 등록되어 있다):
+`FACT_SOURCE_KO`「DART 공시 API」 — ② 팩트 스트립 아래 출처 줄의 왼쪽 (R10 §3);
+`SECTION_PROCEDURE_KO`「2단계 절차」 — ③ 절차 블록의 `h2` (R3가 이미 이 이름으로
+구조를 부른다); `DART_LINK_KO`「DART 원문」 + `dartSourceLabelKo(rcept)` — 인용
+팝오버 바닥과 섹션 출처 줄 `.secsrc`; `CLOSE_KO`「닫기」 + `CLOSE_GLYPH`「×」 —
+팝오버와 정정 이력 버튼의 닫기 표기 (읽히는 낱말이 아니라 접근 가능한 이름);
+`FIELD_ABSENT_KO`「현재 버전 공시에 없음」과 「추후결정」은 **문구 잠금 유지** —
+R10이 바꾼 것은 표기(점선 프레임 칩)뿐이다 (라운드 Q-D 확인).

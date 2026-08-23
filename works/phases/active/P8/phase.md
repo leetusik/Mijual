@@ -860,6 +860,89 @@ Routing: Q15–Q18 are answered by the session (defaults adopted) — route as *
 Q19 (two 의견 panels at once) stays open. Q14 stays open.
 
 
+### `P8.S7` — R10 applied: what the event detail is now, and what the next surfaces inherit (2026-08-24)
+
+The signed R10 record is built. Eleven files changed (three new), and the detail surface is a
+different object from the one R3 left: **one craft panel** from the header to the provenance line,
+with hairline rules between the sections instead of five stacked panels. The 질문 스트립 is inside
+that panel, attached to the header's bottom edge.
+
+What later surfaces inherit — these are shared, not local to `/events`:
+
+1. **The `[근거]` affordance is an overlay popover now, everywhere.** `components/Citation.tsx` was
+   re-cut: trigger `min-height` **32px desktop / 44px ≤767px** (made with padding + equal negative
+   margin, so no row moves), open state on the trigger (`--live-tint` + `aria-expanded`), and the
+   quote opens **over** the page — `position:absolute`, opaque `#0e1a15`, 2px `--live` left edge,
+   `max-height:200px` scroll, `×` + outside click + Esc, focus returned to the trigger on the two
+   keyboard-ish closes. Measured on 조회 as well as 상세: **the rows behind it do not move** (that is
+   the whole point of the re-cut). Every existing caller keeps its API (`rceptNo · quote · span ·
+   parts · label`); the ask surface's numbered `InlineCitation` is R6-4's own component and was not
+   touched.
+   - **One thing the record could not know:** R10 anchors the popover to the trigger (`left:0`
+     desktop, `right:0` ≤767px). On the round's card that is always in view; on a real page a chip
+     sits wherever its value ends, and at 390 a mid-row chip opened the 340px popover at **left −90px**
+     — the first characters of every line clipped. The component now slides the panel back inside the
+     viewport (a ref callback measures on mount, and a resize listener re-measures while it is open);
+     nothing approved changes, only the horizontal offset, and only when it would otherwise be cut.
+     Verified at 390/481/768/1440 on both origins and in the production build: every popover fully in
+     view, page overflow 0.
+2. **Citation *placement* is data, not markup.** `components/event/fieldOrder.ts#fieldCites(key, hasQuote)`
+   holds R10's density rule: a chip only where the on-screen value differs from the filing's words, so
+   the five verbatim fields (`issue_price_formula`, `subscription_agents`, `refixing_terms`,
+   `option_schedule`, `dissent_notice_procedure`) carry none. A section of verbatim rows closes with a
+   single mono **`.secsrc`** line — `DART 원문 {rcept} ↗` — and that is the pattern any later surface
+   with prose rows should copy: one source line per section beats one chip per row, at no cost in
+   provenance.
+3. **「기한 지남」 is the one closed-window word** (① closed window · ③ past step chips), **「종료」 exists
+   nowhere in the product** (measured: 0 occurrences on all eight sample pages, both modes), and ②
+   never wears a closed chip at all. ②'s past-open state renders 「진행 중」 in `--live` beside the
+   dates — see the note on corpus reachability below.
+4. **미주알 owns its 404.** `app/not-found.tsx` (+ `RequestedPath.tsx`, `not-found.module.css`) renders
+   the Korean not-found for **every** unmatched URL and every `notFound()` — verified status **404**
+   for a nonexistent rcept, for the three non-exposable ones (flagged / incomplete / 실적보고서 rcept)
+   and for an unmatched path, in dev on both origins and in the production build. It gives **no
+   reason** (D-14) and echoes the requested path in mono with no label. The last English screen a
+   Korean-only reader could reach is gone.
+5. **An eyebrow's `//` must not reach the accessible name.** R10 draws it with `::before` — and Chrome
+   puts generated content **into** the accessible name, so an unnamed `h2` reads as 「// 발행 조건」.
+   The detail eyebrows now carry `aria-label` with their own words (measured through the CDP
+   accessibility tree: `2단계 절차`, `발행 조건`, `일정`). **The other surfaces still leak it**: 조회 and
+   보유 종목 render `// {title}` as literal text (`// 진행 중인 권리`, `// 2026년 놓친 돈`), which no
+   `aria-label` can fix without changing their markup — see Q21.
+6. **A ③ page whose `dissent_notice_procedure` is missing states the absence in a field row**, not by
+   dropping a section: `반대의사 통지 접수기간` + the dashed `.absent` chip, the same frame the countdown
+   slot wears. That is R10 §10 box 6 and the `Procedure.html` 아시아나 case; it is **not** a placeholder
+   (no fabricated value, no reason, and no row for any other missing field).
+7. **The ≤767 stack is `display:contents` + `order`** on the header (chip · corp · meta → label →
+   D-day → window → 담기 → `DART 원문` as a full-width 44px hairline button at `order:9`), and the
+   chain/diff grids switch to row flow with 44px cells. Every interactive target on the detail surface
+   measures **≥44px at 390** — including the ② fact strip's source link, whose 44px the round states in
+   §3 prose while its own stylesheet leaves it at the desktop 32px (prose won; see `result.md`).
+8. **The 담기 label is 「보유 종목에 담기 →」** (`auth/copy.ts#PORTFOLIO_ADD_KO`), superseding R5-2's
+   「내 포트폴리오에 담기 →」 to match the R8 nav noun. The `days >= 0` gate is unchanged, so the line is
+   absent on a past deadline — which is also why the 열림 header is ~20px taller than the other three
+   states (Q20).
+
+Two states could not be reached with today's data, and both were verified another way:
+
+- **② past-open 「진행 중」** — all **386** R2 events in the corpus are `window_state: "upcoming"` on
+  2026-08-24, so the branch is unreachable through the product. Verified in a real browser against a
+  scratch proxy that moved one event's window into the past (nothing in the repo, the dev server or
+  the database was touched): 「진행 중」 in `--live`, dates kept, no chip, 「종료」 count 0, 담기 line
+  correctly absent. The rule itself lives in `Header.tsx#WindowLine` and matches §1's table.
+- **Multi-part citations (`parts`)** — **0 of 386** served events carry a figure with `parts`, so the
+  branch that renders each addend separately (P5.S20's contract, D4's defect) is unexercised in the
+  product. The popover renders them as separate `.quote .part` passages with a dashed separator; the
+  code path is unchanged from P5.S20 apart from its new container.
+
+Two operating notes for whoever verifies next:
+
+- **Never `next build` against the dev server's `.next`.** Copy `frontend/` to scratch — and copy
+  `node_modules` with `cp -Rc` (an APFS clone, ~8s), **not** a symlink: Turbopack refuses a
+  `node_modules` symlink that points outside the project root ("Symlink [project]/node_modules is
+  invalid") and the build dies with a panic log.
+- The production copy's server takes `MIJUAL_API_ORIGIN`, which is how the stubbed ② above was run.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -899,6 +982,21 @@ in parallel mode, so consolidation happens at the review)._
 - `P8.S5`: **experience** — the landing section: the board's window is 15/+15 and its footer names three things; the numbers on the surface are now *explained* (tab = whole board, list = countdown's ranked subset) with a visible D-day ladder; a row is a single click target; the strips say 접기 when open; the countdown card carries three stats, not four; and the page **refreshes itself while it is open**, with the 기준시각 chip as the only place that says so.
 - `P8.S5`: **product** — 「the board shows 30 rows at a time」 is no longer true (15), and the landing is no longer a static render: the 관제 현황판 keeps itself current while a reader watches it, without asking them to reload. The 소멸주의보 headline names a count instead of one company when several offerings close on the same day.
 - `P8.S5.5`: **frontend** — the desktop **account menu is three rows** — 알림 설정 / **의견 보내기** / 로그아웃 — executing R9 build-prompt §12 (the operator instruction given inside the R9 session; card `chrome/AccountSlot.html`) and closing P8 Q12. The new row is the **third entry point** to R8's own 의견 surface (footer · 모바일 시트 · 계정 메뉴): existing label `VOCKY_ROW_KO`, no new copy, no new surface, R8's panel with its six states unchanged. `FeedbackDialog` gains one additive prop, `placement?: "above" | "below"` (default `above`, so the footer and the nav sheet are untouched) — the account menu's entry is in the top bar, so its panel hangs **below** the frame, right edges aligned, same 10px offset (`.asPanel.asPanelBelow`, ≥481 only). `P8.S3`'s "the account slot's menu has **two** rows (알림 설정 / 로그아웃)" and "the 의견 진입점 is the footer button and the mobile sheet row — two places" are both superseded by three.
+
+- `P8.S7`: **frontend** — R10 supersedes the event detail surface. The page is **one `CraftPanel`** (header → 질문 스트립 → body → 정정 밴드 → provenance, hairline rules between sections, no stacked panels); the header is a `minmax(0,1fr) auto` grid with `min-height:136px` (≤767px **248px** + `align-content:space-between`, one column via `display:contents` + `order`, `DART 원문` as a full-width 44px hairline button at `order:9`), its meta items `nowrap` with `::before` separators (≤767px separators off, 「정정 반영」 a hairline chip), and its countdown slot has **three forms** — `DDay` · `StateBadge kind="tbd"` · the dashed `.absent` chip (dotted vs solid is the contract). Window states: ① open `거래 가능 · 마감 D-n`, ① closed **「기한 지남」**, ② past-open 「진행 중」, ② pre-open dates only, **「종료」 nowhere**. ① 환산 chain is hairline instrument cells with **no arrows** (desktop column-flow / ≤767px row-flow, 44px cells) closed by the 환산 button; ② is a fixed 3×2 fact frame (390: 1×6) + a mono source row `DART 공시 API · {rcept} ↗` and no `[근거]` in the strip; ③ gains a **2단계 절차** block (`h2` + 68px number pills + `h3` step titles + 「기한 지남」 chips + the one dependency sentence), with 통지 방법/접수처 as rows in 발행 조건. Field rows are `220px` label + value with the citation **inside** the value, and R10's density rule lives in `event/fieldOrder.ts#fieldCites` (five verbatim fields carry no chip; the section closes with one `.secsrc` source line). 정정 전/후 and 철회 정정사항 are **two tagged sides** (the arrow column is retired). **`components/Citation.tsx` is re-cut for every surface**: 32px/44px trigger, open state on the trigger, and an **overlay popover** (opaque `#0e1a15`, 2px `--live` left edge, `max-height:200px` scroll, `×`/outside/Esc, focus returned) that leaves the rows where they are — plus a viewport clamp the record could not draw (a chip near a viewport edge would otherwise open the panel off-screen; measured −90px at 390). Eyebrow `h2`s carry `aria-label` because Chrome puts `::before` content into the accessible name. New: **`app/not-found.tsx`** + `RequestedPath.tsx` + `not-found.module.css` (Korean 404 for every unmatched URL and every `notFound()`, status 404, no reason, path echoed in mono). Add supersession rows for R3 §detail (stacked panels, inline citation panel, arrow chain, 「항목 · 정정 전 · → · 정정 후」 line) and R5-2 (담기 label).
+- `P8.S7`: **product** — 「the last English screen a Korean-only reader can reach is Next's 404」 is no longer true: a non-exposable filing, a mistyped address and an unmatched path all render 미주알's own Korean not-found, which **still says no reason why**. On a ③ page whose 반대의사 통지 절차 is not in the current version, the product now **states the absence in a field row** (the same dashed chip the countdown slot wears) instead of quietly dropping the section — an absence is a fact about the filing, not an empty place.
+- `P8.S7`: **experience** — the detail section: one panel per event rather than five; evidence opens **over** the page so a reader scanning values never loses their place; a section of the filing's own words is closed by one source link instead of a chip per row; 「기한 지남」 is the single word for a closed window (and 「종료」 exists nowhere); the 담기 line is 「보유 종목에 담기 →」 and appears only while a deadline is still ahead; every target on the surface is ≥44px at 390.
+- `P8.S7`: **qa** — `## Regression Checklist` gains R10's own boxes (below). No count moves: `pytest` **142**, `npm run smoke` **16/16**, `npm run build` green.
+  - `- [ ] 상세 헤더: the four states (열림 · 닫힘 · 추후결정 · 부재) never render below 136px desktop / 248px at 390, and 「종료」 appears on no page (P8)`
+  - `- [ ] 상세 390: no orphan 「→」/「·」 in the chain, diff or meta lines, and every citation trigger / rcept link / button measures ≥44px (P8)`
+  - `- [ ] 인용: 「[근거]」 opens an overlay popover — the rows behind it do not move — and closes on ×, an outside click and Esc, with focus back on the trigger; at 390 the panel stays fully inside the viewport (P8)`
+  - `- [ ] 섹션 밀도: no section repeats 「[근거]」 on every row, and a verbatim-only section closes with one 「DART 원문 {rcept} ↗」 line (P8)`
+  - `- [ ] 정정 이력: the button flips to 「접기 ×」 with aria-expanded and a changed surface, and the diff renders two tagged sides (정정 전/정정 후) with no arrow column (P8)`
+  - `- [ ] 아시아나 ③: two dashed 「현재 버전 공시에 없음」 chips (countdown slot + field row), no placeholder for any other field, and no reason given (P8)`
+  - `- [ ] 개요: the screen-reader outline shows the h2 eyebrows and the ③ step h3s, and no accessible name contains 「//」 (P8)`
+  - `- [ ] 404: /events/<nonexistent> and any unmatched path return status 404 with the Korean not-found, the requested path echoed, and no reason (P8)`
+  - `- [ ] mono: no date or figure splits across lines at 1512 / 1440 / 1280 / 768 / 767 / 481 / 390 (P8)`
+- `P8.S7`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — four new strings (`NOT_FOUND_TITLE_KO` · `NOT_FOUND_LINE_KO` · `NOT_FOUND_BACK_KO` · `NOTICE_WINDOW_KO`), one supersession (`PORTFOLIO_ADD_KO` 「보유 종목에 담기 →」 replaces R5-2's 「내 포트폴리오에 담기 →」), and the reuse notes for `FACT_SOURCE_KO` · `SECTION_PROCEDURE_KO` · `DART_LINK_KO`/`dartSourceLabelKo` · `CLOSE_KO`/`CLOSE_GLYPH`. 「현재 버전 공시에 없음」 and 「추후결정」 stay verbatim — only their presentation moved.
 
 
 ## Operator Questions
@@ -989,6 +1087,28 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   third without saying anything about mutual exclusion, so nothing was invented. Default if unanswered:
   leave it — a later chrome round decides whether opening one 의견 진입점 closes the others (it is the same
   question for the ≤480 sheet row, and the fix would be one shared owner in the chrome, not three local ones).
+
+- **Q20 — should the 열림 header be the same height as the other three, or is the floor enough?**
+  R10 §1 says the four states 「같은 높이를 차지한다」 and gives `min-height:136px` (≤767px `248px`) —
+  a **floor**, which is what the round's own stylesheet contains. Measured after the build: 닫힘 ·
+  추후결정 · 부재 · 철회 all sit exactly on the floor (136 / 248), and **열림 is 156.6 / 308.5**,
+  because that state alone renders the 담기 line (its gate is `days >= 0`, R5-2's, unchanged). `P8.S7`
+  built the record literally — a fixed height would have to either clip the 담기 line or bake 20px of
+  empty space into the other four. Operator's call: (a) leave it (the floor is the rule, current), or
+  (b) make 136/248 a fixed height with the 담기 line inside it, which a later round would draw.
+- **Q21 — the `//` eyebrow leaks into the accessible name on the other surfaces.** R10 §12 requires the
+  eyebrow's `//` to be CSS-drawn so the accessible name is 「일정」, and `P8.S7` did that for the detail
+  surface (Chrome puts `::before` content into the name, so the headings now carry an `aria-label`).
+  But 조회 and 보유 종목 print `// {title}` as **literal text** (`// 진행 중인 권리`, `// 2026년 놓친 돈`),
+  from earlier rounds, so a screen reader reads the slashes there. Fixing it is a two-line change per
+  surface — but those eyebrows belong to signed rounds, so: fold it into each surface's own R11+ round
+  (default), or file it as one small cross-surface job now?
+- **Q22 — two states cannot be seen in the product with today's corpus.** ②'s past-open 「진행 중」
+  (**386/386** R2 events are `upcoming` on 2026-08-24) and multi-part citations (**0/386** figures carry
+  `parts`). `P8.S7` verified the first in a real browser against a scratch proxy and the second by code
+  reading; neither can be checked on the acceptance walkthrough. Does the operator want a seeded
+  fixture (a corpus row or a dev-only payload switch) so trust-critical states like 「종료 금지」 can be
+  *seen*, or is a stubbed verification recorded in `result.md` enough (default)?
 
 ## Constraints
 

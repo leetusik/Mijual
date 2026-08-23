@@ -23,11 +23,12 @@ import { ApiError, getEvent } from "@/lib/api";
  * the reason is internal and the operator's panel is the only surface that sees
  * it (`states-and-trust.md` §4, D-14).
  *
- * So this calls `notFound()` and renders the framework's own not-found inside the
- * chrome. The signed design writes **no 404 copy** — it writes *state* copy — and
- * a Korean sentence written here would be invented product copy, which is a
- * design change (recorded in `phase.md` for `P5.S19`/`P5.REVIEW`; R4's 검색 불일치
- * line belongs to a different surface and is not borrowable).
+ * So this calls `notFound()`, which now lands on **미주알's own** not-found
+ * surface (`app/not-found.tsx`, R10 §8): Korean, inside the R8 chrome, status
+ * 404, the requested address echoed in mono — and **still no reason**. R3 wrote
+ * *state* copy and deliberately no 404 copy, so until R10 designed the page and
+ * signed its three strings, the framework's English default was what a Korean
+ * reader met (`P5.S19` recorded it; P8 Q15 closed it).
  *
  * `connection()` marks the page request-time, so `next build` needs no API and a
  * countdown is never a build-time snapshot served hours later.

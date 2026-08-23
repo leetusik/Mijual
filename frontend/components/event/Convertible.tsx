@@ -6,6 +6,7 @@ import {
   CONVERSION_PRICE_KO,
   CONVERTED_SHARES_KO,
   FACE_AMOUNT_KO,
+  FACT_SOURCE_KO,
   ISSUE_METHOD_KO,
   MATURITY_KO,
   OVERHANG_KO,
@@ -14,7 +15,7 @@ import {
 import styles from "./Event.module.css";
 
 /**
- * ②'s API fact strip (R3 §Type-specific rules).
+ * ②'s API fact strip (R3 §Type-specific rules, re-cut by **R10 §3**).
  *
  * > **②**: API-tier facts (전환가액, 오버행 %, 전환 시 주식수, 권면총액,
  * > 발행방법·만기) in a fact strip **ABOVE** 본문 fields.
@@ -25,11 +26,24 @@ import styles from "./Event.module.css";
  *
  * **Every one of them is a fact**, so none carries the estimate mark; and none
  * carries a `[근거]` chip either, because an API row has no character offsets
- * into a document. Its citation is the filing number, which is why the strip ends
- * with the 접수번호 as a DART link (`P5.S3` note 7). ② is also the type whose card
- * can be complete with **zero** 본문 fields — 239 of the 422 exposable ② events
- * have no readable 본문 at all — which is why this strip is above them rather
- * than beside them.
+ * into a document. ② is also the type whose card can be complete with **zero**
+ * 본문 fields — 239 of the 422 exposable ② events have no readable 본문 at all —
+ * which is why this strip is above them rather than beside them.
+ *
+ * ## R10 makes the provenance *tier* visible
+ *
+ * R3 closed the strip with a bare 접수번호 link, which read as "why is this the
+ * only place with no evidence?" (walk finding 8). R10 gives the strip its own
+ * frame and its own **source row**: 「DART 공시 API」 on the left — the sparse-②
+ * closing line's own words, not a new sentence — and the filing number on the
+ * right. The 본문 rows below it cite per row. Two surfaces, two provenance
+ * grammars, and the difference between them is now legible instead of looking
+ * like an omission.
+ *
+ * The grid is **fixed at 3 × 2** (1 × 6 at ≤767px) rather than `auto-fit`, which
+ * used to break into four and five columns at widths in between, and 「전환 시
+ * 주식수」 is its own cell rather than a sub-line of 오버행 — the API serves it
+ * separately, so it is a value, not a gloss.
  */
 export function ConvertibleStrip({ view }: { view: ConvertibleView }) {
   const cells: Array<{ label: string; value: string }> = [];
@@ -59,12 +73,12 @@ export function ConvertibleStrip({ view }: { view: ConvertibleView }) {
   if (cells.length === 0) return null;
 
   return (
-    <section className={styles.strip}>
-      <div className={styles.stripCells}>
+    <section className={styles.facts}>
+      <div className={styles.fgrid}>
         {cells.map((cell) => (
-          <div key={cell.label} className={styles.stripCell}>
-            <p className={styles.chainLabel}>{cell.label}</p>
-            <p className={styles.stripValue}>
+          <div key={cell.label} className={styles.fcell}>
+            <p className={styles.clab}>{cell.label}</p>
+            <p className={styles.cval}>
               {/* Facts, all six — the marker is passed the payload's own flag
                   rather than a literal, and it renders nothing for a fact. */}
               <EstimateMarker estimated={false}>
@@ -74,15 +88,14 @@ export function ConvertibleStrip({ view }: { view: ConvertibleView }) {
           </div>
         ))}
       </div>
+
       {view.rcept_no ? (
-        <a
-          className={`mono ${styles.stripCite}`}
-          href={dartUrl(view.rcept_no)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {view.rcept_no} ↗
-        </a>
+        <p className={styles.fsrc}>
+          <span>{FACT_SOURCE_KO}</span>
+          <a href={dartUrl(view.rcept_no)} target="_blank" rel="noreferrer">
+            {view.rcept_no} ↗
+          </a>
+        </p>
       ) : null}
     </section>
   );
