@@ -998,6 +998,49 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] mono: no date or figure splits across lines at 1512 / 1440 / 1280 / 768 / 767 / 481 / 390 (P8)`
 - `P8.S7`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — four new strings (`NOT_FOUND_TITLE_KO` · `NOT_FOUND_LINE_KO` · `NOT_FOUND_BACK_KO` · `NOTICE_WINDOW_KO`), one supersession (`PORTFOLIO_ADD_KO` 「보유 종목에 담기 →」 replaces R5-2's 「내 포트폴리오에 담기 →」), and the reuse notes for `FACT_SOURCE_KO` · `SECTION_PROCEDURE_KO` · `DART_LINK_KO`/`dartSourceLabelKo` · `CLOSE_KO`/`CLOSE_GLYPH`. 「현재 버전 공시에 없음」 and 「추후결정」 stay verbatim — only their presentation moved.
 
+### R11 walk — surface 4 (내 종목 조회 + 놓친 돈 조회기), 2026-08-24, operator runtime
+
+Walked by the orchestrator at `http://127.0.0.1:3000` (Chrome desktop 1456px + 390px same-origin
+iframes) **while `P8.S7` was still running** — the operator asked for the R11 handoff in parallel, so
+the handoff was written and pushed first (`f362f54`, handoff file only) and this record follows S7's
+close. Pages: `/stocks` · `/stocks?q=삼성` (no match; then typing 「계양」 for the candidate panel) ·
+계양전기 `00102618` · 한화솔루션 `00162461` · 풍전약품 `01110474` · 세기상사 `00133618` · 아시아나항공
+`00138792` (API only — the dev server was mid-rebuild on S7's `Citation` edit at that moment; the
+iframe for `/stocks?q=삼성` also hit the Next error overlay once — executor transients, not findings).
+Handoff: `docs/reference/design/rounds/11-lookup/handoff.md`. Default for every item: fix, Claude
+Design decides how.
+
+1. **The resolved stock is never named** — `/stocks/[corp_code]` renders `LookupHeader` with no
+   query: empty input, no stock line; 종목명/종목코드 only inside the event panels' titles. On
+   세기상사 (no rights) the company name is nowhere on the page. → Q-B.
+2. **Header weight above every result** — crumb + h1 + hero subline + search repeat; content starts
+   ~215px down at 390, ~235px on desktop.
+3. **보유량 strip on stocks where it changes nothing** — ②-only 풍전약품, no-rights 세기상사. → Q-C.
+4. **놓친 돈 before a holding** (한화솔루션): coverage caption + 3-column breakdown, no headline, no
+   conditional frame, no prompt; with 500주 the 679,575원 prints twice (headline + 500주 기준 column)
+   on a single-offering stock. → Q-E.
+5. **Breakdown row has no labelled route to the event** — only the mono 접수번호 `metaLink` + `[근거]`;
+   the 진행 중 panels have 「상세 보기 →」.
+6. **Every panel title is the corp name on a single-corp page** — 풍전약품 ×3 identical titles.
+7. **② panels** — three bare facts, half-empty right column, ~170px each, three = 600px.
+8. **③ panel never drawn** (R4 "pin a sample") — 아시아나 `20260713000482`, 반대의사 통지 마감 with
+   `dday: null` → StateBadge 추후결정 + dependency line. Real sample now; draw it.
+9. **Candidate panel on this page** — opaque (`rgb(10,19,16)`, z 20, `transition: all`), but it fades
+   in over the **stale 검색 불일치 sentence** and over the provenance line.
+10. **「‘삼성’와」 particle** — 와/과 by final consonant (R9 walk 11, routed here).
+11. **Empty `/stocks`** — crumb, title, subline, search, provenance line, void. → Q-A.
+12. **Heading semantics** — `// ` is literal text inside the h2 names (Q21 — fold here); the 보유량
+    strip and the coverage boundary panel have no heading.
+13. **Breakpoint mismatch** — `Lookup.module.css` `@media (min-width: 480px)` vs `SearchRow` 768 /
+    R10 §0 single 767; 481–767 is desktop-laid.
+14. **390 measured** — chips 87/101×44, holding input 260×44, search 238×48 + 조회 88×48, 「상세 보기 →」
+    292×44, crumb 74×44, `[근거]` 48×44 (post-R10) — the 44px floor is met; the restore chip wraps to
+    its own full-width row; page heights 한화솔루션 1,723px / 풍전약품 2,075px.
+15. **Desktop rhythm** — 배정비율 line hangs alone pre-holding; selected preset chip (live text +
+    border) vs dashed restore chip = two chip grammars in one row; 「서버 전송 없음」 as a 10px caption.
+
+Not walked: the anonymous `ConversionOffer` (R12's), 481–767 widths, the production build. Operator
+decisions routed to the handoff §2b as Q-A–E = **Q23–Q27** below.
 
 ## Operator Questions
 
@@ -1109,6 +1152,20 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   reading; neither can be checked on the acceptance walkthrough. Does the operator want a seeded
   fixture (a corpus row or a dev-only payload switch) so trust-critical states like 「종료 금지」 can be
   *seen*, or is a stubbed verification recorded in `result.md` enough (default)?
+- **Q23 (R11 Q-A) — empty `/stocks`.** With no query the page is title + search + provenance and
+  nothing else. (a) keep it bare, (b) give it the already-signed context (감시 대상 3종 · 감시 중 count ·
+  coverage boundary panel — no new copy), (c) redirect to the landing hero. Default **(b)**. Taken at
+  the R11 gate or in the session.
+- **Q24 (R11 Q-B) — stock identity on a result.** Show 종목명 + 종목코드 at the top of a resolved stock
+  (today nothing names it; 세기상사's page has no company name at all). Default **yes**, form decided
+  in the session.
+- **Q25 (R11 Q-C) — the 보유량 strip on stocks with no ① row** (②-only, no rights). Hide, demote, or
+  keep with a factual line (a sentence = the round's dated copy exception). Default: session decides.
+- **Q26 (R11 Q-D) — a past ②/③ leaves no trace on a stock.** 세기상사's ③ windows passed; the page is
+  the NoRights card, because 놓친 돈 is ①-only (R4-4) and a ③ is never money. Keep the rule (default;
+  log as decided) or add a factual closed line the way ① leaves 「청약 {date} 종료」.
+- **Q27 (R11 Q-E) — 놓친 돈 before a holding is entered.** Layout only (default — the session decides
+  whether a prompt sentence is needed; if so, dated exception) or an explicit prompt.
 
 ## Constraints
 

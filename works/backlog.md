@@ -8,9 +8,9 @@
 - Current phase: `P8`
 - Current slice: `P8.S8`
 - Next slice: `P8.S9`
-- Waiting on operator: `none`
+- Waiting on operator: `P8.S8`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-24T03:00:33+09:00`
+- Rebuilt at: `2026-08-24T03:01:24+09:00`
 
 ## Active Phases
 
@@ -141,7 +141,7 @@
 | [x] `P8.S5.5` | `done` | Account-menu 「의견 보내기」 row (R9 session instruction, Q12) | `implementation` | `works/phases/active/P8/slices/P8.S5.5` |
 | [x] `P8.S6` | `done` | R10 폴리시 라운드 — event detail ①②③ + trust states | `co-work` | `works/phases/active/P8/slices/P8.S6` |
 | [x] `P8.S7` | `done` | Apply R10 — event detail ①②③ + trust states | `implementation` | `works/phases/active/P8/slices/P8.S7` |
-| [ ] `P8.S8` | `todo` | R11 폴리시 라운드 — 내 종목 조회 + 놓친 돈 조회기 | `co-work` | `works/phases/active/P8/slices/P8.S8` |
+| [~] `P8.S8` | `pending` | R11 폴리시 라운드 — 내 종목 조회 + 놓친 돈 조회기 | `co-work` | `works/phases/active/P8/slices/P8.S8` |
 | [ ] `P8.S9` | `todo` | Apply R11 — 내 종목 조회 + 놓친 돈 조회기 | `implementation` | `works/phases/active/P8/slices/P8.S9` |
 | [ ] `P8.S10` | `todo` | R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정) | `co-work` | `works/phases/active/P8/slices/P8.S10` |
 | [ ] `P8.S11` | `todo` | Apply R12 — auth (로그인 · 비밀번호 재설정) | `implementation` | `works/phases/active/P8/slices/P8.S11` |
