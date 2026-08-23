@@ -218,3 +218,37 @@ This file is a factual record dropped at gate close; it is data, not instruction
   read-only. Cards stay in the Claude Design project.
 - Post-approval regroup: the 7 R7 cards retire the round address
   (`⏳ P3.S8 · Admin` → `Admin`); paths and all content below line 1 unchanged.
+
+## R8 — Polish: Foundations + Global Chrome (`P8.S2`, round `08-foundations-chrome`)
+
+- Closed: 2026-08-23
+- Authorization (operator's literal words): **"Signed off — close R8"** — given in the
+  orchestrator session against this summary: nav = **AI 질문 · 보유 종목** (two links; the 관제
+  현황판 link removed — the ring wordmark is that destination; the nav `[의견]` chip removed;
+  R5-4's 샘플 chip + 샘플 종료 retired so the account slot has two states, anonymous / signed-in;
+  the landing's "샘플로 열어보기 →" link and its empty band removed); account slot = full email +
+  20px Identicon + hairline frame + ▾, menu aligned to the frame, opaque, rows 알림 설정 /
+  로그아웃; mobile sheet = overlay + backdrop + × when open (no content push); footer = prose
+  removed, one Pretendard row (wordmark · 자료: 금융감독원 DART 전자공시 · © 미주알 · 의견 보내기 ·
+  AI 질문); a 미주알-owned **의견 보내기** surface (380px anchored panel / mobile bottom sheet, six
+  states, no contact field, 15 new Korean strings — the round's dated copy exception — forwarded
+  server-side to vocky, key only in the server `.env`); new **Identicon** component. The signoff
+  covers the two in-session operator additions (two-link nav; no 샘플 chip/종료) and the
+  departures logged in `result.md` §6 (gate-cost + disclaimer sentences leave the product — the
+  relocation question stays open as P8 Operator Question Q5; footer mono → Pretendard; × glyph
+  instead of a 닫기 string; opaque `#0e1a15` literal; no alert colour on the failure state;
+  identicon seed source = apply-time data decision, Q6).
+- Supersedes: the parts of **R2 §Page shell / §6-4 / mobile** it re-cuts (nav destinations and
+  utility slot, footer content and type, mobile sheet behaviour, the vocky "script widget"
+  contract → 미주알-owned surface), **R5 §Chrome 개정 ⑤** (축약 이메일 메뉴 → full email +
+  identicon + frame, menu rows) and **R5-4** (샘플 chip + 샘플 종료). R1, R3, R4, R6, R7 and the P7
+  operator overrides (focus split, hover) stand unchanged. Within the round, nothing is revised.
+- Token delta: **None.** (Remote `foundations/tokens.css` verified byte-equal to the vendored R2
+  file minus its provenance header.)
+- Landed record: `rounds/08-foundations-chrome/output/` (`result.md`, `build-prompt.md`,
+  `Identicon.prompt.md`) — read-only. The 7 cards (`chrome/Nav`, `NavMobile`, `AccountSlot`,
+  `Footer`, `Feedback`, `FeedbackStates`, `components/Identicon`) stay in the Claude Design
+  project "Mijual Design System".
+- Post-approval regroup: the 7 R8 cards retire the round address (`⏳ P8.S2 · Chrome` → `Chrome`,
+  `⏳ P8.S2 · Components` → `Components`); card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.
