@@ -1042,6 +1042,83 @@ Design decides how.
 Not walked: the anonymous `ConversionOffer` (R12's), 481–767 widths, the production build. Operator
 decisions routed to the handoff §2b as Q-A–E = **Q23–Q27** below.
 
+### R11 landed spec — read back 2026-08-24 (`P8.S8` gate 2) — awaiting literal signoff
+
+Read back with DesignSync from "Mijual Design System" and **landed as-is** under
+`docs/reference/design/rounds/11-lookup/output/`: `result.md`, `build-prompt.md`,
+`lookup/r11-lookup.css` (geometry canon), `lookup/r11-parts.jsx` (structure + samples), and the six
+cards `lookup/{Entry,Result,Rights,MissedMoney,Empty,Mobile}.html` (line-1 `@dsCard group="⏳ P8.S8 ·
+Lookup"`). Token delta **none**. No readme change landed (the repo keeps the record, not the pane's
+index).
+
+**Binding decisions (the apply slice builds these, RESPECT THE DESIGN):**
+
+1. **Result page: h1 = 종목명**, mono meta 「종목코드 {stock_code}」 (first, when served — the API
+   does serve it, e.g. 계양전기 `012200`) · 「고유번호 {corp_code}」; the `SearchRow` on a result carries
+   `defaultValue = corp_name` (never empty); the h1 「내 종목 조회」 + hero subline render **only on
+   `/stocks`**; on a result 「내 종목 조회」 survives as the rail's second label (`.rail .here`).
+2. **Identity panel** (`.idp` grid `minmax(0,1fr) minmax(300px,400px)`) with the 보유량 strip as its
+   bottom rail (`.strip`, `--surface-raised`, `border-top`), rendered **only** when a live ① row or a
+   lapse row exists (Q-C) — absent on ②-only / no-rights stocks, no placeholder.
+3. **Chip grammar**: solid hairline preset chips (selected = `--surface-inset` + `--ink-1` + `--ink-2`
+   border, 36px desktop / 44px mobile, `aria-pressed`), dashed restore chip; 「서버 전송 없음」 as mono
+   `text-xs` (`.stripcap`, `margin-left:auto`), not a 10px caption.
+4. **Rights panels**: corp name never repeated; left = RightsChip + `.rmeta` (접수번호 · {filed} 공시 ·
+   정정 반영), right = **`h3.whenlab` = `countdown.label_ko`** → `DDay` / `StateBadge tbd` → `.win`.
+   ① = R10 §2 instrument cells (`.chain`): with holding 보유 · 배정비율 (1주당) · 배정 신주 (+ caption
+   cell line) · 초과청약 한도; without holding **two cells** 배정비율 (1주당) · 초과청약 비율 {pct};
+   `.chainfoot` = 발행가 확정 전 chip + sentence (or R4's 환산액 line when priced) + the prompt (no
+   holding only); `.rowline` 구주주 청약 · 일반공모 windows; 예정발행가 never. ② = **one table per
+   type** (`.ctrow` grid `minmax(0,1.1fr) .8fr .9fr .62fr minmax(0,1.25fr) auto`: 공시일+접수번호 ·
+   전환가액 · 전환 시 주식수 · 오버행 · 개시일+DDay · 상세 보기 →; unserved values as `.ctmiss` `⋯`, never
+   0/dash; `.ctsrc` 「DART 공시 API — 전환가액 · 전환 시 주식수 · 오버행」 + `{n}건`; no per-cell
+   `[근거]`; past opening = 「진행 중」). ③ = R10 §4 steps (68px pills, `h4` titles, past step +
+   「기한 지남」, missing window = dashed `.absent` 「현재 버전 공시에 없음」, dependency line) with
+   `dday: null` → `StateBadge tbd` + 「일정이 공시상 미정」. 0건 = `.closed` 「청약 {date} 종료」.
+5. **One event affordance**: 「상세 보기 →」 (`.golink`, underline, 32/44px) — ① panel foot, ② row
+   end, 놓친 돈 row under the title; **접수번호 is never a link** (MissedMoney's `metaLink` goes).
+6. **놓친 돈**: `.mmhead` frame → prompt (no holding) → `.mmcap`; **total only when `lapse.rows.length
+   >= 2`**; single offering → the row's `{n}주 기준` cell is the headline (`.big` text-2xl alert 「추정」 +
+   하한 line + caption); no holding → last column header 「보유 주식 수」 and a dashed `.bslot`
+   (44px), never 0원/dash; `[근거]` inside the 증서 매매기간 cell (third element of `.bwin`), no
+   row-spanning citation line; `.calcfoot` only with a holding; `.disc` R4 disclaimer.
+7. **Prompt** = the round's **only new string** (dated exception 2026-08-24, Q-E): 「보유 주식 수를
+   입력하면 내 보유량 기준으로 환산합니다」 — a `<button>` 1px dashed `--border-strong`, 44px, + mono `→`,
+   focuses the strip input, **once per page** (① `.chainfoot` if a live ① exists, else `.mmhead`),
+   gone once a holding is entered. Register in `copy-inventory.md` as a `lookup` entry.
+8. **Entry `/stocks` (Q-A = b)**: `.page.narrow` 620px, h1 「내 종목 조회」 + subline + 48px search →
+   (no-match line) → `WatchPanel` (감시 대상 3종 + 「감시 중 {n}건」) → `h2 집계 범위` panel → provenance;
+   no redirect, no new copy. **No-match line belongs to the submitted query**: removed on the first
+   keystroke that differs (`missed && query === currentInput`); particle 와/과 by final consonant,
+   non-Hangul → 「와/과」 — `noMatchKo` only, sentence body locked.
+9. **Headings**: result h1 종목명 → h2 진행 중인 권리 — N건 → h3 마감 라벨 → h2 2026년 놓친 돈 → h2 집계
+   범위; entry h1 → h2 집계 범위; `//` via `.eyebrow::before`; strip `label[for]`.
+10. **One breakpoint, 767px** — `Lookup.module.css`'s 480px queries migrate; ≤767 rules per
+    `r11-lookup.css` (identity one column, presets 3-col 44px grid, restore chip full-width own row,
+    `.rid`/`.rwhen` `display:contents` → label + D-day on one row, cells as label/value 44px rows, ②
+    rows → cards with the 개시일+DDay at row-1 right and `data-l` labels, 놓친 돈 row → card with the
+    내 기준 block last); target heights 한화솔루션 ≈1,250px / 풍전약품 ≈1,150px.
+11. Regression checklist §10 items 0–12 verified on both origins + production build, 390.
+
+**Read-back observations (for the apply slice, not changes to the record):**
+
+- `Identity`'s `.idmeta` in the cards shows a second span 「DART 공시 기준」; `build-prompt.md` §2 (the
+  contract) specifies 「종목코드 {code}」 · 「고유번호 {corp_code}」 only and `result.md` §4 lists a single
+  new string — the apply slice follows §2 and treats 「DART 공시 기준」 as card filler, not product copy.
+- `.mmcap` 「유상증자 {n}건 · 집계 범위 {start} ~ 오늘 (KST) · 시장 가격 미사용 — 소멸된 증서의 이론가치
+  환산」 is a composite whose tail is not in `copy.ts`; `result.md` §4 does not list it as new copy.
+  The signoff should say whether this caption is signed as written (then register it) or composed
+  from `coverageCaptionKo` + existing words only — **operator decision at signoff** (Q28).
+- `.rowline` (구주주 청약 · 일반공모 windows) and the ③ step windows depend on what `StockPage.rights.rows`
+  carries; the apply slice renders them from served fields only and omits what is not served (no new
+  payload — no new features). ② 전환 시 주식수 comes from `convertible_api_facts`.
+- 「일정이 공시상 미정」 under a `tbd` badge is the tail half of R3's locked 「카운트다운 없음 — 일정이
+  공시상 미정」; the apply slice reuses the existing constant's wording.
+- The ② table's 「진행 중」 past-opening state is unreachable in today's corpus (P8 Q22) — verify by
+  code as in `P8.S7`.
+- Q23–Q27 are answered by the session (Q-A b · Q-B yes · Q-C hide · Q-D keep the rule · Q-E one
+  prompt string); marked below.
+
 ## Operator Questions
 
 _Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._
@@ -1166,6 +1243,16 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   log as decided) or add a factual closed line the way ① leaves 「청약 {date} 종료」.
 - **Q27 (R11 Q-E) — 놓친 돈 before a holding is entered.** Layout only (default — the session decides
   whether a prompt sentence is needed; if so, dated exception) or an explicit prompt.
+- **Q23–Q27 — answered in the R11 session (2026-08-24, `result.md` §3):** Q23 = (b) signed context,
+  no redirect · Q24 = yes, h1 종목명 + 종목코드/고유번호 meta + the input echoes the name · Q25 = hide
+  the strip on non-① stocks (no sentence) · Q26 = keep the R4 rule, logged as decided · Q27 = layout +
+  **one** prompt string (dated exception). Pending the operator's literal signoff.
+- **Q28 (R11 read-back) — is the `.mmcap` caption signed copy?** The landed cards/contract render
+  「유상증자 {n}건 · 집계 범위 {start} ~ 오늘 (KST) · 시장 가격 미사용 — 소멸된 증서의 이론가치 환산」
+  under the 놓친 돈 frame; `result.md` §4 lists only the prompt as new copy. (a) sign it as written →
+  register in `copy-inventory.md` and `copy.ts`; (b) compose only from `coverageCaptionKo` + the
+  existing 「유상증자 {n}건」 count, dropping the unregistered tail. Default at signoff: **(a)** if the
+  signoff covers the cards as landed.
 
 ## Constraints
 

@@ -1,0 +1,40 @@
+<!-- @dsCard group="⏳ P8.S8 · Lookup" viewport="1280x1000" name="Empty" subtitle="세기상사 — 권리 없는 종목도 이름을 갖는다(아이덴티티 + 재조회) · strip 없음(Q-C) · NoRights + 감시 대상/감시 중 · 지난 ③은 흔적을 남기지 않는다(Q-D, 규칙 유지) · 집계 범위" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r11-lookup.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r11-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="세기상사 — 권리가 없는 종목. walk 1의 최악의 경우(회사명이 페이지 어디에도 없던 화면)가 여기서 고쳐진다: h1이 종목명이고 검색 필드가 그 이름을 담는다. 보유량 strip은 없다 (이 페이지에서 그 숫자로 바뀌는 값이 하나도 없다)">
+  <div className="page">
+    <Rail />
+    <Identity name="세기상사" code="00133618" />
+    <Sec title="진행 중인 권리 — 0건"><NoRights watching="488" /></Sec>
+    <Coverage />
+    <Prov />
+  </div>
+</Case>
+
+<Case label="같은 페이지, 390">
+  <div className="m390"><div className="page">
+    <Rail />
+    <Identity name="세기상사" code="00133618" />
+    <Sec title="진행 중인 권리 — 0건"><NoRights watching="488" /></Sec>
+    <Coverage />
+    <Prov />
+  </div></div>
+</Case>
+
+<div className="note">
+<b>Q-D = 규칙 유지 (결정으로 기록) —</b> 세기상사에는 2026년에 창이 지나간 <b>주식매수청구권</b> 건이 있다 (<code>20260713000345</code> — Rights 카드의 날짜형 ③). 그럼에도 이 페이지는 「진행 중이거나 2026년에 소멸된 권리가 없습니다」라고 말한다. 두 규칙이 함께 그렇게 만든다: <b>놓친 돈은 ① 전용</b>(R4-4)이고 <b>③은 결코 금액이 아니다</b>. 지난 ③에 「소멸」이라는 말을 붙이면 이 표면의 「소멸」이 두 가지를 뜻하게 되고, 금액이 없는 회한을 파는 화면이 된다. <b>오늘 세기상사를 조회한 사람에게 이 문장은 참이다</b> — 오늘 할 수 있는 일이 없다. 지난 ③의 전체 이야기는 이벤트 상세(R10)가 가지며, 이 페이지에서 그리로 가는 길은 검색이 아니라 상세 링크다.<br />
+<b>왜 ①만 흔적을 남기는가 —</b> ①이 남기는 「청약 {'{date}'} 종료」(Rights 카드)는 <b>같은 페이지 아래에 금액이 있기 때문에</b> 존재한다 — 그 줄은 아래 놓친 돈 섹션으로 가는 다리다. ③에는 이어질 금액이 없으므로 다리도 없다.<br />
+<b>맥락은 사과가 아니다 —</b> NoRights 카드는 <b>감시 대상 3종 + 감시 중 488건</b>을 든다: 「당신 종목에 없다」가 아니라 <b>「우리가 무엇을 보고 있는가」</b>. 진입 페이지(Q-A = b)가 같은 두 요소를 쓰므로, 빈 진입과 빈 결과가 같은 말을 한다.<br />
+<b>집계 범위 (walk 12) —</b> 경계 패널은 이제 <code>h2 집계 범위</code>를 갖는다 (「집계 범위 2026-01-01 ~ 오늘 (KST)」에 이미 있는 명사 — 신규 카피 아님). 범위 밖은 <b>미기재</b>이고 0으로 세지 않는다.
+</div>
+</React.Fragment>);
+</script></body></html>

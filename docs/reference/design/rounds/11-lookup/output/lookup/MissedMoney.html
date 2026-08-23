@@ -1,0 +1,44 @@
+<!-- @dsCard group="⏳ P8.S8 · Lookup" viewport="1280x1700" name="MissedMoney" subtitle="한화솔루션 — 보유 없음(프레임 + 입력 프롬프트 + 빈 자리) → 500주. 단건 종목은 행의 금액이 곧 헤드라인이라 같은 679,575원을 두 번 찍지 않는다 · 근거 · 계산 푸터 · 면책" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r11-lookup.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r11-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+
+function Block({ initial, restore }) {
+  const [n, setN] = React.useState(initial);
+  const ref = React.useRef(null);
+  return <div className="page">
+    <Identity name="한화솔루션" code="00162461" strip={<Strip n={n} setN={setN} restore={restore} inputRef={ref} />} />
+    <Sec title="진행 중인 권리 — 0건">
+      <Panel><p className="closed">청약 <span className="v">2026-07-23</span> 종료</p></Panel>
+    </Sec>
+    <Sec title="2026년 놓친 돈">
+      <Missed rows={HANWHA_LAPSE} n={n} showPrompt={!n} onPrompt={() => ref.current && ref.current.focus()} />
+    </Sec>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="보유량 없음 — 섹션이 프레임 문장으로 열리고, 프롬프트가 컨트롤로 서고, 마지막 열의 라벨은 「보유 주식 수」, 칸은 점선 빈 자리다. 금액이 아직 없다는 사실이 레이아웃으로 보인다 (시장 전체 소멸 계산은 보유량과 무관하게 이미 사실이므로 그대로 있다)">
+  <Block initial={0} />
+</Case>
+
+<Case label="500주 — 마지막 열의 라벨이 「500주 기준」이 되고, 그 칸의 금액이 곧 이 섹션의 헤드라인(text-2xl · alert · 「추정」)이다. 하한과 계산 캡션이 그 아래 붙고, 계산 푸터가 배정·이론가치의 식을 한 번 더 편다">
+  <Block initial={500} restore={500} />
+</Case>
+
+<div className="note">
+<b>두 상태 (walk 4 · Q-E) —</b> 보유량 이전의 섹션은 <b>프레임 문장 → 프롬프트 → 표</b>다. 프레임(「청약도 매도도 하지 않았다면 …」)은 R4 서명 문구이고, 프롬프트는 이 라운드의 <b>유일한 신규 카피</b>(2026-08-24 예외, Q-E): 「보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다」 — 캡션이 아니라 44px 컨트롤이며, 누르면 strip 입력에 포커스가 간다. <b>페이지당 한 번</b>만 나온다 (살아 있는 ① 블록이 있으면 그쪽이 가져간다).<br />
+<b>같은 숫자를 두 번 찍지 않는다 (walk 4) —</b> 규칙: <b>합계는 두 건 이상일 때만 그린다</b>. 유상증자가 한 건이면 그 행의 「{'{n}'}주 기준」 칸이 <b>그대로 헤드라인</b>이 되고(text-2xl), 하한과 「배정 123주 × 「추정」5,525원」 캡션이 그 아래 붙는다. 679,575원은 이 표면에 <b>한 번</b> 존재한다. 두 건 이상이면 합계 블록이 <code>.mmhead</code>에 서고 각 행의 칸은 mono 600으로 내려앉는다 — 합계는 <b>합쳐질 것이 있을 때만</b> 존재하는 값이다. (핸드오프에 2건 표본이 없어 카드는 단건만 그린다 — 합계 슬롯의 기하는 build-prompt에 있다.)<br />
+<b>행에서 이벤트로 (walk 5) —</b> 건의 이름 아래 <b>「상세 보기 →」</b>. 접수번호는 모노 메타로 남고 링크가 아니다. <code>[근거]</code>는 R10 컴포넌트 그대로, 인용이 있는 건에만 한 번.<br />
+<b>강조의 서열 —</b> 이 섹션에서 <code>--alert</code>는 두 곳뿐이다: 소멸 주식수와 내 기준 금액. 나머지(발행·청약·매매기간·기간 지남 칩)는 사실 티어의 잉크로, 지난 마감을 경보색으로 칠하지 않는다는 R2/R3 규칙 그대로다.<br />
+<b>잠금 유지 —</b> 「추정」 없는 추정 금지 · 확정발행가 없이 금액 없음 · 집계 범위 밖은 <b>미기재</b>(0으로 세지 않음) · 시장 가격 미사용 · 보유량은 서버로 가지 않음 — 넷 다 이 카드에서 그대로다.
+</div>
+</React.Fragment>);
+</script></body></html>

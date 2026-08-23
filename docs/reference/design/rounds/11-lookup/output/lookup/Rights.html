@@ -1,0 +1,69 @@
+<!-- @dsCard group="⏳ P8.S8 · Lookup" viewport="1280x2300" name="Rights" subtitle="한 종목 페이지의 패널 문법 — ① 마감 패널 · ② 3건이 한 표로(풍전약품) · ② 단건(대동기어) · ③ 날짜형/무일정형(아시아나·세기상사) · 0건 「청약 2026-07-23 종료」 · 상세 보기 어포던스 한 규칙" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r11-lookup.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r11-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="① 계양전기 (보유 500주) — 패널은 마감이다: 칩 + 접수번호 메타 왼쪽, 지배 라벨 h3 + D-day + 창 오른쪽. 「상세 보기 →」는 패널 하단 한 자리">
+  <div className="page"><Sec title="진행 중인 권리 — 1건">
+    <RightsPanel type={1} rcept="20260724000546" filed="2026-05-08" corrected whenLabel="신주인수권증서 매매 마감"
+      slot="dday" days={1} date="2026-08-25" win={{ dates: '매매기간 2026-08-19 ~ 2026-08-25', state: 'open', phrase: '거래 가능' }}>
+      <div className="chainwrap">
+        <Chain cells={[{ lab: '보유', val: '500주' }, { lab: '배정비율 (1주당)', val: '0.2314082845', ratio: true }, { lab: '배정 신주', val: '115주', sub: '= 500주 × 0.2314082845 · 1주 미만 버림' }, { lab: '초과청약 한도', val: '+23주' }]} />
+        <div className="chainfoot"><p className="chainnote"><span className="pend">발행가 확정 전</span> 확정 예정 2026-09-01 — 확정 후 증서 이론가치와 금액을 환산합니다</p></div>
+      </div>
+    </RightsPanel>
+  </Sec></div>
+</Case>
+
+<Case label="② 풍전약품 3건 — 세 개의 동일한 패널(600px)이 한 표가 된다. 칩은 유형에 한 번, 행은 공시일·전환가액·전환 시 주식수·오버행·개시 D-day. 서로 다른 것이 열로 나란히 서서 비교된다">
+  <div className="page"><Sec title="진행 중인 권리 — 3건">
+    <Panel><CTable rows={PJ_ROWS} type={2} /></Panel>
+  </Sec></div>
+</Case>
+
+<Case label="② 대동기어 1건 — 단건도 같은 표다 (특례 없음). 값이 있는 칸은 채워지고 없는 칸은 ⋯ — 지어내지 않는다">
+  <div className="page"><Sec title="진행 중인 권리 — 1건">
+    <Panel><CTable rows={DD_ROWS} type={2} /></Panel>
+  </Sec></div>
+</Case>
+
+<Case label="아시아나항공 — ② 1건 + ③ 1건. ③의 dday가 null이면 D-day 자리는 StateBadge 「추후결정」(칠해진 칩), 단계 창이 공시에 없으면 점선 「현재 버전 공시에 없음」. 실선/점선의 구별은 R10 계약 그대로">
+  <div className="page"><Sec title="진행 중인 권리 — 2건">
+    <RightsPanel type={3} rcept="20260713000482" filed="2026-07-13" whenLabel="반대의사 통지 마감" slot="tbd">
+      <Steps steps={[{ title: '반대의사 통지' }, { title: '매수청구 행사' }]} />
+    </RightsPanel>
+    <Panel><CTable rows={ASIANA_R2} type={2} /></Panel>
+  </Sec></div>
+</Case>
+
+<Case label="③ 날짜형 — 세기상사 20260713000345을 2026-07-10 시점으로 (오늘 기준으로는 두 창 모두 지났고, 그래서 이 종목의 오늘 페이지는 NoRights다 — Empty 카드). 1단계는 「기한 지남」, 2단계가 지배 마감">
+  <div className="page"><Sec title="진행 중인 권리 — 1건">
+    <RightsPanel type={3} rcept="20260713000345" filed="2026-07-13" corrected whenLabel="매수청구 행사 마감"
+      slot="dday" days={17} date="2026-07-27" win={{ dates: '행사기간 2026-07-07 ~ 07-27', state: 'open', phrase: '행사 가능' }}>
+      <Steps steps={[{ title: '반대의사 통지', win: '2026-06-22 ~ 07-06', past: true }, { title: '매수청구 행사', win: '2026-07-07 ~ 07-27' }]} />
+    </RightsPanel>
+  </Sec></div>
+</Case>
+
+<Case label="0건 — 한화솔루션. 섹션을 비워 두지 않고 사실 한 줄을 남긴다. 이 종목의 금액은 아래 「2026년 놓친 돈」에 있다 (MissedMoney 카드)">
+  <div className="page"><Sec title="진행 중인 권리 — 0건">
+    <Panel><p className="closed">청약 <span className="v">2026-07-23</span> 종료</p></Panel>
+  </Sec></div>
+</Case>
+
+<div className="note">
+<b>패널 제목 (walk 6) —</b> 한 종목 페이지에서 <b>회사명은 h1에 한 번</b>만 나온다. 패널의 <code>h3</code>는 <b>지배 라벨</b>(신주인수권증서 매매 마감 / 매수청구 행사 마감)이고, 어떤 건인지는 <b>접수번호 · 공시일</b> 메타가 든다. 풍전약품 ×3의 「풍전약품 · 풍전약품 · 풍전약품」은 이 규칙만으로 사라진다.<br />
+<b>② = 표, ①③ = 패널 (walk 7) —</b> ②는 <b>행사할 것이 없는 맥락</b>이다 (R4-4: 맥락일 뿐 금액이 아니다). 맥락은 <b>비교되는 형태</b>가 맞다 — 세 건이 나란히 서면 전환가액·오버행·개시일의 차이가 한눈에 읽히고, 600px이 ≈190px이 된다. ①과 ③은 <b>독자가 행동할 수 있는 마감</b>을 갖기 때문에 패널로 남는다. 「전환 시 주식수」 칸은 계약에 남아 있다 (R4-4가 지명한 세 가지 사실). <b>⋯ 표기</b>: 이 핸드오프가 싣지 않은 값이며, 카드가 값을 지어내지 않는다는 표시다 — 적용 슬라이스는 <code>convertible_api_facts</code>에서 그대로 읽는다. 풍전약품 20250930000508의 전환가액 1,182원 · 오버행 4.29% · 개시 2026-10-02과 대동기어 15,552원 · 6.68% · 2026-10-24는 grounding의 실값이고, 나머지 두 행의 개시일은 핸드오프의 D-day를 오늘(2026-08-24)에 더한 값이다.<br />
+<b>표의 프로비넌스 —</b> 스트립 아래 한 줄이 티어를 말한다 (<code>DART 공시 API — 전환가액 · 전환 시 주식수 · 오버행</code>) — R10 §3의 규칙 그대로, 칸마다 <code>[근거]</code>를 달지 않는다.<br />
+<b>③ 처음 그리다 (walk 8) —</b> 두 단계는 R10의 절차 블록 문법을 그대로 쓴다 (1단계/2단계 하이라인 필 · 지난 단계 「기한 지남」 · 의존 문장 한 줄). <b>무일정형</b>: <code>dday: null</code> → D-day 자리에 <code>StateBadge 추후결정</code>, 단계 창이 없으면 <b>점선</b> 「현재 버전 공시에 없음」. 실선 칩 = 공시가 「추후결정」이라 답함, 점선 = 공시가 필드를 담지 않음.<br />
+<b>이벤트로 가는 길 한 규칙 (walk 5) —</b> 모든 섹션에서 이벤트로 가는 문은 <b>「상세 보기 →」</b> 하나다 — ① 패널 하단, ② 표의 행 끝, 놓친 돈 건의 이름 아래. <b>접수번호는 링크가 아니다</b> (식별자이며, 원문으로 가는 길은 상세 페이지와 <code>[근거]</code>가 가진다). 히트 데스크톱 32px / 모바일 44px.
+</div>
+</React.Fragment>);
+</script></body></html>

@@ -1,0 +1,40 @@
+<!-- @dsCard group="⏳ P8.S8 · Lookup" viewport="1280x2100" name="Entry" subtitle="빈 /stocks (Q-A = b: 감시 대상 · 감시 중 · 집계 범위) · 검색 불일치 「‘삼성’과」 조사 · 후보 패널이 열리면 불일치 문장은 사라진다 · 390" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r11-lookup.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r11-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="빈 /stocks (Q-A = b) — 조회할 것이 무엇인지는 말한다: 감시 대상 3종 · 감시 중 488건 · 집계 범위. 전부 이미 서명된 문구이며 신규 카피 없음, 리다이렉트 없음">
+  <div className="page narrow"><Rail here={false} /><EntryHead /><WatchPanel watching="488" /><Coverage /><Prov /></div>
+</Case>
+
+<Case label="검색 불일치 — 「‘삼성’과 일치하는」 (받침 있음 → 과). 문장은 제출된 질의의 것이고, role=status로 읽힌다">
+  <div className="page narrow"><Rail here={false} /><EntryHead q="삼성" noMatch="삼성" /><WatchPanel watching="488" /><Prov /></div>
+</Case>
+
+<Case label="다시 타이핑 「계양」 — 첫 타건에 불일치 문장이 사라지고 후보 패널이 그 자리에 열린다. 패널은 불투명(paper 위에 inset 합성)이라 아래 패널과 프로비넌스 줄을 가려도 겹쳐 읽히지 않는다">
+  <div className="page narrow"><Rail here={false} /><EntryHead q="계양" candidates={CANDS} active={0} /><WatchPanel watching="488" /><Prov /></div>
+</Case>
+
+<Case label="390 — 빈 진입 / 불일치 / 후보 열림. 입력 48px · 조회 버튼은 폭만 줄고 높이는 그대로, 후보 행은 44px">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><div className="page narrow"><Rail here={false} /><EntryHead /><WatchPanel watching="488" /></div></div>
+    <div className="m390"><div className="page narrow"><Rail here={false} /><EntryHead q="삼성" noMatch="삼성" /><WatchPanel watching="488" /></div></div>
+    <div className="m390"><div className="page narrow"><Rail here={false} /><EntryHead q="계양" candidates={CANDS} active={0} /><WatchPanel watching="488" /></div></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>Q-A = (b) —</b> 질의가 없는 <code>/stocks</code>는 히어로로 돌려보내지 않는다 (히어로가 이미 이 페이지로 보낸다). 대신 <b>이 페이지가 무엇을 조회하는지</b>를 말한다: 감시 대상 3종 칩 · 감시 중 건수 · 집계 범위 패널 — 세 가지 모두 다른 표면에서 이미 서명된 요소이므로 <b>신규 카피가 하나도 없다</b>. 여기서만 h1이 「내 종목 조회」이고 히어로 서브라인이 남는다 (결과 페이지에서는 종목명이 h1이다).<br />
+<b>조사 (walk 10) —</b> <code>‘{'{q}'}’와/과</code>는 질의 마지막 글자의 받침으로 갈린다: 한글이면 <code>(code−0xAC00) % 28 ≠ 0 → 과</code>, 받침 없으면 <code>와</code>. 한글이 아닌 질의(<code>012320</code>, <code>KOSPI</code>)는 <b>「와/과」 병기</b> — 라틴 문자·숫자의 종성을 추측하지 않는다.<br />
+<b>불일치 문장의 수명 (walk 9) —</b> 문장은 <b>제출된 질의</b>의 것이다. 입력이 그 질의와 달라지는 순간(첫 타건) 문장은 사라지고, 그 자리에 후보 패널이 열린다. 낡은 문장 위에 새 후보가 겹치는 상태는 존재할 수 없다. 후보 패널 자체(R9/P7)는 이 라운드가 건드리지 않는다 — 바뀐 것은 <b>그 아래에 무엇이 남아 있는가</b>뿐이다.<br />
+<b>후보 패널의 불투명도 —</b> R9 계약 그대로: <code>--paper</code> 위에 필드 잉크를 합성해 불투명하게 만든다. 이 페이지에서 패널 아래에 놓이는 것은 맥락 패널과 프로비넌스 줄이며, 둘 다 가려져도 읽는 데 지장이 없다 (가려진 동안 사라지는 정보가 없다).
+</div>
+</React.Fragment>);
+</script></body></html>

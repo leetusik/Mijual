@@ -1,0 +1,64 @@
+<!-- @dsCard group="⏳ P8.S8 · Lookup" viewport="1280x2000" name="Result" subtitle="계양전기 결과 페이지 — 종목 아이덴티티(h1) + 결과용 헤더 · 보유량 strip(빈/입력/프리셋/복원) · ① 보유 없음 → 있음 · 놓친 돈 zero + 청약 종료 후 집계 · 집계 범위 · 프로비넌스" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r11-lookup.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r11-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+
+function Result({ initial, restore }) {
+  const [n, setN] = React.useState(initial);
+  const ref = React.useRef(null);
+  const allot = Math.floor(n * 0.2314082845), excess = Math.floor(allot * 0.2);
+  const cells = n
+    ? [{ lab: '보유', val: fmt(n) + '주' },
+       { lab: '배정비율 (1주당)', val: '0.2314082845', ratio: true },
+       { lab: '배정 신주', val: fmt(allot) + '주', sub: '= ' + fmt(n) + '주 × 0.2314082845 · 1주 미만 버림' },
+       { lab: '초과청약 한도', val: '+' + fmt(excess) + '주' }]
+    : [{ lab: '배정비율 (1주당)', val: '0.2314082845', ratio: true },
+       { lab: '초과청약 비율', val: '20%' }];
+  return <div className="page">
+    <Rail />
+    <Identity name="계양전기" code="00102618" strip={<Strip n={n} setN={setN} restore={restore} inputRef={ref} />} />
+    <Sec title="진행 중인 권리 — 1건">
+      <RightsPanel type={1} rcept="20260724000546" filed="2026-05-08" corrected whenLabel="신주인수권증서 매매 마감"
+        slot="dday" days={1} date="2026-08-25" win={{ dates: '매매기간 2026-08-19 ~ 2026-08-25', state: 'open', phrase: '거래 가능' }}>
+        <div className="chainwrap">
+          <Chain cells={cells} />
+          <div className="chainfoot">
+            <p className="chainnote"><span className="pend">발행가 확정 전</span> 확정 예정 2026-09-01 — 확정 후 증서 이론가치와 금액을 환산합니다</p>
+            {n ? null : <Prompt onClick={() => ref.current && ref.current.focus()} />}
+          </div>
+        </div>
+        <p className="rowline"><span>구주주 청약 <span className="v">2026-09-03 ~ 09-04</span></span><span>일반공모 <span className="v">2026-09-08 ~ 09-09</span></span></p>
+      </RightsPanel>
+    </Sec>
+    <Sec title="2026년 놓친 돈"><Zero pending="2026-09-04" /></Sec>
+    <Coverage />
+    <Prov />
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="보유량을 넣기 전 — h1은 종목명이다 (「내 종목 조회」는 크럼 레일의 두 번째 라벨로 남는다). 검색 필드는 해결된 종목명을 담고 비어 있지 않다. ① 블록은 공시가 말한 것만: 배정비율 + 초과청약 비율, 그리고 입력 프롬프트 (한 페이지에 한 번)">
+  <Result initial={0} />
+</Case>
+
+<Case label="500주 입력 — 프리셋이 눌린 상태(실선 + inset) · 배정 신주 셀이 자기 계산식을 달고 있다 · 「이전 입력 500주」는 점선(지난 세션의 제안) · 「서버 전송 없음」은 캡션 티어에서 12px 모노 term으로 올라왔다">
+  <Result initial={500} restore={500} />
+</Case>
+
+<div className="note">
+<b>종목 아이덴티티 (walk 1 · Q-B = yes) —</b> 결과 페이지의 <code>h1</code>은 <b>종목명</b>이고, 그 아래 모노 메타가 고유번호를 든다 (<code>stock.stock_code</code>가 서빙되면 <b>종목코드가 먼저</b> 오고 고유번호가 뒤에 붙는다 — 두 값 모두 서버의 것이며 카드가 지어내지 않는다). 검색 필드는 <b>해결된 종목명을 그대로 담는다</b>: 결과 위에서 빈 입력은 「무엇을 조회했는지」를 지우는 유일한 요소였다.<br />
+<b>결과 위의 헤더 (walk 2) —</b> 크럼 + h1 + 히어로 서브라인 + 검색줄(≈235px)이 <b>한 패널</b>로 접힌다: 레일 44px + 아이덴티티 패널. 「내 종목 조회」는 삭제되지 않고 레일의 라벨로 남으며 (R4 카피 잠금 유지), 히어로 서브라인은 <b>진입 페이지에만</b> 남는다 — 결과를 이미 받은 사람에게 이 페이지가 무엇인지 다시 설명하지 않는다. 첫 이벤트까지 데스크톱 ≈150px.<br />
+<b>보유량 strip (walk 3 · Q-C) —</b> strip은 <b>아이덴티티 패널의 아래 레일</b>이다 — 종목·재조회·보유량은 한 덩어리의 「내가 보는 대상」이다. 그리고 <b>이 페이지에서 그 숫자로 바뀌는 값이 있을 때만</b> 렌더한다 (살아 있는 ① 또는 놓친 돈 행). ②만 있는 종목·권리 없는 종목에서는 <b>없다</b> — 사과문도, 비활성 컨트롤도 아니고 부재다.<br />
+<b>입력 프롬프트 (walk 4 · 15 · Q-E) —</b> 보유량이 없을 때 ① 환산 블록은 <b>공시가 말한 두 셀</b>(배정비율 · 초과청약 비율)로 서고, 배정비율 한 줄이 홀로 매달리지 않는다. 프롬프트는 캡션이 아니라 <b>컨트롤</b>(점선 44px, 누르면 strip 입력에 포커스)이고, <b>페이지당 한 번만</b> — ① 블록이 있으면 거기, 없으면 놓친 돈 섹션에. 문장은 이 라운드의 <b>유일한 신규 카피</b>(2026-08-24 예외): 「보유 주식 수를 입력하면 내 보유량 기준으로 환산합니다」.<br />
+<b>제목 의미 (walk 12) —</b> 개요는 <code>h1 계양전기</code> → <code>h2 진행 중인 권리 — 1건</code> → <code>h3 신주인수권증서 매매 마감</code> → <code>h2 2026년 놓친 돈</code> → <code>h2 집계 범위</code>. <code>//</code>는 <code>::before</code>이므로 접근 가능한 이름에 들어가지 않고, strip은 <code>label[for]</code>로 입력에 묶인다.<br />
+<b>패널 제목 (walk 6) —</b> 한 종목 페이지에서 패널은 <b>회사가 아니라 마감</b>이다: 왼쪽은 유형 칩 + 접수번호 메타, <code>h3</code>는 오른쪽의 <b>지배 라벨</b>(신주인수권증서 매매 마감). 회사명은 h1에 한 번만 나온다.
+</div>
+</React.Fragment>);
+</script></body></html>
