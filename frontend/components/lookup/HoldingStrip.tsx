@@ -19,6 +19,10 @@ import styles from "./Lookup.module.css";
  * > value, offer a restore chip "이전 입력 {n}주" — never auto-fill silently,
  * > never persist server-side.
  *
+ * The caption above is the round's literal; **P7 (item 10) trimmed what renders
+ * to 「서버 전송 없음」** — the promise verbatim, the storage clause gone
+ * (`copy.ts`'s `HOLDING_CAPTION_KO`).
+ *
  * **No slider** (decision R4-2: holdings are exact integers), and no debounce —
  * the conversion is a multiplication, so the page recomputes on every keystroke.
  * The state lives one level up in `StockView`, because the same number drives the

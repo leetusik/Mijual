@@ -679,6 +679,56 @@ CSS handles the breakpoint), the single served-HTML check above covers both the 
 `python3 scripts/workflow.py validate` both pass. See `P7.S6/result.md` for the full diff and
 counts table.
 
+### Item 10 closed — `P7.S7`: two strings trimmed, and the sweep says there are no others
+
+**The DECOMP table was right about the hits and wrong about the size of the job — in the reader's
+favour.** A comment-aware sweep of **346 Hangul string literals** (a real tokenizer over
+`frontend/app`, `components`, `lib`, so doc comments and docstrings are excluded rather than
+grepped around), plus JSX bare text, every `aria-label`/`title`/`placeholder`/`alt` (all of them
+read a `copy.ts` constant), the document metadata, and the Korean the **backend** composes for
+readers (`src/mijual/agent/copy.py`), found **exactly the two strings the plan had already
+decided** and no third instance of the pattern. The product narrates itself in two captions, not
+everywhere.
+
+**What changed:** `CLAIM_CAPTION_LOCAL_KO` → 「본인 표시」 (`components/portfolio/copy.ts:195`) and
+`components/lookup/copy.ts:101`'s `HOLDING_CAPTION_KO` → 「서버 전송 없음」 — reading #6 applied
+literally: the mechanism clause goes, the promise stays **verbatim**, and no Korean was minted.
+Three comments elsewhere claimed the old caption is what renders (`HoldingStrip.tsx`,
+`lib/holding.ts`, and **`src/mijual/web/routers/stocks.py`**, whose "no holding count is ever
+received here" rationale quoted the caption whole); all three now quote what renders and cite the
+P7 trim, keeping the round citation.
+
+**Measured, with a control.** In `next dev` on `127.0.0.1` and on the tailnet, and in an isolated
+production build served on :3100, `document.body.innerText` / the served HTML of `/`, `/stocks`, a
+stock page, `/portfolio?sample=1`, `/auth/login` and `/ask` contain **zero** occurrences of
+`localStorage`, `sessionStorage`, `브라우저 세션`, `이 브라우저` — and zero of the bare word
+`브라우저`. The control matters more than the zeros: with the two constants temporarily reverted the
+same probe read `localStorage` 2 / `이 브라우저` 2 on the sample and `브라우저 세션` 1 on the stock
+page, so the zeros are a measurement rather than a probe that cannot see. The old strings survive in
+the build **only inside `.js.map` source maps** (the kept round citations); no emitted `.js` carries
+them.
+
+**The judgment that actually took the time — and what is now the operator's.** Four reader-visible
+strings speak developer vocabulary but are *promises*, so reading #6 keeps them and they go to the
+review as questions instead: `API_TIER_KO` 「DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용
+핸들」 (`ask/copy.ts:118`) and `SPARSE_CLOSING_KO` 「… 위 값은 DART 공시 API 기준입니다」
+(`event/copy.ts:134`) — both explain *why a fact has no verbatim quote*, which is the trust story,
+not chatter; `GATE_COST_TAIL_KO` 「… 게이트를 통과하지 못해 총액에서 제외했습니다」
+(`chrome/copy.ts:156`) — internal machinery vocabulary in the footer, but also the product's one
+disclosure of a number it excluded on purpose; and `carryOverKo` 「… 이 세션에 남아 있습니다」
+(`portfolio/copy.ts:135`) — `세션` is on the sweep's keyword list, yet it is the only word telling
+the reader the value is temporary. None can be trimmed without either destroying the promise or
+minting a new sentence, which is a copy decision. **Two useful contrasts for anyone rewriting them
+later:** `auth/copy.ts:162` 「이 보유량은 탭을 닫으면 사라집니다」 already says a storage fact as a
+*consequence* — it is the shape item 10 wants — and `/ops` (≈30 strings like 「렌더 가능 필드」,
+「세션 해시」, 「API shape 확정 대기」) is operator-facing behind its own login and is out of scope by
+rule, not by oversight.
+
+**Gotcha for later slices:** `next dev`'s Fast Refresh picks up a `copy.ts` constant change without
+a reload, so a revert/measure/restore control costs seconds — but the sample portfolio must be
+entered by **clicking the product's own 샘플 포트폴리오로 둘러보기 link** (or `?sample=1`), and both
+its 챙겼습니다 captions live on **past ① rows only**, two of them today.
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -839,6 +889,30 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   P7.S6's to rewrite. (Recorded by `P7.S6`; see `P7.S6/result.md` for the diff and the
   before/after served-HTML counts — 6→4 for `내 종목 조회`, 2→0 for `href="/stocks"` on `/`.)
 
+- `frontend` — **two reader captions no longer narrate storage** (operator item 10). The 조회
+  보유량 caption is now 「서버 전송 없음」 (`components/lookup/copy.ts`) and the 샘플/익명 챙겼습니다
+  caption is now 「본인 표시」 (`components/portfolio/copy.ts`); the account caption 「본인 표시 ·
+  계정에 저장」 and 「계정에 저장 · 마감 알림의 기준」 are unchanged, because where a mark or a count
+  lives *for the reader* is their own fact. The 조회 one is a **P7 operator override of a signed
+  literal**: R4 §3 writes 「브라우저 세션에만 저장 · 서버 전송 없음」 and P7 keeps only the promise
+  half — **the promise itself is verbatim and no Korean was minted**. Nothing else moved: the
+  storage is still sessionStorage/localStorage exactly as `security` describes it, and the API still
+  has no `n` parameter, so every sentence in `security`/`experience` about client persistence stays
+  true — what changed is only that the surface no longer *says* it. Worth recording with it: after
+  the sweep **no string a reader can see contains `localStorage`, `sessionStorage`, `브라우저 세션`,
+  `이 브라우저`, or the bare word `브라우저`** — verified in `next dev` on `127.0.0.1` and the
+  tailnet and in an isolated production build, with a revert/re-measure control proving the probe
+  sees the strings when they are there. (Recorded by `P7.S7`; the full inventory and the four
+  strings left for the operator are in `P7.S7/result.md`.)
+- `experience` — the 내 종목 조회 bullet "**Memory is session-only:** sessionStorage with a restore
+  chip" still describes the implementation correctly, but the surface's *stated* promise is now
+  narrower: the page tells the reader only 「서버 전송 없음」 and no longer tells them where the
+  number is kept. If the review wants the doc to describe what the reader is told (it currently
+  reads as if the session rule were on-screen copy), this is the sentence to re-word; the R4 literal
+  itself belongs to the read-only design record and is untouched. (Recorded by `P7.S7`;
+  `product.md` and `security.md` were checked and need nothing — neither quotes either caption, and
+  no `docs/current/*.md` contains 「서버 전송 없음」, 「본인 표시」 or either before-string.)
+
 ## Open Questions
 
 - **Q1 — 의견 (vocky) has nothing to bind to.** `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
@@ -867,3 +941,15 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   goes); #6 the sample's signed 4건 subline above five live D-day rows (S8 will see it while
   tidying); #10 `[근거]` + DART link under the mobile 44px floor; #1 the English 404 sentence —
   the one English string a reader can reach, adjacent to item 10's copy sweep but not in it.
+- **Q7 — four reader-visible strings speak developer vocabulary, but each one is a promise
+  (`P7.S7`, item 10).** The sweep kept them under reading #6 and left them to the operator, because
+  none can be trimmed without either destroying the promise or minting a new Korean sentence:
+  ① `API_TIER_KO` 「DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용 핸들」 (`ask/copy.ts:118`)
+  and ② `SPARSE_CLOSING_KO` 「… 위 값은 DART 공시 API 기준입니다」 (`event/copy.ts:134`), which both
+  explain **why a fact carries no verbatim quote**; ③ `GATE_COST_TAIL_KO` 「… 게이트를 통과하지 못해
+  총액에서 제외했습니다」 (`chrome/copy.ts:156`), machinery vocabulary in the footer that is also the
+  product's one disclosure of a deliberately excluded number; ④ `carryOverKo` 「… 이 세션에 남아
+  있습니다」 (`portfolio/copy.ts:135`), where 세션 is also the only word conveying impermanence. A
+  fifth, smaller one: with the sample caption now 「본인 표시」, should the account caption drop to
+  「본인 표시」 too, or keep 「· 계정에 저장」 (`P7.S7` kept it, per plan)? Re-saying any of ①–④ in
+  reader language is a copy decision, not an implementation one.

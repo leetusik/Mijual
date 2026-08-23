@@ -183,10 +183,16 @@ export const CLAIMED_LABEL_KO = "챙긴 돈";
 
 /** The caption, and its sample/anonymous half. R5-8 writes "본인 표시 · 계정에
  * 저장" and the build prompt states the other storage in the same sentence:
- * "계정에 저장, **샘플/익명에서는 이 브라우저(localStorage)에**" — so the two
- * captions differ only in where the mark lives, in the round's own words. */
+ * "계정에 저장, **샘플/익명에서는 이 브라우저(localStorage)에**".
+ *
+ * **P7 (item 10) trimmed the sample half back to R5-8's own 「본인 표시」** — the
+ * operator named this exact caption as the copy to remove, and the storage clause
+ * is the build prompt's mechanism, which a reader gains nothing from. The account
+ * half keeps 계정에 저장: that one is the reader's own fact (the mark follows the
+ * account), not narration. So the two captions no longer differ only in storage —
+ * one names where the mark is kept, the other just names what it is. */
 export const CLAIM_CAPTION_ACCOUNT_KO = "본인 표시 · 계정에 저장";
-export const CLAIM_CAPTION_LOCAL_KO = "본인 표시 · 이 브라우저(localStorage)에";
+export const CLAIM_CAPTION_LOCAL_KO = "본인 표시";
 
 // ---------------------------------------------------------------------------
 // 알림 설정 (R5-5, R5-7)

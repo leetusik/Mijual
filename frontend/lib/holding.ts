@@ -204,8 +204,10 @@ export function convert(factors: ConversionFactors, shares: number | null): Conv
 /**
  * Where 조회's holding counts live: **sessionStorage, and nowhere else**.
  *
- * R4-6: "remember within the browser session only … Nothing server-side", with
- * the caption "브라우저 세션에만 저장 · 서버 전송 없음" stating it on the surface.
+ * R4-6: "remember within the browser session only … Nothing server-side". The
+ * surface used to state both halves; since **P7 (item 10)** the caption renders
+ * only the promise, 「서버 전송 없음」 — the storage is still exactly this module
+ * and is simply no longer narrated to the reader.
  * `security` says the same from the other side — anonymous state never reaches
  * the server, and there is no anonymous write endpoint to reach (`P5.S8` note
  * 13).

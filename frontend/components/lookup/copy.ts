@@ -90,10 +90,15 @@ export const HOLDING_LABEL_KO = "보유 주식 수";
  * are exact integers. */
 export const PRESET_SHARES = [100, 500, 1000] as const;
 
-/** R4 §3, the caption that states where the number lives. It is true by
- * construction: `lib/holding.ts` writes to sessionStorage and the API accepts no
- * holding count on any path (`P5.S4`: factors, never products). */
-export const HOLDING_CAPTION_KO = "브라우저 세션에만 저장 · 서버 전송 없음";
+/** R4 §3's caption, **trimmed by P7 (item 10) to its promise half**. The round's
+ * literal is "브라우저 세션에만 저장 · 서버 전송 없음"; the mechanism clause is a
+ * storage word the reader gains nothing from, so it goes and the promise stays
+ * verbatim — a **P7 operator override** of a signed literal, listed for the
+ * review. What is left is still true by construction, and it is the half the
+ * anonymous boundary leans on: `lib/holding.ts` writes to sessionStorage and the
+ * API accepts no holding count on any path (`P5.S4`: factors, never products;
+ * `routers/stocks.py` has no `n` parameter for exactly this reason). */
+export const HOLDING_CAPTION_KO = "서버 전송 없음";
 
 /** R4 §3 / decision R4-6: "on a new stock with a remembered value, offer a
  * restore chip '이전 입력 {n}주' — never auto-fill silently, never persist

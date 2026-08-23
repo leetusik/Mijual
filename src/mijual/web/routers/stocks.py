@@ -35,8 +35,9 @@ does not exist, not a search that found nothing.
 **No holding count is ever received here.** These endpoints serve **factors, not
 products** — 배정비율 to its ten decimals, 증서 1주 이론가치 and its floor, the
 초과청약 비율 — and the browser multiplies. R4 keeps the 보유 주식 수 in
-``sessionStorage`` and states so on the page ("브라우저 세션에만 저장 · 서버 전송
-없음"); an endpoint that accepted an ``n`` would make that sentence false, so
+``sessionStorage``, and the page states the promise half of R4's caption
+("서버 전송 없음" — `P7` item 10 trimmed the mechanism clause "브라우저 세션에만
+저장"); an endpoint that accepted an ``n`` would make that sentence false, so
 there is no parameter for one and no per-holding number in any payload. The
 suggestion route keeps that promise the short way: its only parameter is ``q``.
 
