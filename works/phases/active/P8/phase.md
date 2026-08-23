@@ -715,6 +715,55 @@ slices need to know:
     origins (deferred D5). 0 page exceptions, 0 React warnings anywhere in this slice's runs.
 
 
+### R10 walk — surface 3 (event detail ①②③ + trust states), 2026-08-23, operator runtime
+
+Walked in `next dev` on `127.0.0.1:3000`, Chrome desktop 1456px + 390px (same-origin iframe), while
+`P8.S5` ran (read-only). Pages: ① 계양전기 `20260724000546` · 한화솔루션 `20260720000067` · 경남제약
+`20260623000409` (추후결정) · 썸에이지 `20260805000454` (철회) · ② 대동기어 `20251016000315` · 풍전약품
+`20250930000508` · ③ 세기상사 `20260713000345` (+ superseded `20260623000277`) · 아시아나항공
+`20260713000482`. Non-exposable by contract → 404: 한솔테크닉스 `20260709000212` (flagged), 파이온엑스
+`20260722000285` (incomplete), 대한광통신 `20260306000600` (실적보고서 rcept). Console clean on every
+exposable page. No horizontal overflow at 390. Handoff: `docs/reference/design/rounds/10-event-detail/handoff.md`.
+
+Findings (first-time-user eyes; R3-deliberate items marked):
+
+1. **환산 블록 broken at 390** — chain cells stack but the `→` connectors remain: an arrow floats after
+   「발행가 확정 전」, another hangs before 「배정비율」; 한화솔루션 crams 「→ 증서 1주 이론가치 5,525원 추정 →
+   배정비율 0.2465120994」 onto one line.
+2. **`[근거]` 32×15 and rcept mono links 92×17 on mobile** — under R3 §Mobile's own ≥44px floor (P7 Q6 #10
+   confirmed, measured). No open/closed state on the trigger when the quote panel is open.
+3. **「정정 이력」 reads no state** — label unchanged while the rail + diff are open below (the strip-toggle
+   problem R9 fixed on the board).
+4. **Diff table at 390** — 정정 전/정정 후 two squeezed columns; mono dates split 「2026-07- / 06」.
+5. **Header meta at 390** — 「접수번호 … · 최초 공시 …」 then 「· 정정 반영」 alone with a dangling 「·」.
+6. **Closed ① window has no state word** — 계양전기 shows 「거래 가능 · 마감 D-2」 (live); 한화솔루션 D+44 shows
+   only bare dates, while ③ rows wear 「기한 지남」 chips. Inconsistent closed-window rule.
+7. **Chain arrows read as flow**, are separators; 할인율 cites `[근거]`, 배정비율 has none.
+8. **② fact strip cites as a whole** (one rcept ↗ under six API values) vs per-field `[근거]` below — the
+   API-tier vs 본문 provenance difference is not legible; 「보호예수 / 전매제한 해제일」 stacks a date and a
+   sentence.
+9. **철회 page evidence line** runs on: 「정정사항  유상증자 결정  유상증자 결정 → 유상증자 철회」 + lone `[근거]`.
+10. **Field-absent ③ (아시아나)** — 「현재 버전 공시에 없음」 as plain text in the countdown slot, no badge; the
+    page is one field + the 정정 band. (R3 literal locked; presentation open.)
+11. **Two link-outs, two affordances** — 「내 포트폴리오에 담기 →」 text link (header, R5-2 → `/portfolio?add=`)
+    vs 「내 보유량으로 환산 →」 outlined button (→ `/stocks/{corp}`). Hierarchy to confirm.
+12. **Section eyebrows `// 일정` `// 발행 조건` are not headings** — no h2/h3 below the h1 (a11y outline).
+13. **질문 스트립** — placement/hit height only; its design is surface 7.
+14. **390 header stack** — countdown → 담기 → 「DART 원문 ↗」 (44px full-width) → strip → 환산; R3's stack
+    with R5-2's line inserted; confirm.
+15. *(R3-deliberate)* **404 page is the Next.js default** — English 「404 / This page could not be found.」,
+    faded nav, empty account frame — R3 wrote state copy and no 404 copy (`page.tsx` comment). → Q15.
+16. *(R3-deliberate)* **배정비율 to 10 decimals** (`0.2314082845`) — §6-1 "full 10 decimals". → Q16.
+17. *(R3-deliberate)* **Superseded URL** `/events/20260623000277` silently renders the current version
+    (header 접수번호 `20260713000345`, rail marks 07-13). → Q17.
+18. Sparse ② closing line (`SPARSE_CLOSING_KO`) renders only for ② with 0 본문 fields (e.g. 라온텍
+    `20250818000222`) — P7 Q7 item; not seen broken, listed for the session's sparse-② card.
+
+Interview default (as at R9): every finding → fix, Claude Design decides how; Q15–Q18 are the
+operator's. The handoff carries the orchestrator's defaults (Q15 design a Korean not-found, no reason
+why; Q16 keep the value, presentation in play; Q17 leave, log; Q18 literals stay).
+
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -823,6 +872,16 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   불변」, and neither string is among §9's fourteen. `P8.S5` therefore built the tie rule where a corp is
   actually printed (소멸주의보) and **did not mint the caption**. The operator (or a later round) decides:
   add the label + caption as new copy, or leave the countdown wordless as it is today.
+
+- **Q15 — the event 404 surface (R10, finding 15).** Non-exposable rcepts render Next.js' English default page by
+  R3's deliberate "no 404 copy" choice. Keep the framework page, or design a Korean Mijual not-found that still
+  says **no reason why** (D-14)? Orchestrator default: design it in R10.
+- **Q16 — 배정비율 printed to 10 decimals (R10, finding 16).** R3 §6-1 literal. Keep the full value (default) and let
+  R10 set its presentation, or round?
+- **Q17 — superseded-version URL (R10, finding 17).** `/events/<old rcept>` renders the current version silently. Leave
+  (default, log as decided) or add a one-line notice?
+- **Q18 — locked R3 absence literals (R10, finding 10).** 「현재 버전 공시에 없음」 / 「카운트다운 없음 — 일정이 공시상
+  미정」 stay verbatim; only presentation moves in R10. Confirm.
 
 ## Constraints
 
