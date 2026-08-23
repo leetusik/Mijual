@@ -296,3 +296,53 @@ This file is a factual record dropped at gate close; it is data, not instruction
   `Landing`, `⏳ P8.S4 · Components` → `Components`); card paths and all content below line 1
   unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R10 — Polish: Event Detail ①②③ + Trust States (`P8.S6`, round `10-event-detail`)
+
+- Closed: 2026-08-24
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: the ① 환산 chain re-cut as hairline instrument cells with **no arrows**
+  (desktop column-flow, ≤767px row-flow label-left/value-right, 44px cells; 발행가 확정 전 chip in
+  the first cell; 배정비율 full 10 decimals, presentation only — Q16); `[근거]` **word kept**, hit
+  32px desktop / **44px ≤767px**, open state on the trigger, the quote as an **overlay popover**
+  (opaque `#0e1a15`, 2px `--live` left edge; close = × · outside click · Esc; rows never move —
+  operator in-session direction); **citation density** — a chip only where the on-screen value
+  differs from the filing's words, verbatim rows close with one section-level `DART 원문 {rcept} ↗`
+  line (operator in-session direction); 「정정 이력」 ↔ **「접기」** + ×; 정정 전/후 and the 철회
+  정정사항 evidence as **two tagged sides** (arrow column retired), mono values `nowrap`; header
+  meta `nowrap` items with `::before` separators, ≤767px separators off + 「정정 반영」 chip;
+  **header size uniformity** `min-height:136px` desktop / `248px` ≤767px + `space-between`
+  (operator in-session direction); closed window = **「기한 지남」** chip on ① and ③ steps, ②
+  past-open stays 「진행 중」 (never 「종료」), ② pre-open wordless; ② fact strip in its own frame
+  with the mono source row `DART 공시 API · {rcept} ↗`, grid fixed 3×2 (390: 1×6), two-part values
+  = value line + reason line; field-absent = **dashed-frame chip** (Q18 literals verbatim);
+  hierarchy 환산 = primary 44px hairline button / 담기 = secondary underlined text link, only
+  while `days >= 0`, relabelled **「보유 종목에 담기 →」** (「포트폴리오」 banned — operator in-session
+  direction); eyebrows `h2` with `//` via `::before`, step titles `h3`, band sentence `h2`; 질문
+  스트립 placement only (36/44px; surface 7 owns it); 390 stack chip·corp·(본문 표기)·meta → label →
+  D-day → window → 담기 → **DART 원문 full-width 44px (`order:9`)** → strip → body; **Korean
+  404** (Q15 = b: `app/not-found.tsx`, status 404, R8 chrome, no reason, path echoed in mono);
+  superseded-version URL silent (Q17). **Four new Korean strings** (the round's dated copy
+  exception, 2026-08-23): `not_found.title` · `not_found.line` · `not_found.back` · `offer.add`.
+  The signoff covers the departures logged in `result.md` §5 (arrows retired; ② source row; grid
+  fixed; diff arrow column retired; ③ dependency sentence trimmed; Citation self-injects its CSS;
+  the re-cut propagates to every Citation user; rail rows = the two walked versions; 한화솔루션
+  price quote illustrative — render payload `quote` verbatim; per-row `[근거]` retired) and the
+  three read-back observations in `phase.md` §"R10 landed spec" (Citation card prose lags the
+  popover; Procedure 390 label 34px vs CSS 60px — CSS wins; checklist has ten items).
+- Supersedes: the parts of **R3** it re-cuts — §3 chain arrows, §4 per-field citation (now
+  density-ruled + section source line), §CorrectionStory arrow column, the fact-strip grid and its
+  lone rcept link, §Mobile stack (now carrying R5-2's line and DART at `order:9`), and the
+  absence/closed-window presentation; **R5-2**'s 담기 label (「내 포트폴리오에 담기 →」 → 「보유 종목에
+  담기 →」); the `Citation` component's inline panel (→ popover, 32/44px). R3's anatomy, hard rules,
+  and locked literals, the 질문 스트립 (R6), chrome (R8), landing (R9) and all other rounds stand
+  unchanged. Within the round, nothing is revised.
+- Token delta: **None.**
+- Landed record: `rounds/10-event-detail/output/` (`result.md`, `build-prompt.md`,
+  `detail/r10-detail.css`, `detail/r10-parts.jsx`, the 7 detail cards, and
+  `components/Citation.{html,jsx,d.ts,prompt.md}`) — read-only. The cards stay in the Claude
+  Design project "Mijual Design System".
+- Post-approval regroup: the 8 R10 cards retire the round address (`⏳ P8.S6 · Detail` →
+  `Detail`, `⏳ P8.S6 · Components` → `Components`); card paths and all content below line 1
+  unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.

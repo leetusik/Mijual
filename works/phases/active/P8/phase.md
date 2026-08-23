@@ -798,7 +798,7 @@ production build. Evidence in `slices/P8.S5.5/result.md`. What later chrome work
    the product — 재설정 요청 puts the link in `var/stack/api.log` (`ConsoleMailer`), and the reset lands
    already signed in. The database was left exactly as found (accounts 14 and 25 only).
 
-### R10 landed spec — read back 2026-08-24 (`P8.S6` gate 2), awaiting literal signoff
+### R10 landed spec — read back 2026-08-24 (`P8.S6` gate 2) — SIGNED OFF 2026-08-24 ("sign off"); SIGNOFF.md R10 entry, cards regrouped to `Detail` / `Components`
 
 Read back with `DesignSync` from the "Mijual Design System" project and landed **as-is** under
 `docs/reference/design/rounds/10-event-detail/output/`: `result.md`, `build-prompt.md`,
