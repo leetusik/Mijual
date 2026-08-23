@@ -152,11 +152,15 @@ export function StockView({
         <MissedMoney page={page} shares={shares} prompt={liveOffering ? undefined : prompt} />
       )}
 
-      <CoveragePanel coverage={page.lapse.coverage} />
-
-      {/* 전환 제안 (R5-2), last on the page and in normal flow: it never covers
-          the results, it gates nothing, and it shows at most once per session. */}
+      {/* 전환 제안 (R5-2) — **after the last data section, before 집계 범위 and
+          the provenance line** (R12 §4). 「값 계산 직후」 and 「결과를 가리지
+          않음」 are both true only here: between the data sections the band would
+          push 놓친 돈 below an offer, and at the very end of the page it would sit
+          in the provenance's own place and read as a footer banner. Still normal
+          flow, still anonymous-only, still once per session, still dismissible. */}
       <ConversionOffer ready={valued} />
+
+      <CoveragePanel coverage={page.lapse.coverage} />
     </>
   );
 }

@@ -1084,6 +1084,20 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] 프로덕션 폭: /stocks and /stocks/{corp_code} measure 960px / 620px in a production build, not only in next dev (P8)`
 - `P8.S9`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R11's one new sentence (`MISSED_PROMPT_KO`), the gate-signed `.mmcap` caption (Q28 = a), and the label-tier strings the build prompt and cards print (보유 · 배정비율 (1주당) · 초과청약 비율 · 공시 · 소멸 계산 (시장 전체) · 종목코드 · 고유번호 · 접수 · 집계 범위). Two constants are **derived, not typed** — `TRADING_OPEN_KO` from `tradingOpenKo()`'s head and `NO_SCHEDULE_KO` from the tail of R3's locked 「카운트다운 없음 — 일정이 공시상 미정」 — so neither can drift. `noMatchKo` gains the build-prompt §7 josa rule (non-Hangul → 「와/과」). Supersessions: the `h1` moves from 내 종목 조회 to the 종목명, per-② panel titles retire, rcept-as-link retires, and R4's 480px breakpoint retires.
 
+- `P8.S11`: **frontend** — R12 supersedes the auth surface. Both `/auth/*` pages are a **480px column** whose first row is the rail 「← 관제 현황판」 (Q-D), stated at order-independent specificity (`.page.page`) so the shared `content` class cannot outrank it in a production bundle; **one breakpoint at 767px — R5's 480px block is retired** with the 160px left-aligned primary, which is now `width:100%; height:48px` at every viewport. The form carries **`noValidate`** and no `required`/`pattern`: client gating runs 빈 입력 → 형식 오류 → (signup) 8자 미만 → POST, so the browser's English validation bubble is gone from the product (P7 Q12 closed). 「8자 이상」 (`PASSWORD_RULE_KO`) sits on the 비밀번호 label row on **계정 만들기 + 재설정 only**. 재설정 is **never disabled for an empty address** — it focuses the email field and sends nothing; `disabled` means 「in flight」 and nothing else. Errors and notices share **one** `p role="status"` (ink-1 / ink-2; `--alert` never on this layer, field borders never change on failure), and 로그아웃되었습니다 is a **flash band above the `h1`** cleared by the first keystroke/submit/navigation with no timer. The reset page is one 비밀번호 field with the rule, **no 이메일 field, no sample entry**, `invalid_reset_token` → `ERR_RESET_TOKEN_KO` + a quiet 「로그인」 in that state only, success still = revoke sessions → new session → `/portfolio` with no completion screen. **`PiiInset` is deleted** (component, both constants, its `index.ts` export) — R5-1's 「PII 패널은 로그인 화면 상시 요소」 clause is **withdrawn**. `ConversionOffer` is an **inset band** (CraftPanel dropped; no stay line) rendered **after the last data section and before 집계 범위/provenance** on `/stocks/{corp}`; conditions unchanged. New internal component `AuthRail`; `word-break: keep-all` scoped to the auth page as R9/R10 scoped theirs. Add supersession rows for R5-1 (PII 상시 요소, 재설정 disabled, error/notice slots, 480px breakpoint, primary width) and R5-2 (offer as panel + stay line + placement).
+- `P8.S11`: **security** — the durable statement 「The PII statement is a **permanent inset panel on the auth screen**, not a link to a policy page」 is **no longer true**: the operator struck both lines in the R12 session and the panel is deleted from both auth pages. What the sentences asserted is unchanged and still enforced structurally (`account` = `id · email · password_hash · created_at · updated_at`, nothing else) — the product simply no longer asserts it on screen. Second fact for the same doc: the email field's `type`+`pattern` no longer stand in for the missing Korean of `invalid_email`; the client validates with the round's own regex (mirroring `mijual.web.auth._EMAIL_RE`) and the API's answer is rendered in Korean.
+- `P8.S11`: **product** — 「the auth screen always states what 미주알 receives and does not store」 is retired; and the last English string a Korean-only reader could meet inside a *form* is gone (R10 removed the last English **screen**; R12 removes the browser's own validation bubble). The 전환 제안 no longer promises 「지금처럼 로그인 없이 계속 쓸 수 있습니다」 — that the offer is not a gate is now said only by what it does (닫기 · 세션당 1회 · 익명 경로 무변경).
+- `P8.S11`: **experience** — the auth section: two pages that are no longer the product's one dead end (the rail is an exit), a rule stated **before** the reader spends a submit on it, a 재설정 control that points at what it needs instead of greying out, one line-slot that answers every failure in body ink, a logout receipt that sits above the title instead of where this form's answers stand, and a 전환 제안 demoted to an inset band that sits after the numbers it answers and before the page's provenance.
+- `P8.S11`: **qa** — `## Regression Checklist` gains R12's boxes (below). No count moves: `pytest` **142**, `npm run smoke` **16/16**, `npm run build` green.
+  - `- [ ] 인증 게이팅: an empty submit on 로그인 · 계정 만들기 · 재설정 renders a Korean line with no browser bubble and fires no request; a malformed address renders 「이메일 주소 형식이 올바르지 않습니다.」; no required/pattern remains on any auth input (P8)`
+  - `- [ ] 재설정 어포던스: 「비밀번호 재설정」 with an empty address is clickable, focuses the email field and sends nothing; it is disabled only while a request is in flight (P8)`
+  - `- [ ] 로그아웃 플래시: 로그아웃 lands on /auth/login with 「로그아웃되었습니다」 above the h1, once, cleared by the first keystroke and still present after 10 s (no timer) (P8)`
+  - `- [ ] 재설정 페이지: one 비밀번호 field with 「8자 이상」, no 이메일 field, no sample entry; an expired token renders its sentence plus 「로그인」, and a later 8자 미만 removes both (P8)`
+  - `- [ ] 인증 기하: Auth.module.css has exactly one media query (max-width 767px), the primary is 100%×48px at 1456/768/767/390, and no auth control is under 44px (P8)`
+  - `- [ ] 전환 밴드: on an anonymous /stocks/{corp} with a holding, the band is an inset block (no brackets) after 놓친 돈 and before 집계 범위, with no closing reassurance line; 닫기 leaves nothing and the same session does not ask again; signed in it never renders (P8)`
+  - `- [ ] 전환 서열: DeadlineOffer renders nothing until /api/auth/me answers, then 「이 마감 알림 받기 →」 anonymous / 「보유 종목에 담기 →」 signed in, and every login lands on /portfolio (P8)`
+- `P8.S11`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R12's four new strings (`PASSWORD_RULE_KO` · `ERR_FIELDS_REQUIRED_KO` · `ERR_INVALID_EMAIL_KO` · `ERR_RESET_TOKEN_KO`), three deletions (`PII_RECEIVES_KO` · `PII_NOT_STORED_KO` · `CONVERT_STAY_KO`), the shortened `CONVERT_BODY_KO`, the two `authErrorKo` closures with the two that stay unmapped, the reused-not-new list (`BOARD_LABEL_KO` on the rail · `LOGIN_KO` on the expired row · `LOGOUT_DONE_KO` moved not reworded) and the supersessions. `COVERAGE_BOUNDARY_KO` and every lookup string are explicitly **unchanged** (Q39 default (a)).
+
 ### R11 walk — surface 4 (내 종목 조회 + 놓친 돈 조회기), 2026-08-24, operator runtime
 
 Walked by the orchestrator at `http://127.0.0.1:3000` (Chrome desktop 1456px + 390px same-origin
@@ -1302,6 +1316,83 @@ Claude Design decides how.
 
 Operator decisions routed to the handoff §2b as Q-A–D = **Q35–Q38** below.
 
+### `P8.S11` — R12 applied: what the auth surface is now, and what the next surfaces inherit (2026-08-24)
+
+Full record in `slices/P8.S11/result.md`. Ten files changed, `PiiInset.tsx` deleted, `AuthRail.tsx`
+added. **No departures from the record**; two readings and one canon-adjacent declaration are logged
+below because a later slice will meet them.
+
+**The surface.** `Auth.module.css` is R12's `r12-auth.css` ported declaration-for-declaration onto the
+module's class names, with **exactly one media query — `max-width: 767px`** (R5's 480px block is
+retired, and with it the 160px left-aligned primary). Both auth pages are a 480px column whose first
+row is the rail 「← 관제 현황판」 (no new copy — `BOARD_LABEL_KO` + the `← ` every other crumb uses).
+The panel is: flash band? → head → form → **one** `p role="status"` (error `--ink-1`, notice
+`--ink-2`) → quiet row; 로그인 additionally carries R5-4's sample entry, in **both** modes. The PII
+inset is gone from the product, and `copy.ts` now carries the withdrawal of R5-1's 상시 요소 clause in
+prose where the two constants stood.
+
+**Four things later surfaces inherit.**
+
+1. **A form on this product can stop the browser speaking English, and this is what it costs.**
+   `noValidate` + `required`/`pattern` removed means the surface owes a Korean line for **every** way
+   a submit can fail — R12 signed two new ones (빈 입력 · 형식 오류) precisely because `invalid_email`
+   had no Korean and 계정 만들기's empty submit therefore rendered *nothing*. Any later surface that
+   reaches for `noValidate` inherits that debt: measure the empty submit and the malformed submit
+   before deciding, and route a missing sentence to a round rather than inventing it.
+2. **`authErrorKo`'s recorded gaps are down to two, and both are structural.** `invalid_email` →
+   `ERR_INVALID_EMAIL_KO` and `invalid_reset_token` → `ERR_RESET_TOKEN_KO` are now mapped;
+   `csrf_required` (held off by `lib/api.ts`) and a transport failure (no `ApiError`, so no code)
+   stay unmapped **by design**. `lib/auth.test.ts` pins both halves — the five signed lines and the
+   codes that must still render nothing — so a later slice cannot quietly answer an unsigned code.
+3. **A disabled control that explains nothing can be replaced by one that points.** 재설정 is never
+   `disabled` for an empty address: pressing it focuses the email field and sends no request
+   (R11's prompt → input-focus grammar, now used on a second surface). `disabled` survives only for
+   「a request is in flight」. This is the pattern for any control whose precondition is a field the
+   reader can still fill.
+4. **`word-break: keep-all` is per-surface in this product, and rounds assume it.** R12's canon puts
+   it on its harness `body` and `.assub`'s orphan fix depends on it; the product has it on the landing
+   (R9) and the detail page (R10) and **nowhere global** (`app/shell.css` has none). The auth surface
+   was `word-break: normal`, so at 390 「구성된 **예 / 시** 포트폴리오」 broke *inside* an 어절. It is
+   now on the auth `.page`, scoped like the other two. **Every later apply slice should check this
+   first** — 조회 (`Lookup.module.css`) documents the rule in its header but declares it nowhere, so
+   `/stocks` is still `word-break: normal` today.
+
+**Two readings, recorded rather than left implicit.**
+
+- The reset page's 「로그인」 is an `<a>` wearing `.quiet`, not a `button`: build-prompt §3 sends it to
+  `/auth/login`, and R12's own headings note gives the rule the login panel follows (전환 링크와
+  재설정은 `button` **because neither navigates**). Same treatment, same 44px, same ring.
+- That row is bound to the expired answer itself (`{line, expired}` in one state), not to a separate
+  flag. The first cut kept two states and the way out survived a later 8자 미만 — an exit offered for
+  a state the reader had left. Caught in the browser, not in review.
+
+**The 전환 제안 set.** `ConversionOffer` is an **inset band** (no brackets, no glow, one tier below
+the panels whose number it answers) placed **after the last data section and before 집계 범위 +
+provenance** — `StockView` decides the slot, the band's geometry lives in the auth module. Its
+conditions are byte-unchanged: anonymous only, `ready` asked of `lib/holding.ts`'s own `convert()`,
+one `sessionStorage` flag per session, dismissible, and dismissal leaves **nothing** in its place.
+`DeadlineOffer` and the nav 로그인 were verified untouched, not assumed: nothing renders until
+`/api/auth/me` answers (held the request open to see it), then 「이 마감 알림 받기 →」 / 「보유 종목에
+담기 →」 exactly, at R10's 32px/44px.
+
+**Signed-in verification cost one temporary account.** `p8s11-temp@example.com` was created through
+the product's own 계정 만들기, used for the signed-in offer label, the `/auth/login` → `/portfolio`
+redirect and the **real** 로그아웃 → flash path, then deleted with its session. `account` is back to
+its two pre-slice rows (id 14 `s19-fidelity@example.com`, deliberately left per P7 Q13, and the
+operator's own) and `auth_session` back to **3**. A later slice needing a session can do the same —
+create through the product, delete after, re-count both tables — rather than leaving another leftover.
+
+**Verified** at `http://127.0.0.1:3000` **and** `http://100.77.164.42:3000` in `next dev`, and again
+against a production build on `:3100`, at 1456 / 768 / 767 / 600 / 481 / 390 — build-prompt §6 items
+1–12 all green, zero interactive targets under 44px on either auth page at any width, `overflowX` 0
+everywhere, zero console errors or warnings. The doubled-class width (`.page.page`) held identically
+in dev and production, which is `P8.S9`'s lesson applied rather than re-learned.
+
+**Gates:** `npm run typecheck` clean · `npm run smoke` 16/16 · `npm run build` green (scratch copy —
+`next-env.d.ts` untouched) · `pytest` **142** · `workflow validate` clean · the whole
+`## Regression Checklist` re-run, not only R12's lines.
+
+
 ## Operator Questions
 
 _Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._
@@ -1487,6 +1578,18 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   R11's record and `lookup/r11-parts.jsx` — say so and it moves." (a) keep the caption on the lookup
   surface (R11 record stands); (b) strike it product-wide (update R11's record + `copy.ts` +
   the lookup views in a fix slice). Default **(a)** until the operator says otherwise.
+
+- **Q40 (`P8.S11`) — an auth field answers a keyboard focus and a mouse click differently, and both
+  are signed.** R12 §1 gives the inputs `outline: 2px --focus-ring; outline-offset: -1px` on
+  **`:focus-visible`** (the module states it at (0,2,0), so it wins wherever it applies). P7's focus
+  split gives every text field on the product `outline: none` + a brightened hairline on plain
+  **`:focus`** (`app/shell.css`, (0,1,1)) — which is what a *mouse click* into the field matches. So
+  Tab draws the ring and a click draws the border change. R12 drew no mouse-focus state, so nothing
+  was invented here and nothing was dropped. (a) leave it — each round's rule holds where it was
+  drawn; (b) let R12's ring answer both on this surface (one line in the module); (c) settle it
+  product-wide in a later round, since P7 Q2/Q10 (「how far no-selected-focus goes」, 「focused
+  hairline vs. panel edge」) are the same question and are still open. Default **(a)** until the
+  operator says otherwise.
 
 ## Constraints
 

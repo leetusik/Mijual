@@ -34,10 +34,18 @@
  *    network failure). A surface renders **no line** rather than a phrase nobody
  *    signed. See `authErrorKo` for what the panels do to keep those codes
  *    unreachable, and `P5.S15`'s `result.md` for the two that are not.
- * 3. **A third PII row.** R5's copy list says "PII 패널 3행" while R5-1 quotes
- *    two sentences and no more; the third row is on the card, which stays in the
- *    Claude Design project. Two signed lines render; nothing is invented to make
- *    up a count. `P5.S19` checks it against the card.
+ * 3. **A third PII row.** Moot since **R12**: the PII inset itself is gone (the
+ *    operator struck both of its lines in the R12 session, 2026-08-24), so the
+ *    count R5's copy list wrote has nothing left to describe. See the note where
+ *    the two constants used to stand.
+ *
+ * ## R12 (2026-08-24) — four new strings, three deletions, one shortened body
+ *
+ * The auth surfaces' polish round is the first to add copy here since R5. Its
+ * four new constants are the round's own dated exceptions (`build-prompt.md` §5,
+ * `account/r12-parts.jsx`): the field rule 「8자 이상」 and three lines that fill
+ * **recorded blanks** — a submit that used to answer nothing (empty fields,
+ * a malformed address) and an expired reset link that used to answer nothing.
  */
 
 // ---------------------------------------------------------------------------
@@ -58,8 +66,9 @@ export const SIGNUP_INTRO_KO =
   "이메일과 비밀번호만으로 만듭니다 — 만들어지면 바로 로그인됩니다.";
 
 /** The two field labels. R5-1 (개정) names exactly what the panel collects —
- * "가입/로그인 = **이메일+비밀번호**", restated in the PII line below — so these
- * are the round's own nouns for its own two fields, not new copy. */
+ * "가입/로그인 = **이메일+비밀번호**" — so these are the round's own nouns for its
+ * own two fields, not new copy. (The PII inset that used to restate the same pair
+ * on screen was withdrawn by R12; see below.) */
 export const EMAIL_LABEL_KO = "이메일";
 export const PASSWORD_LABEL_KO = "비밀번호";
 
@@ -96,22 +105,55 @@ export const ERR_PASSWORD_TOO_SHORT_KO = "비밀번호는 8자 이상이어야 �
  * client say the same thing sooner, and never lets it say anything else. */
 export const MIN_PASSWORD_LENGTH = 8;
 
+/** The same rule, stated **before** the reader spends a submit on it (R12 Q-C =
+ * yes; `build-prompt.md` §5, card `account/Auth.html`). One token, mono, on the
+ * 비밀번호 label row — R5-1's own rule text ("비밀번호 8자 이상(다른 규칙 없음)")
+ * and not a sentence. It renders on 계정 만들기 and the 재설정 page only: on
+ * 로그인 a short password is not a rule violation but a wrong password, and a
+ * rule stated there would claim a check that screen does not run. */
+export const PASSWORD_RULE_KO = "8자 이상";
+
+/** R12 Q-A = (b) — the form now carries `noValidate`, so the browser's English
+ * bubble is gone and these two lines answer in the slot the round already owns.
+ * The handoff's default (c) — "let the existing Korean API errors answer" — was
+ * rejected in session for a measured reason: on 계정 만들기 an empty address maps
+ * to `invalid_email`, which had no signed Korean, so the reader met a submit that
+ * did nothing at all. 빈 입력 and 형식 오류 are different facts, so they are two
+ * lines. (`build-prompt.md` §2/§5.) */
+export const ERR_FIELDS_REQUIRED_KO = "이메일과 비밀번호를 입력해 주세요.";
+export const ERR_INVALID_EMAIL_KO = "이메일 주소 형식이 올바르지 않습니다.";
+
+/** The line for `invalid_reset_token` — an expired or already-spent link, which
+ * until R12 answered with **no line at all** (see `authErrorKo`'s note below and
+ * `ResetConfirmPanel`'s header). It does not say *which* of the two happened:
+ * not distinguishing 만료 from 사용됨 is the token state staying unexposed, the
+ * same rule the 가입 여부 비노출 answer keeps. (R12 finding 3, `build-prompt.md`
+ * §3/§5, card `account/Reset.html`.) */
+export const ERR_RESET_TOKEN_KO =
+  "이 재설정 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청해 주세요.";
+
 /**
  * `mijual.web` structural code → the signed body line, and **nothing else**.
  *
  * The API writes no failure copy by design (`P5.S1` note 1: the signed design
  * writes *state* copy, not error copy), so the Korean for a failure is this
- * surface's — which means the mapping is exactly as wide as the round's three
- * cases and no wider. An unmapped code returns `null` and the panel shows no
+ * surface's — which means the mapping is exactly as wide as what a round has
+ * signed and no wider. An unmapped code returns `null` and the panel shows no
  * line, because the alternative is inventing a sentence.
  *
- * The two unmapped codes a reader could otherwise meet are held off structurally
- * instead of verbally: `invalid_email` by the field's own `type="email"` +
- * `pattern` (the browser refuses in **its** copy, not ours, exactly as the
- * framework's 404 does — `P5.S13` note 4), and `csrf_required` by
- * `lib/api.ts` setting the header on every mutation. `invalid_reset_token`
- * remains reachable — an expired or spent link — and is a recorded gap for
- * `P5.S19`/the operator, not a licence to write Korean for it.
+ * **R12 closed two of the three recorded gaps.** `invalid_email` used to be held
+ * off structurally, by the field's own `type="email"` + `pattern` (the browser
+ * refusing in **its** copy, not ours) — R12 Q-A retired that trade: the inputs
+ * carry `noValidate` and no `pattern`, and the code has a signed Korean line.
+ * `invalid_reset_token` used to be reachable with no line at all; it now has one,
+ * and the reset page additionally offers the way back to where a fresh link is
+ * requested.
+ *
+ * **Two stay unmapped, by design.** `csrf_required` is held off by `lib/api.ts`
+ * setting the header on every mutation — a reader who meets it is in a state no
+ * sentence of ours can improve — and a transport failure is not a structural code
+ * at all (no `ApiError`, so nothing to map). Neither is a licence to write Korean
+ * for it.
  */
 export function authErrorKo(code: string): string | null {
   switch (code) {
@@ -121,6 +163,10 @@ export function authErrorKo(code: string): string | null {
       return ERR_EMAIL_TAKEN_KO;
     case "password_too_short":
       return ERR_PASSWORD_TOO_SHORT_KO;
+    case "invalid_email":
+      return ERR_INVALID_EMAIL_KO;
+    case "invalid_reset_token":
+      return ERR_RESET_TOKEN_KO;
     default:
       return null;
   }
@@ -140,30 +186,43 @@ export const RESET_LINK_KO = "비밀번호 재설정";
  * way and the link travels only through the mailer. */
 export const RESET_SENT_KO = "재설정 링크를 보냈습니다 — 메일함을 확인해 주세요.";
 
-// ---------------------------------------------------------------------------
-// The PII inset (R5-1 개정, build-prompt §Auth: "PII 패널은 로그인 화면 상시 요소")
-// ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   The PII inset — **withdrawn by R12** (operator instruction, 2026-08-24)
+   ---------------------------------------------------------------------------
 
-/** R5-1 verbatim: PII 패널 유지: "미주알이 받는 것: 이메일 주소와 비밀번호" +
- * "저장하지 않는 것은 유출되지 않습니다". Both lines are true by construction —
- * `security` fixes stored reader PII at email + password hash, and `P5.S7`'s
- * `account` table carries nothing else. */
-export const PII_RECEIVES_KO = "미주알이 받는 것: 이메일 주소와 비밀번호";
-export const PII_NOT_STORED_KO = "저장하지 않는 것은 유출되지 않습니다";
+   R5-1 made the two-line PII panel a 상시 요소 of the login screen ("PII 패널은
+   로그인 화면 상시 요소 (inset)"), and `security` restated it as a boundary
+   rather than as copy. **That clause is withdrawn.** In the R12 session the
+   operator struck both lines — 「미주알이 받는 것: 이메일 주소와 비밀번호」 and
+   「저장하지 않는 것은 유출되지 않습니다」 — from both auth pages; `PiiInset.tsx`
+   and its two constants are deleted with them (R12 `build-prompt.md` §1/§5, card
+   `account/Auth.html` note 「PII inset 삭제」).
+
+   What was true stays true — `P5.S7`'s `account` table is still
+   `id · email · password_hash · created_at · updated_at` and nothing else — it is
+   simply no longer asserted on the screen. The canon keeps the `.pii*` geometry
+   unused so the tier does not have to be re-decided if the statement ever comes
+   back; the product renders nothing for it.
+   --------------------------------------------------------------------------- */
 
 // ---------------------------------------------------------------------------
 // 전환 제안 (R5-2)
 // ---------------------------------------------------------------------------
 
-/** result.md §Proposed copy, Convert — the offer panel's four lines, in the
- * order the round lists them. The first is R4's own constraint stated back to the
- * reader (조회 holdings live in `sessionStorage`, `lib/holding.ts`); the last is
- * the promise that the offer gates nothing. */
+/** result.md §Proposed copy, Convert — the offer's lines, in the order the round
+ * lists them. The first is R4's own constraint stated back to the reader (조회
+ * holdings live in `sessionStorage`, `lib/holding.ts`).
+ *
+ * ⚠ **R12 shortened this set** (operator instruction, 2026-08-24; `build-prompt`
+ * §4/§5, card `account/Offers.html`). The closing reassurance 「지금처럼 로그인
+ * 없이 계속 쓸 수 있습니다」 is **deleted**, and `CONVERT_BODY_KO` loses its
+ * trailing clause 「— 계정은 이메일과 비밀번호뿐입니다.」. The reason the round
+ * gives: that the offer is not a gate is said by what it *does* — 닫기, once per
+ * session, every anonymous path unchanged — not by a sentence promising it. The
+ * band is three things now: the session line, one body line and the CTA. */
 export const CONVERT_SESSION_KO = "이 보유량은 탭을 닫으면 사라집니다";
-export const CONVERT_BODY_KO =
-  "계정에 저장하면 마감이 다가올 때 이메일로 알립니다 — 계정은 이메일과 비밀번호뿐입니다.";
+export const CONVERT_BODY_KO = "계정에 저장하면 마감이 다가올 때 이메일로 알립니다.";
 export const CONVERT_CTA_KO = "저장하고 알림 받기";
-export const CONVERT_STAY_KO = "지금처럼 로그인 없이 계속 쓸 수 있습니다";
 
 /** build-prompt §Conversion: "세션스토리지 플래그로 세션당 1회, **닫기 가능**,
  * 결과를 가리지 않음". The control's label is the round's own word. */

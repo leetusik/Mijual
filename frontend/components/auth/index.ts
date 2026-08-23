@@ -8,10 +8,15 @@
  *
  * 내 포트폴리오 itself, the logged-in account menu and the sample *mode* are
  * `P5.S16`'s; this folder deliberately builds none of them.
+ *
+ * **R12 removed one export**: `PiiInset` — the two-line PII panel R5-1 made a
+ * 상시 요소 of the auth screen — is deleted with its component and its two
+ * constants (operator instruction, 2026-08-24). `AuthRail` is internal to the two
+ * panels and is not exported: it is this surface's own row, not an element other
+ * surfaces compose.
  */
 export { AuthPanel } from "./AuthPanel";
 export { ResetConfirmPanel } from "./ResetConfirmPanel";
-export { PiiInset } from "./PiiInset";
 export { SampleEntry } from "./SampleEntry";
 export { ConversionOffer } from "./ConversionOffer";
 export { DeadlineOffer } from "./DeadlineOffer";

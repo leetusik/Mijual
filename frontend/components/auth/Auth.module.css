@@ -1,49 +1,96 @@
-/* R5's auth surfaces and its two conversion touchpoints.
+/* R12 — 로그인 · 계정 만들기 · 비밀번호 재설정 + 전환 제안 (round `12-auth`, signed
+ * 2026-08-24), superseding R5's own geometry for this surface.
  *
- * The round states this layer in behaviour rather than in measurements — one
- * panel with two modes and a 전환 링크, a permanent PII inset, a button whose
- * *text* is replaced while a request is in flight (no spinner), a one-line error,
- * a bottom-fixed sample entry, an offer panel that never covers the results, and
- * a one-line link under a detail D-day. Those are the contract; everything below
- * is the signed system carrying them.
+ * Every declaration below is copied from the round's geometry canon
+ * `docs/reference/design/rounds/12-auth/output/account/r12-auth.css` — the file
+ * that *is* the contract ("tokens only — copy declarations, do not re-derive") —
+ * onto this module's class names. Where the canon writes a raw length the canon's
+ * number is kept (`6px`, `14px`, `10px 14px`, `34ch`, `62ch`); where it writes a
+ * token the token is kept.
  *
- * Three rules this file keeps, each from a landed decision rather than taste:
+ * Four rules this file keeps, each from a landed decision rather than taste:
  *
- * - **No colour literal, and no `--alert` on a failure.** `--alert` means
- *   expiring/lost and nothing else (`frontend.md` §Tokens: "Red never encodes
- *   price movement"), so R5's "오류(본문 한 줄)" renders in body ink. A red login
- *   error would spend the one hue this product reserves for a deadline.
- * - **No radius, no shadow** (R1: square system, hairline elevation), and the
- *   controls are R4's own measurements — the round says to reuse its signed input
- *   primitive rather than redesign one (build-prompt §Portfolio), and its 48px
- *   console row / 44px mobile floor are what `components/lookup/Lookup.module.css`
- *   already states.
- * - **Nothing here is `position: fixed`.** The chrome has no fixed element
- *   (`P5.S11` note 8) and R6's launcher lands in the bottom-right corner; an
- *   offer panel that floated would take that corner *and* be the forced overlay
- *   R5-2 forbids ("게이트 화면·강제 모달 금지").
+ * - **One breakpoint — 767px** (R12 §0, joining R10/R11). R5's
+ *   `@media (min-width: 480px)` block is **retired**: the panel padding it
+ *   carried and the 160px left-aligned primary are both gone, and the single
+ *   `@media (max-width: 767px)` at the tail is the only media query in this file.
+ * - **No `--alert` on a failure.** `--alert` means expiring/lost and nothing else
+ *   (R1/R5), so R12's "오류는 본문 잉크 한 줄" renders in `--ink-1` and never
+ *   touches a field border. Notices are the same slot in `--ink-2`.
+ * - **No radius, no shadow** beyond the craft panel's own glow (R1: square
+ *   system, hairline elevation).
+ * - **Nothing here is `position: fixed`.** The offer is a block in normal flow,
+ *   one tier *below* the data panels that produced the number it answers
+ *   ("게이트 화면·강제 모달 금지", R5-2, restated by R12 §4).
+ *
+ * Two colour literals appear — `#fff` on the two solid actions and
+ * `rgba(95,208,165,.45)` as their border. Both are the canon's own declarations
+ * (`.asubmit` / `.aocta`), copied rather than re-derived; the second is the
+ * cosmos `--live` at 45%, and this product renders under `.cosmos` everywhere.
  */
 
 /* ---------------------------------------------------------------------------
-   The auth page (R5-1)
+   The page frame (R12 §1, Q-D = 레일) — rail · panel · sample entry, in one
+   480px column. The rail is the column's first row, not a full-width bar: it is
+   the way out for a reader who arrived from an offer and decided not to make an
+   account, which is what stopped this page being the product's one dead end.
    --------------------------------------------------------------------------- */
 
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  /* One column, narrower than the 1120px content column: the panel collects two
-     fields, and a form stretched to the board's width would read as a surface
-     that wants more than it does. R4's console row uses the same 560 ceiling. */
-  max-width: 560px;
+/* Doubled class on purpose (`P8.S9`'s lesson): `<main>` also carries the shared
+   `content` class, whose `max-width: var(--bp-lg)` wins in the production bundle
+   whenever the app stylesheet lands last. Stating this width at (0,2,0) makes it
+   independent of stylesheet order — measured in a production build, not only in
+   `next dev`. */
+.page.page {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 480px;
   padding-block: var(--space-8) var(--space-16);
+  /* Korean breaks between 어절 on this surface. The canon states it on the page
+     root that hosts the column, and the round's own orphan fix depends on it —
+     `.sampleSub`'s note reads "keep-all은 body에서 이미 걸리고, balance가 마지막
+     줄을 끌어올린다". Scoped to this page like R9 scoped the landing's and R10
+     the detail's; measured, without it 「예시」 split across two lines at 390. */
+  word-break: keep-all;
+}
+
+/* 「← 관제 현황판」 — mono text-sm, ink-2, 44px, hover → --live (canon `.arail`). */
+.rail {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.crumb:hover {
+  color: var(--live);
+}
+
+.crumb:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .panel {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-4);
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-6);
+}
+
+.head {
+  display: grid;
+  gap: 6px;
 }
 
 .title {
@@ -62,16 +109,40 @@
   color: var(--ink-2);
 }
 
+/* 로그아웃되었습니다 (R12 finding 10) — the previous action's receipt, so it lands
+   **above** the title in its own band. The line under the form belongs to *this*
+   form's answers; a notice about a logout sitting there would read as a response
+   to a submit that never happened. No timer, nothing fades out. */
+.flash {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+}
+
+/* ---------------------------------------------------------------------------
+   The form (R12 §1)
+   --------------------------------------------------------------------------- */
+
 .form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-3);
 }
 
 .field {
+  display: grid;
+  gap: 6px;
+}
+
+/* The label row carries the field's rule on its right (Q-C): a flex baseline row
+   so 「8자 이상」 sits on the label's own baseline rather than on the box edge. */
+.labelRow {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .label {
@@ -79,17 +150,25 @@
   color: var(--ink-2);
 }
 
-/* R4's signed input, reused: inset surface, hairline border, 44px floor. An
-   email and a password are prose, not numerals, so neither is mono. */
+/* 「8자 이상」 — R5-1's own rule text as a *token*, mono because it is a number,
+   on the label row so it reads as the field's constraint and not as an error that
+   already happened. 계정 만들기 + 재설정 only (R12 Q-C). */
+.rule {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
 .input {
   width: 100%;
   min-width: 0;
   height: 48px;
-  padding-inline: var(--space-3);
+  padding: 0 14px;
   background: var(--surface-inset);
   border: 1px solid var(--border-strong);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+  font: inherit;
+  font-size: var(--text-md);
   color: var(--ink-1);
 }
 
@@ -97,50 +176,64 @@
   color: var(--ink-3);
 }
 
-/* R4's 조회 button, the product's one primary action treatment. While a request
-   is in flight this button carries 확인 중… and is disabled — the state is the
+/* R12 §1: inputs take the ring **inside** their own edge (offset −1) so the 48px
+   box does not grow and the ring never lands under a neighbouring control. At
+   (0,2,0) this outranks `app/shell.css`'s (0,1,1) text-field rule, which is the
+   P7 split's default for every other field on the product. */
+.input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+/* The primary is not a row-mate here (R12 finding 5). R4/R11's 조회 is 48px
+   *beside* an input; this button is the form's last field, so it takes the
+   field's width at **both** breakpoints. 160px left-aligned is retired. While a
+   request is in flight it carries 확인 중… and is disabled — the state is the
    label, which is why nothing here spins. */
 .submit {
-  min-height: 48px;
-  padding-inline: var(--space-4);
+  width: 100%;
+  height: 48px;
+  margin-top: var(--space-1);
   background: var(--live-solid);
-  border: 1px solid var(--live-solid);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+  border: 1px solid rgba(95, 208, 165, 0.45);
+  font: inherit;
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--ink-1);
+  color: #fff;
   cursor: pointer;
 }
 
 .submit:disabled {
-  cursor: default;
   opacity: 0.72;
+  cursor: default;
 }
 
-/* The one body line R5 signs for a failure — body ink, never alert. */
-.error {
+.submit:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* One live region, one slot: 오류와 알림이 같은 자리에서 말한다 (R5-1: 본문 한
+   줄, 필드 옆 금지). 오류는 ink-1, 알림은 ink-2 — 색이 아니라 무게가 둘을 가른다. */
+.line {
   margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-base);
   color: var(--ink-1);
 }
 
-/* 재설정 링크를 보냈습니다 · 로그아웃되었습니다 — statements, not alarms. */
-.notice {
-  margin: 0;
-  font-size: var(--text-base);
-  line-height: var(--leading-base);
+.soft {
   color: var(--ink-2);
 }
 
-/* The 전환 링크 and the 재설정 trigger: quiet, 44px, and buttons rather than
-   links because neither navigates — one swaps the panel's mode, the other posts
-   a request. */
+/* 조용한 행 — 전환 링크 + 재설정. Both are buttons: one swaps the panel's mode,
+   the other posts a request; neither navigates. (The reset page's 「로그인」 does
+   navigate, and is a link wearing the same class.) */
 .quietRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: 0 var(--space-5);
 }
 
 .quiet {
@@ -150,51 +243,43 @@
   padding: 0;
   background: none;
   border: 0;
-  font-family: var(--font-sans);
+  font: inherit;
   font-size: var(--text-sm);
   color: var(--ink-2);
   text-decoration: underline;
   text-underline-offset: 3px;
+  white-space: nowrap;
   cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
 }
 
 .quiet:hover:not(:disabled) {
   color: var(--ink-1);
 }
 
+.quiet:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* R12 finding 1 — 재설정은 더 이상 disabled 되지 않는다. With no address the
+   control is alive, and pressing it points at what is needed (focus into the
+   email field) instead of sending a request about nothing. `disabled` exists only
+   while a request is in flight — which is the state this rule now draws. */
 .quiet:disabled {
   color: var(--ink-3);
   cursor: default;
+  text-decoration-color: var(--border-soft);
 }
 
 /* ---------------------------------------------------------------------------
-   The PII inset — R5-1's permanent element on the auth screen
-   --------------------------------------------------------------------------- */
-
-.pii {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  background: var(--surface-inset);
-  border: 1px solid var(--border-soft);
-}
-
-.piiLine {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-base);
-  color: var(--ink-2);
-}
-
-/* ---------------------------------------------------------------------------
-   샘플 진입 (R5-4) — the auth page's bottom-fixed entry, and the landing's line
+   샘플 진입 (R5-4) — the 로그인 page's bottom entry. 재설정 has none: that page
+   belongs to a reader who already has an account.
    --------------------------------------------------------------------------- */
 
 .sample {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: grid;
+  gap: 2px;
   padding-top: var(--space-4);
   border-top: 1px solid var(--border-soft);
 }
@@ -202,7 +287,7 @@
 .sampleLink {
   display: inline-flex;
   align-items: center;
-  align-self: flex-start;
+  justify-self: start;
   min-height: 44px;
   font-size: var(--text-base);
   color: var(--ink-1);
@@ -214,26 +299,37 @@
   color: var(--live);
 }
 
+.sampleLink:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* R12 finding 6 — the 390px orphan 「클릭 한 / 번.」. `keep-all` is already on the
+   page root; `balance` lifts the last line and the 34ch ceiling holds the same
+   three lines on the desktop width. */
 .sampleSub {
   margin: 0;
   font-size: var(--text-sm);
   line-height: var(--leading-base);
   color: var(--ink-3);
+  text-wrap: balance;
+  max-width: 34ch;
 }
 
-/* R5-4's landing line had its own class here; **R8 removed the line** (see
-   `SampleEntry.tsx`), so the style went with it. The 로그인 page's entry above is
-   the placement that survives. */
-
 /* ---------------------------------------------------------------------------
-   전환 제안 ① — the offer panel under 조회's results (R5-2)
-   --------------------------------------------------------------------------- */
+   전환 제안 ① — the offer **band** under 조회's results (R12 §4, finding 11)
+   ---------------------------------------------------------------------------
+   서열은 표면이 만든다: 데이터 패널(브래킷 + 글로우) > 제안(inset 밴드, 브래킷
+   없음) > 상세 한 줄 링크 > nav 로그인. R5-2's craft panel is retired here — an
+   offer that looks bigger than the number it answers is not an offer, it is a
+   gate. */
 
 .offer {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-2);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-inset);
+  border: 1px solid var(--border-soft);
 }
 
 .offerHead {
@@ -252,21 +348,23 @@
 
 .offerBody {
   margin: 0;
+  max-width: 62ch;
   font-size: var(--text-sm);
   line-height: var(--leading-base);
   color: var(--ink-2);
 }
 
-/* 닫기: a 44px target that says what it does, quiet enough that the results
-   beside it stay the page's subject. */
+/* 닫기: a 44×44 target pulled back out of the head row by an equal negative
+   margin, so the row keeps its 8px rhythm while the control keeps its floor. */
 .dismiss {
   flex: none;
   min-height: 44px;
   min-width: 44px;
-  padding-inline: var(--space-2);
+  margin: -11px -10px -11px 0;
+  padding: 0;
   background: none;
   border: 0;
-  font-family: var(--font-sans);
+  font: inherit;
   font-size: var(--text-sm);
   color: var(--ink-3);
   cursor: pointer;
@@ -276,28 +374,39 @@
   color: var(--ink-1);
 }
 
+.dismiss:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .offerCta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  align-self: flex-start;
+  justify-self: start;
   min-height: 44px;
-  padding-inline: var(--space-4);
+  margin-top: 2px;
+  padding: 0 var(--space-5);
   background: var(--live-solid);
-  border: 1px solid var(--live-solid);
+  border: 1px solid rgba(95, 208, 165, 0.45);
   font-size: var(--text-base);
   font-weight: 600;
-  color: var(--ink-1);
+  color: #fff;
   text-decoration: none;
 }
 
-/* "지금처럼 로그인 없이 계속 쓸 수 있습니다" — the sentence that keeps the offer
-   an offer. It is part of the panel, never a dismissal-only escape. */
-.offerStay {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--ink-3);
+.offerCta:hover {
+  color: #fff;
 }
+
+.offerCta:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* R5-2's closing line 「지금처럼 로그인 없이 계속 쓸 수 있습니다」 had its own rule
+   here; the operator struck the line in the R12 session, so the rule went with it.
+   That the offer is not a gate is said by what it does — 닫기, once per session,
+   every anonymous path unchanged — not by a sentence. */
 
 /* ---------------------------------------------------------------------------
    전환 제안 ② — the one-line link under a detail page's D-day (R5-2)
@@ -317,16 +426,24 @@
 }
 
 /* ---------------------------------------------------------------------------
-   ≥480px
+   ≤767px — the one media query on this surface (R12 §0)
    --------------------------------------------------------------------------- */
 
-@media (min-width: 480px) {
-  .panel {
-    padding: var(--space-6);
+@media (max-width: 767px) {
+  .page.page {
+    max-width: none;
   }
 
-  .submit {
-    align-self: flex-start;
-    min-width: 160px;
+  .panel {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .offer {
+    padding: 14px var(--space-4);
+  }
+
+  .offerCta {
+    width: 100%;
+    justify-content: center;
   }
 }

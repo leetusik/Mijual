@@ -347,3 +347,58 @@ h1이 결과 페이지에서 「내 종목 조회」 → **종목명**이 되고
 breakdown의 **접수번호 링크(`metaLink`)는 은퇴**하고 이벤트로 가는 길은 「상세 보기 →」
 하나다; `.mmcap` 아래 R4가 쓰던 별도 coverage 캡션은 캡션 하나로 합쳐진다;
 **480px 브레이크포인트 은퇴** (경계는 767px 하나).
+
+## R12 additions — 로그인 · 계정 만들기 · 비밀번호 재설정 + 전환 제안 (hand-registered, `P8.S11`)
+
+<!-- HAND-WRITTEN, like the sections above. **A regeneration of this file drops
+     it; re-append it.** -->
+
+R12 (`rounds/12-auth`, signed 2026-08-24) is the first round to add copy to the
+auth surfaces since R5. **Four** strings enter, **three** leave, one body line is
+shortened, and two structural codes stop being silent. Everything else the two
+panels render is `components/auth/copy.ts` as R5 signed it.
+
+**New — the round's four dated exceptions (2026-08-24)** (`build-prompt.md` §5 ·
+`account/r12-parts.jsx`'s `A_NEW_*` · the `account/Auth.html` and
+`account/Reset.html` cards):
+
+| 상수 | 문자열 | 어디에 |
+|---|---|---|
+| `PASSWORD_RULE_KO` | 8자 이상 | 비밀번호 라벨 행의 mono `text-xs` 토큰 (Q-C = 예). **계정 만들기와 재설정 페이지에만** — 로그인에서 길이는 규칙이 아니라 틀린 비밀번호다. 문장이 아니라 R5-1의 규칙 표현(「비밀번호 8자 이상(다른 규칙 없음)」) 그대로의 토큰 하나 |
+| `ERR_FIELDS_REQUIRED_KO` | 이메일과 비밀번호를 입력해 주세요. | `noValidate` 폼의 빈 입력 (Q-A = b). 브라우저의 영어 말풍선이 사라진 자리를 오류 슬롯의 한국어가 대신한다 |
+| `ERR_INVALID_EMAIL_KO` | 이메일 주소 형식이 올바르지 않습니다. | 같은 슬롯, 형식 오류. `copy.ts`가 **「한국어 없음」으로 적어둔** `invalid_email`의 빈자리를 메운다 — 그래서 `authErrorKo`에도 매핑된다 |
+| `ERR_RESET_TOKEN_KO` | 이 재설정 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청해 주세요. | 만료·사용된 재설정 링크 (finding 3). 이전에는 **아무 줄도 없이** idle로 돌아갔다. 만료인지 사용인지 **구분하지 않는 것**이 곧 토큰 상태 비노출이며, 이유는 말하지 않는다 (R10 Q-A의 한국어 404와 같은 등급의 예외) |
+
+**Deleted — 운영자 지시, 2026-08-24 (이 라운드 세션)**:
+
+| 상수 | 문자열 | 무엇이 회수되었나 |
+|---|---|---|
+| `PII_RECEIVES_KO` | 미주알이 받는 것: 이메일 주소와 비밀번호 | R5-1의 「PII 패널은 로그인 화면 **상시 요소**(inset)」 조항이 회수된다. 컴포넌트(`PiiInset.tsx`)도 함께 삭제 |
+| `PII_NOT_STORED_KO` | 저장하지 않는 것은 유출되지 않습니다 | 같은 지시. 문장이 주장하던 사실(`account` = `id · email · password_hash · created_at · updated_at`)은 그대로이고, 화면에서 주장하지 않을 뿐이다 |
+| `CONVERT_STAY_KO` | 지금처럼 로그인 없이 계속 쓸 수 있습니다 | 제안 밴드의 마지막 안심 문장. 제안이 게이트가 아니라는 사실은 **동작**(닫기 · 세션당 1회 · 익명 경로 무변경)이 말한다 |
+
+**Shortened** — `CONVERT_BODY_KO` 「계정에 저장하면 마감이 다가올 때 이메일로
+알립니다 **— 계정은 이메일과 비밀번호뿐입니다.**」 → 「계정에 저장하면 마감이
+다가올 때 이메일로 알립니다.」 (같은 지시. 밴드는 이제 세 가지다: 세션 줄 + 닫기 ·
+본문 한 줄 · CTA.)
+
+**`authErrorKo`의 기록된 빈자리 3건 중 2건이 닫혔다** — `invalid_email` →
+`ERR_INVALID_EMAIL_KO`, `invalid_reset_token` → `ERR_RESET_TOKEN_KO`.
+`csrf_required`(모든 mutation에 헤더를 붙이는 `lib/api.ts`가 막는다)와 전송 실패
+(`ApiError`가 아니므로 매핑할 코드 자체가 없다)는 **설계상 매핑하지 않는다**.
+
+**Reused, not new** (R12가 자리를 옮겼을 뿐 문자열은 이미 등록되어 있다):
+`BOARD_LABEL_KO`「관제 현황판」 — 두 auth 페이지의 레일 「← 관제 현황판」(Q-D),
+다른 표면의 크럼과 같은 문구; `LOGIN_KO`「로그인」 — 재설정 페이지의 만료 상태에서만
+서는 조용한 행의 라벨(모드 이름 그대로, 신규 아님); `LOGOUT_DONE_KO`
+「로그아웃되었습니다」 — 문구 그대로, 자리만 제목 **위** 밴드로 옮겼다.
+
+**Superseded (R5 §들, `SIGNOFF.md` R12 우선순위)** — 문자열이 아니라 **배치·규칙**이
+바뀐 것들: PII inset 상시 요소 조항 **회수**; 재설정 트리거는 주소가 없어도
+`disabled`가 아니다(누르면 이메일 칸으로 포커스); 주 버튼은 두 브레이크포인트 모두
+전폭 48px(160px 좌측 정렬 은퇴); 오류·알림은 **한 슬롯** `p role="status"`;
+R5의 480px 브레이크포인트 **은퇴**(경계는 767px 하나); 제안은 CraftPanel이 아니라
+inset 밴드이고 마지막 데이터 섹션 **뒤**, 집계 범위 **앞**에 선다.
+
+**Not changed by this round** — `COVERAGE_BOUNDARY_KO`는 R12의 Offers 카드에서만
+지워졌고 조회 표면에는 그대로 렌더된다 (R11 기록이 유효; P8 Q39 기본값 (a)).
