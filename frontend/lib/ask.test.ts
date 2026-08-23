@@ -1,5 +1,5 @@
 /**
- * The AI 질문 store's smoke check — four cases, no framework.
+ * The AI 질문 store's smoke check — five cases, no framework.
  *
  * Run by `npm run smoke` (`node --test "lib/*.test.ts"`). What `next build`
  * cannot see is the two things this surface is *made* of: the incremental SSE
@@ -156,4 +156,58 @@ test("중지 keeps the partial answer and ends the turn as 중단", async () => 
   );
   // 부분 답변 유지 — 지우기 금지.
   assert.ok(state.turns[0].blocks.length > 0);
+});
+
+test("a turn minted after a restored thread never reuses a stored id", async () => {
+  // A thread written by an earlier build carries the legacy `t1`/`t2` ids and must
+  // still hydrate (`Persisted.v` stays 1); they only have to stay distinct from
+  // whatever *this* load mints — a collision would stream one answer into two
+  // turns and retry the wrong one, not merely warn about a duplicate React key.
+  const stored = {
+    v: 1,
+    scope: null,
+    scopeChosen: false,
+    sessionHash: null,
+    turns: ["t1", "t2"].map((id) => ({
+      id,
+      question: `질문 ${id}`,
+      scope: null,
+      blocks: [],
+      chips: [],
+      links: [],
+      footer: null,
+      status: "done",
+      answer: "답변.",
+    })),
+  };
+  const items = new Map([["mijual.ask.thread", JSON.stringify(stored)]]);
+  const scope = globalThis as { window?: unknown };
+  scope.window = {
+    sessionStorage: {
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        items.set(key, value);
+      },
+    },
+  };
+  globalThis.fetch = (async () =>
+    new Response(JSON.stringify({ error: { code: "rate_limited" } }), {
+      status: 429,
+      headers: { "content-type": "application/json" },
+    })) as unknown as typeof fetch;
+
+  try {
+    const store = createAskStore();
+    store.hydrate();
+    store.ask("이번엔 어떻게 되나요?");
+    const state = await settled(
+      () => store.getSnapshot(),
+      (snapshot) => snapshot.turns[2]?.status === "error",
+    );
+    const ids = state.turns.map((turn) => turn.id);
+    assert.deepEqual(ids.slice(0, 2), ["t1", "t2"]);
+    assert.equal(new Set(ids).size, 3);
+  } finally {
+    delete scope.window;
+  }
 });

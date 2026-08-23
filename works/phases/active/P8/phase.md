@@ -357,12 +357,46 @@ operator its inherited items alongside the walk's own findings** (see Operator Q
 - Verification floor and probe traps are recorded in `docs/current/frontend.md`; the completion rule
   is in `docs/current/qa.md`. Both are worth re-reading before the first browser claim.
 
+### `P8.S1` — the `t1` collision is fixed, and what it taught the ask surface (2026-08-23)
+
+- **Fix shipped:** `nextId()` in `frontend/lib/ask.ts` now mints `` `t${SESSION_TAG}-${counter}` ``,
+  where `SESSION_TAG` is 8 random chars computed **once per module evaluation = once per page load**.
+  Nothing else in the store moved — `Persisted.v` stays `1`, `readThread`/`writeThread`/`settle`/
+  `hydrate` are untouched, and a thread persisted with legacy `t1`, `t2` still hydrates (verified in a
+  browser against a real `t1` thread). Measured before/after with the same harness on `127.0.0.1:3000`:
+  **before** `ids ["t1","t1"]` + **9** duplicate-key messages; **after** two distinct ids, **0**.
+- **`crypto.randomUUID` is secure-context only, and the operator's tailnet URL is not a secure
+  context.** Measured: `http://127.0.0.1:3000` → `isSecureContext true`, `randomUUID function`;
+  `http://100.77.164.42:3000` → `isSecureContext false`, **`randomUUID undefined`**, `getRandomValues`
+  present. **Any later slice that reaches for `crypto.randomUUID`, `crypto.subtle`, geolocation,
+  clipboard, service workers or notifications will find them missing on the operator's second access
+  path** — and the manifest says both paths count. Prefer an API that works in both, or measure the
+  fallback branch, because the tailnet is the branch that gets tested least.
+- **A turn id is a lookup key, not only a React key** — `patchTurn` rewrites *every* match,
+  `history(exceptId)` filters by it, `retry` takes the *first*. R14/`P8.S15` must keep any new
+  minting/dedupe path pointing at exactly one turn. Verified functionally: 중지 → 재시도 on the newer
+  turn re-streams that turn and leaves the older turn's answer byte-identical, in dev and in a
+  production build.
+- **React ships no duplicate-key warning in production**, so this whole bug class is invisible in
+  `npm run start`: the only symptom there is turns silently duplicated or omitted. The production build
+  was checked for that reason, not out of habit.
+- **`GET /favicon.ico` → 404 on every reader page**, in both runtimes and on both origins (the repo
+  ships no favicon). Pre-existing, unrelated to this slice — **an item for R8's chrome walk (surface 1)**,
+  where it is the only console noise a first-time user's devtools shows.
+- **`npm run build` rewrites the tracked `frontend/next-env.d.ts`** in place
+  (`.next/dev/types/*` → `.next/types/*`), and `next dev` writes it back. Restore it with
+  `git checkout -- frontend/next-env.d.ts` after building in the repo, or build in a copy the way
+  `P7.S9` did. It is not a change any slice means to commit.
+- The dev stack was left exactly as found (api pid 25177, web pid 13009, both answering `200`); the
+  temporary `:3100` production server used for the prod check is stopped.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
 in parallel mode, so consolidation happens at the review)._
 
 - `P8.DECOMP`: none — this slice wrote no code and no docs.
+- `P8.S1`: **qa** — `## Regression Checklist` gains `- [ ] AI 질문: ask → reload → ask again renders two distinct turns, no duplicate-key warning, 재시도 hits the right turn (P8)`. No other durable truth moved: `lib/ask.ts`'s persisted shape (`Persisted.v === 1`, legacy `t1…` ids still hydrate) is unchanged, so `frontend` needs no new version for this slice.
 
 ## Operator Questions
 

@@ -249,10 +249,42 @@ function writeThread(state: AskState): void {
 // the store
 // ---------------------------------------------------------------------------
 
+/**
+ * A turn id must be unique **across page loads**, not merely within one.
+ *
+ * This module is re-evaluated on every full load, so a bare counter restarts at
+ * 0 — while `hydrate()` installs the sessionStorage thread with the ids it was
+ * written with. The first fresh turn after a reload then re-minted `t1`, and the
+ * id is not only React's key: `patchTurn` rewrites **every** matching turn,
+ * `history(exceptId)` filters by it and `retry` takes the **first** match. A
+ * collision streamed one answer into two turns and retried the wrong one.
+ *
+ * So the id is made collision-free at the source: one random tag per module
+ * evaluation (i.e. per page load) plus the counter. The counter keeps ids short
+ * and readable in order; the tag is what a restored turn — legacy `t1`, or a
+ * previous load's `t<tag>-1` — can never carry.
+ */
+const SESSION_TAG = sessionTag();
+
+function sessionTag(): string {
+  // `crypto.randomUUID` is **secure-context only**, and the operator also browses
+  // this product over plain http on the tailnet — so the fallbacks are the live
+  // path there, not dead code. Only the entropy source varies; the id shape does
+  // not, which keeps both access paths on identical behaviour.
+  const source: Crypto | undefined = globalThis.crypto;
+  if (typeof source?.randomUUID === "function") return source.randomUUID().slice(0, 8);
+  if (typeof source?.getRandomValues === "function") {
+    return Array.from(source.getRandomValues(new Uint8Array(4)), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
+  }
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
 let counter = 0;
 function nextId(): string {
   counter += 1;
-  return `t${counter}`;
+  return `t${SESSION_TAG}-${counter}`;
 }
 
 /** The released prose of a turn with no terminal — the same join the server's
