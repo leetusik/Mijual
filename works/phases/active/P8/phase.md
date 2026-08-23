@@ -798,6 +798,68 @@ production build. Evidence in `slices/P8.S5.5/result.md`. What later chrome work
    the product — 재설정 요청 puts the link in `var/stack/api.log` (`ConsoleMailer`), and the reset lands
    already signed in. The database was left exactly as found (accounts 14 and 25 only).
 
+### R10 landed spec — read back 2026-08-24 (`P8.S6` gate 2), awaiting literal signoff
+
+Read back with `DesignSync` from the "Mijual Design System" project and landed **as-is** under
+`docs/reference/design/rounds/10-event-detail/output/`: `result.md`, `build-prompt.md`,
+`detail/{Header,Offering,Convertible,Procedure,Fields,Corrections,States}.html`, `detail/r10-detail.css`
+(geometry source of truth), `detail/r10-parts.jsx` (shared parts + walked real rows),
+`components/Citation.{html,jsx,d.ts,prompt.md}` (the component re-cut). 8 cards under
+`⏳ P8.S6 · Detail` / `⏳ P8.S6 · Components`; manifest in sync; **token delta none**.
+
+What the session decided (binding once signed — RESPECT THE DESIGN in `P8.S7`):
+
+- Walk 1–14 all fixed (see `result.md` §2): 환산 chain = hairline instrument cells, **no arrows**
+  (desktop column-flow / ≤767px row-flow, label-left value-right, 44px cells); `[근거]` word kept,
+  hit 32px desktop / **44px ≤767px**, open state on the trigger (`--live-tint` + `aria-expanded`);
+  「정정 이력」 ↔ **「접기」** + ×; 정정 전/후 and 철회 정정사항 = **two tagged sides** (arrow column
+  retired); header meta `nowrap` items + `::before` separators, ≤767px separators off + 「정정 반영」
+  chip; closed window = **「기한 지남」** chip (① closed · ③ steps), ② past-open stays 「진행 중」, ②
+  pre-open wordless; ② fact strip = own frame + mono source row `DART 공시 API · {rcept} ↗`, grid
+  fixed 3×2 (390: 1×6), two-part values = value line + reason line; field-absent = **dashed-frame
+  chip**; hierarchy 환산 = primary (44px hairline button) / 담기 = secondary (underlined text link,
+  only while `days >= 0`); eyebrows `h2` with `//` via `::before`, step titles `h3`, band sentence
+  `h2`; 질문 스트립 placement only (36/44px); 390 stack = chip·corp·(본문 표기)·meta → label → D-day
+  → window → 담기 → **DART 원문 full-width 44px (`order:9`)** → strip → body.
+- Four in-session operator directions (result.md 2-b / 2-c / 4-b / §4): **citation popover** —
+  the quote opens as an overlay (opaque `#0e1a15`, 2px `--live` left edge, absolute under the
+  trigger; close = × · outside click · Esc; rows never move); **citation density** — `[근거]` only
+  where the on-screen value differs from the filing's words (extracted dates/figures/ratios, derived
+  inputs); rows that carry the filer's sentence 1:1 get no chip and the section closes with one mono
+  `DART 원문 {rcept} ↗` line (`.secsrc`, 32/44px) — mandatory for any section with zero chips;
+  **「보유 종목에 담기 →」** replaces R5-2's 「내 포트폴리오에 담기 →」 (「포트폴리오」 banned, matches the nav
+  label); **header size uniformity** — `min-height:136px` desktop / `248px` ≤767px +
+  `align-content:space-between`, four states same height.
+- §2b decisions taken at the defaults: **Q15 = (b)** Korean Mijual not-found (`app/not-found.tsx`,
+  status 404, R8 chrome, no reason, path echoed in mono without a label); **Q16** 배정비율 full 10
+  decimals, presentation only (`text-base` + `tabular-nums` + `nowrap`); **Q17** superseded-version
+  URL stays silent (logged as decided); **Q18** absence literals confirmed verbatim.
+- New copy (dated exception 2026-08-23): `not_found.title` 「이 주소에 해당하는 공시가 없습니다」 ·
+  `not_found.line` 「관제 현황판에서 감시 중인 공시를 확인하실 수 있습니다.」 · `not_found.back` 「관제
+  현황판으로 →」 · `offer.add` 「보유 종목에 담기 →」. Everything else reuses locked strings (「기한 지남」,
+  「접기」, 「DART 공시 API」, 「정정사항」).
+- Departures logged in `result.md` §5 (10): arrows retired, ② source row, grid fixed, diff arrow
+  column retired, ③ dependency sentence trimmed, Citation self-injects CSS (`<style id="mj-cite-css">`),
+  re-cut propagates to every Citation user (lookup · ask · corrections), rail rows = the two walked
+  versions only, 한화솔루션 price quote is illustrative (render payload `quote` verbatim, never hardcode),
+  per-row `[근거]` retired.
+- Supersedes (once signed): R3 §3 chain arrows, §4 per-field citation, §CorrectionStory arrow column,
+  §Mobile stack (now with R5-2's line and DART at `order:9`), R3 fact-strip grid; R5-2 담기 label.
+  Regression checklist `build-prompt.md` §10 (0–9) seeds the phase's qa additions.
+
+Read-back observations (record, not fixes — RESPECT THE DESIGN):
+1. `components/Citation.html`'s note still says 「인용 패널 — R3 그대로 (inset … 최대 180px 스크롤)」 while
+   `Citation.jsx` + `build-prompt.md` §6 + `result.md` 2-c specify the **popover** (200px scroll). The
+   JSX and the build prompt are the contract; the card's prose lags by one in-session revision.
+2. `Procedure.html`'s 390 label says 「단계 번호 열 34px」; `r10-detail.css` says 60px ≤767px. CSS wins.
+3. `readme.md` says 「회귀 체크리스트 8항」; the landed `build-prompt.md` §10 has ten (0–9). Ten it is.
+4. `result.md` §1 names `components/Citation.jsx` as changed — landed beside the card with its `.d.ts`
+   and `.prompt.md` (unchanged API) so the apply slice has the full component.
+
+Routing: Q15–Q18 are answered by the session (defaults adopted) — route as **decided** at the review.
+Q19 (two 의견 panels at once) stays open. Q14 stays open.
+
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -911,14 +973,14 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   actually printed (소멸주의보) and **did not mint the caption**. The operator (or a later round) decides:
   add the label + caption as new copy, or leave the countdown wordless as it is today.
 
-- **Q15 — the event 404 surface (R10, finding 15).** Non-exposable rcepts render Next.js' English default page by
+- **Q15 — _(answered in the R10 session, 2026-08-24 — see §"R10 landed spec")_ — the event 404 surface (R10, finding 15).** Non-exposable rcepts render Next.js' English default page by
   R3's deliberate "no 404 copy" choice. Keep the framework page, or design a Korean Mijual not-found that still
   says **no reason why** (D-14)? Orchestrator default: design it in R10.
-- **Q16 — 배정비율 printed to 10 decimals (R10, finding 16).** R3 §6-1 literal. Keep the full value (default) and let
+- **Q16 — _(answered in the R10 session, 2026-08-24 — see §"R10 landed spec")_ — 배정비율 printed to 10 decimals (R10, finding 16).** R3 §6-1 literal. Keep the full value (default) and let
   R10 set its presentation, or round?
-- **Q17 — superseded-version URL (R10, finding 17).** `/events/<old rcept>` renders the current version silently. Leave
+- **Q17 — _(answered in the R10 session, 2026-08-24 — see §"R10 landed spec")_ — superseded-version URL (R10, finding 17).** `/events/<old rcept>` renders the current version silently. Leave
   (default, log as decided) or add a one-line notice?
-- **Q18 — locked R3 absence literals (R10, finding 10).** 「현재 버전 공시에 없음」 / 「카운트다운 없음 — 일정이 공시상
+- **Q18 — _(answered in the R10 session, 2026-08-24 — see §"R10 landed spec")_ — locked R3 absence literals (R10, finding 10).** 「현재 버전 공시에 없음」 / 「카운트다운 없음 — 일정이 공시상
   미정」 stay verbatim; only presentation moves in R10. Confirm.
 
 - **Q19 — may two 의견 panels be open at once?** Measured in `P8.S5.5`: open the footer's 의견 패널, scroll

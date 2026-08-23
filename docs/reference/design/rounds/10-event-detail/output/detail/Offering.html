@@ -1,0 +1,74 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x1900" name="Offering" subtitle="① 환산 블록 재컷 — 화살표 폐기, 하이라인 계기 셀 · 390 한 열 · 발행가 확정 전 · 청약 결과 inset · 배정비율 10자리 · 환산(주) vs 담기(부)" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+const PENDING = [
+  { pend: '확정 예정 2026-09-01' },
+  { label: '할인율', value: '20%', cite: CITE_KY_DISCOUNT },
+  { label: '배정비율 (1주당)', value: '0.2314082845', ratio: true },
+];
+const PRICED = [
+  { label: '확정발행가', value: '22,100원', cite: CITE_HANWHA_PRICE },
+  { label: '할인율', value: '20%', cite: CITE_KY_DISCOUNT },
+  { label: '증서 1주 이론가치', value: '5,525원', est: true },
+  { label: '배정비율 (1주당)', value: '0.2465120994', ratio: true },
+];
+function Inset() { return <div className="inset">
+  <p className="insetTitle">청약 결과</p>
+  <div className="insetRow">
+    <span>발행 <span className="num">42,165,422주</span></span>
+    <span>청약 <span className="num">38,430,497주</span></span>
+    <span>소멸 <span className="num" style={{ color: 'var(--alert)', fontWeight: 600 }}>3,734,925주 (8.86%)</span></span>
+  </div>
+  <p className="insetVal">소멸가치 <EstimateMarker value="206.4억원" color="var(--alert)" /><span className="floor">하한 <EstimateMarker value="165.5억원" color="var(--ink-2)" /></span></p>
+</div>; }
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="① 발행가 확정 전 (계양전기) — 셀 3개. 화살표 없음: 발행가·할인율·배정비율은 유도 과정이 아니라 공시의 값들이고, 세로 하이라인이 그 관계를 정확히 말한다">
+  <Panel>
+    <Head {...KY} />
+    <QStrip chips={Q_R1} />
+    <Chain cells={PENDING} convert foot="확정 후 증서 1주 이론가치를 제공합니다" />
+    <Prov />
+  </Panel>
+</Case>
+
+<Case label="① 확정 후 (한화솔루션) — 셀 4개 + 청약 결과 inset. 이론가치는 파생값이므로 「추정」, 근거 인용 없음 (인용할 원문 구절이 없다) · 배정비율 10자리는 그대로, 크기만 한 단 낮춰 mono 한 덩어리">
+  <Panel>
+    <Head {...HANWHA} />
+    <Chain cells={PRICED} convert />
+    <Inset />
+    <Prov />
+  </Panel>
+</Case>
+
+<Case label="근거 열림 — 셀 안에서 인용이 셀 폭을 따라 펼쳐지고, 트리거는 채워진 상태 + × 를 유지한다 (다시 눌러 닫는다)">
+  <Panel><div className="chainwrap"><div className="chain">
+    <div className="cell"><p className="clab">할인율</p><p className="cval"><span className="num">20%</span><Citation rceptNo={CITE_KY_DISCOUNT[0]} quote={CITE_KY_DISCOUNT[1]} defaultExpanded /></p></div>
+    <div className="cell"><p className="clab">배정비율 (1주당)</p><p className="cval"><span className="num ratio">0.2314082845</span></p></div>
+  </div></div></Panel>
+</Case>
+
+<Case label="390px — 한 열. 셀은 라벨(좌) · 값(우) 로 눕고 하이라인이 가로로 돈다 · 셀 최소 높이 44px · 환산 버튼 전폭 44px · mono 값은 절대 안 쪼개진다">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><Panel><Head {...KY} /><QStrip chips={Q_R1} /><Chain cells={PENDING} convert foot="확정 후 증서 1주 이론가치를 제공합니다" /><Prov /></Panel></div>
+    <div className="m390"><Panel><Head {...HANWHA} /><Chain cells={PRICED} convert /><Inset /><Prov /></Panel></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>화살표 폐기 (walk 1 · 7) —</b> R3의 <code>→</code>는 데스크톱에서 흐름처럼 읽히지만 실제로는 구분자였고, 390에서는 셀이 쌓이면서 <b>고아 화살표</b>가 남았다 (「발행가 확정 전」 뒤, 「배정비율」 앞). R10은 화살표를 <b>하이라인 셀 구획</b>으로 바꾼다 — 데스크톱은 세로 점선, 390은 가로 점선. 관계를 그리지 않으므로 잘못 그릴 화살표도 없다. 셀은 <code>grid-auto-flow:column</code> → <code>row</code> 한 줄로 전환된다.<br />
+<b>어느 셀이 인용을 다는가 (walk 7) —</b> 규칙 하나: <b>공시 본문 구절이 있는 값만 <code>[근거]</code></b>. 확정발행가·할인율은 인용을 달고, <b>이론가치는 「추정」</b>(파생값 — 인용할 구절이 없다), <b>배정비율은 아무 표시도 달지 않는다</b>(API 티어 사실 — 패널 하단 프로비넌스 줄이 이미 담당). 한 셀에 「추정」과 <code>[근거]</code>가 같이 붙는 일은 없다.<br />
+<b>배정비율 (Q-B) —</b> 10자리 전체 유지 — R4의 ⌊N × 배정비율⌋가 같은 수를 써야 하므로 반올림은 다른 숫자다. 표기만 조정: <code>text-base</code> + <code>tabular-nums</code> + <code>nowrap</code>, 390에서는 자기 줄 우측 정렬.<br />
+<b>발행가 확정 전 —</b> 칩과 확정 예정일이 <b>첫 셀 안</b>에 들어간다 (라벨 없음 — 값이 없는 칸에 라벨을 붙이면 값이 있다는 뜻이 된다). 예정발행가는 여전히 렌더하지 않는다 (확정 전 금액 금지).<br />
+<b>서열 (walk 11) —</b> <b>환산 = 주</b> — 체인 바로 아래 하이라인 버튼 44px, 390 전폭. <b>담기 = 부</b> — 헤더의 밑줄 텍스트 링크. 이 페이지의 일은 이 이벤트의 값이고, 포트폴리오는 옆길이다.<br />
+<b>인용 히트 영역 (walk 2) —</b> <code>[근거]</code>는 데스크톱 32px · ≤767px 44px (컴포넌트가 자체 CSS로 싣는다 — <code>components/Citation.html</code> 카드 참조). 열린 상태는 <code>--live-tint</code> 채움 + <code>×</code>, <code>aria-expanded</code>로 노출.
+</div>
+</React.Fragment>);
+</script></body></html>

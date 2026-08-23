@@ -1,0 +1,54 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x1760" name="Header" subtitle="크래프트 헤더 ①②③ — 열린 창(live) · 닫힌 창(기한 지남) · 추후결정 · 공시에 없음 · 메타 줄 줄바꿈 규칙 · 390 스택 순서 (담기 → DART 44px)" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="① 매매기간 열림 — 오늘(2026-08-23) 기준 live 문구 + D-2 + 담기 줄 · 질문 스트립은 헤더 패널 바로 아래 (배치만, 설계는 surface 7)">
+  <Panel><Head {...KY} /><QStrip chips={Q_R1} /></Panel>
+</Case>
+
+<Case label="① 매매기간 닫힘 (한화솔루션 D+44) — 날짜만 두지 않는다: 「기한 지남」 = 이 창은 닫혔다, ③의 단계 칩과 같은 한 단어 · 담기 줄 없음 (지난 마감은 알림 대상이 아니다)">
+  <Panel><Head {...HANWHA} /></Panel>
+</Case>
+
+<Case label="② 전환청구 개시 전 — 상태어 없음. 개시일이 지나면 「진행 중」(잠금 카피), 그때도 「종료」는 없다">
+  <Panel><Head {...DD} /><QStrip chips={Q_R2} /></Panel>
+</Case>
+
+<Case label="일정 추후결정 (경남제약) — StateBadge(칠해진 칩) + 잠금 문장. 날짜는 절대 함께 두지 않는다">
+  <Panel><Head {...KN} /></Panel>
+</Case>
+
+<Case label="필드 부재 (아시아나항공 ③) — 「현재 버전 공시에 없음」이 점선 프레임 칩으로. 점선 = 공시가 필드를 담지 않음 · 실선 StateBadge = 공시가 추후결정이라고 답함">
+  <Panel><Head {...ASIANA} /></Panel>
+</Case>
+
+<Case label="390px — 스택 순서: 유형칩 · 회사 · (본문 표기) · 메타 → 라벨 → D-day → 창 줄 → 담기 → DART 원문(전폭 44px) → 질문 스트립. 메타는 접수번호가 한 줄, 「정정 반영」은 칩 — 고아 「·」가 생길 자리가 없다">
+  <div className="m390"><Panel><Head {...KY} /><QStrip chips={Q_R1} /></Panel></div>
+</Case>
+
+<Case label="390px — 닫힌 창 · 추후결정 · 부재 (같은 스택, 카운트다운 칸만 다르다)">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+    <div className="m390"><Panel><Head {...HANWHA} /></Panel></div>
+    <div className="m390"><Panel><Head {...KN} /></Panel></div>
+    <div className="m390"><Panel><Head {...ASIANA} /></Panel></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>창 상태 한 규칙 (walk 6) —</b> 창이 닫혔으면 <b>「기한 지남」</b> 칩을 단다. ③의 단계 칩이 이미 쓰는 그 단어이고, 신규 카피가 아니다. 전체 표: ① 열림 → live <code>거래 가능 · 마감 D-n</code> · ① 닫힘 → <b>기한 지남</b> · ② 개시 지남 → <code>진행 중</code> (<b>「종료」 금지</b>, ui-traps #5) · ② 개시 전 → 상태어 없음 (할 말이 없으므로 날짜만) · ③ 두 마감 → 단계 블록의 <b>기한 지남</b>. 날짜는 어느 경우에도 지워지지 않는다 — 상태어가 날짜를 대체하는 것이 아니라 읽는 법을 준다.<br />
+<b>메타 줄 (walk 5) —</b> 세 항목은 각각 <code>white-space:nowrap</code>, 구분점은 <b>뒤 항목에 붙는 <code>::before</code></b>이므로 줄바꿈이 점을 홀로 남길 수 없다. ≤767px에서는 구분점을 <b>전부 끄고</b> 접수번호가 한 줄을 차지하며 「정정 반영」은 하이라인 칩이 된다 — 상태이므로 칩이 정직하다.<br />
+<b>부재 상태 (walk 10) —</b> 「현재 버전 공시에 없음」 문구는 잠금(Q-D 확인) — 바뀐 것은 표기뿐이다: <b>점선 프레임 칩</b>. 추후결정의 실선 StateBadge와 한눈에 구별되고, 두 상태가 서로 다른 사실을 말한다는 것이 보인다. 이유는 여전히 말하지 않는다 (게이트는 내부, D-14).<br />
+<b>두 목적지의 서열 (walk 11) —</b> 헤더의 담기 줄은 <b>「보유 종목에 담기 →」</b> — 「포트폴리오」는 R8에서 톴지된 말이므로 nav 동일 명사구로 맞췄다 (운영자 지시 · R5-2 문구 대제). 헤더의 <b>담기</b>는 밑줄 텍스트 링크(부차 · 포트폴리오는 옆길), 환산 블록의 <b>환산</b>은 하이라인 버튼(주). 둘 다 남고 서열만 명시했다. 담기 줄은 <b>마감이 아직 남은 건에만</b> — 지난 마감에 알림을 약속하지 않는다 (R5-2 게이트 그대로).<br />
+<b>390 스택 (walk 14) —</b> DART 원문은 <code>order:9</code>로 카운트다운 아래로 내려가 <b>전폭 44px 하이라인 버튼</b>이 된다 (본문 링크가 아니라 목적지이므로). 질문 스트립은 헤더 패널 하단에 붙고 칩은 <b>36px(데스크톱) / 44px(390)</b>, 가로 스크롤 · 스크롤바 숨김 — 스트립 자체 설계는 surface 7.<br />
+<b>제목 (walk 12) —</b> 회사명이 <code>h1</code>. 아래 섹션 아이브로가 <code>h2</code>, ③ 단계 제목이 <code>h3</code>이며 <code>//</code>는 CSS <code>::before</code>로 그려 접근 가능한 이름은 「일정」이다.
+</div>
+</React.Fragment>);
+</script></body></html>

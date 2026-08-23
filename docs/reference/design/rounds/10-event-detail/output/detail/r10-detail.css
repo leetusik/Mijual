@@ -1,0 +1,299 @@
+/* R10 (P8.S6) — event detail geometry canon. This file IS the contract: the cards
+   render nothing that is not in here. Tokens only; no colour literals except the
+   cosmos page wash. Two mobile blocks, one contract: the @media (max-width:767px)
+   rules, and the same declarations scoped to .m390 for 390px frames shown inside a
+   wide card. */
+
+body{margin:0;padding:24px;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(19,66,52,.35),transparent 72%),var(--paper);font-family:var(--font-sans);color:var(--ink-1);word-break:keep-all;text-wrap:pretty}
+*,*::before,*::after{box-sizing:border-box}
+#root{display:grid;gap:20px;max-width:1120px}
+a{color:var(--ink-1)}a:hover{color:var(--live)}
+.lab{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.note{font-size:var(--text-sm);line-height:1.75;color:var(--ink-2);border-top:1px dashed var(--border-soft);padding-top:12px}
+.note b{color:var(--ink-1);font-weight:600}
+.note code{font-family:var(--font-mono);font-size:.92em;color:var(--ink-1)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.nowrap{white-space:nowrap}
+.page{display:grid;gap:18px;max-width:960px}
+.crumb{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-2);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+
+/* craft panel (R2.1) — hairline + top-edge glow + four corner brackets */
+.panel{position:relative;background:var(--surface-card);border:1px solid var(--border-strong);box-shadow:var(--panel-glow)}
+.panel::before,.panel::after,.panel>.bk::before,.panel>.bk::after{content:"";position:absolute;width:9px;height:9px}
+.panel::before{left:-1px;top:-1px;border-left:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel::after{right:-1px;top:-1px;border-right:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel>.bk::before{left:-1px;bottom:-1px;border-left:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+.panel>.bk::after{right:-1px;bottom:-1px;border-right:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+
+/* ---------------------------------------------------------------- header panel */
+/* one header, one size: every state (열림 · 닫힌 · 추후결정 · 부재)가 같은 달력을 차지하도록
+   헤더 패널은 고정 높이를 갖는다 — 상태가 달라진다고 다시 자리잡는 헤더는 관제 화면이 아니다. */
+.hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 24px;padding:18px 20px 14px;min-height:136px;align-content:start}
+.hid{display:grid;gap:8px;min-width:0;align-content:start}
+.hid>*:first-child{justify-self:start}
+.corp{margin:0;font-size:var(--text-2xl);font-weight:700;letter-spacing:var(--tracking-tight);min-width:0}
+.corpline{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+.dart{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:400;color:var(--ink-3);text-decoration:none;display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
+.dart:hover{color:var(--live)}
+.idnote{margin:0;font-size:var(--text-sm);color:var(--ink-2)}
+/* meta line (finding 5): items are nowrap, the separator is glued to the item that
+   follows it (::before), and ≤767 drops separators entirely — 접수번호 takes its own
+   line and 정정 반영 is a chip, so no wrap can leave a 「·」 alone. */
+.meta{margin:0;display:flex;flex-wrap:wrap;column-gap:8px;row-gap:4px;align-items:center;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.meta>span{white-space:nowrap}
+.meta>span+span:not(.corr)::before{content:"·";margin-right:8px}
+.corr{border:1px solid var(--border-soft);padding:1px 6px}
+/* countdown side */
+.cd{display:grid;gap:6px;justify-items:end;align-content:start;text-align:right}
+.cdlab{margin:0;font-size:var(--text-sm);color:var(--ink-2)}
+.win{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.win .dates{white-space:nowrap}
+.live{color:var(--live)}
+/* window/step state chip — one word for a closed window everywhere (finding 6) */
+.past{font-family:var(--font-sans);font-size:var(--text-xs);color:var(--ink-3);background:var(--surface-inset);padding:2px 8px;white-space:nowrap}
+/* absent state (finding 10): dashed frame = the filing does not carry the field.
+   Solid StateBadge = 추후결정, a served answer. The two never look alike. */
+.absent{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-3);border:1px dashed var(--border-strong);padding:5px 10px;white-space:nowrap}
+/* R5-2's 담기 line — text link, secondary to 환산 (finding 11) */
+.offer{font-size:var(--text-sm);color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
+.offer:hover{color:var(--live)}
+
+/* 질문 스트립 — placement + hit height only (surface 7 owns its design) */
+.qstrip{display:flex;gap:8px;align-items:center;padding:10px 20px;border-top:1px solid var(--border-soft);overflow-x:auto;scrollbar-width:none}
+.qstrip::-webkit-scrollbar{display:none}
+.qchip{font:inherit;font-size:var(--text-sm);color:var(--ink-2);background:none;border:1px solid var(--border-soft);padding:0 12px;min-height:36px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer}
+.qchip:hover{background:var(--surface-raised);color:var(--ink-1)}
+.qask{border-color:var(--border-strong);color:var(--ink-1)}
+
+/* ---------------------------------------------------------------- ① 환산 블록 */
+/* No arrows (findings 1/7): the four cells are not a derivation chain, they are the
+   filing's four values. Hairline-ruled cells read as an instrument row; at 390 the
+   same rule turns horizontal and the cells stack — nothing to hang off an edge. */
+.chainwrap{margin:0 20px 4px;background:var(--surface-raised);border:1px solid var(--border-soft)}
+.chain{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.cell{padding:12px 16px;display:grid;gap:4px;align-content:start;border-left:1px dashed var(--border-soft);min-width:0}
+.cell:first-child{border-left:0}
+.clab{margin:0;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.cval{margin:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--text-md);font-weight:600;min-width:0}
+.cval .num{white-space:nowrap}
+/* 배정비율 (Q-B): the whole 10-decimal value, one unbreakable mono token, a step
+   down in size so ten digits do not out-shout the price. */
+.ratio{font-size:var(--text-base);letter-spacing:0;white-space:nowrap}
+.pend{font-family:var(--font-sans);font-size:var(--text-xs);font-weight:400;color:var(--ink-2);background:var(--surface-inset);padding:2px 8px;white-space:nowrap}
+.chainfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-top:1px dashed var(--border-soft)}
+.chainnote{margin:0;font-size:var(--text-sm);color:var(--ink-2)}
+/* 환산 = the page's primary action (finding 11) */
+.convert{font:inherit;font-family:var(--font-sans);font-size:var(--text-sm);color:var(--ink-1);background:none;border:1px solid var(--border-strong);padding:0 16px;min-height:44px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer;text-decoration:none;transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
+.convert:hover{background:var(--surface-inset);border-color:var(--ink-2);color:var(--ink-1)}
+.convert:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.convert:active{background:var(--surface-inset)}
+/* 청약 결과 inset */
+.inset{margin:0 20px 16px;padding:12px 16px;background:var(--surface-inset);display:grid;gap:8px}
+.insetTitle{margin:0;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.insetRow{display:flex;gap:18px;flex-wrap:wrap;font-size:var(--text-sm);color:var(--ink-2)}
+.insetRow .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink-1);white-space:nowrap}
+.insetVal{margin:0;font-size:var(--text-lg);font-weight:700;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.floor{font-size:var(--text-sm);font-weight:400;color:var(--ink-2)}
+
+/* ---------------------------------------------------------------- ② fact strip */
+/* Provenance legibility (finding 8): the strip is API-tier — no [근거] slots, and its
+   own mono source row states the tier once. Rows below are 본문 quotes and each one
+   carries its [근거]. Two surfaces, two provenance grammars. */
+.facts{margin:0 20px}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--border-soft);background:var(--surface-raised)}
+.fcell{padding:12px 16px;display:grid;gap:4px;align-content:start;border-left:1px dashed var(--border-soft);border-top:1px dashed var(--border-soft);min-width:0}
+.fgrid>.fcell:nth-child(-n+3){border-top:0}
+.fgrid>.fcell:nth-child(3n+1){border-left:0}
+.fsub{margin:0;font-size:var(--text-xs);color:var(--ink-3)}
+.fsrc{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:7px 16px;border:1px solid var(--border-soft);border-top:0;background:var(--surface-inset);font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.fsrc a{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);text-decoration:none;display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
+.fsrc a:hover{color:var(--live)}
+.optcard{border:1px solid var(--border-soft);padding:10px 14px;display:grid;gap:6px}
+.optHead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.optKind{font-size:var(--text-xs);font-weight:700;background:var(--surface-inset);padding:2px 8px;white-space:nowrap}
+.optKind.put{color:var(--alert)}
+.optHolder{font-size:var(--text-sm);color:var(--ink-2)}
+.optCap{margin:0;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);line-height:1.6}
+
+/* ---------------------------------------------------------------- field sections */
+.sec{border-top:1px solid var(--border-soft)}
+/* heading semantics (finding 12): a real h2, the // drawn by CSS so the accessible
+   name is 「일정」 — not 「// 일정」. */
+.eyebrow{margin:0;padding:14px 20px 2px;font-family:var(--font-mono);font-size:var(--text-xs);font-weight:400;color:var(--ink-3);letter-spacing:.08em}
+.eyebrow::before{content:"// ";}
+.row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;padding:11px 20px;border-top:1px dashed var(--border-soft)}
+.rlab{margin:0;font-size:var(--text-sm);color:var(--ink-2);padding-top:2px}
+.rval{margin:0;font-size:var(--text-base);line-height:var(--leading-base);min-width:0}
+.rval .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+/* two-part value (finding 8): the value line, then the filing's own sentence under
+   it — never joined by an em dash into one run-on. */
+.sub{margin:4px 0 0;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base)}
+.prov{margin:0;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);padding:10px 20px;border-top:1px dashed var(--border-soft);line-height:1.6}
+/* section-level source line — the quiet alternative to a per-row [근거] */
+.secsrc{margin:0;padding:8px 20px;border-top:1px dashed var(--border-soft);text-align:right}
+.secsrc a{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);text-decoration:none;display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
+.secsrc a:hover{color:var(--live)}
+.agents{display:grid;border:1px solid var(--border-soft);margin-top:2px}
+.agent{display:grid;grid-template-columns:1fr 1.2fr 150px;gap:12px;padding:7px 12px;border-top:1px dashed var(--border-soft);font-size:var(--text-sm)}
+.agent:first-child{border-top:0}
+.agent .num{font-family:var(--font-mono);justify-self:end;white-space:nowrap}
+
+/* ---------------------------------------------------------------- ③ 2단계 절차 */
+.steps{margin:0 20px 4px;border:1px solid var(--border-soft);background:var(--surface-raised)}
+.step{display:grid;grid-template-columns:68px minmax(0,1fr);border-top:1px dashed var(--border-soft)}
+.step:first-of-type{border-top:0}
+.snum{display:grid;justify-items:center;padding:15px 0 0}
+.snum>span{font-family:var(--font-mono);font-size:var(--text-xs);font-weight:700;letter-spacing:.02em;border:1px solid var(--border-strong);height:24px;padding:0 8px;display:inline-flex;align-items:center;white-space:nowrap}
+.step.pastStep .snum>span{color:var(--ink-3);border-color:var(--border-soft)}
+.sbody{padding:12px 20px 14px 0;display:grid;gap:6px;min-width:0}
+.sHead{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.stitle{margin:0;font-size:var(--text-md);font-weight:700}
+.step.pastStep .stitle{color:var(--ink-2)}
+.swin{font-family:var(--font-mono);font-size:var(--text-sm);white-space:nowrap}
+.step.pastStep .swin{color:var(--ink-3)}
+.sdep{margin:0;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base)}
+
+/* ---------------------------------------------------------------- 정정 band + story */
+.band{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;border-top:1px solid var(--border-soft);background:var(--surface-raised)}
+.bandTxt{margin:0;font-size:var(--text-sm);font-weight:400;color:var(--ink-2);line-height:var(--leading-base);min-width:0}
+.bandTxt b{color:var(--ink-1);font-weight:600}
+/* 정정 이력 open/closed (finding 3) — R9's strip-toggle pattern: the label flips to
+   「접기」, the trigger holds the inset surface while its panel is open. */
+.hist{font:inherit;font-family:var(--font-sans);font-size:var(--text-sm);color:var(--ink-2);background:none;border:1px solid var(--border-strong);padding:0 14px;min-height:36px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.hist:hover{background:var(--surface-inset);color:var(--ink-1)}
+.hist:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.hist[aria-expanded="true"]{background:var(--surface-inset);color:var(--ink-1);border-color:var(--ink-2)}
+.hist .mark{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.story{border-top:1px dashed var(--border-soft);padding:12px 0 4px;display:grid;gap:12px}
+.rail{list-style:none;margin:0;padding:0 20px}
+.rrow{display:grid;grid-template-columns:14px auto auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:44px;border-top:1px dashed var(--border-soft)}
+.rrow:first-child{border-top:0}
+.rmark{width:7px;height:7px;border:1px solid var(--ink-3)}
+.rcur .rmark{background:var(--live);border-color:var(--live)}
+.rdate{font-family:var(--font-mono);font-size:var(--text-sm);white-space:nowrap}
+.rkind{font-size:var(--text-sm);color:var(--ink-2);white-space:nowrap}
+.rlink{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;white-space:nowrap}
+.rlink:hover{color:var(--live)}
+.rbadge{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);background:var(--live-tint);padding:2px 8px;white-space:nowrap}
+/* the old→new pair (findings 4 + 9): ONE grammar on this surface — two tagged sides,
+   no arrow column, mono values unbreakable. At 390 the sides stack; nothing squeezes. */
+.moves{margin:0 20px;display:grid;gap:10px}
+.move{display:grid;gap:6px}
+.mlab{margin:0;font-size:var(--text-sm);color:var(--ink-2)}
+.mpair{display:grid;grid-template-columns:1fr 1fr}
+.mside{padding:8px 12px;border:1px solid var(--border-soft);min-width:0}
+.mside+.mside{border-left:0}
+.mside.after{background:var(--surface-raised)}
+.mtag{margin:0 0 4px;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.mval{margin:0;font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-2)}
+.mside.after .mval{color:var(--ink-1);font-weight:600}
+.mval .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mdel{margin:0;font-size:var(--text-sm);color:var(--ink-3)}
+.storySum{margin:0 20px;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base)}
+.storySum b{color:var(--ink-1);font-weight:600}
+
+/* ---------------------------------------------------------------- states */
+.notice{margin:0 20px 16px;display:grid;gap:10px;justify-items:start}
+.noticeTxt{margin:0;font-size:var(--text-sm);color:var(--ink-2);line-height:var(--leading-base)}
+.evid{width:100%;display:grid;gap:6px;border-top:1px dashed var(--border-soft);padding-top:10px}
+.evidHead{margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:var(--text-sm);color:var(--ink-2)}
+.evidTag{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-1);background:var(--surface-inset);padding:2px 8px}
+/* 404 (Q-A = b) */
+.nf{display:grid;gap:16px;justify-items:start;padding:56px 20px}
+.nfTitle{margin:0;font-size:var(--text-2xl);font-weight:700;letter-spacing:var(--tracking-tight)}
+.nfLine{margin:0;font-size:var(--text-base);color:var(--ink-2)}
+.nfPath{margin:0;font-family:var(--font-mono);font-size:var(--text-sm);color:var(--ink-3);background:var(--surface-inset);padding:6px 10px;word-break:break-all}
+.nfBack{font-size:var(--text-sm);color:var(--ink-1);border:1px solid var(--border-strong);padding:0 16px;min-height:44px;display:inline-flex;align-items:center;text-decoration:none}
+.nfBack:hover{background:var(--surface-inset)}
+
+/* ---------------------------------------------------------------- ≤767 (390) */
+@media (max-width:767px){
+  body{padding:12px}
+  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:16px 16px 12px;min-height:248px;align-content:space-between}
+  /* one markup, two orders: at 390 .hid/.cd/.corpline dissolve (display:contents) and every
+     leaf takes its place — label + D-day pair on one row, the DART button lands last. */
+  .hid,.cd,.corpline{display:contents}
+  .hchip{order:1}.corp{order:2}.idnote{order:3}.meta{order:4}
+  .cdlab{order:5}.ddayslot{order:6}.win{order:7}.offer{order:8}.dart{order:9}
+  .hchip,.corp,.idnote,.meta,.win,.offer,.dart{grid-column:1/-1}
+  .cdlab{grid-column:1;justify-self:start;text-align:left}
+  .ddayslot{grid-column:2;justify-self:end}
+  .corp{font-size:var(--text-xl)}
+  .meta>span:first-child{flex:1 0 100%}
+  .meta>span+span:not(.corr)::before{content:none;margin:0}
+  .win{justify-content:flex-start;text-align:left}
+  .dart{border:1px solid var(--border-strong);min-height:44px;width:100%;justify-content:center;color:var(--ink-1)}
+  .offer{min-height:44px;justify-self:start}
+  .step{grid-template-columns:60px minmax(0,1fr)}
+  .chainwrap,.facts,.steps,.inset,.notice,.moves,.rail,.storySum{margin-inline:16px}
+  .chain{grid-auto-flow:row;grid-auto-columns:auto}
+  .cell{grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:12px;border-left:0;border-top:1px dashed var(--border-soft);padding:11px 14px;min-height:44px}
+  .cell:first-child{border-top:0}
+  .cval{justify-content:flex-end;text-align:right}
+  .chainfoot{padding:12px 14px}
+  .convert{width:100%;justify-content:center}
+  .fgrid{grid-template-columns:minmax(0,1fr)}
+  .fgrid>.fcell{border-left:0;border-top:1px dashed var(--border-soft)}
+  .fgrid>.fcell:first-child{border-top:0}
+  .row{grid-template-columns:minmax(0,1fr);gap:2px;padding:11px 16px}
+  .eyebrow,.prov,.band,.qstrip,.secsrc{padding-inline:16px}
+  .secsrc{text-align:left}
+  .secsrc a{min-height:44px}
+  .agent{grid-template-columns:minmax(0,1fr);gap:2px}
+  .agent .num{justify-self:start}
+  .sbody{padding-right:14px}
+  .band{flex-direction:column;align-items:stretch}
+  .hist{min-height:44px;width:100%;justify-content:center}
+  .mpair{grid-template-columns:minmax(0,1fr)}
+  .mside+.mside{border-left:1px solid var(--border-soft);border-top:0}
+  .rrow{grid-template-columns:14px minmax(0,1fr) auto;row-gap:0;padding-block:4px}
+  .rkind{grid-column:2}
+  .rlink{grid-column:2}
+  .rbadge{grid-column:3;grid-row:1}
+  .nf{padding:40px 16px}
+  .nfBack{width:100%;justify-content:center}
+}
+
+/* 390px frames inside a wide card — the ≤767 declarations again, scoped to the frame. */
+.m390{width:390px}
+.m390 .hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:16px 16px 12px;min-height:248px;align-content:space-between}
+.m390 .hid,.m390 .cd,.m390 .corpline{display:contents}
+.m390 .hchip{order:1}.m390 .corp{order:2}.m390 .idnote{order:3}.m390 .meta{order:4}
+.m390 .cdlab{order:5}.m390 .ddayslot{order:6}.m390 .win{order:7}.m390 .offer{order:8}.m390 .dart{order:9}
+.m390 .hchip,.m390 .corp,.m390 .idnote,.m390 .meta,.m390 .win,.m390 .offer,.m390 .dart{grid-column:1/-1}
+.m390 .cdlab{grid-column:1;justify-self:start;text-align:left}
+.m390 .ddayslot{grid-column:2;justify-self:end}
+.m390 .corp{font-size:var(--text-xl)}
+.m390 .meta>span:first-child{flex:1 0 100%}
+.m390 .meta>span+span:not(.corr)::before{content:none;margin:0}
+.m390 .win{justify-content:flex-start;text-align:left}
+.m390 .dart{border:1px solid var(--border-strong);min-height:44px;width:100%;justify-content:center;color:var(--ink-1)}
+.m390 .offer{min-height:44px;justify-self:start}
+.m390 .step{grid-template-columns:60px minmax(0,1fr)}
+.m390 .chainwrap,.m390 .facts,.m390 .steps,.m390 .inset,.m390 .notice,.m390 .moves,.m390 .rail,.m390 .storySum{margin-inline:16px}
+.m390 .chain{grid-auto-flow:row;grid-auto-columns:auto}
+.m390 .cell{grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:12px;border-left:0;border-top:1px dashed var(--border-soft);padding:11px 14px;min-height:44px}
+.m390 .cell:first-child{border-top:0}
+.m390 .cval{justify-content:flex-end;text-align:right}
+.m390 .chainfoot{padding:12px 14px}
+.m390 .convert{width:100%;justify-content:center}
+.m390 .fgrid{grid-template-columns:minmax(0,1fr)}
+.m390 .fgrid>.fcell{border-left:0;border-top:1px dashed var(--border-soft)}
+.m390 .fgrid>.fcell:first-child{border-top:0}
+.m390 .row{grid-template-columns:minmax(0,1fr);gap:2px;padding:11px 16px}
+.m390 .eyebrow,.m390 .prov,.m390 .band,.m390 .qstrip,.m390 .secsrc{padding-inline:16px}
+.m390 .secsrc{text-align:left}
+.m390 .secsrc a{min-height:44px}
+.m390 .agent{grid-template-columns:minmax(0,1fr);gap:2px}
+.m390 .agent .num{justify-self:start}
+.m390 .sbody{padding-right:14px}
+.m390 .band{flex-direction:column;align-items:stretch}
+.m390 .hist{min-height:44px;width:100%;justify-content:center}
+.m390 .mpair{grid-template-columns:minmax(0,1fr)}
+.m390 .mside+.mside{border-left:1px solid var(--border-soft);border-top:0}
+.m390 .rrow{grid-template-columns:14px minmax(0,1fr) auto;row-gap:0;padding-block:4px}
+.m390 .rkind,.m390 .rlink{grid-column:2}
+.m390 .rbadge{grid-column:3;grid-row:1}
+.m390 .qchip{min-height:44px}
+.m390 .nf{padding:40px 16px}
+.m390 .nfBack{width:100%;justify-content:center}

@@ -1,0 +1,70 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x2100" name="Convertible" subtitle="② API 팩트 스트립의 프로비넌스 — 티어를 보이게 (스트립 = 공시 API · 아래 행 = 본문 인용) · 콜·풋 카드 · 두 부분 값 · sparse ②" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+const FACTS = [
+  { l: '전환가액', v: '15,552원' },
+  { l: '오버행 (주식총수 대비)', v: '6.68%' },
+  { l: '전환 시 주식수', v: '643,004주' },
+  { l: '권면총액', v: '100억원' },
+  { l: '발행방법', v: '사모' },
+  { l: '만기', v: '2030-10-24' },
+];
+const CITE_REFIX = ['20251016000315', '본 사채 발행 후 7개월이 경과한 날(2026년 05월 24일)로부터 그 날을 포함하여 매 7개월이 되는 날을 전환가액 조정일로 하고, 각 전환가액 조정일 전일을 기산일로 하여 (i) 그 기산일로부터 소급한 1개월 가중산술평균주가, 1주일 가중산술평균주가 및 기산일 가중산술평균주가를 산술평균한 가액과 (ii) 기산일 가중산술평균주가 중 높은 가격이 해당 조정일 직전일 현재의 전환가액보다 낮은 경우 시가산정액을 새로운 전환가액으로 한다. 단, 본 목에 따른 조정 후 전환가액은 최초 전환가액의 85% 이상으로 한다.'];
+const CITE_OPT = ['20251016000315', '사채권자는 본 사채의 발행일로부터 30개월이 되는 날인 2028년 04월 24일 및 이후 매 3개월에 해당되는 날(이하 “조기상환기일”)에 조기상환을 청구한 전자등록금액에 조기상환율을 곱한 금액의 전부에 대하여 사채의 만기 전 조기상환을 청구할 수 있다. [매도청구권(Call Option)에 관한 사항] 발행회사 및 발행회사가 지정하는 제3자(이하 "권리자")는 대상사채의 발행일로부터 12개월이 되는 날인 2026년 10월 24일부터, 발행일로부터 30개월이 되는 날인 2028년 04월 24일까지, 매 1개월에 해당하는 날(이하 “매매일”)마다 … 대상사채의 전자등록총액 25%를 총 한도로, 이를 권리자에게 매도할 것을 청구할 수 있는 권리를 가진다.'];
+function Opt({ kind, holder, detail, bracket }) { return <div className="optcard">
+  <div className="optHead">
+    <span className={kind === 'put' ? 'optKind put' : 'optKind'}>{kind === 'put' ? '풋 (조기상환청구)' : '콜 (매도청구)'}</span>
+    <span className="optHolder">{holder}</span>
+  </div>
+  <div style={{ fontSize: 'var(--text-base)', lineHeight: 'var(--leading-base)' }}>{detail}</div>
+  <p className="optCap">청구 가능 구간 <span className="nowrap">{bracket}</span> — 연속 기간 아님 · 행사 가능일은 위 조건이 정함</p>
+</div>; }
+function Body() { return <Sec t="발행 조건" src="20251016000315">
+  <Row label="리픽싱 세부 조건">발행 후 7개월이 경과한 날(2026년 05월 24일)로부터 매 7개월마다 전환가액을 조정하며, 최저 조정가액은 최초 전환가액의 85% <span className="num">(13,220원)</span> 이상으로 함 </Row>
+  <Row label="콜·풋 세부 스케줄">
+    <div style={{ display: 'grid', gap: 8, marginTop: 2 }}>
+      <Opt kind="put" holder="사채권자" detail="발행일로부터 30개월이 되는 날인 2028년 04월 24일 및 이후 매 3개월에 해당하는 날에 조기상환 청구 가능" bracket="2028-04-24 ~ 2030-07-24" />
+      <Opt kind="call" holder="발행회사 및 발행회사가 지정하는 제3자 · 한도 25%" detail="발행일로부터 12개월이 되는 날인 2026년 10월 24일부터 30개월이 되는 날인 2028년 04월 24일까지 매 1개월에 해당하는 날 전자등록총액의 25% 한도로 매도청구 가능" bracket="2026-10-24 ~ 2028-04-24" />
+    </div>
+  </Row>
+  <Row label="보호예수 / 전매제한 해제일" cite={CITE_DD_LOCKUP} sub="사모 발행에 따른 발행일로부터 1년간 전환 및 권면분할 금지 조치">
+    <span className="num">2026-10-24</span> 해제
+  </Row>
+</Sec>; }
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="② 대동기어 — 스트립(6칸, 3×2) + 티어를 말하는 mono 출처 줄 → 그 아래는 본문 인용 행. 두 표면이 서로 다르게 보이고, 각자 자기 방식으로 근거를 댄다">
+  <Panel><Head {...DD} /><QStrip chips={Q_R2} /><Facts items={FACTS} rcept="20251016000315" /><Body /><Prov /></Panel>
+</Case>
+
+<Case label="두 부분 값 (보호예수) — 값 줄 + 사유 줄. 「2026-10-24 해제 — 사모 발행에 따른 …」 식의 한 줄 연결을 끊었다">
+  <Panel><div className="sec"><Row label="보호예수 / 전매제한 해제일" cite={CITE_DD_LOCKUP} sub="사모 발행에 따른 발행일로부터 1년간 전환 및 권면분할 금지 조치"><span className="num">2026-10-24</span> 해제</Row></div></Panel>
+</Case>
+
+<Case label="sparse ② (본문 필드 0건) — 스트립 + 출처 줄 + 잠금 종결 문장. 자리표시자 없음">
+  <Panel><Head {...DD} /><Facts items={FACTS} rcept="20251016000315" />
+    <p className="prov" style={{ borderTop: 0, paddingTop: 14 }}>공시 본문에서 확인된 추가 조건이 없습니다 — 위 값은 DART 공시 API 기준입니다</p>
+  </Panel>
+</Case>
+
+<Case label="390px — 스트립은 한 열(6행), 각 칸 라벨+값, 출처 줄은 그대로 아래에. 콜·풋 카드는 폭 전체, 구간은 mono nowrap">
+  <div className="m390"><Panel><Head {...DD} /><QStrip chips={Q_R2} /><Facts items={FACTS} rcept="20251016000315" /><Body /><Prov /></Panel></div>
+</Case>
+
+<div className="note">
+<b>인용 밀도 (운영자 지시) —</b> 본문 행이라고 모든 행에 <code>[근거]</code>를 달지 않는다. 리픽싱·콜·풋은 <b>필러의 문장을 그대로</b> 싣고 있으므로 인용 패널이 같은 글을 다시 보여줄 뿐이다 — 섹션 하단의 <code>DART 원문 … ↗</code> 한 줄로 닫는다. 칩이 남는 곳은 <b>산문에서 뽑아낸 값</b>(보호예수 해제일처럼 원문에 그 날짜로 적혀 있지 않은 값)이다.<br />
+<b>프로비넌스 티어를 보이게 (walk 8) —</b> 스트립 6칸은 DART 공시 <b>API</b> 값이므로 문자 오프셋이 없고 <code>[근거]</code>를 달 수 없다. R3는 스트립 아래에 접수번호 링크 하나만 두어 「왜 여기만 근거가 없나」로 읽혔다. R10은 스트립을 <b>자기 프레임 + 자기 출처 줄</b>로 닫는다: <code>DART 공시 API</code> · <code>20251016000315 ↗</code> (mono 10px, inset 표면). 아래 <code>// 발행 조건</code> 행들은 본문 인용이므로 <b>행마다 <code>[근거]</code></b>. 티어 차이가 표면의 차이로 보인다 — 새 문구는 없다 (「DART 공시 API」는 sparse 종결 문장의 자기 표현).<br />
+<b>6칸의 격자 —</b> R3의 <code>auto-fit minmax(150px)</code>는 폭에 따라 4·5칸으로 갈라졌다. R10은 <b>3열 고정 × 2행</b> (데스크톱) → 390에서 <b>1열 6행</b>. 오버행의 「전환 시 주식수」는 부속 문구가 아니라 <b>자기 칸</b>을 갖는다 — 공시 API가 별도로 주는 값이므로.<br />
+<b>두 부분 값 (walk 8) —</b> 날짜와 문장이 섞이는 값은 <b>값 줄(mono) + 사유 줄(<code>--ink-2</code> text-sm)</b>로 쌓는다. 같은 규칙이 다른 두 부분 값에도 적용된다 (발행방법+만기는 이미 두 칸으로 분리됨).<br />
+<b>② 상태어 —</b> 개시일이 지난 ②는 <code>진행 중</code>, <b>「종료」는 절대 없다</b> (ui-traps #5) — 창 닫힘 규칙(기한 지남)은 ①·③에만 해당한다. ②의 창은 닫히는 종류가 아니다.<br />
+<b>콜·풋 —</b> 카드 구조는 R3 그대로 (필러의 detail 문자열 1:1, 구간 캡션은 「연속 기간 아님」). 바뀐 것은 구간 날짜의 <code>nowrap</code>과 카드 폭뿐이다.
+</div>
+</React.Fragment>);
+</script></body></html>

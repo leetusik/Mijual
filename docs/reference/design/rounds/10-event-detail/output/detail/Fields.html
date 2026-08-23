@@ -1,0 +1,69 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x1900" name="Fields" subtitle="필드 행 + 인용 어포던스 4상태 (idle / hover / focus / 열림) · 44px 히트 · 제목 의미 · 두 부분 값 · 390 한 열 스택" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+const AGENTS = [
+  ['우리사주조합', '케이비증권(주) 본ㆍ지점', '2026-09-03'],
+  ["구주주 특별계좌 보유자 (기존 '명부주주')", '케이비증권(주) 본ㆍ지점', '2026-09-03 ~ 09-04'],
+  ["구주주 일반주주 (기존 '실질주주')", '예탁 증권회사 본ㆍ지점 · 케이비증권(주) 본ㆍ지점', '2026-09-03 ~ 09-04'],
+  ['일반공모청약', '케이비증권(주) 본ㆍ지점', '2026-09-08 ~ 09-09'],
+];
+const CITE_AGENTS = ['20260724000546', "우리사주조합 케이비증권(주) 본ㆍ지점 2026년 09월 03일 구주주(신주인수권증서 보유자) 특별계좌 보유자(기존 '명부주주') 케이비증권(주) 본ㆍ지점 2026년 09월 03일 ~2026년 09월 04일 일반주주(기존 '실질주주') 1) 주주확정일 현재 계양전기(주)의 주식을 예탁하고 있는 당해 증권회사 본ㆍ지점2) 케이비증권(주) 본ㆍ지점 일반공모청약(고위험고수익투자신탁등 청약 포함) 케이비증권(주) 본ㆍ지점 2026년 09월 08일 ~2026년 09월 09일"];
+function Sections() { return <React.Fragment>
+  <Sec t="일정" src="20260724000546">
+    <Row label="신주인수권증서 상장·매매기간" cite={CITE_KY_WINDOW}><span className="num">2026-08-19 ~ 2026-08-25</span> <span className="live" style={{ fontSize: 'var(--text-sm)' }}>거래 가능 · 마감 D-2</span> </Row>
+    <Row label="신주배정기준일"><span className="num">2026-07-28</span></Row>
+    <Row label="청약 취급처 (대상자별)">
+      <div className="agents">{AGENTS.map((a, i) => <div className="agent" key={i}>
+        <span style={{ fontWeight: i === 1 || i === 2 ? 600 : 400 }}>{a[0]}</span>
+        <span style={{ color: 'var(--ink-2)' }}>{a[1]}</span>
+        <span className="num">{a[2]}</span></div>)}</div>
+    </Row>
+  </Sec>
+  <Sec t="발행 조건" src="20260724000546">
+    <Row label="발행가액 산정방법" sub={<React.Fragment>1·2차 모두 할인율 <span className="mono">20%</span> 적용 · 확정 공시 <span className="mono nowrap">2026-09-01</span></React.Fragment>}>
+      <span className="mono">MAX[MIN(1차 발행가액, 2차 발행가액), 청약일전 과거 제3~5거래일 가중산술평균주가의 60%]</span>
+    </Row>
+    <Row label="초과청약 조건 (비율)" cite={CITE_KY_EXCESS}>신주인수권증서 청약 한도주식수 1주당 <span className="num">0.2주 (20%)</span> 비율로 초과청약 가능 </Row>
+  </Sec>
+</React.Fragment>; }
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="필드 섹션 — 220px 라벨 · 값 · [근거]는 값이 원문과 다를 때만. 원문을 그대로 싣는 행(산식·취급처 표)은 칩 없이, 섹션이 원문 링크 한 줄로 닫는다">
+  <Panel><Sections /><Prov /></Panel>
+</Case>
+
+<Case label="[근거] 4상태 — idle / hover / focus-visible / 열림. 데스크톱 히트 32px, 시각 크기는 R3 그대로 (mono 11px 대괄호). 열림 = --live-tint 채움 + × (다시 눌러 닫음, aria-expanded)">
+  <Panel><div className="sec">
+    <div className="row"><p className="rlab">idle</p><p className="rval"><span className="num">0.2주 (20%)</span> <Citation rceptNo={CITE_KY_EXCESS[0]} quote={CITE_KY_EXCESS[1]} /></p></div>
+    <div className="row"><p className="rlab">hover</p><p className="rval mj-cite-hover"><span className="num">0.2주 (20%)</span> <Citation rceptNo={CITE_KY_EXCESS[0]} quote={CITE_KY_EXCESS[1]} /></p></div>
+    <div className="row"><p className="rlab">focus-visible</p><p className="rval mj-cite-focus"><span className="num">0.2주 (20%)</span> <Citation rceptNo={CITE_KY_EXCESS[0]} quote={CITE_KY_EXCESS[1]} /></p></div>
+    <div className="row"><p className="rlab">열림 — 인용 패널 + DART 링크</p><p className="rval"><span className="num">0.2주 (20%)</span> <Citation rceptNo={CITE_KY_EXCESS[0]} quote={CITE_KY_EXCESS[1]} defaultExpanded /></p></div>
+  </div></Panel>
+</Case>
+
+<Case label="390px — 라벨이 값 위로, 행은 한 열. [근거]는 44px 히트(음수 마진으로 행 리듬 유지)이고 인용 패널의 DART 링크는 전폭 44px 행이 된다">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><Panel><Sections /><Prov /></Panel></div>
+    <div className="m390"><Panel><div className="sec">
+      <div className="row"><p className="rlab">초과청약 조건 (비율)</p><p className="rval"><span className="num">0.2주 (20%)</span> <Citation rceptNo={CITE_KY_EXCESS[0]} quote={CITE_KY_EXCESS[1]} defaultExpanded /></p></div>
+    </div></Panel></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>인용 밀도 (운영자 지시) —</b> <code>[근거]</code>를 <b>모든 행에 달지 않는다</b>. 규칙: <b>화면의 값이 원문의 말과 다를 때만</b> 칩을 단다 — 산문에서 뽑아낸 날짜·수치·비율(매매기간, 초과청약 0.2주, 확정발행가, 할인율)이 그렇다. 값 자체가 <b>필러의 문장 1:1</b>인 행(발행가액 산식, 취급처 표, 리픽싱 조건, 콜·풋 스케줄, 통지 방법)은 인용 패널이 화면에 이미 있는 글을 되풀이할 뿐이므로 칩을 두지 않고, <b>섹션이 mono 원문 링크 한 줄</b>(<code>DART 원문 {'{'}rcept{'}'} ↗</code>, 잠금 문구 재사용)로 닫는다. 한 페이지의 칩 수가 행 수를 따라 늘지 않는다.<br />
+<b>인용 어포던스 (walk 2) —</b> <b>mono 대괄호 <code>[근거]</code>를 유지한다</b> — 칩으로 바꾸면 프로비넌스 줄의 잠금 문장(「각 항목의 [근거]가 …」)이 화면과 어긋난다. 바뀐 것은 타깃과 상태다: <b>히트 32px(데스크톱) / 44px(≤767px)</b> — 패딩으로 키우고 같은 값의 음수 마진으로 되돌려 <b>행 리듬과 위치는 그대로</b>. 열린 상태는 트리거에 남는다: <code>--live-tint</code> 채움 · 점선 밑줄 해제 · <code>×</code> 표시 · <code>aria-expanded="true"</code>. 「닫기」 같은 문구는 발명하지 않았다 (R8이 서명한 × 를 재사용).<br />
+<b>rcept mono 링크 (walk 2) —</b> 인용 패널의 <code>DART 원문 20260724000546 ↗</code>는 데스크톱 32px, 390에서 <b>전폭 44px 하이라인 행</b>. 버전 레일의 접수번호 링크도 44px 행 높이 (Corrections 카드).<br />
+<b>두 부분 값 —</b> 산식처럼 값 + 부가 조건이 있는 행은 <b>값 줄 + <code>--ink-2</code> 보조 줄</b>. 한 문장으로 이어 붙이지 않는다.<br />
+<b>제목 의미 (walk 12) —</b> <code>h2.eyebrow</code>, <code>::before{'{'}content:"// "{'}'}</code>. 룩은 R1 터미널 아이브로 그대로, 개요는 제대로 생긴다.<br />
+<b>390 —</b> 행은 한 열(라벨 → 값), 한국어 <code>keep-all</code>, 모든 mono 값 <code>nowrap</code>, 취급처 표는 3열 → 라벨/값 스택. 값이 길면 표가 아니라 목록으로 읽히게 둔다.
+</div>
+</React.Fragment>);
+</script></body></html>

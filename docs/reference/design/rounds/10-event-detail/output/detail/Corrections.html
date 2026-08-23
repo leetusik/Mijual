@@ -1,0 +1,64 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x2000" name="Corrections" subtitle="정정 밴드 + 「정정 이력」 닫힘/열림 (「접기」) · 버전 레일 44px 행 · 정정 전/후 = 태그 두 쪽 (화살표 열 폐기) · 삭제된 문단 · desktop + 390" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+const { useState } = React;
+const VERSIONS = [
+  { dt: '2026-06-23', kind: '기재정정', rcept: '20260623000277' },
+  { dt: '2026-07-13', kind: '기재정정', rcept: '20260713000345', cur: true },
+];
+const BAND_TEXT = <React.Fragment>정정공시 반영 — 최근: 합병신주 <b className="mono nowrap">25,197,931주 → 25,197,936주</b> (단수주 정정) · 일정 변동 없음</React.Fragment>;
+function Story() { return <React.Fragment>
+  <Rail rows={VERSIONS} />
+  <div className="moves">
+    <Pair label="합병신주 발행주식수" before={<span className="num">25,197,931주</span>} after={<span className="num">25,197,936주</span>} />
+    <Pair label="주식매수청구권 행사기간" before={<span className="num">2026-07-07 ~ 2026-07-27</span>} after={<span className="num">2026-07-07 ~ 2026-07-27</span>} />
+    <Pair label="초과청약 조건 (비율)" before="신주인수권증서 1주당 0.2주 비율로 초과청약 가능" deleted />
+  </div>
+  <p className="storySum">단수주 처리로 합병신주가 <b className="mono nowrap">5주</b> 증가했습니다. <b>일정 변동 없음</b> <Citation rceptNo="20260713000345" quote="합병신주의 배정과정에서 발생하는 1주 미만의 단주에 대하여는 단주가 발생한 주주에게 합병기일의 종가를 기준으로 현금으로 지급할 예정이며, 이에 따라 합병신주 발행주식수가 25,197,931주에서 25,197,936주로 변경되었습니다" /></p>
+</React.Fragment>; }
+function Live() {
+  const [open, setOpen] = useState(false);
+  return <Panel><Head {...SEGI} /><Band text={BAND_TEXT} open={open} onToggle={() => setOpen(!open)}><Story /></Band><Prov /></Panel>;
+}
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="닫힘 → 열림 (눌러보세요) — 라벨이 「정정 이력」 ↔ 「접기」로 바뀌고, 트리거는 열려 있는 동안 inset 표면 + × 를 유지한다 (R9 스트립 토글과 같은 패턴)">
+  <Live />
+</Case>
+
+<Case label="열린 상태 정본 — 버전 레일(행 44px, 접수번호 링크가 그 높이를 채운다) · 현재 읽는 버전만 칠해진 마커 + live 배지 · 정정 전/후 · 요약">
+  <Panel><div className="band"><h2 className="bandTxt">{BAND_TEXT}</h2><button type="button" className="hist" aria-expanded="true">접기 <span className="mark" aria-hidden="true">×</span></button></div>
+    <div className="story"><Story /></div><Prov /></Panel>
+</Case>
+
+<Case label="정정 전/후 한 문법 — 화살표 열을 없애고 태그가 방향을 말한다. 정정 후는 raised 표면 + ink-1 600 · mono 날짜·수치는 nowrap (「2026-07- / 06」 방지) · 삭제된 문단은 잠금 문구">
+  <Panel><div className="moves" style={{ paddingBlock: 14 }}>
+    <Pair label="예정발행가 (계양전기)" before={<span className="num">4,985원</span>} after={<span className="num">3,200원</span>} />
+    <Pair label="신주인수권증서 상장·매매기간" before={<span className="num">2026-08-12 ~ 2026-08-18</span>} after={<span className="num">2026-08-19 ~ 2026-08-25</span>} />
+    <Pair label="초과청약 조건 (비율)" before="신주인수권증서 1주당 0.2주 비율로 초과청약 가능" deleted />
+  </div></Panel>
+</Case>
+
+<Case label="390px — 두 쪽이 위아래로 쌓인다 (두 열로 짜내지 않는다). 태그가 이미 순서를 말하므로 화살표도, 열 폭 다툼도 없다 · 「접기」 버튼 전폭 44px">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><Panel><Head {...SEGI} /><div className="band"><h2 className="bandTxt">{BAND_TEXT}</h2><button type="button" className="hist" aria-expanded="true">접기 <span className="mark" aria-hidden="true">×</span></button></div><div className="story"><Story /></div><Prov /></Panel></div>
+    <div className="m390"><Panel><Head {...KY} /><div className="band"><h2 className="bandTxt">정정공시 반영 — 최근: 1차 발행가액 확정에 따라 예정발행가 <b className="mono nowrap">4,985원 → 3,200원</b> · 일정 변동 없음</h2><button type="button" className="hist" aria-expanded="false">정정 이력</button></div><Prov /></Panel></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>열림 상태 (walk 3) —</b> R9가 보드 스트립에서 고친 그 문제다. 닫힘 = <b>「정정 이력」</b>(R3 잠금 라벨), 열림 = <b>「접기」</b> + <code>×</code> — R9가 서명한 그 단어를 재사용하므로 신규 카피가 아니다. 트리거는 열려 있는 동안 <code>--surface-inset</code> + <code>--ink-2</code> 테두리를 유지하고 <code>aria-expanded</code>를 실는다. 밴드 문장은 <code>h2</code>.<br />
+<b>정정 전/후 한 문법 (walk 4 · 9) —</b> 화살표 열을 폐기하고 <b>태그 두 쪽</b>(정정 전 · 정정 후)으로 통일했다. 데스크톱 2열 → 390 세로 스택, <b>같은 마크업</b>. 모든 mono 값은 <code>nowrap</code>이라 날짜가 쪼개질 수 없고, 이 문법이 <b>철회 페이지의 정정사항 줄에도 그대로</b> 쓰인다 (States 카드) — 이 표면에서 「예전 값 → 새 값」은 언제나 이 모양이다.<br />
+<b>버전 레일 —</b> 행 최소 44px, 접수번호 링크가 행 높이를 채운다 (walk 2의 92×17 해소). <code>is_current_readable</code>만 칠해진 마커 + 「현재 읽는 버전」. 이전 버전 행에 이유 주석은 없다 (게이트 사유는 내부).<br />
+<b>이전 버전 접수번호로 열었을 때 (Q-C) —</b> <b>그대로 둔다</b> — 현재 버전을 보여주고 레일이 「현재 읽는 버전」으로 어느 버전을 읽고 있는지 말한다. URL은 바꾸지 않고, 안내 문구도 만들지 않는다 (결정으로 기록).<br />
+<b>삭제된 문단 —</b> 「(정정 후 본문에서 삭제됨)」은 잠금 문구, 정정 후 쪽에 <code>--ink-3</code>로. 라벨이 없는 필드(현재 버전이 이름을 주지 않는 경우)는 라벨 줄 없이 렌더한다 — 영문 키를 노출하지 않는다.
+</div>
+</React.Fragment>);
+</script></body></html>

@@ -1,0 +1,46 @@
+<!-- @dsCard group="⏳ P8.S6 · Components" viewport="1280x1000" name="Citation" subtitle="[근거] 재컷 (R10) — 문구는 유지, 타깃 32px(데스크톱)/44px(≤767px), 열린 상태를 트리거가 든다 (tint + ×), 인용 패널의 DART 링크 44px" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../detail/r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>.hit .mj-cite{outline:1px dashed var(--r1);outline-offset:0}</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel">
+const { Citation } = window.MijualDesignSystem_7ce1bb;
+const Q = ['20260724000546', '3) 초과청약 : 우리사주조합 청약 및 구주주(신주인수권증서 보유자) 청약 이후 발생한 실권주가 있는 경우, 실권주를 구주주(신주인수권증서 보유자)가 초과청약(초과청약비율 : 배정 신주 1주당 0.2주)한 주식수에 비례하여 배정하며'];
+function Lab({ children }) { return <div className="lab">{children}</div>; }
+function Panel({ children, cls }) { return <section className={cls ? 'panel ' + cls : 'panel'} style={{ padding: '14px 18px' }}>{children}<i className="bk"></i></section>; }
+function Line({ state, children }) { return <div style={{ display: 'grid', gridTemplateColumns: '140px minmax(0,1fr)', gap: 16, alignItems: 'baseline', padding: '10px 0', borderTop: '1px dashed var(--border-soft)' }}>
+  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-3)' }}>{state}</span>
+  <div style={{ fontSize: 'var(--text-base)', lineHeight: 'var(--leading-base)' }}>{children}</div></div>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Lab>데스크톱 — 4상태. 시각 크기는 R1/R3 그대로 (mono 11px 대괄호, live 색, 점선 밑줄), 히트 영역만 32px로 커졌다</Lab>
+<Panel>
+  <Line state="idle">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> 비율로 초과청약 가능 <Citation rceptNo={Q[0]} quote={Q[1]} /></Line>
+  <div className="mj-cite-hover"><Line state="hover">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> 비율로 초과청약 가능 <Citation rceptNo={Q[0]} quote={Q[1]} /></Line></div>
+  <div className="mj-cite-focus"><Line state="focus-visible">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> 비율로 초과청약 가능 <Citation rceptNo={Q[0]} quote={Q[1]} /></Line></div>
+  <Line state="열림">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> 비율로 초과청약 가능 <Citation rceptNo={Q[0]} quote={Q[1]} defaultExpanded /></Line>
+</Panel>
+
+<Lab>히트 영역을 그린 것 (점선 = 실제 타깃) — 데스크톱 32px. 글자 크기는 그대로, 패딩으로 키우고 같은 값의 음수 마진으로 되돌리므로 행 리듬이 움직이지 않는다</Lab>
+<Panel cls="hit">
+  <Line state="32px">할인율 <span className="mono">20%</span> <Citation rceptNo={Q[0]} quote={Q[1]} /> · 배정비율 <span className="mono">0.2314082845</span></Line>
+</Panel>
+
+<Lab>390px (≤767px 규칙) — 타깃 44px, 인용 패널의 DART 링크는 전폭 44px 하이라인 행. 점선은 히트 영역</Lab>
+<div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+  <div className="m390"><Panel cls="hit"><Line state="idle 44px">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> <Citation rceptNo={Q[0]} quote={Q[1]} /></Line></Panel></div>
+  <div className="m390"><Panel><Line state="열림">신주인수권증서 1주당 <span className="mono">0.2주 (20%)</span> <Citation rceptNo={Q[0]} quote={Q[1]} defaultExpanded /></Line></Panel></div>
+</div>
+
+<div className="note">
+<b>문구는 유지 —</b> mono 대괄호 <code>[근거]</code>. 칩으로 바꾸면 모든 상세 페이지 하단의 잠금 문장(「각 항목의 <b>[근거]</b>가 원문 구절과 접수번호로 연결됩니다」)이 화면과 어긋난다.<br />
+<b>타깃 —</b> 데스크톱 <code>min-height:32px</code> · <code>padding:8px 6px</code> · <code>margin:-8px -2px</code>. ≤767px에서 <code>min-height:44px</code> · <code>padding:13px 8px</code> · <code>margin:-8px -4px</code> — R3 §Mobile의 44px 하한(P7 Q6 #10)을 처음으로 실제로 만족한다. 컴포넌트가 자기 CSS를 <code>&lt;style id="mj-cite-css"&gt;</code>로 한 번 싣는다 (미디어 쿼리가 필요하므로 인라인 스타일로는 불가능).<br />
+<b>열린 상태 —</b> 트리거가 상태를 든다: <code>--live-tint</code> 채움 · 점선 밑줄 해제 · <code>×</code>(<code>--ink-3</code>) · <code>aria-expanded="true"</code>. 닫기는 같은 버튼을 다시 누르는 것이고, <b>「닫기」 문구는 발명하지 않았다</b> — R8이 모바일 시트에 서명한 × 를 재사용한다.<br />
+<b>인용 패널 —</b> R3 그대로 (inset 표면 + 2px live 좌변 + verbatim <code>pre-wrap</code> + 최대 180px 스크롤). 바뀐 것은 하단 <code>DART 원문 {'{'}rcept{'}'} ↗</code> 링크: 데스크톱 32px, 모바일 전폭 44px 하이라인 행 (walk 2의 92×17 해소).<br />
+<b>영향 범위 —</b> 이 재컷은 Citation을 쓰는 모든 표면에 적용된다 (상세 · 조회 · 해설 인라인 인용 · 정정 스토리). API 변경 없음 — <code>rceptNo · quote · label · defaultExpanded</code> 그대로.
+</div>
+</React.Fragment>);
+</script></body></html>

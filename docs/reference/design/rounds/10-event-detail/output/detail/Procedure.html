@@ -1,0 +1,76 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x1700" name="Procedure" subtitle="③ 2단계 절차 — 지난 단계 「기한 지남」 · 절차 상세 · 아시아나 필드 부재 페이지 (한 필드 + 정정 밴드) · 390" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+function Steps({ past2 = true }) { return <div className="steps">
+  <h2 className="eyebrow">2단계 절차</h2>
+  <Step n="1단계" title="반대의사 통지" win="2026-06-22 ~ 2026-07-06" past>주주총회(2026-07-07) 전 회사에 서면으로 반대의사를 통지하거나, 증권회사 위탁 주주는 해당 증권회사에 주주총회 3영업일 전까지 통지</Step>
+  <Step n="2단계" title="매수청구 행사" win="2026-07-07 ~ 2026-07-27" past={past2}>1단계에서 반대의사를 통지한 주주만 행사 가능</Step>
+</div>; }
+function Segi() { return <Panel>
+  <Head {...SEGI} />
+  <QStrip chips={Q_R3} />
+  <Steps />
+  <Sec t="발행 조건" src="20260713000345">
+    <Row label="통지 방법">서면 통지 — 직접 회사 통지 또는 거래 증권회사 신청</Row>
+    <Row label="접수처">존속회사 (서울특별시 중구 퇴계로 212, 충무로 4가) 또는 거래 증권회사</Row>
+  </Sec>
+  <div className="band">
+    <h2 className="bandTxt">정정공시 반영 — 최근: 합병신주 <b className="mono nowrap">25,197,931주 → 25,197,936주</b> (단수주 정정) · 일정 변동 없음</h2>
+    <button type="button" className="hist" aria-expanded="false">정정 이력</button>
+  </div>
+  <Prov />
+</Panel>; }
+function Asiana() { return <Panel>
+  <Head {...ASIANA} />
+  <QStrip chips={Q_R3} />
+  <div className="sec">
+    <Row label="반대의사 통지 접수기간"><span className="absent">현재 버전 공시에 없음</span></Row>
+  </div>
+  <div className="band">
+    <h2 className="bandTxt">정정공시 반영 — 최근: 정정요구에 따라 회사구조개편 계획 등 세부 기재사항이 보완되었습니다 · 일정 변동 없음</h2>
+    <button type="button" className="hist" aria-expanded="false">정정 이력</button>
+  </div>
+  <Prov />
+</Panel>; }
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="③ 세기상사 — 두 단계 모두 지남. 헤더의 창 상태(기한 지남)와 단계 칩이 같은 단어를 쓴다 · 2단계 절차 아이브로는 h2, 단계 제목은 h3">
+  <Segi />
+</Case>
+
+<Case label="③ 1단계 진행 중 · 2단계 대기 (같은 구조의 살아있는 상태) — 지나지 않은 단계는 칩 없이 ink-1, 지난 단계만 흐려진다">
+  <Panel><div className="steps">
+    <h2 className="eyebrow">2단계 절차</h2>
+    <Step n="1단계" title="반대의사 통지" win="2026-08-19 ~ 2026-09-02">주주총회(2026-09-03) 전 회사에 서면으로 반대의사를 통지하거나, 증권회사 위탁 주주는 해당 증권회사에 주주총회 3영업일 전까지 통지</Step>
+    <Step n="2단계" title="매수청구 행사" win="2026-09-03 ~ 2026-09-23">1단계에서 반대의사를 통지한 주주만 행사 가능</Step>
+  </div></Panel>
+</Case>
+
+<Case label="③ 필드 부재 (아시아나항공) — 통지 접수기간이 현재 버전 공시에 없다. 점선 프레임이 카운트다운 칸과 필드 행에서 같은 모양으로 나타나 「빈 값」이 아니라 「상태」로 읽힌다">
+  <Asiana />
+</Case>
+
+<Case label="390px — 단계 번호 열 34px, 창 날짜는 mono nowrap, 칩은 제목 줄에서 줄바꿈">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><Segi /></div>
+    <div className="m390"><Asiana /></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>인용 밀도 (운영자 지시) —</b> 통지 방법·접수처는 공시 문장을 그대로 오므로 행마다 <code>[근거]</code>를 달지 않고, 섹션이 <code>DART 원문 … ↗</code> 한 줄로 닫는다 — 두 행이 가리키는 구절은 어차피 하나다.<br />
+<b>한 단어, 두 표면 (walk 6) —</b> ③의 단계 칩 <b>「기한 지남」</b>이 이제 헤더의 닫힌 창에도 쓰인다. 한 페이지 안에서 「지남」의 뜻이 흔들리지 않는다.<br />
+<b>부재의 표기 (walk 10) —</b> 잠금 문구 「현재 버전 공시에 없음」이 <b>점선 프레임 칩</b>으로 카운트다운 칸과 필드 행에 같은 모양으로 나타난다. 실선 StateBadge(추후결정)와 대비되고, <b>이유는 말하지 않는다</b>. 아시아나 페이지는 이 상태 + 정정 밴드만으로 완결된다 — 없는 필드를 채우는 자리표시자는 없다.<br />
+<b>제목 (walk 12) —</b> <code>2단계 절차</code> 아이브로가 <code>h2</code>, 각 단계 제목이 <code>h3</code>, 정정 밴드의 「정정공시 반영 …」이 <code>h2</code> — 스크린리더 개요는 <b>회사명(h1) → 2단계 절차 → 발행 조건 → 정정공시 반영</b>. R3의 <code>// </code> 룩은 CSS <code>::before</code>가 그리므로 접근 가능한 이름에 기호가 들어가지 않는다.<br />
+<b>의존 문장 —</b> 「1단계에서 반대의사를 통지한 주주만 행사 가능」은 2단계 본문에 그대로 (잠금 카피). R3의 카드가 덧붙였던 「— 통지 없이는 청구할 수 없음」은 같은 말의 반복이므로 뺐다 (이탈 기록).<br />
+<b>질문 스트립 —</b> ③에서도 헤더 패널 하단, 칩 36/44px, 프리셋은 게이트 통과 필드에서 생성 (배치만 — 설계는 surface 7).
+</div>
+</React.Fragment>);
+</script></body></html>

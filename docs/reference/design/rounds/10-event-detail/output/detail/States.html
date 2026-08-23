@@ -1,0 +1,58 @@
+<!-- @dsCard group="⏳ P8.S6 · Detail" viewport="1280x1580" name="States" subtitle="철회 페이지 — 정정사항 근거를 태그 두 쪽으로 · 404 표면 (Q-A = b: 한국어 미주알 not-found, 이유는 말하지 않음) · 390" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r10-detail.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r10-parts.jsx"></script>
+<script type="text/babel">
+const SSAM = { type: 1, name: '썸에이지', rcept: '20260805000454', filed: '2026-04-10' };
+function Withdrawn() { return <Panel>
+  <Head {...SSAM} />
+  <div className="notice">
+    <StateBadge state="withdrawn-r1" />
+    <p className="noticeTxt">철회는 공시 자체의 <span className="mono">3. 정정사항</span> 표에서 확인된 사실입니다 — 예정되었던 유상증자 관련 모든 일정이 취소되었습니다.</p>
+    <div className="evid">
+      <p className="evidHead"><span className="evidTag">정정사항</span> 항목 <b style={{ color: 'var(--ink-1)', fontWeight: 600 }}>유상증자 결정</b><Citation rceptNo={CITE_SSAM[0]} quote={CITE_SSAM[1]} /></p>
+      <div className="mpair">
+        <div className="mside"><p className="mtag">정정 전</p><p className="mval">유상증자 결정</p></div>
+        <div className="mside after"><p className="mtag">정정 후</p><p className="mval">유상증자 철회</p></div>
+      </div>
+    </div>
+  </div>
+  <Prov />
+</Panel>; }
+function NotFound({ path }) { return <Panel>
+  <div className="nf">
+    <h1 className="nfTitle">이 주소에 해당하는 공시가 없습니다</h1>
+    <p className="nfLine">관제 현황판에서 감시 중인 공시를 확인하실 수 있습니다.</p>
+    <p className="nfPath">{path}</p>
+    <a className="nfBack" href="#">관제 현황판으로 →</a>
+  </div>
+</Panel>; }
+function Case({ label, children }) { return <React.Fragment><Lab>{label}</Lab>{children}</React.Fragment>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<React.Fragment>
+
+<Case label="철회 (썸에이지) — 통지 카드 → 정정사항 근거 블록. 「항목 · 정정 전 · → · 정정 후 · [근거]」 한 줄 나열을 끊고, 정정 카드와 같은 태그 두 쪽 문법을 쓴다">
+  <Withdrawn />
+</Case>
+
+<Case label="404 (Q-A = b) — 노출 대상이 아닌 rcept, 오타 주소 모두 이 화면. 한국어 · 미주알 크롬(R8 nav·푸터) 안에서 렌더 · 이유는 말하지 않는다">
+  <NotFound path="/events/20260709000212" />
+</Case>
+
+<Case label="390px — 철회 근거는 세로 스택, 404는 전폭 44px 버튼">
+  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+    <div className="m390"><Withdrawn /></div>
+    <div className="m390"><NotFound path="/events/2026070900021" /></div>
+  </div>
+</Case>
+
+<div className="note">
+<b>철회 근거 (walk 9) —</b> 라벨·이전 값·화살표·새 값·<code>[근거]</code>가 한 줄에 이어지면 문장으로 읽히고, 무엇이 무엇으로 바뀌었는지가 흐려진다. R10은 정정 카드의 <b>태그 두 쪽</b> 문법을 그대로 가져온다: <code>정정사항</code> 태그 + 항목 이름 + <code>[근거]</code>가 머리줄, 그 아래 정정 전 / 정정 후 두 쪽. 철회 통지(StateBadge)와 잠금 문장은 그대로다. 필드도, 카운트다운도, 옛 날짜도 없다 (R3 규칙).<br />
+<b>404 (Q-A) —</b> 유일하게 남아 있던 영어 화면을 없앤다. 신규 한국어 3줄 — 제목 <b>「이 주소에 해당하는 공시가 없습니다」</b> · 안내 <b>「관제 현황판에서 감시 중인 공시를 확인하실 수 있습니다.」</b> · 버튼 <b>「관제 현황판으로 →」</b>. 요청 주소는 mono로 <b>그대로</b> 되돌려 보여주되 라벨을 붙이지 않는다 (오타인지 비노출인지 말하지 않는 것이 규칙이고, 주소 자체는 사실이다). <b>이유는 없다</b> — flagged·incomplete·실적보고서 어느 경우도 구분되지 않으며, 게이트 사유는 운영자 표면에만 존재한다 (D-14). 크롬은 R8 그대로 (nav 워드마크가 현황판으로 가는 두 번째 길), 상태 코드는 404 유지.<br />
+<b>등록 —</b> 이 세 문구는 이번 라운드의 <b>날짜 있는 예외</b>(2026-08-23)로 승인된 신규 카피이며 <code>copy-inventory</code>에 <code>not-found</code> 항목으로 등재해야 한다. 다른 어떤 문구도 새로 쓰지 않았다.
+</div>
+</React.Fragment>);
+</script></body></html>
