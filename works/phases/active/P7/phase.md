@@ -729,6 +729,65 @@ a reload, so a revert/measure/restore control costs seconds — but the sample p
 entered by **clicking the product's own 샘플 포트폴리오로 둘러보기 link** (or `?sample=1`), and both
 its 챙겼습니다 captions live on **past ① rows only**, two of them today.
 
+### Item 9 closed — `P7.S8`: five measured layout slips, and the flip proven in both modes
+
+**"Not organized" was not a design objection — it was five implementation slips against the
+record, none of them visible in the source and all of them measurable in a browser.** One file
+changed (`components/portfolio/Portfolio.module.css`); no markup, no copy, no token, no colour.
+
+| # | what was off (measured, 1440 / 768 / 390) | fix |
+|---|---|---|
+| D1 | `.holdingHead` and `.holdingRow` are **two grids sharing one track list** (`1.4fr 1fr 1.6fr auto`). The head's 4th cell is an empty `<span/>`, so its `auto` track resolved to **0px** and the rows' to **53.5px**, and the three `fr` tracks split a different leftover in each. Column labels sat **18.7px** (보유량) / **32.1px** (진행 중인 권리) right of their own cells, at 1440 **and** 768 | fourth track becomes fixed `--holding-actions: var(--space-16)` → **0.0px** offset everywhere |
+| D1b | side effect: the 53.5px 수정·삭제 pair then sat 10.5px short of the content edge it used to touch | `justify-self: end` on `.holdingRow .actions`, inside the ≥480 rule only |
+| D2 | `.rows` had `gap: --space-3` **on top of** each row's `padding: --space-4 0` + `border-top`: the hairline sat **28px** below the previous row's ink and **16px** above its own (24/12 at 390) — belonging to neither row, while `.holdings` on the same page is symmetric | drop the gap; the hairline **is** the separator (R2 §Board: "9px v-pad, dashed separators") → **16/16**, **12/12** at 390 |
+| D3 | `.lapsed { align-items: center }` over children **23.3 / 44 / 66.6px** tall: money line, 상세 link and 챙겼습니다 check started at three different y — a **21.7px** spread | `align-items: flex-start` + `min-height: 44px; align-content: center` on `.lapsedLine` → one origin, three texts on one 44px band |
+| D4 | the `// ` eyebrow rendered at **12px / no tracking** here while `lookup`, `event` and `landing/Anchor` all render **11px + 0.08em** — R2's literal is "mono 11 `--ink-3` eyebrow", R3's is "eyebrow mono, tracked" | `--text-xs` + `letter-spacing: 0.08em` |
+
+Document height fell 1572→1533 (1440), 1613→1574 (768), 2407→2367 (390). Overflow, clipped-text,
+radius and non-token-spacing audits over the whole surface: clean at all three widths, before and
+after (the only non-token values are `pastChip`'s signed 2px chip padding and the UA checkbox
+margin).
+
+**The 챙겼습니다 flip was already correct and is now proven.** All four R5-8 consequences fire —
+label 놓친 돈 → **챙긴 돈**, `679,575원` unchanged, 「추정」 kept, and `--alert` `rgb(224,87,63)` →
+`--live` `rgb(95,208,165)` on **both** the label and the value — with **zero layout shift**
+(`.lapsed` y/h and the document height identical before and after the click, in both modes).
+샘플/익명 persists in `localStorage` (`claims:["20260730000366"]`); the **account path was
+exercised end to end** with a throwaway account created and deleted through the product:
+`PUT /api/portfolio/claims/{rcept_no}` → **200** → `GET /api/portfolio` → 200 → the flip survives a
+full reload in the server-rendered HTML, caption 「본인 표시 · 계정에 저장」. DB clean afterwards
+(`lapse_claim` 0, `holding` 0, the only `account` row is P5.S19's `s19-fidelity@example.com`).
+Keyboard: the checkbox is the **16th** Tab stop and wears S5's preserved `2px solid rgb(143,178,232)`
+@2px ring with `:focus-visible` true; Space flips it. Everything above measured in `next dev` on
+`127.0.0.1` **and** the tailnet `100.77.164.42`, and reproduced number-for-number in an isolated
+production build on `:3100`.
+
+**Gotchas worth carrying:**
+
+1. **Two CSS-module grids that share a track list do not necessarily resolve the same track
+   list.** An `auto` (or `max-content`) track is sized by *that element's* content, so a header row
+   with an empty cell and a data row with a filled one produce different `fr` leftovers — every
+   column silently drifts. If a header must align with its rows, every non-`fr` track has to be
+   content-independent. This is D1, and it is invisible in the source: both elements name the same
+   `grid-template-columns`.
+2. **A `gap` on a list whose rows already carry a `border` + padding double-counts the rhythm** and
+   detaches the rule from both neighbours. `.holdings` (gapless, per-row border) and `.rows`
+   (gapped, per-row border) sat on the same page doing it two different ways.
+3. **`.focus()` from a probe does not match `:focus-visible`** — only a real Tab does. A focus
+   measurement taken programmatically will report "no ring" on an element that has one.
+4. **`P5.S19` catalogue #6 confirmed by measurement, not fixed:** `GET /portfolio/sample` serves
+   `holdings 4 · upcoming 2 · past 3` = **five** D-day rows, because **대동기어 carries two events**
+   (upcoming ② D-62 *and* past ① 소멸 D+46, 446,720원) while R5's composition table pins one filing
+   per holding and the entry subline says 「실제 공시 **4건**」. No row was hidden.
+
+**Five record-silent items went to the operator instead of being invented** — Q8 below. The
+biggest of them (Q-A) is the one remaining "not organized" symptom: at 1440 the five D-day rows'
+right-hand blocks begin at x = 1035.5 / 1090.3 / 945.6 / 945.7 / 953.2 — a **144.7px ragged edge**
+with 584.6–761.3px of empty middle — because `.rowHead` is `justify-content: space-between` and R5
+states the row's parts but no geometry. R2's board pins a fixed grid for exactly this reason; the
+call is the operator's.
+
+
 ## Constraints
 
 - **RESPECT THE DESIGN.** `docs/reference/design/` is read-only; a nit is an apply-time to-do,
@@ -913,6 +972,37 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   `product.md` and `security.md` were checked and need nothing — neither quotes either caption, and
   no `docs/current/*.md` contains 「서버 전송 없음」, 「본인 표시」 or either before-string.)
 
+- `frontend` — **the 내 포트폴리오 surface's layout primitives, corrected to the ones the rest of the
+  product already uses** (operator item 9, `P7.S8`). Three durable rules and one trap:
+  **(1)** the `// ` section eyebrow is **`--text-xs` (11px) + `letter-spacing: 0.08em`** — R2's own
+  literal "mono 11 `--ink-3` eyebrow", R3's "tracked", and what `lookup`/`event`/`landing/Anchor`
+  already render; the portfolio was the one surface rendering it at 12px untracked.
+  **(2)** a hairline-separated row list carries **no `gap`** — the `border` *is* the separator, the
+  way `.holdings` and R2's board rows ("9px v-pad, dashed `--border-soft` separators") do it; a gap
+  on top of the rows' own padding puts the rule 28px from one neighbour and 16px from the other.
+  **(3)** where a row's money statement sits beside 44px affordances, all of them align to **one
+  44px band** (`align-items: flex-start` + `min-height: 44px` on the statement), not to each
+  other's centres — centring boxes of 23.3/44/66.6px gave three different origins.
+  **(4)** the trap, for the Gotchas list beside the `localhost`/`127.0.0.1` and StrictMode entries:
+  **two CSS-module grids that name the same `grid-template-columns` can resolve different columns.**
+  An `auto`/`max-content` track is sized by *its own* element's content, so a header row with an
+  empty action cell and a data row with a filled one produce different `fr` leftovers — measured
+  here as 18.7px / 32.1px of silent column drift, invisible in the source. A header that must align
+  with its rows needs every non-`fr` track content-independent.
+  Verified at 1440 / 768 / 390 in `next dev` on `127.0.0.1` and the tailnet, and reproduced
+  number-for-number in an isolated production build. (Recorded by `P7.S8`; the full deviation table
+  is in `P7.S8/result.md`.)
+- `experience` — the 챙긴 돈 bullet ("flipping the label 놓친 → 챙긴 and the color alert → live on
+  the same 「추정」 amount") is now **measured true on the running product in both modes**, and two
+  facts are worth stating with it: the hue flips on **both** the label and the value, and the
+  change is **shift-free** (the row's box and the document height are identical before and after).
+  The account path is `PUT /portfolio/claims/{rcept_no}` followed by a re-read of `GET /portfolio`,
+  so a claimed row survives a reload server-side; the 샘플/익명 path keeps the mark in
+  `localStorage` under `mijual.portfolio.sample`. Nothing in the doc is *wrong* — this is the
+  bullet to enrich if the review wants the promise stated as verified behaviour rather than as a
+  design intent. (Recorded by `P7.S8`; `product.md` was checked and needs nothing — it states no
+  portfolio layout or claim-persistence rule.)
+
 ## Open Questions
 
 - **Q1 — 의견 (vocky) has nothing to bind to.** `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
@@ -953,3 +1043,21 @@ _One line per durable-truth change; `P7.REVIEW` consolidates these into doc vers
   fifth, smaller one: with the sample caption now 「본인 표시」, should the account caption drop to
   「본인 표시」 too, or keep 「· 계정에 저장」 (`P7.S7` kept it, per plan)? Re-saying any of ①–④ in
   reader language is a copy decision, not an implementation one.
+- **Q8 — five record-silent portfolio items `P7.S8` refused to invent** (item 9). **(A)** the
+  D-day rows' right-hand block has a **144.7px ragged left edge** and 584.6–761.3px of empty middle
+  at 1440 (232.6–409.3px at 768) because `.rowHead` is `justify-content: space-between`; R5 names
+  the row's parts and no geometry, while **R2's board pins a fixed grid (`86px 1fr 300px 230px
+  96px`)** for exactly this reason — adopting a board-style column grid here is probably what
+  "organized" means at desktop width, but it is a geometry decision no round made for this surface.
+  **(B)** 지나간 마감 states no 「기준 YYYY-MM-DD (KST)」 line; `P5.S8` read R5's sentence as
+  page-level and states it once on the counting-down section, the S8 plan read it as per-section —
+  the string already exists either way, so no Korean is at stake. **(C)** 한화솔루션 and 세기상사
+  render an **empty 진행 중인 권리 cell** (both hold only past rights, and R5 signs no empty-cell
+  sentence) — a visible hole in two of four rows at ≥480. **(D)** a **챙긴 돈 row still links
+  「놓친 돈 상세 →」** — R5-8's checked-state delta is exactly four items and the link is not one of
+  them, and the link's target section is literally named 「2026년 놓친 돈」, so changing it mints
+  Korean. **(E)** the **본인 표시 caption renders whether or not the box is checked**; R5-8 phrases
+  all four consequences as following 체크, so it can be read as "the caption appears on check" —
+  `P7.S8` left it alone because making it conditional adds a **22.6px layout shift** on click,
+  which its plan forbids. None of these was changed; all five need the operator, and (A) is the
+  one that still answers the original "not organized".

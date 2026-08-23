@@ -26,11 +26,17 @@
   gap: var(--space-6);
 }
 
+/* `// ` mono eyebrow — R2's own literal ("mono 11 `--ink-3` eyebrow"), tracked
+   per R3. This surface was rendering it at `--text-sm` with no tracking while
+   `lookup`, `event` and `landing/Anchor` all render `--text-xs` + 0.08em, so the
+   two D-day section headers read one step *heavier* than the same eyebrow on
+   every other surface (P7.S8). */
 .eyebrow {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: 400;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
 }
 
@@ -189,6 +195,16 @@
   padding: 0;
   list-style: none;
   border-top: 1px solid var(--border-soft);
+
+  /* The 수정·삭제 / 저장·취소 column is a **fixed** track, not `auto` (P7.S8).
+     `.holdingHead` and `.holdingRow` are two separate grids sharing one track
+     list; the header's fourth cell is an empty span, so an `auto` fourth track
+     resolved to 0px there and to 53.5px in the rows, and the three `fr` tracks
+     then split a different leftover in each grid. Measured at 1440 and 768:
+     every column label sat 18.7px (보유량) / 32.1px (진행 중인 권리) to the right
+     of the cells it names. A fixed track makes both grids resolve identically.
+     64px is the widest action pair (53.5px measured) plus slack. */
+  --holding-actions: var(--space-16);
 }
 
 .holdingHead,
@@ -394,10 +410,15 @@
   color: var(--ink-3);
 }
 
+/* No gap: the hairline **is** the separator, the way `.holdings` above and R2's
+   board rows ("9px v-pad, dashed `--border-soft` separators") do it. With a
+   `--space-3` gap on top of each row's own `--space-4` padding the rule sat 28px
+   below the previous row's last ink and 16px above its own first ink (24/12 at
+   390) — a separator belonging to neither row, on a page whose other list is
+   symmetric. Measured before/after in P7.S8. */
 .rows {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -468,10 +489,17 @@
   color: var(--ink-2);
 }
 
+/* The 소멸 row's three parts — the money statement, "놓친 돈 상세 →" and R5-8's
+   check — sit on one line, so they are aligned to one 44px band rather than to
+   each other's centres. `align-items: center` on boxes 23.3 / 44 / 66.6px tall
+   started each of them at a different y (a 21.7px spread at 1440, measured), so
+   nothing on the row shared a line. `flex-start` + a 44px money line puts all
+   three texts on the same band, and the 본인 표시 caption hangs from its own
+   check instead of pushing the group off-centre (P7.S8). */
 .lapsed {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
 }
 
@@ -479,6 +507,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  align-content: center;
+  min-height: 44px;
   gap: var(--space-2);
   margin: 0;
   font-size: var(--text-md);
@@ -644,13 +674,20 @@
   .holdingHead,
   .holdingRow {
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1.6fr auto;
+    grid-template-columns: 1.4fr 1fr 1.6fr var(--holding-actions);
     align-items: start;
     gap: var(--space-4);
   }
 
   .holdingHead {
     padding-block: var(--space-2);
+  }
+
+  /* 우측 액션 열: the fixed track above is 10.5px wider than the 수정·삭제 pair,
+     so the pair is pinned to the track's end and keeps the flush right edge it
+     had when the track was `auto` (P7.S8). */
+  .holdingRow .actions {
+    justify-self: end;
   }
 
   .row {
