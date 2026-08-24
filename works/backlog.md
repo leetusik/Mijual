@@ -6,17 +6,17 @@
 ## Pointer
 
 - Current phase: `P9`
-- Current slice: `P9.S11`
-- Next slice: `P9.REVIEW`
+- Current slice: `P9.REVIEW`
+- Next slice: `none`
 - Waiting on operator: `none`
 - Open deferred jobs: `13`
-- Rebuilt at: `2026-08-25T07:17:56+09:00`
+- Rebuilt at: `2026-08-25T08:27:48+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
-| [ ] `P9` | `planned` | `pending` | Smart Mijual Assistant | `P9.S11` | `works/phases/active/P9` |
+| [ ] `P9` | `planned` | `pending` | Smart Mijual Assistant | `P9.REVIEW` | `works/phases/active/P9` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -36,7 +36,7 @@
 | [x] `P9.S8` | `done` | ask store and R16 copy: keyed blocks on the client | `implementation` | `works/phases/active/P9/slices/P9.S8` |
 | [x] `P9.S9` | `done` | the five R16 elements: calc block, data block, status line, tool trace, markers | `implementation` | `works/phases/active/P9/slices/P9.S9` |
 | [x] `P9.S10` | `done` | /ask re-cut: rail retired, start screen, 새 대화, and the three retirements | `implementation` | `works/phases/active/P9/slices/P9.S10` |
-| [ ] `P9.S11` | `todo` | R16 fidelity and functional sweep in the operator runtime | `implementation` | `works/phases/active/P9/slices/P9.S11` |
+| [x] `P9.S11` | `done` | R16 fidelity and functional sweep in the operator runtime | `implementation` | `works/phases/active/P9/slices/P9.S11` |
 | [ ] `P9.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P9/slices/P9.REVIEW` |
 
 ## Phase P4: Ship & Submit

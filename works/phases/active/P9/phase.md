@@ -2220,6 +2220,86 @@ No file outside `frontend/components/ask/` + `frontend/lib/ask*.ts` was touched;
     minimum, so a true 390 viewport cannot be screenshot that way — the ≤767 branch is the same one,
     but the pixel width is not. No Operator Runtime pass here; `P9.S11` owns §4's 26 checks.
 
+### P9.S11 — the fidelity and functional sweep landed (2026-08-25)
+
+The phase met the running product: **`make stack-up` → dev on `http://127.0.0.1:3000`**, and again in
+the **production build** (`npm run build && npm run start`), in real Chrome over CDP at **1440** and
+at a true **390** device-metrics emulation. Full evidence in `slices/P9.S11/result.md`.
+
+**Result: 24 of the 26 checks PASS, 2 PARTIAL, 1 (item 15, the rail) stale-superseded — and no code
+fix was warranted.** Every §2 number the shipped elements render matches the record. The two
+non-PASS clauses are not implementation defects, and four new `## Operator Questions` carry them.
+
+**What later work inherits from this slice.**
+
+1. **The implementation is faithful; the measurements are on the record.** StatusLine 2px **dashed**
+   vs the tool row's 2px **solid**; DataRow grid 39.9 % / 1fr / auto (35.8 % at 390), `column-gap 8`,
+   `padding 8 12`, 1px dashed between rows, `align-self: stretch`, `margin-inline -12px` at ≤767,
+   **zero `<table>` elements**; CalcBlock `--border-strong` (.32) against the data block's `.15`,
+   result row `--live-tint` with the value **mono 15px/600/`--live` + 「계산」 마커**; the answer box
+   `flex column · gap 12 · padding 12` with §2.8's child order computed, not assumed. Anyone touching
+   these can diff against `result.md` §3 instead of re-measuring.
+2. **The 데이터 블록 has almost nothing to draw — the phase's biggest product finding.** Measured
+   across the **whole 386-event board corpus**: **372 events → 0 rows**, **14 → exactly 1 row**
+   (always `신주인수권증서 상장·매매기간`), longest value **23 characters**. The cause is structural:
+   **every gate-passing field's `value` is a composite dict** (`appraisal_price → {"price": 6591}`,
+   `excess_subscription → {ratio, detail}`, `subscription_agents → {entries:[…]}`), so `_stated`'s
+   `value_display` and scalar branches have **no producer at all**. Stating `{"price": 6591}` as
+   「6,591원」 would be the server inventing a row format — the fork `P9.S3` note 6 refused, and a
+   design change. So R16's data block is invisible on 96 % of filings, checks 7 and 8 have no live
+   producer, and the round's own three-row fixture is unreachable. → `## Operator Questions`.
+3. **Check 14's 「칩 타깃 44px」 is a record-internal contradiction, and was deliberately not "fixed".**
+   The chip measures 14×16 at 390. §4/14 and §2.6 name it, but **no earlier round signed it** (R14's
+   own 390 item lists 인용 블록/접수번호/바, not the chip; R14 item 1's 480→767 is the composer's
+   controls, which *are* 44px) and **`r16-ask.css` itself gives 44px only to `.atx` and `.amore`**.
+   There is also no zero-visual-change fix: R10's padding-out recipe works on a borderless trigger,
+   while this chip is `display:inline` with a 1px border, and an invisible hit area would swallow
+   taps on the prose. Same class as the three catalogued stale lines. → `## Operator Questions`.
+4. **Three states the product cannot produce today** (all verified at element level against a stubbed
+   stream, never claimed live): the 6-row data fold, the value-cell scroll (both note 2), and the
+   drawn calculation **`error`** — the model states the 미공시 fact and refuses with 「확정 전」 *before*
+   it calls `calculate`, in every phrasing tried. A later slice wanting to see the error block must
+   change the prompt or force the call, not assume it happens.
+5. **The two flagged confirmations came back clean.** `pending → done` replaces **in place**: the calc
+   block's top stayed at `y=286` across the transition, and a `tool_row` arriving between the two
+   frames did **not** sail the settled block past it (`P9.S8` note 2, in the DOM). The block does grow
+   +42px when the **식 줄** arrives with the outcome — `P9.S9` note 10's record-caused consequence, not
+   a jump of the block itself. And `P9.S3` note 7's 근거 N건 reconciliation **closed**: the live
+   calculator turn drew 3 distinct chips (data row + two calc inputs, one reused in prose) and the
+   footer read 근거 3건.
+6. **The transient status line dies three ways, confirmed.** Across all five phases: exactly one
+   `[role="status"]`, identical `y`/answer height/document height every time (no thread-height change),
+   gone at the first `text`, gone at the terminal on a **refusal-only** turn (`P9.S6` note 12's
+   client-side fix, seen), and never written to `sessionStorage`.
+7. **The ▷ ledger, from real turns.** `thinking MEDIUM` end to end. **`cached 0` on all 16 live
+   turns**, including the same question repeated minutes apart — an honest reading of a real number
+   (which is why `P9.S7` made it measurable), not a claim that caching never happens. Cost per turn
+   ranged **$0.0046** (greeting) → **$0.0548** (6 rounds / 5 tools / 63k prompt tokens); worth having
+   beside the `P9.DECOMP` spend question.
+8. **The unsigned out-of-scope line is stable, and it is not the record's example.** Asked
+   「주식 처음인데 뭐부터 사면 좋아요?」 twice, the model returned **byte-identical** text both times —
+   its own pair, not §0's 서명 아님 sentence. `P9.S7`'s question stands, with sharper evidence.
+9. **중지 renders 「연결이 끊겼습니다」.** That is the **signed** behaviour (R14 item 11 + R6's 중단/오류
+   inset), so it is fidelity, not a defect — but it reads oddly to a first-time user and belongs in
+   the acceptance walkthrough rather than in a silent edit.
+10. **Regression checklist: every line re-run, and two counts are stale.** pytest is **154** (doc says
+    142) and smoke is **22/22** (doc says 16/16) — expected growth. Everything else held: gates
+    byte-identical over 710 rows / 488 exposable, estimate byte-identical at 718.1억원 / 32 / 14.02 %,
+    scheduler six stages at 0 req / 0 calls, exposure 0/0, extract + evalset idempotent, no secret in
+    any tracked file or in `.next/static`, and all 35 P8 surface blocks. **The agent's two numbers**:
+    stored 인용 원문 **18/18 byte-identical** to a served payload value; numerals **81/87**, and all 6
+    misses are the 오늘(KST) digits the reader saw marked 「미확인」 — under strip-don't-drop the
+    invariant is now *every **unmarked** numeral*, and the stored prose cannot tell them apart, which
+    is exactly the `P9.S4` Operator Question. Also: the 「프로덕션 폭」 line prints 960/620 in the
+    opposite order to its routes (`/stocks` is **620**, `/stocks/{corp}` is **960** — P8.REVIEW's own
+    recorded pair, re-measured here in the production build).
+11. **Harness notes for whoever repeats this.** `TurnEnd.event` is `self.status`, so an aborted turn
+    arrives as `event: aborted`, **not** `event: done` with a status field — a stub that gets this
+    wrong silently renders the turn as completed. Headless Chrome clamps the *window* to 500px, but
+    `Emulation.setDeviceMetricsOverride` gives a true 390 viewport past it (`P9.S10`'s caveat is
+    solved). `/ask`'s start screen renders `.centered > .start` and has **no** `.column` element —
+    that only exists in the 대화 상태.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -2259,6 +2339,10 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S10`) `frontend` — the three retirements landed with their call sites: the **범위 칩 and its ×** (the widget header keeps ↗ and × only; the store's `scope` stays and still scopes a widget opened from an event detail — it is simply never drawn), the **익명 줄** on both surfaces, and **「다시 질문」** (a completed footer now ends at 이벤트 상세, held at the right end the button used to hold; 재시도 stays on interrupted turns alone). `ANONYMITY_KO` · `VERIFIED_ONLY_KO` · `REASK_KO` · `scopeLabel()` · `SCOPE_ALL_KO` are deleted from `components/ask/copy.ts`.
 - (`P9.S10`) `frontend` — the ask store gains **`newChat()`**: it empties the thread **and** the `sessionStorage` copy of it, aborts a turn in flight, and keeps the 범위 and the `session_hash` — no history list, no titles, no restore (R6's ban stands, R16 §2.7b).
 - (`P9.S10`) `qa` — headline checks for the regression list: `/ask` 빈 상태 = 시작 화면 (질문 카드 4장 · 익명 줄 0 · 컴포저 이중 테두리 0 · 스레드 구분선 0), 1440에서 오른쪽 열 없이 760 가운데, 「새 대화」는 스레드만 비우고 저장된 대화 목록을 만들지 않으며 시작 화면에는 없다, 완료 푸터에 「다시 질문」 없음, 헤더 어디에도 「범위:」 칩 없음.
+- (`P9.S11`) `qa` — **headline checks for the regression list** (P9's own, verified in the Operator Runtime, dev **and** production build, Chrome 1440 + a true 390 device-metrics emulation): 「안녕」 → 인사 한두 문장 · 도구 행 0 · 칩 0 · 푸터 프레임 없음 · 거절 아님; 범위 밖 질문 → 한 줄 + 갈 곳, `RefusalEvent` 미발생 · 저장 가족 없음; 계산 요청 → 계산 블록(입력 2행 · 식 · 결과 「N주 계산」)이 같은 `block_id`로 제자리 교체되고 블록 상단이 움직이지 않는다; 주입 시도 → 「보안」 문장만 + 로그에 카테고리·200자·session_hash; 도구 4개 이상 완료 → 「도구 N번 · 공시 M건 읽음」 + 자세히; 진행 표시는 한 줄·높이 불변·첫 토큰에 소멸·저장 안 됨; 도구가 확인하지 않은 공시 수치 → 「미확인」 마커(문장·턴 생존); 소진 턴 = 감쇠 프로즈 + 접힌 도구 흐름뿐(inset·버튼·「예산/한도/라운드」 0); `/ask` 빈 상태 = 시작 화면(카드 4장 · 익명 줄 0 · 새 대화 0 · 다시 질문 0 · 「범위:」 칩 0) · 1440에서 760 가운데 · 390에서 블록 전폭; 위젯과 페이지가 같은 턴을 같은 블록 구성으로 그린다; `prefers-reduced-motion`에서 애니메이션 0(캐럿만 정지).
+- (`P9.S11`) `qa` — **count corrections in the existing checklist**: `pytest` baseline **142 → 154** and frontend smoke **16/16 → 22/22** (expected growth through P8–P9, re-run green here). Also, the 「프로덕션 폭」 line prints its two numbers in the opposite order to its routes — the measured pair (dev **and** production) is `/stocks` **620px** and `/stocks/{corp_code}` **960px**, which is what P8.REVIEW recorded.
+- (`P9.S11`) `qa` — **the agent's second number is superseded by strip-don't-drop and must be restated**: 「every numeral in every stored answer present in that turn's payloads」 no longer holds by construction, because an untraceable 공시 수치 now **ships marked 「미확인」** instead of being dropped. Measured over a 16-turn live pass: 인용 원문 **18/18 byte-identical** to a served payload value (unchanged, 100 %), numerals **81/87** — every miss being a 오늘(KST) digit the reader saw hedged. The invariant is now 「every **unmarked** numeral is present in that turn's payloads」, and the **stored row cannot distinguish the two** (it keeps prose only), which is the open `P9.S4` Operator Question.
+- (`P9.S11`) `frontend` — R16's landed surface is **verified against the record in the Operator Runtime**, with the numbers on the record in `slices/P9.S11/result.md` §3 (StatusLine 2px dashed vs the tool row's 2px solid · DataRow 40 %/1fr/auto and 36 % at ≤767 with value-cell-only scroll and a fixed third column · CalcBlock `--border-strong` and a `--live-tint` result whose value is mono `--text-md`/600/`--live` + 「계산」 marker · the marker family wearing `EstimateMarker`'s own tag · §2.8's child order in **both** views · zero animation outside the caret). Known limit of the shipped surface: **the 데이터 블록 can render at most one row** — across the 386-event corpus 372 filings produce no block at all and 14 produce exactly one, because every gate-passing field's value is a composite dict that the server may not spell without inventing a row format (`P9.S3` note 6); the 6-row fold and the value-cell scroll therefore have **no producer in the product** today.
 
 
 ## Operator Questions
@@ -2440,6 +2524,62 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   it — the model reads the company out of the question anyway; (b) `/ask` starts every turn 전체
   공시; (c) 「새 대화」 releases the 범위 with the thread. Worth pressing during the acceptance
   walkthrough: open the widget from an event, go to `/ask`, press a card that names another company.
+
+- **(`P9.S11`) The 데이터 블록 can only ever show one row — is that the product you want?** R16 signs
+  the data block as one of five headline elements, and intent point 7 asked for 데이터 행 on the chat
+  surface. Measured across the **whole 386-event board corpus**: **372 filings produce no data block
+  at all**, **14 produce exactly one row** (always 신주인수권증서 상장·매매기간), and the longest value
+  any filing can produce is **23 characters**. The reason is structural and deliberate: every
+  gate-passing field's value is a composite dict (`appraisal_price → {"price": 6591}`,
+  `excess_subscription → {ratio, detail}`, `issue_price_formula → {5 keys}`,
+  `subscription_agents → {entries: […]}`), and `P9.S3` note 6 refused to let the server spell those
+  as rows because 「6,591원」 is a *format the product's own detail page owns* — a second rendering in
+  Python forks the field surface. So §4's checks 7 (6행 접기) and 8 (값 칸 스크롤) have no producer,
+  and the round's own three-row fixture is unreachable. Options, and only the operator (with the
+  design) can pick: (a) leave it — the prose cites the filing and the one row that can be stated is
+  stated; (b) open a round that **signs a row format** for the composite fields (a 값 어휘: 「{price}원」,
+  「1주당 {ratio}주」, 청약 취급처 as N rows …); (c) give the block a **typed row schema** so the server
+  hands the surface structured values and the client renders them the way `Fields.tsx` already does
+  (bigger, and a design change either way). Worth seeing during the walkthrough: ask 「계양전기 유상증자
+  조건 알려줘」 and notice the block shows one date range while the prose carries everything else.
+
+- **(`P9.S11`) The 인용 칩's 44px touch target at 390 — the record contradicts itself, so nothing was
+  changed.** §4 check 14 lists 칩 among the 44px targets and §2.6 states 「≤767 타깃 44px」 as part of
+  the chip's **unchanged** definition — but the chip has never had it: no earlier round signed it
+  (R14's own 390 item lists 인용 블록 전폭 · 접수번호 쪼개짐 0 · 바 44px, and its 480→767 move is about
+  the composer's controls, which *are* 44px), and **`r16-ask.css` itself gives `min-height: 44px` only
+  to `.atx` (자세히) and `.amore` (모두 보기)**. Measured today: 14 × 16px. There is no
+  zero-visual-change fix either — R10's padding-out/negative-margin recipe on the 이벤트 상세 trigger
+  works because that trigger has no border, while this chip is `display: inline` with a visible 1px
+  border (padding enlarges the painted box), and an invisible absolutely-positioned hit area would
+  swallow taps on the prose around it. Options: (a) leave it as signed by the CSS — the chip stays a
+  10px inline mark and the 44px clause is treated as a stale line, like the three already catalogued;
+  (b) open a round to give the ask chip a real touch target at ≤767 (a visible change to an approved
+  element); (c) something else the design decides. Worth a try during the walkthrough on a phone: tap
+  a citation chip inside prose at 390.
+
+- **(`P9.S11`) The calculation `error` block is unreachable in practice — should it be?** R16 §2.4
+  designs a drawn `error` state and §4 check 6 asks to see it (「확정 발행가액 미공시 상태에서 금액 계산
+  요청 → 계산 블록 `error` + 「확정 전」 가족 문장」). In the flesh the model does the *other* half: it
+  states that 최종 발행가액 is 확정 예정 2026-09-01 and ends the turn with the 확정 전 refusal **before**
+  it ever calls `calculate` — twice, including on an explicit 「계산 도구로 계산해 주세요」. That is
+  arguably better behaviour (it never draws a calculation it cannot finish), but it means the signed
+  error element is drawn by nothing, and its guidance sentence 「계산할 수 없습니다 — {이유}」 never
+  reaches a reader. Options: (a) accept it — the refusal is the better product answer and the error
+  block stays a backstop; (b) change the prompt so a missing filing value goes **through** the
+  calculator (the block then shows the reader *which input* was missing, in its own label); (c) retire
+  the drawn error state in a later round. Product judgement, not engineering.
+
+- **(`P9.S11`) The implicit prompt cache was never credited in this pass — is that worth chasing?**
+  `P9.S7` made the ▷ ledger *measure* cached input rather than assume it, and the measurement across
+  **16 live turns** (including the same question repeated minutes apart) is **`cached 0` every time**,
+  with a ~5.5k-token static prefix that should clear Gemini's 4,096 floor. Real turn costs ranged
+  **$0.0046** (a greeting) to **$0.0548** (a 6-round / 5-tool calculator turn at 63k prompt tokens).
+  Nothing is broken — the ledger is telling the truth, and the phase raised ceilings knowing the
+  trade — but if the operator expected caching to blunt the MID + 20-round cost, it is not blunting it
+  today. Options: (a) accept as-is (Q-E already accepted the spend); (b) file a job to look at why the
+  prefix is not being credited (ordering, model/SDK behaviour, or session locality); (c) revisit the
+  ceilings. Money question, so the operator's.
 
 ## Constraints
 
