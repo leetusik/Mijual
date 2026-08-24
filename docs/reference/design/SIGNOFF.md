@@ -497,3 +497,47 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 4 R13 cards retire the round address (`⏳ P8.S12 · Portfolio` →
   `Portfolio`); card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R14 — Polish: AI 질문 (`P8.S14`, round `14-ask`)
+
+- Closed: 2026-08-24
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: **the surface migrates to the product-wide 767 boundary (Q-A = (a))** —
+  launcher and widget *exist* only >767px (the three 480 lines in `Ask.module.css:421`,
+  `AskPage.module.css:64`, and `useAsk.ts`'s `DESKTOP_QUERY` all move; the widget's `max-width`
+  guard is retired, `max-height` stays), and 481–767 gets the full-width `/ask` page exactly as a
+  phone does. **Footer 근거 N건 counts chip numbers** (하나의 근거 = 하나의 칩 — the operator's own
+  sentence; filings are counted by the rcept_nos that follow). **The composer's send button gets
+  the round's one operator-specified string 「보내기」 (Q-C)**; 「직접 질문 입력 →」 returns to the
+  strip's free-input chip only, closing the `copy.ts` reuse flag. **Preset chips show the served
+  `korean_name` label but send a full signed question (Q-D)** — nine new sentences R14-D1…D9 plus
+  R6's 실권주 sentence; templates stay banned and a field key outside the signed table renders
+  **no chip** (no label-sending fallback). **Answer prose grows as one paragraph (Q-E)** — R6's
+  프로즈 자람 literally; stream-carried leading whitespace/newlines are normalized at the store
+  boundary; the only inter-sentence gap is the CSS `0.25em`. **`/ask` ≤767 renders no vocky ⓝ
+  trigger (Q-F)**; >767 keeps it (768–1024 corner contact is a `P8.S15` measurement item).
+  **`API_TIER_KO` is retired (finding 10, closes P7 Q7①)** — the span-less citation block is the
+  `DART 원문 {rcept_no} ↗` link alone. Also signed: tool rows are one nowrap line with hidden
+  horizontal scroll (no mid-number breaks — R10 §0), disabled send is the ghost tier
+  (`opacity:.72` retired), thread/quote scrollbars go thin product-style, `/ask` desktop is a
+  centered `minmax(0,760px) 340px` bundle (`max-width:1124px`) with a sticky rail and a sticky
+  bar that stands under the last element on short threads, and the empty **scoped** widget fills
+  its middle with the preset row (전체 공시 stays empty — that *is* the state; no empty-state copy
+  was minted).
+- Copy: **신규 10건** (「보내기」 + the nine R14-D1…D9 preset questions), all dated and reasoned in
+  `result.md` §Copy; **회수 2건** — `API_TIER_KO`, and `ASK_SUBMIT_KO`'s composer use (the
+  constant survives on the strip's free chip). Chip labels are the server's `korean_name`
+  throughout — the record writes none of them.
+- Supersedes: the parts of **R6** it re-cuts — the 480/481 existence boundary (§Surfaces /
+  §Mobile now read at 767), the composer idle label as send, `label`-as-question presets, and
+  **R3's** API-tier block sentence. Everything else R6 signed stands verbatim: 440×620 · #0e1a15 ·
+  28px header icons · tool-row verbatim printing · caret 7×15 1s step · footer fade · the single
+  중단 sentence · fades-only motion · the launcher mark (개정 ⑤/⑧) untouched — only its existence
+  condition moves.
+- Token delta: **None.**
+- Landed record: `rounds/14-ask/output/` (`result.md`, `build-prompt.md`, `ask/r14-ask.css`,
+  `ask/r14-parts.jsx`, the 5 ask cards) — read-only. The cards stay in the Claude Design project
+  "Mijual Design System".
+- Post-approval regroup: the 5 R14 cards retire the round address (`⏳ P8.S14 · Ask` → `Ask`);
+  card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.

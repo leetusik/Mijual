@@ -412,6 +412,24 @@ the same data-gap reason → **Q46**.
   composer idles as 「직접 질문 입력 →」 acting as the send button (Q-C → Q55); carried: P7 Q7①
   API-tier wording, P7 Q9 hover inconsistency, favicon 404 (chrome-wide, R15's scope).
 
+### R14 landed spec — read back 2026-08-24 (`P8.S14` gate 2) — SIGNED OFF 2026-08-24 ("sign off"); SIGNOFF.md R14 entry, cards regrouped to `Ask`
+
+- Landed as-is at `docs/reference/design/rounds/14-ask/output/` (commit `d29b583`): `result.md`,
+  `build-prompt.md`, `ask/{r14-ask.css,r14-parts.jsx,Widget,Page,Mobile,Strip,Citations}.html`.
+- Binding decisions (details in SIGNOFF.md R14 + `result.md` §2b): **Q50/Q-A = (a) 767 이관**
+  (launcher/widget exist only >767; three 480 lines move; widget max-width guard retired) ·
+  **Q51/Q-B = 근거 N건 counts chips** (하나의 근거 = 하나의 칩) · **Q55/Q-C = 「보내기」** signed
+  for the composer (ASK_SUBMIT_KO back to the strip's free chip only) · **Q54/Q-D = labels shown,
+  signed sentences sent** (R14-D1…D9 + R6's 실권주; no-fallback rule) · **Q53/Q-E = one paragraph**
+  (store normalizes stream whitespace) · **Q52/Q-F = no vocky ⓝ on `/ask` ≤767** (768–1024
+  corner contact is a P8.S15 measurement item) · **finding 10: `API_TIER_KO` retired** — closes
+  **P7 Q7①**. Also: tool rows nowrap + hidden h-scroll (f5), ghost disabled send (f13), thin
+  scrollbars (f14), `/ask` desktop `minmax(0,760px) 340` centered at 1124 + sticky rail (f9),
+  hover one-rule (f11 — resolves P7 Q9 for this surface), scoped empty widget shows presets (f8).
+- Copy: 신규 10건 signed (「보내기」 + 9 preset questions), 회수 2건 (`API_TIER_KO`, composer
+  `ASK_SUBMIT_KO` use). Token delta none. Launcher untouched — only its existence boundary.
+- `P8.S15` builds from `build-prompt.md` §1–§5 and verifies §6 items 1–20 in the operator runtime.
+
 ## Findings & Notes
 
 ### `t1` root cause — verified read-only at decomposition (2026-08-23)
@@ -1827,18 +1845,18 @@ _Questions only the operator can answer; every entry is routed at the review -- 
 - **Q50 (R14 Q-A) — the ask surface's breakpoint.** `Ask.module.css:421` / `AskPage.module.css:64` /
   `DESKTOP_QUERY` all draw 480/481 while R10 §0 standardized one 767px line; here it decides where
   the widget/launcher **exist**. (a) migrate to 767 (481–767 gets the full-width page, no widget) or
-  (b) keep 480 as a documented R6 exception. Product call — answered in the R14 session.
+  (b) keep 480 as a documented R6 exception. Product call — answered in the R14 session. **Answered by R14 signoff: (a)** — the 767 이관 is signed; `P8.S15` §1 executes it.
 - **Q51 (R14 Q-B) — 근거 N건 counts filings while chips number 1–5.** Reads as a contradiction to a
-  first-time user. Count chips, keep filings and say so, or leave as-is. R14 session.
+  first-time user. Count chips, keep filings and say so, or leave as-is. R14 session. **Answered by R14 signoff:** 근거 N건 = chip-number count (하나의 근거 = 하나의 칩).
 - **Q52 (R14 Q-F) — at 390 the vocky ⓝ trigger overlaps `/ask`'s sticky composer bar.** Move/hide
-  the trigger on mobile `/ask`, inset the bar, or accept. R14 session.
+  the trigger on mobile `/ask`, inset the bar, or accept. R14 session. **Answered by R14 signoff:** no vocky ⓝ on `/ask` ≤767; >767 keeps it (768–1024 measured in P8.S15).
 - **Q53 (R14 Q-E) — answer prose renders one sentence per line (leading space on continuations)**
-  vs R6's 「프로즈 자람」 paragraph. Which is the design? R14 session.
+  vs R6's 「프로즈 자람」 paragraph. Which is the design? R14 session. **Answered by R14 signoff:** one paragraph — store normalizes stream whitespace.
 - **Q54 (R14 Q-D) — preset chips send their noun label as the question** (4 noun labels + 1 signed
   sentence); the thread shows noun-phrase question bubbles. Keep, or send full sentences behind the
-  labels (new Korean = signed in-round). R14 session.
+  labels (new Korean = signed in-round). R14 session. **Answered by R14 signoff:** labels shown, signed sentences sent (R14-D1…D9); no-fallback rule.
 - **Q55 (R14 Q-C) — the composer's idle button 「직접 질문 입력 →」 doubles as the send button** (an
-  R6-2 chip string reused). Keep or sign a distinct send label. R14 session.
+  R6-2 chip string reused). Keep or sign a distinct send label. R14 session. **Answered by R14 signoff:** 「보내기」 signed; `ASK_SUBMIT_KO` stays strip-only.
 
 ## Constraints
 
