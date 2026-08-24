@@ -448,6 +448,13 @@ the same data-gap reason → **Q46**.
   focus/hover predate R12/R14 one-rules (Q-E → Q63); a local Overview is a wall of alert
   「실행 기록 없음」 rows (Q-F → Q64); favicon 404 parked here from R14 (Q-G → Q65).
 
+### R15 cancelled — operator decision, 2026-08-24
+
+- Operator (verbatim): **"I don't care about the 운영 관제. just close the phase."** — surface 8's
+  design round and apply slice (`P8.S16`/`P8.S17`) are cancelled, not executed. The completed
+  handoff and its questions **Q59–Q65 are parked as deferred job D6** (they are routed there, not
+  open for the review to re-route). `/ops` ships as-is (R7's landed state + P5/P7 fixes).
+
 ## Findings & Notes
 
 ### `t1` root cause — verified read-only at decomposition (2026-08-23)
@@ -1983,19 +1990,19 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   `title`, so the accessible name returns to the visible label and the sentence stays a tooltip;
   (c) make the accessible name contain both (「{label} — {question}」), which no round has signed.
 - **Q59 (R15 Q-A) — draw the live-data era?** 대화 로그 replay / 익명 세션 / save_feedback queue
-  were designed on composition examples; real rows now exist. Redraw vs sign deltas only. R15 session.
+  were designed on composition examples; real rows now exist. Redraw vs sign deltas only. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q60 (R15 Q-B) — 로그→사용자 「그 행」.** The signed 양방향 is unimplemented in one direction
-  (bare users-tab link). What does 그 행 mean concretely — filter, anchor, highlight? R15 session.
+  (bare users-tab link). What does 그 행 mean concretely — filter, anchor, highlight? R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q61 (R15 Q-C) — 「API shape 확정 대기」** waits for a credential, not a shape, since `P5.S18`.
-  Re-sign or keep. R15 session.
+  Re-sign or keep. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q62 (R15 Q-D) — 샘플 로드 여부 backing fact** (carried from P5): build it (a new behavioural
-  fact about readers), drop the column from the drawing, or keep data-driven-and-absent. R15 session.
+  fact about readers), drop the column from the drawing, or keep data-driven-and-absent. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q63 (R15 Q-E) — ops focus/hover one-rule** (R12/R14 precedent) or browser defaults as part of
-  the counter-back idiom. R15 session.
+  the counter-back idiom. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q64 (R15 Q-F) — a long run of 「실행 기록 없음」 alert rows** (local reality): row-per-miss
-  stays, or a signed collapse. R15 session.
+  stays, or a signed collapse. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q65 (R15 Q-G) — favicon**: ship it this round (asset exists in `assets/`) or explicitly defer
-  past P8. R15 session.
+  past P8. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 
 ## Constraints
 
