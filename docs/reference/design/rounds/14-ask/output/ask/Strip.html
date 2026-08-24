@@ -1,0 +1,46 @@
+<!-- @dsCard group="⏳ P8.S14 · Ask" viewport="1240x1560" name="Strip" subtitle="질문 스트립 (이벤트 상세, 두 폭) — 칩은 서빙된 라벨을 읽고 R14가 서명한 질문 문장을 보낸다 (Q-D) · 칩을 눌러 보십시오: 스레드에 서는 버블이 바로 아래에 나타난다 · 서명 문장 표 10건" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r14-ask.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>.tbl{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+.tbl th{text-align:left;font-weight:600;font-size:var(--text-xs);letter-spacing:.06em;color:var(--ink-3);padding:0 12px 8px 0;border-bottom:1px solid var(--border-soft)}
+.tbl td{padding:8px 12px 8px 0;border-bottom:1px solid var(--border-soft);color:var(--ink-1);vertical-align:top;line-height:var(--leading-base)}
+.tbl td.k{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3);white-space:nowrap}
+.tbl td.s{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);white-space:nowrap}</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r14-parts.jsx"></script>
+<script type="text/babel">
+function Demo({width}){
+  const [sent,setSent]=React.useState(null);
+  return <div className="cell" style={{width}}>
+    <div style={{width,maxWidth:'100%'}}><AStrip onPick={setSent} /></div>
+    {sent ? <div className="aturn" style={{width}}>
+      <p className="aq">{sent.q}</p>
+      <p className="lab">↑ 눌린 칩: 「{sent.label}」 · 보낸 문장: {sent.sign === 'R6' ? 'R6 서명분 그대로' : sent.sign + ' (이 라운드 서명)'} · 범위 {A_RCEPT}로 전송</p>
+    </div> : <p className="lab">칩을 누르면 스레드에 서는 질문 버블이 여기에 나타난다 — 라벨이 아니라 문장이 선다</p>}
+  </div>;
+}
+function App(){
+  return <React.Fragment>
+    <ALab>이벤트 상세의 질문 스트립 — 제목 「이 공시에 대해 질문」, 프리셋은 그 이벤트의 게이트 통과 필드에서 생성, 자유 입력은 한 단계 뒤 (R6-2). 계양전기 <span className="mono">20260724000546</span>이 서빙하는 다섯 필드, 페이지의 읽기 순서대로</ALab>
+    <div className="desk" style={{display:'grid',gap:20}}>
+      <ALab>상세 폭 960 (제품의 값) — 칩 다섯 + 자유 입력 칩. 스트립은 페이지를 넓히지 않는다: 줄은 스크롤되고 줄바꿈하지 않는다</ALab>
+      <Demo width={960} />
+    </div>
+    <div className="desk" style={{display:'grid',gap:20,justifyItems:'start'}}>
+      <ALab>390 — 같은 한 줄, 같은 44px 타깃. 칩 탭 = <code>/ask</code>로 이동 + 범위 세팅 + 질문 전송 (walk에서 확인된 그대로)</ALab>
+      <div className="m390" style={{padding:'16px'}}><Demo width={358} /></div>
+    </div>
+    <p className="note"><b>Q-D — 칩은 라벨, 보내는 것은 문장.</b> walk에서 스레드에 「신주인수권증서 상장·매매기간」이 질문으로 섰다. 이제 칩의 <b>표시</b>는 서빙된 <code>korean_name</code> 그대로(=아래 행이 인쇄하는 라벨과 같음)이고, <b>전송</b>은 이 라운드가 서명한 문장이다. 두 값을 분리하는 자리는 <code>presets.ts</code>의 <code>AskPreset</code>: <code>label</code>은 이미 있고 <code>question</code>이 더 이상 <code>label</code>과 동일하지 않다. 템플릿(「{'{label}'}은 어떻게 되나요?」)은 여전히 금지 — 문장은 열 개를 손으로 서명했고, 표에 없는 필드 키는 <b>칩을 만들지 않는다</b>(라벨만 보내는 폴백을 두면 이 결정이 조용히 되돌아간다).</p>
+    <div className="panel" style={{padding:'18px 20px'}}><span className="bk"></span>
+      <table className="tbl"><thead><tr><th style={{width:230}}>field_key</th><th style={{width:300}}>칩 라벨 (서빙된 korean_name)</th><th>보내는 질문</th><th style={{width:90}}>서명</th></tr></thead>
+      <tbody>{A_PRESETS.map((p)=><tr key={p.k}><td className="k">{p.k}</td><td>{p.label}</td><td>{p.q}</td><td className="s">{p.sign}</td></tr>)}</tbody></table>
+    </div>
+    <p className="note"><b>열 개뿐인 이유.</b> <code>FIELD_ORDER</code>가 아는 필드가 열 개이고, <code>correction_interpretation</code>은 필드 행이 아니라 정정 스토리이므로 프리셋에서 빠진다 (R3 + <code>presets.ts</code> 규칙 2). <code>appraisal_price</code>의 라벨은 서버 것이라 여기 적힌 것은 <b>문장뿐</b>이다. 철회 이벤트는 칩 0개 — 「답할 수 없는 질문은 프리셋으로 제안하지 않음」.</p>
+    <p className="note"><b>hover 한 규칙 (f11).</b> 스트립 칩 = 테두리 soft → strong · 자유 입력 칩 = 거기에 잉크 ink-2 → ink-1 · 인용 칩 = 테두리 rgba(.4) → 불투명 <code>--live</code> · 솔리드 보내기 = 테두리만 <code>--live</code> · 헤더 아이콘·범위 × = ink-2 → ink-1. 표면의 모든 어포던스가 hover를 갖고, 새 토큰은 없다.</p>
+  </React.Fragment>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

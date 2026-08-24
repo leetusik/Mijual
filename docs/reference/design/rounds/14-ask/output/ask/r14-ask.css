@@ -1,0 +1,166 @@
+/* R14 geometry canon — AI 질문 (P8.S14). Tokens only; the literals are R6's own:
+   440×620 위젯 · #0e1a15 · 28px 헤더 아이콘 · 칩 mono 10px + rgba(95,208,165,.4) ·
+   캐럿 7×15 · 인용 180px 캡 · 340 레일 · 44px 바.
+   이 라운드가 바꾼 것: 단일 767 경계(Q-A) · 도구 행 = 스크롤되는 한 줄(f5) ·
+   솔리드 버튼 disabled = 고스트 티어(f13) · hover 한 규칙(f11) · 스레드 스크롤바(f14) ·
+   API-tier 블록 = 링크만(f10) · 데스크톱 두 열 = minmax(0,760px) 340(f9). */
+
+/* ── 카드 스캐폴딩 (R13과 같은 관례) ─────────────────────────────── */
+body{margin:0;padding:24px;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(19,66,52,.35),transparent 72%),var(--paper);font-family:var(--font-sans);color:var(--ink-1);word-break:keep-all}
+#root{display:grid;gap:20px}
+*{box-sizing:border-box}
+a{color:var(--ink-1)}a:hover{color:var(--live)}
+.lab{margin:0;font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em;line-height:1.7}
+.note{font-size:var(--text-sm);line-height:1.75;color:var(--ink-2);border-top:1px dashed var(--border-soft);padding-top:12px;margin:0}
+.note b{color:var(--ink-1);font-weight:600}
+.note code{font-family:var(--font-mono);font-size:.92em;color:var(--ink-1)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.cols{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.cell{display:grid;gap:10px;align-content:start}
+.desk{padding:24px;background:var(--paper);border:1px solid var(--border-soft)}
+/* craft panel (R2.1) — hairline + glow + four brackets */
+.panel{position:relative;background:var(--surface-card);border:1px solid var(--border-strong);box-shadow:var(--panel-glow)}
+.panel::before,.panel::after,.panel>.bk::before,.panel>.bk::after{content:"";position:absolute;width:9px;height:9px}
+.panel::before{left:-1px;top:-1px;border-left:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel::after{right:-1px;top:-1px;border-right:2px solid var(--panel-bracket);border-top:2px solid var(--panel-bracket)}
+.panel>.bk::before{left:-1px;bottom:-1px;border-left:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+.panel>.bk::after{right:-1px;bottom:-1px;border-right:2px solid var(--panel-bracket);border-bottom:2px solid var(--panel-bracket)}
+
+/* ── 위젯 ─────────────────────────────────────────────────────────── */
+/* 제품에서는 position:fixed right/bottom var(--space-6), z-index 40, >767에서만
+   렌더. 카드에서는 같은 상자를 제자리에 세운다. */
+.aw{display:flex;flex-direction:column;width:440px;height:620px;background:#0e1a15;border:1px solid var(--border-strong);box-shadow:var(--panel-glow)}
+.ahd{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border-soft)}
+.ascope{display:inline-flex;align-items:center;gap:var(--space-1);min-width:0;margin:0;padding:2px var(--space-2);border:1px solid var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-2)}
+.ascopet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.axc{padding:0;background:none;border:0;font-family:var(--font-mono);font-size:var(--text-xs);line-height:1;color:var(--ink-3);cursor:pointer}
+.axc:hover{color:var(--ink-1)}
+.aacts{display:flex;gap:var(--space-1);margin-left:auto}
+.aicon{display:grid;place-items:center;width:28px;height:28px;padding:0;background:none;border:0;color:var(--ink-2);cursor:pointer;font-family:var(--font-mono);font-size:var(--text-lg);line-height:1;transition:color var(--dur-base) var(--ease)}
+.aicon:hover{color:var(--ink-1)}
+
+/* 스레드 — f14: 스크롤바는 제품의 다른 패널과 같이 얇게 (기본 회색 바 폐기). */
+.ath{display:flex;flex:1;flex-direction:column;gap:var(--space-5);padding:var(--space-4);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+.ath::-webkit-scrollbar{width:6px}
+.ath::-webkit-scrollbar-thumb{background:var(--border-strong)}
+.ath::-webkit-scrollbar-track{background:transparent}
+.aintro{display:flex;flex-direction:column;gap:var(--space-2);margin:0}
+.aintrot{margin:0;font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-2)}
+.aanon{margin:0;font-family:var(--font-mono);font-size:var(--text-xs);line-height:var(--leading-base);color:var(--ink-3)}
+.aturn{display:flex;flex-direction:column;gap:var(--space-3)}
+.aq{align-self:flex-end;max-width:85%;margin:0;padding:var(--space-2) var(--space-3);background:var(--surface-raised);border:1px solid var(--border-soft);font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-1);white-space:pre-wrap}
+.aa{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3);border:1px solid var(--border-soft)}
+.aa[data-dim="true"] .aprose{color:var(--ink-2)}
+
+/* 도구 행 — f5: 접수번호는 절대 줄바꿈하지 않는다. 행은 한 줄이고, 넘치면
+   가로로 스크롤된다 (스트립의 「가로 스크롤 한 줄」과 같은 관례). */
+.atool{margin:0;padding-left:var(--space-2);border-left:2px solid var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:var(--leading-base);color:var(--ink-3);white-space:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+.atool::-webkit-scrollbar{display:none}
+
+/* Q-E: 한 단락으로 자란다. 문장은 인라인이고, 문장 사이의 유일한 간격은 0.25em —
+   스트림이 실어 오는 선행 공백/개행은 스토어 경계에서 정규화된다. */
+.aprose{margin:0;font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-1);text-wrap:pretty}
+.asen+.asen{margin-left:.25em}
+.acaret{display:inline-block;width:7px;height:15px;margin-left:2px;vertical-align:text-bottom;background:var(--live);animation:acaret 1s steps(1) infinite}
+@keyframes acaret{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.acaret{animation:none}}
+
+/* 인용 칩 — f11: hover는 테두리를 불투명 --live로. 열림은 --live-tint 배경. */
+.achip{display:inline;margin-left:3px;padding:0 3px;background:none;border:1px solid rgba(95,208,165,.4);font-family:var(--font-mono);font-size:10px;line-height:1.4;color:var(--live);cursor:pointer}
+.achip:hover{border-color:var(--live)}
+.achip[aria-expanded="true"]{background:var(--live-tint)}
+.aqp{display:block;margin-top:var(--space-2);padding:var(--space-3);background:var(--surface-inset);border-left:2px solid var(--live)}
+.aqt{display:block;margin:0;max-height:180px;overflow-y:auto;white-space:pre-wrap;font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-1);scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+.aql{display:inline-block;margin-top:var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);text-decoration:none}
+/* f10 — API-tier: 설명 줄 없음. 블록에 남는 것은 접수번호 링크 하나뿐이므로
+   위 여백이 필요 없다. */
+.aql.solo{margin-top:0}
+
+.afoot{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-2);padding-top:var(--space-2);border-top:1px solid var(--border-soft);animation:afade var(--dur-base) var(--ease)}
+@keyframes afade{from{opacity:0}}
+.afacts{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-3)}
+.alinks{display:flex;flex-wrap:wrap;gap:var(--space-3);margin:0}
+.alink{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);text-decoration:none}
+.alink:hover{text-decoration:underline;text-underline-offset:3px}
+.areask{margin-left:auto;padding:0;background:none;border:0;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.areask:hover{color:var(--ink-1)}
+.astop{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);margin:0;padding:var(--space-2) var(--space-3);background:var(--surface-inset)}
+.astopt{font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+
+/* ── 컴포저: 한 버튼 · 세 텍스트 (보내기 → 답변 준비 중… → 중지) ────── */
+.acom{display:flex;gap:var(--space-2);padding:var(--space-3);border-top:1px solid var(--border-soft)}
+.ain{flex:1;min-width:0;min-height:36px;padding:var(--space-2);background:transparent;border:1px solid var(--border-soft);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--leading-base);color:var(--ink-1);resize:none}
+.ain::placeholder{color:var(--ink-3)}
+.ain:focus-visible{outline:1px solid var(--live);outline-offset:-1px}
+.asend{min-height:36px;padding-inline:var(--space-3);background:var(--live-solid);border:1px solid var(--live-solid);font-family:var(--font-sans);font-size:var(--text-sm);font-weight:600;color:var(--ink-1);white-space:nowrap;cursor:pointer;transition:border-color var(--dur-fast) var(--ease)}
+.asend:hover{border-color:var(--live)}
+/* f13 — 빈 입력의 disabled는 감쇠된 솔리드가 아니라 고스트 티어다: 누를 수 있어
+   보이지 않는다. opacity .72 폐기. */
+.asend[disabled]{background:none;border-color:var(--border-soft);color:var(--ink-3);cursor:default}
+.asend[disabled]:hover{border-color:var(--border-soft)}
+
+/* ── 전용 페이지 ──────────────────────────────────────────────────── */
+.apage{display:flex;flex-direction:column;padding-block:var(--space-6) var(--space-16)}
+.acols{display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
+.arail{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4);min-width:0}
+.apromise{margin:0;font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+.achat{display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
+.abar{position:sticky;bottom:0;z-index:1;background:var(--paper)}
+/* f9 — 챗 열은 760px 측정폭에서 멈추고, 두 열은 함께 가운데 선다. 1564px에서
+   본문이 열 하나를 가로지르지 않는다. 레일은 sticky: 짧은 스레드에서 열이
+   비는 것은 여백이고, 긴 스레드에서 레일이 사라지지 않는다. */
+@media (min-width:768px){
+.acols{display:grid;grid-template-columns:minmax(0,760px) 340px;gap:var(--space-6);align-items:start;max-width:1124px;margin-inline:auto}
+.arail{grid-column:2;grid-row:1;position:sticky;top:var(--space-6)}
+.achat{grid-column:1;grid-row:1}
+}
+@media (max-width:767px){.ain,.asend{min-height:44px}}
+
+/* ── 질문 스트립 ──────────────────────────────────────────────────── */
+.astrip{display:flex;flex-direction:column;gap:var(--space-2);max-width:100%;min-width:0}
+.ash{margin:0;font-size:var(--text-xs);letter-spacing:.08em;color:var(--ink-3)}
+.arow{display:flex;flex-wrap:nowrap;gap:var(--space-2);max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+.ac{display:inline-flex;align-items:center;flex:none;min-height:44px;padding-inline:var(--space-3);background:var(--surface-raised);border:1px solid var(--border-soft);font-family:var(--font-sans);font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-1);white-space:nowrap;cursor:pointer;transition:border-color var(--dur-fast) var(--ease)}
+.ac:hover{border-color:var(--border-strong)}
+.afree{background:none;color:var(--ink-2)}
+.afree:hover{color:var(--ink-1);border-color:var(--border-strong)}
+
+/* ── 런처 (R6 개정 ⑤/⑧ · `Launcher.module.css`에서 전사. 이 라운드가 바꾼 것은
+   존재 조건뿐 — 68×50 프레임, 11×11 꼬리(right 12 / bottom −6, 45°), 22×22 토성,
+   밴드 4.5s, 링 드리프트 14s, hover 1.35 / active 1.15, 열림 = 마크 페이드 + 16px ×.
+   #0e1a15 · #122219 · #dfe9e4 · rgba(95,208,165,.9/.7)은 설계가 적은 리터럴이다.
+   제품의 유일한 승인된 모션 예외이며 데이터 표면으로 번지지 않는다. */
+.alauncher{position:relative;display:grid;place-items:center;width:68px;height:50px;padding:0;background:#0e1a15;border:1px solid var(--border-strong);box-shadow:var(--panel-glow);cursor:pointer;transition:background var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
+.atail{position:absolute;right:12px;bottom:-6px;width:11px;height:11px;background:#0e1a15;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);transform:rotate(45deg);transition:background var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
+.alauncher:hover{background:#122219;border-color:rgba(95,208,165,.7)}
+.alauncher:hover .atail{background:#122219;border-color:rgba(95,208,165,.7)}
+.alauncher:hover .amark{transform:scale(1.35)}
+.alauncher:active .amark{transform:scale(1.15)}
+.amark{position:relative;width:22px;height:22px;transition:transform var(--dur-base) var(--ease),opacity var(--dur-base) var(--ease)}
+.aplanet{position:absolute;inset:0;overflow:hidden;background:#dfe9e4;border-radius:50%}
+.aband{position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(30,52,42,.34) 0 2px,transparent 2px 7px);background-size:14px 100%;animation:abandspin 4.5s linear infinite}
+@keyframes abandspin{from{background-position:0 0}to{background-position:-14px 0}}
+/* 링은 두 반쪽이다 (개정 ⑧) — 하나로 합치지 않는다. */
+.aring{position:absolute;left:-9px;top:5px;width:40px;height:13px;border:1.5px solid rgba(95,208,165,.9);border-radius:50%;animation:aringdrift 14s ease-in-out infinite}
+.aringb{clip-path:polygon(0 0,100% 0,100% 49%,0 49%)}
+.aringf{clip-path:polygon(0 49%,100% 49%,100% 100%,0 100%)}
+@keyframes aringdrift{0%,100%{transform:rotate(-19deg) scaleX(.94)}50%{transform:rotate(-13deg) scaleX(.94)}}
+.aclose{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);width:16px;height:16px;opacity:0;transition:opacity var(--dur-base) var(--ease)}
+.aclose::before,.aclose::after{content:"";position:absolute;top:calc(50% - .75px);left:0;width:16px;height:1.5px;background:#dfe9e4}
+.aclose::before{transform:rotate(45deg)}
+.aclose::after{transform:rotate(-45deg)}
+.alauncher[data-open="true"] .amark{opacity:0}
+.alauncher[data-open="true"] .aclose{opacity:1}
+@media (prefers-reduced-motion:reduce){.aband,.aring{animation:none}.alauncher,.atail,.amark,.aclose{transition:none}.alauncher:hover .amark,.alauncher:active .amark{transform:none}}
+
+/* ── 390 미러 (카드 안의 390 상자는 뷰포트가 아니므로 ≤767 규칙을 명시한다) ── */
+.m390{width:390px;background:var(--paper);border:1px solid var(--border-soft);overflow:hidden}
+.m390 .apage{width:100%;padding-block:var(--space-4) var(--space-5);padding-inline:var(--space-4)}
+.m390 .ain,.m390 .asend{min-height:44px}
+/* ≥768 미디어 블록의 두 열 배치를 되돌린다 (미디어 쿼리는 특정도를 더하지 않는다). */
+.m390 .acols{display:flex;flex-direction:column;gap:var(--space-5);width:100%;max-width:100%;min-width:0;margin:0}
+.m390 .arail,.m390 .achat{grid-column:auto;grid-row:auto;position:static;width:100%;max-width:100%;min-width:0}
+.m390 .aturn,.m390 .aa,.m390 .astrip,.m390 .arow,.m390 .abar,.m390 .acom{max-width:100%;min-width:0}
+/* 「인용 블록 전폭」 (R6 §Mobile): 블록은 답변 상자의 패딩을 밀고 나간다. */
+.m390 .aqp{margin-inline:calc(-1 * var(--space-3));padding-inline:var(--space-3)}
+.m390 .aa{padding-inline:var(--space-3)}

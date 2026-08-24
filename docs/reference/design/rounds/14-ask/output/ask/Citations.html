@@ -1,0 +1,49 @@
+<!-- @dsCard group="⏳ P8.S14 · Ask" viewport="1240x1560" name="Citations" subtitle="번호 칩(닫힘·hover·열림) · verbatim 인용 블록 · API-tier 블록 = 접수번호 링크만 (finding 10, R3 문구 회수) · 푸터 「근거 N건」은 칩 수를 센다 (Q-B, before/after) · 같은 근거 = 같은 번호" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r14-ask.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>.kill{text-decoration:line-through;text-decoration-color:var(--alert);color:var(--ink-3)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r14-parts.jsx"></script>
+<script type="text/babel">
+const A_CHIP_MAP=[
+  {n:1,rcept:A_RCEPT,field:'forfeited_share_method',used:'문장 1 · 2'},
+  {n:2,rcept:A_RCEPT,field:'excess_subscription',used:'문장 3'},
+  {n:3,rcept:A_RCEPT,field:'warrant_trading_period',used:'문장 4'},
+  {n:4,rcept:A_RCEPT,field:'issue_price_formula',used:'문장 5'},
+  {n:5,rcept:A_RCEPT_OLD,field:'issue_price_formula (이전 버전)',used:'문장 6'},
+];
+function App(){
+  return <React.Fragment>
+    <ALab>인라인 인용 (R6-4) — 번호 칩 mono 10px, <span className="mono">--live</span> 잉크, 1px rgba(95,208,165,.4) 테두리. 탭 → 제자리 인용 블록(<span className="mono">--surface-inset</span> + 좌측 2px <span className="mono">--live</span>), 재탭 → 닫힘. 오프셋(span)은 렌더하지 않는다</ALab>
+    <div className="two">
+      <div className="cell"><ALab>① verbatim 인용 — 공시의 말 그대로, 재구성·재구두점 금지. 180px 캡 + 스크롤, 그 아래 접수번호 링크</ALab>
+        <div className="aa"><p className="aprose"><span className="asen">{A_TURN.sen[0].t}<ACite n={1} chip={A_TURN.chips[1]} open={true} /></span></p></div></div>
+      <div className="cell"><ALab>② API-tier 사실 (원문 스팬 없음) — <b>블록에 남는 것은 접수번호 링크 하나뿐</b>. 칩은 여전히 인용이며, 열면 갈 곳이 있다</ALab>
+        <div className="aa"><p className="aprose"><span className="asen">확정 발행가액은 아직 공시되지 않았습니다 — 2026-09-01에 공시될 예정입니다<ACite n={1} chip={{rcept:A_RCEPT}} open={true} /></span></p></div>
+        <p className="lab">칩 닫힘 / hover / 열림 → <span style={{display:'inline-flex',gap:12,alignItems:'baseline'}}><button className="achip" type="button">1</button><button className="achip" type="button" style={{borderColor:'var(--live)'}}>1</button><button className="achip" type="button" aria-expanded="true">1</button></span></p></div>
+    </div>
+    <p className="note"><b>finding 10 — R3 문구 회수.</b> 「DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용 핸들」은 <span className="kill">이 블록에서 삭제한다</span>. <b>스팬</b>과 <b>인용 핸들</b>은 우리 계약의 어휘이고, 첫 방문자에게 인용 블록 안에서 개발자 말투로 읽혔다. 대신 블록은 링크 하나로 선다 — 링크가 있다는 사실 자체가 「이 수치의 근거는 이 접수번호다」이고, 그것이 문장이 하던 일 전부다. 새 한국어를 만들지 않았고 <code>API_TIER_KO</code>는 회수 대상이 된다 (P7 Q7① 종결).</p>
+    <div className="two">
+      <div className="cell"><ALab>③ 푸터 — 지금 (walk): 칩이 다섯인데 「근거 1건」. N이 서로 다른 <b>공시 수</b>를 세고 있었다</ALab>
+        <div className="aa"><p className="aprose">{[1,2,3,4,5].map((n)=><span key={n} className="asen"><ACite n={n} chip={{rcept:A_RCEPT}} /></span>)}</p>
+          <p className="afoot"><span className="afacts kill">{'근거 1건 · '+A_RCEPT+' · '+A_STAMP}</span></p></div></div>
+      <div className="cell"><ALab>④ 푸터 — R14 (Q-B): <b>하나의 근거 = 하나의 칩</b>. N은 칩의 수이고, 공시는 뒤의 접수번호들이 센다</ALab>
+        <div className="aa"><p className="aprose">{[1,2,3,4,5].map((n)=><span key={n} className="asen"><ACite n={n} chip={{rcept:n===5?A_RCEPT_OLD:A_RCEPT}} /></span>)}</p>
+          <p className="afoot"><span className="afacts">{[A_ev(5),A_RCEPT,A_RCEPT_OLD,A_STAMP].join(' · ')}</span>
+            <span className="alinks"><a className="alink" href="#">{A_EVENT}</a></span>
+            <button type="button" className="areask">{A_REASK}</button></p></div></div>
+    </div>
+    <p className="note"><b>번호 규칙은 walk가 보여준 그대로 그렸다 (finding 12).</b> 서버가 <b>근거마다</b> 번호를 한 번 부여하므로 같은 근거를 쓴 문장들은 같은 번호를 공유한다 — 같은 실권주 질문이 전체 공시에서 1,2,2, 이벤트 범위에서 1,2,3으로 나온 것은 둘 다 옳다. 푸터의 N은 이제 그 <b>번호의 개수</b>이므로 두 답변에서 각각 2건·3건이 되고, 화면의 칩과 어긋날 수 없다.</p>
+    <div className="panel" style={{padding:'18px 20px',display:'grid',gap:10}}><span className="bk"></span>
+      <p className="lab">근거 → 칩 번호 → 접수번호 (④의 답변)</p>
+      {A_CHIP_MAP.map((r)=><p key={r.n} className="lab" style={{color:'var(--ink-2)'}}><button className="achip" type="button">{r.n}</button> <span className="mono">{r.rcept}</span> · {r.field} · {r.used}</p>)}
+      <p className="note" style={{borderTop:'1px dashed var(--border-soft)'}}>칩 4와 5는 같은 필드의 <b>다른 버전 공시</b>이므로 서로 다른 근거다 — 그래서 번호가 둘이고, 푸터의 접수번호도 둘이다. 이것이 「근거 5건 · 두 접수번호」가 모순이 아닌 이유다.</p>
+    </div>
+  </React.Fragment>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

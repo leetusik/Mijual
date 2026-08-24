@@ -1,0 +1,48 @@
+<!-- @dsCard group="⏳ P8.S14 · Ask" viewport="1440x2180" name="Page 1440" subtitle="/ask 데스크톱 — 프레임 없는 챗 + 340 레일(sticky) · 챗 열은 760 측정폭에서 멈추고 두 열이 가운데 선다 (finding 9) · 짧은 스레드/긴 스레드 리듬 · 범위가 이벤트면 온페이지 스트립 · 481–767도 이 페이지 하나 (Q-A)" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r14-ask.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>#root{max-width:none}</style>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r14-parts.jsx"></script>
+<script type="text/babel">
+function App(){
+  return <React.Fragment>
+    <ALab>/ask · 1440 — 챗 표면에 프레임 없음 (패널·브래킷 없이 페이지에 직접), 페이지의 유일한 패널은 340 레일 (R6 개정 ④). 이 페이지에는 런처가 없다</ALab>
+    <ALab>finding 9의 답 — 두 열은 <b>minmax(0,760px) 340</b>이고 묶음의 max-width는 1124px, 가운데 정렬. 1564px 창에서도 프로즈가 열 하나를 가로지르지 않고, 오른쪽 열이 페이지 높이만큼 비지 않는다. 레일은 sticky (top 24px)</ALab>
+    <div className="desk">
+      <div className="apage">
+        <div className="acols">
+          <ARail />
+          <div className="achat">
+            <ATurn turn={A_TURN} footer={true} />
+            <AStrip free={false} />
+            <div className="abar"><AComposer state="empty" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p className="note"><b>짧은 스레드의 리듬.</b> 바는 <code>position:sticky</code>이므로 대화가 뷰포트보다 짧으면 <b>마지막 요소 바로 아래</b>에 서고(화면 가운데에 떠 있지 않다), 넘칠 때만 바닥에 붙는다. 스트립은 범위가 이벤트일 때 바 위에 서고 — 여기서는 자유 입력 칩이 없다: 컴포저가 바로 아래에 있으므로 「한 단계 뒤」가 이미 만족된다.</p>
+    <ALab>긴 스레드 — 턴이 쌓여도 레일은 sticky로 남고, 스트립은 항상 컴포저 직전 (마지막 데이터 요소 뒤)</ALab>
+    <div className="desk">
+      <div className="apage">
+        <div className="acols">
+          <ARail />
+          <div className="achat">
+            <ATurn turn={A_TURN} footer={true} openChip={2} />
+            <ATurn turn={A_TURN_REFUSAL} />
+            <ATurn turn={A_TURN_PARTIAL} caret={true} />
+            <AStrip free={false} />
+            <div className="abar"><AComposer state="streaming" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p className="note"><b>481–767에서 이 페이지가 표면 전체다 (Q-A).</b> 그 폭에서는 <code>.acols</code>가 한 열로 접히고 레일의 네 항목(범위 · 약속 · 인트로 · 세션)이 대화 위에 쌓인다 — 전화기에서 이미 하는 그대로다. 런처·위젯은 렌더되지 않으므로 진입은 nav의 「AI 질문」과 상세의 질문 스트립뿐이며, 두 진입 모두 이 페이지에 범위를 세팅해 도착한다.</p>
+    <p className="note"><b>Q-F — vocky ⓝ.</b> <code>/ask</code>에서는 ≤767에서 트리거를 <b>렌더하지 않는다</b>: 그 라우트가 이미 질문 표면이고, 44px 고정 바가 chrome의 좌하단 코너를 덮는다. &gt;767의 이 페이지에서는 바가 가운데 1124px 묶음 안에 있어 코너에 닿지 않으므로 트리거는 그대로 — 768–1024 구간의 실측은 <code>P8.S15</code> 회귀 항목이다.</p>
+  </React.Fragment>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

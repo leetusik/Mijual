@@ -1,0 +1,38 @@
+<!-- @dsCard group="⏳ P8.S14 · Ask" viewport="1000x1520" name="Mobile 390" subtitle="/ask 390 — 스택된 오프닝(레일 항목이 대화 위) · 44px sticky 바 · 인용 블록 전폭 · 도구 행은 접수번호를 쪼개지 않는다(f5) · vocky ⓝ는 이 라우트에서 숨는다(Q-F) · 위젯·런처 없음" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r14-ask.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r14-parts.jsx"></script>
+<script type="text/babel">
+function App(){
+  return <React.Fragment>
+    <ALab>/ask · 390 — 카드 안의 390 상자는 뷰포트가 아니므로 ≤767 규칙을 <code>.m390</code> 미러로 명시했다 (R13과 같은 관례). 제품에서는 단일 767 경계가 이 전부를 켠다</ALab>
+    <div className="cols">
+      <div className="cell"><ALab>① 오프닝 — 레일의 네 항목이 대화 위에 쌓인다 (범위 · 약속 · 인트로 · 세션). 프리셋은 가로 스크롤 한 줄, 타깃 44px. 바는 하단 sticky 44px</ALab>
+        <div className="m390"><div className="apage"><div className="acols">
+          <ARail />
+          <div className="achat">
+            <AStrip free={false} />
+            <div className="abar"><AComposer state="empty" /></div>
+          </div>
+        </div></div></div>
+      </div>
+      <div className="cell"><ALab>② 답변 — 인용 블록은 전폭(답변 상자의 패딩을 밀고 나간다, 180px 캡 + 스크롤) · 도구 행은 한 줄이고 <b>접수번호를 쪼개지 않는다</b>: 넘치면 가로로 스크롤된다 (f5 — <code>word-break:break-all</code> 회수)</ALab>
+        <div className="m390"><div className="apage"><div className="acols">
+          <div className="achat">
+            <ATurn turn={A_TURN} footer={true} openChip={1} />
+            <AStrip free={false} />
+            <div className="abar"><AComposer state="idle" text="초과청약은 어떤 조건으로 할 수 있나요?" /></div>
+          </div>
+        </div></div></div>
+      </div>
+    </div>
+    <p className="note"><b>Q-F — 390에서 ⓝ와 sticky 바의 충돌.</b> 답은 <b>트리거를 숨긴다</b>: <code>/ask</code> ≤767에서 chrome은 vocky 트리거를 렌더하지 않는다. 그 라우트는 이미 질문 표면이고, 겹침을 피하려 44px 바를 안쪽으로 밀면 히트 영역이 좁아지거나 입력이 화면 폭을 못 쓴다. R6의 하드룰(런처·위젯은 vocky 코너 금지)은 이로써 페이지 바에도 같은 방식으로 지켜진다 — 코너를 비우는 쪽이 트리거다.</p>
+    <p className="note"><b>이 폭에 위젯·런처는 없다 (Q-A).</b> 480이 아니라 767이 그 선이며, 481–767도 이 페이지를 받는다. 그래서 이 카드의 기하는 390에서 검증되지만 <b>767까지</b> 유효해야 한다 — 컨트롤 44px, 프리셋 한 줄 스크롤, 인용 전폭, 도구 행 유지.</p>
+  </React.Fragment>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>
