@@ -336,7 +336,7 @@ no conversion moment on the anonymous sample surface; 「실제 공시 4건」 v
 notifications` frameless (no h1, no rail); 수신 주소 변경 silently inherits R12's `invalid_email`
 line. §2b decisions routed as **Q41–Q45** below.
 
-### R13 landed spec — read back 2026-08-24 (`P8.S12` gate 2), awaiting literal signoff
+### R13 landed spec — read back 2026-08-24 (`P8.S12` gate 2) — SIGNED OFF 2026-08-24 ("sign off"); SIGNOFF.md R13 entry, cards regrouped to `Portfolio`, Q46 = (a)
 
 Read back with DesignSync from "Mijual Design System" and **landed as-is** under
 `docs/reference/design/rounds/13-portfolio/output/`: `result.md`, `build-prompt.md`,

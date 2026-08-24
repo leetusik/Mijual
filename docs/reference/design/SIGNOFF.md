@@ -443,3 +443,57 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 3 R12 cards retire the round address (`⏳ P8.S10 · Account` →
   `Account`); card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R13 — Polish: 보유 종목 + 알림 설정 (`P8.S12`, round `13-portfolio`)
+
+- Closed: 2026-08-24
+- Authorization (operator's literal words): **"sign off"** — given in the orchestrator session
+  against this summary: the **D-day rows get four content-independent tracks**
+  (`84px · minmax(0,1fr) · 212px · 208px`, gap 4px 16px) shared by every row of both sections —
+  no column headers, no vertical rules, surface width 960px; row bodies sit on the same tracks
+  (`grid-column:2/-1`, money line `minmax(0,1fr) 208px`) so every 금액's right edge equals the
+  countdown edge — P7 Q8-A's measured 144.7px ragged edge / 584.6–761.3px empty middle becomes
+  structurally impossible. Past chip + date on one line; anchor 「기준 {ref} (KST)」 **once per
+  block**, outside the sections (P7 Q8-B closed as page-level). Empty 진행 중인 권리 cell =
+  `.pslot` **dashed hairline 56px** (no sentence, no dashed box, no `—`); holdings rights cell
+  gets tracks `52px minmax(0,1fr) auto` (session revision — one right edge for all countdowns).
+  **Q-B re-decided in session (supersedes the gate default): 「놓친 돈 상세 →」 moves into the
+  money line and does not render on a checked row** (returns on uncheck); the control line keeps
+  only the checkbox; `.pmlead{min-height:32px}` (44px ≤767) holds the height so checking moves a
+  **measured 0px** (row 161px · money line 32px · checkbox top 1095; 390: 249px · y 973) — P7
+  Q8-D fully closed. Claim caption renders unconditionally (P7 Q8-E); a 챙겼습니다 row **stays**
+  in 지나간 마감 (P7 Q4 = R5-8 stands); `carryOverKo` and both claim captions kept as-is (P7
+  Q7④+fifth). **Sample**: no reset/종료 control returns — **R5-4's 「종료」 clause is officially
+  withdrawn**, permanent browser edits accepted, `clearSample()` migrate-only; the **R12
+  conversion band renders after 지나간 마감** under the R12 ladder rules, **without the lead
+  line** (「이 보유량은 탭을 닫으면 사라집니다」 is false on this surface) — body + CTA + 닫기,
+  session-once, dismissible. **알림 설정**: rail 「← 보유 종목」 + `h2`→`h1` promotion; row grid
+  `104px minmax(0,1fr) auto`; the R12-inherited `invalid_email` line is **wanted** (body-ink one
+  line, no `--alert`); chips `aria-pressed`, an empty selection is a valid setting; KakaoTalk
+  row keeps no control; **계정 삭제 arms in place and its signed sentence renders only when
+  armed** (withdraws R5's 상시 clause); 로그아웃·계정 삭제·취소 share one `.pact.wide` box.
+  **Terminology (session revision): reader surfaces never say 「포트폴리오」** — the layer is
+  보유 종목; `EMPTY_TITLE_KO` → 「보유 종목이 비어 있습니다」, `SAMPLE_BANNER_KO` → 「샘플 보유
+  종목 — …」 (operator revision of R5 strings; routes/paths/component names unchanged). **Both
+  480px media blocks are retired** for the single 767px boundary. **New Korean 0건** — two
+  compositions of existing tokens only (rail `← ` + `PORTFOLIO_LABEL_KO`, `「」` +
+  `PLANNED_CHIP_KO`); the login page's 「실제 공시 4건」 stays (a filing count, not a row count).
+  The signoff covers the departures logged in `result.md` (the Sample card borrows
+  `account/r12-auth.css` verbatim; card-data gaps rendered as ⋯, never invented) and the
+  read-back observations in `phase.md` §"R13 landed spec" — including **Q46 = (a)**: the served
+  `stock_code` keeps rendering at the `.phmeta` tier (the cards' omission was a data gap, not a
+  removal).
+- Supersedes: the parts of **R5** it re-cuts — §D-day 목록's row layout (`space-between` →
+  tracks), the 지나간 행 line rhythm, R5-4's 종료 clause and the 샘플/계정 이전-only
+  `clearSample`, R5-5/R5-7's always-on 계정 삭제 sentence and unequal action boxes, R5-3's
+  `EMPTY_TITLE_KO` / R5-4's `SAMPLE_BANNER_KO` wording, and the two 480px mobile blocks. P7's
+  layout-primitive corrections stand; R12's offer band and ladder stand and extend to this
+  surface. Within the round, Q-B and Q-D were re-decided by the operator in session before close.
+- Token delta: **None.**
+- Landed record: `rounds/13-portfolio/output/` (`result.md`, `build-prompt.md`,
+  `portfolio/r13-portfolio.css`, `portfolio/r13-parts.jsx`, the 4 portfolio cards) — read-only;
+  the operator's post-session text corrections are in the landed files byte-exact. The cards stay
+  in the Claude Design project "Mijual Design System".
+- Post-approval regroup: the 4 R13 cards retire the round address (`⏳ P8.S12 · Portfolio` →
+  `Portfolio`); card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.
