@@ -8,9 +8,9 @@
 - Current phase: `P9`
 - Current slice: `P9.S2`
 - Next slice: `P9.DECOMP2`
-- Waiting on operator: `none`
+- Waiting on operator: `P9.S2`
 - Open deferred jobs: `13`
-- Rebuilt at: `2026-08-25T02:02:27+09:00`
+- Rebuilt at: `2026-08-25T02:05:09+09:00`
 
 ## Active Phases
 
@@ -26,7 +26,7 @@
 | [x] `P9.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P9/slices/P9.DECOMP` |
 | [x] `P9.S1` | `done` | research changple5 일반 대화 agent | `research` | `works/phases/active/P9/slices/P9.S1` |
 | [x] `P9.S1B` | `done` | research best-practice agents beyond changple5 | `research` | `works/phases/active/P9/slices/P9.S1B` |
-| [ ] `P9.S2` | `todo` | design round 1: unified assistant & rich chat surface | `co-work` | `works/phases/active/P9/slices/P9.S2` |
+| [~] `P9.S2` | `pending` | design round 1: unified assistant & rich chat surface | `co-work` | `works/phases/active/P9/slices/P9.S2` |
 | [ ] `P9.DECOMP2` | `todo` | second decomposition: cut build slices from the signed design | `decomposition` | `works/phases/active/P9/slices/P9.DECOMP2` |
 | [ ] `P9.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P9/slices/P9.REVIEW` |
 
