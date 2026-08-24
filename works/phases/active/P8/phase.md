@@ -391,6 +391,27 @@ the same data-gap reason → **Q46**.
   invented**; Doc impact goes on the running list, and only the review versions docs.
 - **`P8.S1` (`fix`)** — the `t1` collision, below.
 
+### R14 walk — surface 7 (AI 질문), 2026-08-24 — live Chrome walk, dev origin
+
+- Walked **live** at `http://127.0.0.1:3000` (Chrome bridge back up): launcher → widget, three real
+  questions through the agent (전체 공시 and event scope), 중지 caught mid-stream + 재시도 re-running
+  the same turn in place, citation chips opened (incl. the API-tier block), widget → `/ask` handoff
+  with thread and 범위 intact, reload-restore verified (t1 fix live: restored ids `t3b341f2d-1..3`,
+  no console warnings), event-detail 질문 스트립 desktop (opens the scoped widget and sends the chip
+  question) and at 390 (routes to `/ask`, scope + question sent), scope × release, 390 via a
+  live-origin iframe harness. Hover states read from CSS (bridge has no mouse-move); production
+  build not walked — `P8.S15` verifies per the runtime manifest.
+- Handoff: `docs/reference/design/rounds/14-ask/handoff.md` (pushed `8c2a5ef`) — **16 findings**,
+  §2b **Q-A–Q-F**; required cards under group **`⏳ P8.S14 · Ask`**; token freeze + R6 hard rules
+  restated.
+- Headlines: the surface still lives on the retired **480px** boundary including where the
+  widget/launcher exist at all (Q-A → Q50); footer **근거 1건 under five numbered chips** (Q-B →
+  Q51); **vocky ⓝ overlaps the `/ask` sticky composer bar at 390** (Q-F → Q52); tool-row rcept_no
+  wraps mid-number at 390 (nowrap-mono violation); prose renders line-per-sentence vs R6's 프로즈
+  자람 (Q-E → Q53); preset noun labels are sent verbatim as the question bubbles (Q-D → Q54); the
+  composer idles as 「직접 질문 입력 →」 acting as the send button (Q-C → Q55); carried: P7 Q7①
+  API-tier wording, P7 Q9 hover inconsistency, favicon 404 (chrome-wide, R15's scope).
+
 ## Findings & Notes
 
 ### `t1` root cause — verified read-only at decomposition (2026-08-23)
@@ -1803,6 +1824,22 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   **not this slice's** (no backend file was touched, and `NotificationsView`'s handler is unchanged
   since `P5.S8`). (a) file it as a deferred job (「make the notification_pref save an upsert」) —
   suggested; (b) fix it now in a small `fix` slice; (c) accept it as unreachable and record it only.
+- **Q50 (R14 Q-A) — the ask surface's breakpoint.** `Ask.module.css:421` / `AskPage.module.css:64` /
+  `DESKTOP_QUERY` all draw 480/481 while R10 §0 standardized one 767px line; here it decides where
+  the widget/launcher **exist**. (a) migrate to 767 (481–767 gets the full-width page, no widget) or
+  (b) keep 480 as a documented R6 exception. Product call — answered in the R14 session.
+- **Q51 (R14 Q-B) — 근거 N건 counts filings while chips number 1–5.** Reads as a contradiction to a
+  first-time user. Count chips, keep filings and say so, or leave as-is. R14 session.
+- **Q52 (R14 Q-F) — at 390 the vocky ⓝ trigger overlaps `/ask`'s sticky composer bar.** Move/hide
+  the trigger on mobile `/ask`, inset the bar, or accept. R14 session.
+- **Q53 (R14 Q-E) — answer prose renders one sentence per line (leading space on continuations)**
+  vs R6's 「프로즈 자람」 paragraph. Which is the design? R14 session.
+- **Q54 (R14 Q-D) — preset chips send their noun label as the question** (4 noun labels + 1 signed
+  sentence); the thread shows noun-phrase question bubbles. Keep, or send full sentences behind the
+  labels (new Korean = signed in-round). R14 session.
+- **Q55 (R14 Q-C) — the composer's idle button 「직접 질문 입력 →」 doubles as the send button** (an
+  R6-2 chip string reused). Keep or sign a distinct send label. R14 session.
+
 ## Constraints
 
 - **No new features.** Polish only — every round's handoff says so, and an apply slice that finds
