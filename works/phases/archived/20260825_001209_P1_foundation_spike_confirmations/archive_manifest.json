@@ -1,0 +1,15 @@
+{
+  "phase_id": "P1",
+  "archived_at": "2026-08-25T00:12:09+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P1",
+  "archive_path": "works/phases/archived/20260825_001209_P1_foundation_spike_confirmations",
+  "slices": [
+    "P1.DECOMP",
+    "P1.S1",
+    "P1.S3",
+    "P1.S2",
+    "P1.REVIEW"
+  ]
+}

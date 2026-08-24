@@ -1,0 +1,32 @@
+{
+  "phase_id": "P5",
+  "archived_at": "2026-08-25T00:12:09+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P5",
+  "archive_path": "works/phases/archived/20260825_001209_P5_apply_build_the_signed_design",
+  "slices": [
+    "P5.DECOMP",
+    "P5.S1",
+    "P5.S2",
+    "P5.S3",
+    "P5.S4",
+    "P5.S5",
+    "P5.S6",
+    "P5.S20",
+    "P5.S7",
+    "P5.S8",
+    "P5.S9",
+    "P5.S10",
+    "P5.S11",
+    "P5.S12",
+    "P5.S13",
+    "P5.S14",
+    "P5.S15",
+    "P5.S16",
+    "P5.S17",
+    "P5.S18",
+    "P5.S19",
+    "P5.REVIEW"
+  ]
+}

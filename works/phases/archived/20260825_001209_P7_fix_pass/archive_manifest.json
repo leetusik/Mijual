@@ -1,0 +1,21 @@
+{
+  "phase_id": "P7",
+  "archived_at": "2026-08-25T00:12:09+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P7",
+  "archive_path": "works/phases/archived/20260825_001209_P7_fix_pass",
+  "slices": [
+    "P7.DECOMP",
+    "P7.S1",
+    "P7.S2",
+    "P7.S3",
+    "P7.S4",
+    "P7.S5",
+    "P7.S6",
+    "P7.S7",
+    "P7.S8",
+    "P7.S9",
+    "P7.REVIEW"
+  ]
+}

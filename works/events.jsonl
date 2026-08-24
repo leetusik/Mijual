@@ -408,3 +408,9 @@
 {"ts": "2026-08-25T00:07:53+09:00", "type": "slice_status_changed", "slice": "P8.REVIEW", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-25T00:07:53+09:00", "type": "phase_reviewed", "phase": "P8", "verdict": "pass", "reviewer": "slice-executor-high"}
 {"ts": "2026-08-25T00:07:53+09:00", "type": "phase_archived", "phase": "P8", "archive_path": "works/phases/archived/20260825_000753_P8_design_polish_pass_audit_polish_every_surface"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P1", "archive_path": "works/phases/archived/20260825_001209_P1_foundation_spike_confirmations"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P2", "archive_path": "works/phases/archived/20260825_001209_P2_data_extraction_pipeline"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P3", "archive_path": "works/phases/archived/20260825_001209_P3_mijual_web_service_design_only"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P5", "archive_path": "works/phases/archived/20260825_001209_P5_apply_build_the_signed_design"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P7", "archive_path": "works/phases/archived/20260825_001209_P7_fix_pass"}
+{"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P6", "archive_path": "works/phases/archived/20260825_001209_P6_apply_ai_agent"}

@@ -1,0 +1,25 @@
+{
+  "phase_id": "P2",
+  "archived_at": "2026-08-25T00:12:09+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P2",
+  "archive_path": "works/phases/archived/20260825_001209_P2_data_extraction_pipeline",
+  "slices": [
+    "P2.DECOMP",
+    "P2.S1",
+    "P2.S2",
+    "P2.S3",
+    "P2.S4",
+    "P2.S5",
+    "P2.S6",
+    "P2.S7",
+    "P2.S8",
+    "P2.F1",
+    "P2.S9",
+    "P2.F2",
+    "P2.F3",
+    "P2.F4",
+    "P2.REVIEW"
+  ]
+}

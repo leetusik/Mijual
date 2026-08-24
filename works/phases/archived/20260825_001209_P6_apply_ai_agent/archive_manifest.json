@@ -1,0 +1,20 @@
+{
+  "phase_id": "P6",
+  "archived_at": "2026-08-25T00:12:09+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P6",
+  "archive_path": "works/phases/archived/20260825_001209_P6_apply_ai_agent",
+  "slices": [
+    "P6.DECOMP",
+    "P6.S1",
+    "P6.S2",
+    "P6.S3",
+    "P6.S4",
+    "P6.S5",
+    "P6.S6",
+    "P6.S7",
+    "P6.F1",
+    "P6.REVIEW"
+  ]
+}
