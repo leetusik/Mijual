@@ -25,6 +25,7 @@ from mijual.present import (
     Figure,
     OfferingInputs,
     QuotePart,
+    board_bucket,
     board_summary,
     countdown_of,
     event_view,
@@ -307,6 +308,16 @@ def test_one_summary_counts_the_board_and_tags_the_headline() -> None:
     assert payload["as_of"] == "2026-08-20T18:30:00+09:00"  # absolute KST, always
     assert payload["next_lapse"] == {"date": "2026-09-04", "corp_name": "계양전기"}
     assert summary.countdown_target is None  # the 마감 instant is not assumed
+
+
+def test_a_lapsed_right_is_on_no_board_list_and_in_no_count() -> None:
+    """감시 중 counts what the board can show — the ① tab said 50 over 16 rows."""
+    lapsed = event_view(
+        _exposure(fields=[_field("warrant_trading_period", {"end_date": "2026-07-01"})]),
+        today=TODAY,
+    )
+    assert board_bucket(lapsed) is None
+    assert board_summary([lapsed]).watching == 0
 
 
 def test_the_board_says_how_old_it_is_rather_than_going_dark() -> None:

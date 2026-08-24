@@ -17,19 +17,13 @@ import {
   EXPAND_KO,
   FRESHNESS_PREFIX_KO,
   FRESHNESS_TZ_KO,
-  LEGEND_DDAY_KO,
-  LEGEND_FAR_KO,
-  LEGEND_NEAR_KO,
-  LEGEND_SOON_KO,
   REFRESHED_KO,
   STALE_NOTICE_KO,
   TAB_ALL_KO,
-  TAB_NOTE_KO,
   collapseToFirstKo,
   moreKo,
   openNowSentence,
   remainingKo,
-  shownLine,
   staleSuffixKo,
   tbdSentence,
 } from "./copy";
@@ -45,8 +39,8 @@ import styles from "./Board.module.css";
  * two pinned strips stay on the first screen instead of being pushed off it.
  *
  * It is a **display limit and never a filter**: the served list, its ranking and
- * the whole-board `counts` are untouched, a tab switch starts a new list at the
- * first window — and a refresh does **not** reset it (§7).
+ * the tab `counts` are untouched, a tab switch starts a new list at the first
+ * window — and a refresh does **not** reset it (§7).
  */
 const WINDOW_STEP = 15;
 
@@ -65,9 +59,9 @@ const REFRESH_INTERVAL_MS = 60_000;
  * The board — 소멸 카운트다운 (R2 §Board + R3's 추후결정 strip, re-cut by R9).
  *
  * Craft panel: header (title + freshness chip, and the 갱신됨 badge beside it) →
- * the stale notice when there is one → tabs → **the meta line and the D-day
- * legend** → rows → the window footer → the two pinned strips. Three rules the
- * rounds state as prohibitions and this component keeps structurally:
+ * the stale notice when there is one → tabs → rows → the window footer → the two
+ * pinned strips. Three rules the rounds state as prohibitions and this component
+ * keeps structurally:
  *
  * - **Content never dims on staleness.** The chip flips to the alert treatment
  *   and an inset notice appears above the tabs; the rows are untouched. Same on
@@ -82,18 +76,21 @@ const REFRESH_INTERVAL_MS = 60_000;
  *
  * `GET /board?rights=` exists and does exactly this, but the whole board is one
  * request (`P5.S3` note 11: 160 KB in ~54 ms, and the design paginates nothing),
- * and `counts` is **always whole-board** either way. Filtering the served list
+ * and `counts` counts the same population either way. Filtering the served list
  * reproduces the endpoint's own `keep()` — same predicate, same order — while a
  * tab click costs no request and cannot show a different corpus in two tabs.
  * That is also what makes the refresh cheap: one request replaces every tab.
  *
- * ## The two numbers, and the line that explains them (R9 §4)
+ * ## What a tab's number counts
  *
- * A tab's count is the **whole board** (전체 488) and the list under it is the
- * countdown's **ranked** subset (386, of which 15 are shown). Walk findings 2 and
- * 3 were that nothing on the surface said so, so the meta line says both, and the
- * footer separates what a click adds (「15건 더 보기」) from what is left
- * (「남은 371건」).
+ * Every event the board can **show** — the ranked list plus the two pinned
+ * strips — and nothing else, which is `board_bucket`'s definition on the server
+ * (전체 450: 386 ranked + 60 진행 중 + 4 추후결정). It used to count every
+ * exposable event, past ones included, and read 488 over a list that could never
+ * reach it. The R9 meta line and its D-day legend explained that gap in words;
+ * the operator removed both once the number stopped needing an explanation, and
+ * the window footer still separates what a click adds (「15건 더 보기」) from what
+ * is left (「남은 371건」).
  *
  * ## The extras column is a panel-level decision (R9 §2)
  *
@@ -209,7 +206,6 @@ export function Board({ board: initial }: { board: BoardResponse }) {
   const openNow = keep(board.open_now.rows, tab);
   const tbd = keep(board.tbd.rows, tab);
   const hidden = Math.max(rows.length - shown, 0);
-  const visible = Math.min(shown, rows.length);
   // One column plan per panel — the ranked list and both strips together.
   const extras = hasExtras(rows) || hasExtras(openNow) || hasExtras(tbd) ? "yes" : "none";
 
@@ -248,27 +244,6 @@ export function Board({ board: initial }: { board: BoardResponse }) {
           </Tab>
         ))}
       </div>
-
-      {/* R9 §4: what the tab number counts, what the list under it is, and the
-          D-day ladder's thresholds — the three things walk findings 2, 3 and 7
-          say a first-time reader cannot see. */}
-      <p className={styles.metaLine}>
-        <span>
-          {TAB_NOTE_KO}
-          {" · "}
-          {shownLine.before}
-          <b className={`mono ${styles.metaValue}`}>{count(rows.length)}</b>
-          {shownLine.middle}
-          <b className={`mono ${styles.metaValue}`}>{count(visible)}</b>
-          {shownLine.after}
-        </span>
-        <span className={styles.legend}>
-          <span className={styles.lg0}>{LEGEND_DDAY_KO}</span>
-          <span className={styles.lg1}>{LEGEND_SOON_KO}</span>
-          <span className={styles.lg2}>{LEGEND_NEAR_KO}</span>
-          <span className={styles.lg3}>{LEGEND_FAR_KO}</span>
-        </span>
-      </p>
 
       <ol className={styles.rows} data-extras={extras} tabIndex={-1}>
         {rows.slice(0, shown).map((row) => (

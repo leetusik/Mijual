@@ -223,23 +223,14 @@ export const EXPAND_KO = "펼치기";
 // `docs/reference/design/grounding/copy-inventory.md`.
 // ---------------------------------------------------------------------------
 
-/** The meta line's first half — what the tab numbers count
- * (`build-prompt.md` §9 / §4, walk findings 2·3). */
-export const TAB_NOTE_KO = "탭 숫자는 감시 중 전체 건수입니다";
-
-/**
- * The meta line's second half — what the list beneath the tabs shows
- * (`build-prompt.md` §9): "아래 목록은 카운트다운 {ranked}건 중 {shown}건".
- *
- * `{ranked}` is the current tab's ranked row count and `{shown}` the window's
- * `min(shown, rows.length)` — the two numbers walk finding 3 said the reader
- * could not tell apart from the tab's whole-board count.
- */
-export const shownLine = {
-  before: "아래 목록은 카운트다운 ",
-  middle: "건 중 ",
-  after: "건",
-} as const;
+// R9's meta line — `TAB_NOTE_KO` ("탭 숫자는 감시 중 전체 건수입니다") and
+// `shownLine` ("아래 목록은 카운트다운 {ranked}건 중 {shown}건") — is **removed**
+// by operator decision, along with the D-day legend below. Both existed to
+// explain a tab count that counted events the board could not show; the count
+// now counts what it renders (`board_bucket`), so the explanation went with the
+// gap it explained. Six of R9's fourteen constants are retired with it — these
+// two and the four legend labels — and `copy-inventory.md` still registers all
+// fourteen, because a signed round is a record of what was signed.
 
 /** The window footer's button — **what one click adds**, not what is left
  * (`build-prompt.md` §4/§9). */
@@ -265,13 +256,6 @@ export const COLLAPSE_KO = "접기";
  * sentence. An 기준시각 that stops moving is how a failing refresh says so.
  */
 export const REFRESHED_KO = "갱신됨";
-
-/** The D-day legend under the tabs (`build-prompt.md` §4/§9, walk finding 7) —
- * R1's four-step urgency ladder, made visible in its own colours. */
-export const LEGEND_DDAY_KO = "D-DAY";
-export const LEGEND_SOON_KO = "D-7 이내";
-export const LEGEND_NEAR_KO = "D-30 이내";
-export const LEGEND_FAR_KO = "30일 초과";
 
 /**
  * 동시 마감 (`build-prompt.md` §6/§9, walk finding 8).

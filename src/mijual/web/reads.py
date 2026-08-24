@@ -68,11 +68,14 @@ from mijual.db.repository import current_document, current_versions
 from mijual.gates.exposure import EventExposure, exposure_of
 from mijual.gates.withdrawal import detect_withdrawal
 from mijual.present import (
+    RANKED,
+    TBD,
     BoardRow,
     BoardSummary,
     CorrectionStory,
     EventView,
     bare_name,
+    board_bucket,
     board_row,
     board_summary,
     convertible_view,
@@ -276,6 +279,12 @@ def load_board(
     * ``tbd`` — exposable with no countdown date at all. **Unranked**, by R3's
       board-strip decision, and carrying no date anywhere near it.
 
+    An exposable event on none of the three — a past ① or ③ — is on no list, and
+    :func:`~mijual.present.summary.board_bucket` is where that is decided *once*,
+    for the rows here and for ``counts`` in
+    :func:`~mijual.present.summary.board_summary` alike. The two used to decide
+    it separately, and the tabs counted 38 events the board renders nowhere.
+
     Two events sharing an ``rcept_no`` (2 in the corpus, ``hint_duplicate``) are
     two truthful rows and are **not** de-duplicated here — see the phase note on
     D2: a display-level ``DISTINCT`` would paper over a corpus fact.
@@ -292,13 +301,15 @@ def load_board(
             # a gate run that has not landed yet. The contract wins: the API
             # renders what ``gates.exposure`` says, never its own reading.
             continue
+        bucket = board_bucket(view)
+        if bucket is None:
+            continue
         row = board_row(view, offering=offering)
-        countdown = view.countdown
-        if countdown.date is None:
+        if bucket == TBD:
             tbd.append(row)
-        elif countdown.days is not None and countdown.days >= 0:
+        elif bucket == RANKED:
             ranked.append(row)
-        elif view.rights_type == "R2" and countdown.is_open:
+        else:
             open_now.append(row)
 
     ranked.sort(key=lambda row: (row.days if row.days is not None else 10**6, row.corp_code))

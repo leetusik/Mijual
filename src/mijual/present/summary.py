@@ -42,10 +42,14 @@ from mijual.present.values import Figure, decimal_str, instant, iso_day
 
 __all__ = [
     "DEFAULT_STALE_AFTER_HOURS",
+    "OPEN_NOW",
+    "RANKED",
+    "TBD",
     "URGENT_DAYS",
     "BoardSummary",
     "Freshness",
     "LapseTotals",
+    "board_bucket",
     "board_summary",
     "freshness",
     "lapse_totals",
@@ -54,6 +58,41 @@ __all__ = [
 #: The 임박 window the landing counts: inclusive, anchored at the reference day.
 #: ``0 <= days <= 30`` — the definition ``board-snapshot.md`` measured 34 with.
 URGENT_DAYS = 30
+
+#: The board's three lists — the ranked countdown and the two pinned strips.
+RANKED = "ranked"
+OPEN_NOW = "open_now"
+TBD = "tbd"
+
+
+def board_bucket(view: EventView) -> str | None:
+    """Which of the board's three lists renders this event — ``None`` for none.
+
+    The board keeps three populations apart, and this is the predicate that
+    separates them: no countdown date at all → the 일정 추후결정 strip; a deadline
+    still ahead (``days >= 0``) → the ranked list; a ② whose 전환청구 has opened
+    and not closed → the ② 진행 중 strip, past and live at once (`ui-traps.md`
+    #5).
+
+    An exposable event that is none of the three — a ① whose 매매 마감 has passed
+    (a lapsed right), a ③ whose deadline is behind us — is on **no list**, by
+    R2's rule that neither belongs on the landing. **So it is not counted
+    either:** 감시 중 counts what the board can show.
+
+    That is what this function exists for. The count and the rows were derived
+    separately once, and they drifted: the ① tab said 50 over a list that ended
+    at 16, and 38 events were counted on a board that renders them nowhere.
+    :func:`board_summary` and :func:`mijual.web.reads.load_board` now read the
+    same predicate, so a number on a tab is a number the reader can walk to.
+    """
+    countdown = view.countdown
+    if countdown.date is None:
+        return TBD
+    if countdown.days is not None and countdown.days >= 0:
+        return RANKED
+    if view.rights_type == "R2" and countdown.is_open:
+        return OPEN_NOW
+    return None
 
 #: How old the corpus may get before the board says so. **18 hours**, and the
 #: number comes from the beat schedule rather than from taste: the pipeline runs
@@ -139,7 +178,8 @@ class BoardSummary:
     #: absolute KST instant. The board goes **stale, never dark**: a page that
     #: knows how old it is keeps serving and says so.
     as_of: datetime | None = None
-    #: 감시 중 N건 — exposable events, all types.
+    #: 감시 중 N건 — exposable events the board can show, all types
+    #: (:func:`board_bucket`).
     watching: int = 0
     #: The tab counts: ``{"R1": 50, "R2": 422, "R3": 16}``.
     by_rights: dict[str, int] = field(default_factory=dict)
@@ -229,6 +269,9 @@ def board_summary(
 ) -> BoardSummary:
     """Count one board, and tag the retrospective totals a caller passes in.
 
+    Counted over what the board can **show**: an exposable event on none of its
+    three lists is on none of its counts either — see :func:`board_bucket`.
+
     The counts are derived here so their definitions live in one place; the
     retrospective figures come from :mod:`mijual.estimate`'s report, which a
     request path cannot build itself (it imports the extractor), so they arrive
@@ -240,21 +283,29 @@ def board_summary(
     ``now`` turns ``as_of`` into a :class:`Freshness`; without it the summary
     carries the 기준시각 and says nothing about its age.
     """
-    watched = [view for view in views if view.state == "exposable"]
+    watched: list[tuple[EventView, str]] = []
+    for view in views:
+        if view.state != "exposable":
+            continue
+        bucket = board_bucket(view)
+        if bucket is not None:
+            watched.append((view, bucket))
+
     by_rights: dict[str, int] = {}
     within_30d = open_now = tbd = 0
-    for view in watched:
+    for view, bucket in watched:
         by_rights[view.rights_type] = by_rights.get(view.rights_type, 0) + 1
-        countdown = view.countdown
-        if countdown.date is None:
+        if bucket == TBD:
             tbd += 1
             continue
-        if countdown.days is not None and 0 <= countdown.days <= URGENT_DAYS:
-            within_30d += 1
         # ②'s past opening is the live state, not the closed one: it counts here
         # and must never be counted as 종료 (ui-traps #5).
-        if view.rights_type == "R2" and countdown.is_open and countdown.is_past:
+        if bucket == OPEN_NOW:
             open_now += 1
+            continue
+        countdown = view.countdown
+        if countdown.days is not None and 0 <= countdown.days <= URGENT_DAYS:
+            within_30d += 1
 
     return BoardSummary(
         as_of=as_of,

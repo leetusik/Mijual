@@ -162,65 +162,10 @@
   display: none;
 }
 
-/* ---------------------------------------------------------------------------
-   Meta line + D-day legend (R9 §4, walk findings 2·3·7)
-
-   One line under the tabs that says what the two numbers are — the tab count is
-   the whole board, the list below is the countdown's ranked subset — with R1's
-   urgency ladder spelled out on the right in its own inks.
-   --------------------------------------------------------------------------- */
-
-.metaLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 10px 0 6px;
-  font-size: var(--text-xs);
-  line-height: 1.6;
-  color: var(--ink-3);
-  /* Korean prose breaks between 어절, never inside one (R9 §8). */
-  word-break: keep-all;
-}
-
-/* The two live numbers, mono in --ink-2 (`r9-board.css` `.meta b`). */
-.metaValue {
-  font-weight: 400;
-  color: var(--ink-2);
-}
-
-.legend {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-
-.legend span {
-  white-space: nowrap;
-}
-
-/* R1's ladder, unsimplified: D-DAY filled · ≤7d alert · ≤30d ink · >30d dim. */
-.lg0 {
-  padding: 1px 6px;
-  background: var(--urgency-now-bg);
-  color: var(--urgency-now-fg);
-}
-
-.lg1 {
-  color: var(--urgency-soon);
-}
-
-.lg2 {
-  color: var(--urgency-near);
-}
-
-.lg3 {
-  color: var(--urgency-far);
-}
+/* R9's meta line and its D-day legend stood here (`.metaLine` / `.legend` /
+   `.lg0`–`.lg3`). Both are **removed** by operator decision — see `copy.ts`. The
+   `--urgency-*` inks they sampled are the rows' own and are untouched; the
+   ladder is still legible where it is read, on the D-day cell of every row. */
 
 /* ---------------------------------------------------------------------------
    Rows — R9's column plan (desktop ≥1120)
@@ -645,10 +590,6 @@ a.corp::after {
   .more {
     flex-direction: column;
     gap: var(--space-2);
-  }
-
-  .metaLine {
-    padding-bottom: var(--space-2);
   }
 }
 
