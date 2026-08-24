@@ -38,11 +38,20 @@ function group(blocks: readonly AskBlock[]): Group[] {
       groups.push({ kind: "tool", tool: block.tool, row: block.row, ok: block.ok });
       continue;
     }
+    // R16's structured blocks (진행 표시 · 공시에서 읽은 값 · 계산) are in the store
+    // from `P9.S8` and drawn by `P9.S9` — StatusLine, DataBlock and CalcBlock, each
+    // with its own place in §2.8's child order rather than inside a paragraph. Until
+    // then they are skipped, which is what keeps both views rendering mid-build.
+    if (!isProse(block)) continue;
     const last = groups[groups.length - 1];
     if (last && last.kind === "prose") last.blocks.push(block);
     else groups.push({ kind: "prose", blocks: [block] });
   }
   return groups;
+}
+
+function isProse(block: AskBlock): block is ProseBlock {
+  return block.kind === "text" || block.kind === "refusal";
 }
 
 /**

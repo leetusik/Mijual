@@ -52,11 +52,21 @@ export { ASK_LABEL_KO, BOARD_LABEL_KO, STOCKS_LABEL_KO };
 // 인트로 (result.md §Proposed copy)
 // ---------------------------------------------------------------------------
 
-/** 에이전트 인트로, verbatim. The same three sentences `mijual.agent.copy`
- * keeps beside the agent's promise; this is the surface that prints them. */
-export const AGENT_INTRO_KO =
-  "검증을 통과한 공시에 대해서만 답합니다. 모든 답에는 원문 인용이 붙습니다. " +
-  "계산은 하지 않습니다 — 계산은 내 종목 조회가 합니다.";
+/**
+ * 에이전트 인트로 — **R16 §0 D1**, verbatim, superseding R6's three sentences.
+ *
+ * Each of the three said something that stopped being true this phase:
+ * 「검증을 통과한 공시에 대해서만 답합니다」 the moment a greeting stopped being a
+ * refusal (`P9.S4`), 「모든 답에는 원문 인용이 붙습니다」 the moment 인용 강제 became
+ * a rule about 공시 사실 문장 only, and 「계산은 하지 않습니다」 the moment the
+ * auditable calculator landed (`P9.S5`). D1 says what is still true, and says it
+ * as a promise about the reader rather than about the machinery.
+ *
+ * `mijual.agent.copy.AGENT_INTRO_KO` holds the same sentence because that is
+ * where the agent's own words live, but it is **not served**: the two surfaces
+ * that print it print it from here, and no code compares the two.
+ */
+export const AGENT_INTRO_KO = "주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다.";
 
 /**
  * 세션·저장 (R6-6 개정), verbatim — and **the exact wording is the point**.
@@ -69,6 +79,12 @@ export const AGENT_INTRO_KO =
  */
 export const ANONYMITY_KO =
   "완전 익명 — 로그인도, 질문 수 제한도 없습니다 · 대화는 익명으로 저장됩니다 (품질 점검용)";
+
+// **R16 §0 폐기 ⓐ**: this line is removed from both the widget's empty thread and
+// the start screen — 「R6-5는 **기능으로** 지켜진다(로그인·이력·quota 표기 없음)」.
+// The constant stays here until `P9.S10` deletes it **with its two call sites**, so
+// the build never breaks between the two slices. Same for `VERIFIED_ONLY_KO` (the
+// 340 레일's promise line, 폐기 ②) and `REASK_KO` (「다시 질문」, §2.7b 폐기).
 
 // ---------------------------------------------------------------------------
 // 범위 (build-prompt §범위 모델)
@@ -247,3 +263,83 @@ export const VERIFIED_ONLY_KO = "검증된 필드만 근거로 답합니다 — 
  */
 export const FORFEITED_QUESTION_KO = "실권주는 어떻게 처리되나요?";
 export const FORFEITED_FIELD = "forfeited_share_method";
+
+// ---------------------------------------------------------------------------
+// R16 (`rounds/16-smart-assistant/output/build-prompt.md` §0) — 구조화 블록의 말
+//
+// Transcribed character for character from the signed block, names included.
+// **The agent's own Korean is still not here**: R16 signs `STATUS_KO` in
+// `copy.py`, so the 진행 표시 line arrives on the wire with its sentence already
+// composed (`P9.S3` decision 3) and this file holds no status strings. `P9.S9`
+// draws every element below; `P9.S10` draws the start screen.
+// ---------------------------------------------------------------------------
+
+/** 계산 블록 머리말의 `--live` 색 단어 (§2.4). 검증된 계산 = 제품의 검증된 연산이
+ * 계산한 값, 식 계산 = 산술식이 계산한 값 — **같은 말로 렌더하면 후자가 전자로
+ * 세탁된다** (result.md §3-7), 그래서 두 단어는 서로 다르다. */
+export const CALC_VERIFIED = "검증된 계산";
+export const CALC_EXPR = "식 계산";
+
+/** 마커 가족 (§2.5, 배타적 3종). `추정`은 기존 `EstimateMarker`의 것이고, 이 둘이
+ * 신규다 — `계산`은 도구가 계산한 값에, `미확인`은 어떤 도구도 반환하지 않은 공시
+ * 수치(`AskBlock` `text.unverified` span)에 붙는다. */
+export const TAG_CALC = "계산";
+export const TAG_UNVERIFIED = "미확인";
+
+/** 독자가 준 값의 셋째 칸 마커 (§2.3 · §2.4) — 칩 대신 오며, 칩은 붙지 않는다. */
+export const TAG_INPUT = "입력";
+
+/** 계산 블록의 두 상태 줄 (§2.4): `done`의 결과 행 라벨과 `pending`의 한 줄. */
+export const CALC_RESULT = "결과";
+export const CALC_RUNNING = "계산 중";
+
+/** `state=error`인 계산 블록의 문장 (§2.4). `why`는 서버가 보낸 **데이터**
+ * (멈춰 세운 입력의 라벨과 표기)이고, 문장은 표면이 이 형식으로 조립한다 —
+ * alert 색·아이콘 금지. */
+export const calcError = (why: string) => `계산할 수 없습니다 — ${why}`;
+
+/** 데이터 블록의 기본 머리말 (§2.3). 서버가 `title`을 주면 그것을 쓰고, `null`이면
+ * 이 말을 쓴다. */
+export const DATA_HEADING = "공시에서 읽은 값";
+
+/** 6행을 넘는 데이터 블록의 접힘 토글 (§2.3), 그리고 그 반대말. */
+export const SHOW_ALL = (n: number) => `모두 보기 (${n})`;
+export const FOLD = "접기";
+
+/** 4행 이상으로 도착한 도구 흐름의 펼침 토글 (§2.2). */
+export const DETAIL = "자세히";
+
+/** 접힌 도구 흐름의 한 줄 요약 (§2.2). `events`는 그 턴이 읽은 **서로 다른
+ * 접수번호 수**이며 서버가 아는 값(`AskTurn.filings`)이다 — 도구 행에서 파싱하지
+ * 않는다 (§1). */
+export const trace = (tools: number, events: number) => `도구 ${tools}번 · 공시 ${events}건 읽음`;
+
+// ---------------------------------------------------------------------------
+// R16 §2.7b — `/ask` 시작 화면 (레일 없음)
+// ---------------------------------------------------------------------------
+
+/** 빈 상태의 인사 (§0 · §2.7b). `AGENT_INTRO_KO`가 그 아래에 온다. */
+export const START_HEADING_KO = "안녕하세요!";
+
+/** 스레드가 있을 때만 존재하는 sticky 동작 (§2.7b): 스레드를 비우는 것뿐이며
+ * 이력 목록·제목·복원을 만들지 않는다 (R6 금지 유지). */
+export const NEW_CHAT_KO = "새 대화";
+
+/**
+ * 시작 화면의 질문 카드 — **4장**, §0 서명분 그대로.
+ *
+ * 카드의 문장이 곧 보내는 질문이다: R14의 label≠question 관례(`presets.ts`)는
+ * 시작 화면에 적용하지 않는다고 §0이 못 박는다. 네 장은 서로 다른 회사 · 권리 가족 ·
+ * 질문 꼴이며, 범위가 항상 전체 공시이므로 첫 질문이 회사를 담는다.
+ *
+ * **넷이다.** 랜딩된 build-prompt의 §2.7b 산문과 회귀 항목 21은 아직 「질문 카드
+ * 5장」과 제품 메타 카드를 말하지만, 그 메타 카드는 2026-08-25에 폐기되었고
+ * (「그 말은 `AGENT_INTRO_KO`가 이미 한다」) 서명된 카피가 governs — `P9.S2` 노트에
+ * 세 줄의 stale 라인으로 기록되어 있다.
+ */
+export const START_CHIPS_KO = [
+  "계양전기 신주인수권증서 매매기간",
+  "퓨쳐켐 실권주는 어떻게 처리되나요?",
+  "대동기어 전환청구는 언제부터 할 수 있나요?",
+  "아시아나항공 주식매수청구 가격은 얼마인가요?",
+];

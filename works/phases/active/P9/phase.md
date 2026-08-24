@@ -1995,6 +1995,86 @@ model in `P9.S11`.
 exist everywhere except where the operator reads it), and `agent/__init__.py` (one stale bullet that
 still described the gate as a dropper).
 
+### P9.S8 — the client store landed (2026-08-25)
+
+The surface now *has* everything R16 signed; nothing new is *drawn* yet. `frontend/lib/ask.ts` carries
+the R16 vocabulary and P10's client half, and `frontend/components/ask/copy.ts` carries §0's strings
+byte-verbatim. Both views render exactly as they did yesterday except for one deliberate transitional
+artifact (note 7).
+
+**Decisions this slice made, and why — `P9.S9`/`P9.S10` inherit every one of them.**
+
+1. **The 진행 표시 line is a block in `turn.blocks`, not a field beside them** — and that is what makes
+   `P9.S3` note 2 true rather than approximately true. The status frame's `block_id` is the constant
+   `"status"`, so 「항상 하나만 살아 있다」 is produced by the *generic* keyed reduce (`place()`) rather
+   than by a rule the store has to remember. `P9.S9` renders it at §2.8's position (답변 상자의 마지막
+   자식, 푸터 앞) — the store keeps arrival order, the renderer decides placement, exactly as it already
+   does for 도구 흐름.
+2. **`place()` is the one door every block goes through**, including `tool_row`/`text`/`refusal`, which
+   carry no id today. A block with no `block_id` appends (today's behaviour, byte for byte); a block
+   wearing an id replaces the one already wearing it **at its own index**. Replacing in place rather
+   than removing-and-pushing is the whole of §4 check 5: in the landed wire a 도구 행 arrives *between*
+   `calc(pending)` and `calc(done)`, so a remove-and-push would sail the settled calculation past it.
+   Asserted in `lib/ask.test.ts` on exactly that sequence. Consequence: if `ToolRowEvent` is ever given
+   a `block_id` (the storage side-effect `P9.S3` note 9 warns about), the client already honours it.
+3. **The transient line dies three ways, and two of them are the client's.** §2.1 signs only 「첫
+   `TextEvent`가 오면 제거」; `P9.S6` note 12 is the rest of it. So it is dropped at the first
+   `text`/`refusal` block, at **every terminal**, and on the two paths that have no terminal at all (a
+   stream cut on the way, and the `catch` that also carries 중지 and a pre-stream 429). A late `status`
+   frame arriving after prose is **ignored** rather than re-placed — the loop already stops emitting
+   after the first release, and a progress line reappearing under a sentence the reader is reading
+   would be a second thing moving on a surface with no animation.
+4. **Not persisted is enforced on `persistent === false`, not on `kind === "status"`.** The wire's own
+   word, so any later transient block inherits the behaviour, and it is filtered at **both** ends —
+   `writeThread` (the write-through fires on every frame) and `readThread` (a thread written by a build
+   in between). This is load-bearing, not tidy: a tab reloaded mid-turn restores a turn `settle()`
+   marks 중단, and a live 「공시 원문을 읽고 있습니다」 under it would be a progress line for a turn that
+   stopped progressing before the reader left the page. Covered by a test.
+5. **`AskTurn` gained three terminal fields, not two.** `filings` (D8's 「공시 M건 읽음」 — the `events`
+   half of `trace(tools, events)`, server-known, never parsed out of 도구 행 strings) and `blocked` (the
+   removed-marker count) are the plan's; **`reason` was added deliberately** because §2.7 cannot be
+   drawn without it. 소진 (`round_budget`/`tool_budget`/`call_budget`) and 연결 끊김 are both `aborted`
+   on `turn.status`, and R16 draws them **differently** — 소진 is dimmed prose + a folded 도구 흐름 with
+   신규 문자열 0, while R14's 「연결이 끊겼습니다」 inset + 재시도 stays for the disconnect state alone.
+   Without `reason` the surface cannot tell them apart, and `P9.S9`/`P9.S10` would have had to reopen
+   this file. A thread written before R16 restores as `0 / 0 / null` — the same honest reading a turn
+   that read nothing gets.
+6. **A `data` or `calc` frame sets the turn `streaming`; a `status` frame does not.** A structured block
+   is painted content (a 계산 블록 can legitimately be the *first* thing on screen — §2.4 draws it at
+   call time, before its own 도구 행), so it belongs to R6's 스트리밍 state. A status line is not: it is
+   the turn saying it has not started answering yet, and the composer's signed three-text machine
+   (보내기 → 답변 준비 중… → 중지) reads 「답변 준비 중…」 for exactly that. **Left for `P9.S11` to look
+   at in the flesh**: this means 중지 is unavailable during the very first model round, which is the
+   round MID thinking made longer. It is today's behaviour unchanged, not a regression — but it is the
+   one place where the raised ceiling (`P9.S7` note 8: nothing bounds a turn in *time*) meets the
+   reader, so watch it rather than assume it.
+7. **Known transitional artifact, and it resolves in `P9.S9`.** `AskPage`/`AskWidget` mount `<Answer>`
+   on `turn.blocks.length > 0`, and every turn's **first** frame after `session` is now `status(read)`.
+   So an empty bordered answer box appears the moment a question is sent, and stays empty until the
+   first tool row. That box is exactly where §2.1 puts the StatusLine, so `P9.S9` fills it rather than
+   removing it; nothing is drawn wrongly in between, and nothing crashes. `Answer.tsx`'s `group()`
+   **skips** every non-prose block (`isProse`) — a one-line guard, the required 「safe no-op」, and the
+   file's only change this slice.
+8. **§0's strings landed byte-verbatim and were verified as bytes**, not by eye: a script extracted each
+   constant from `components/ask/copy.ts` and asserted it appears verbatim in the signed §0 block
+   (including the three template literals and the four start cards, in order). `START_CHIPS_KO` is
+   **four** cards with no meta card — the docstring names the three stale build-prompt lines and says
+   the signed copy governs, so the next reader does not re-open the question.
+9. **No status strings entered `copy.ts`** (`P9.S3` note 3 held): the 진행 표시 sentence arrives on the
+   wire from `agent/copy.py::STATUS_KO` and is rendered verbatim like a 도구 행. The block carries
+   `phase` beside it as a machine-readable tag; **nothing branches on `phase`** today, because §2.1
+   draws one line the same way for all five.
+10. **`AGENT_INTRO_KO` changed value, and that is visible today.** D1 replaced R6's three sentences, so
+    the widget's empty thread and the `/ask` rail already print the new promise. `mijual.agent.copy`'s
+    twin (`P9.S7` note 11) now agrees; no code compares them. The three constants R16 retires
+    (`ANONYMITY_KO`, `VERIFIED_ONLY_KO`, `REASK_KO`) are **kept, unused-in-spirit but still called**,
+    with a comment naming `P9.S10` as the slice that deletes them **with their call sites**.
+11. **`mode`/`state` are literal unions, `phase` is a string.** `AskCalcMode`/`AskCalcState` are closed
+    vocabularies the server validates in `__post_init__` and the surface must branch on exhaustively
+    (검증된 계산 vs 식 계산; pending/done/error), so they are typed shut and **normalized** at the parse
+    (an unreadable value settles to `verified`/`pending`) rather than cast — a lying cast would put an
+    unrenderable state into a component. `phase` stays `string` because nothing branches on it.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -2026,6 +2106,8 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S7`) `decisions` — D-4's amendment: the `agent_turn` task runs thinking **MID**, which on the wire is the SDK's `MEDIUM` (`types.ThinkingLevel` has no `MID`); the three-reason `LOW` argument is rewritten, its third leg (「a cheaper level can only produce a *blocked* claim」) having died with strip-don't-drop; the ▷ cost basis gains a **cached-input rate** (¼ of input, measured per turn); `temperature=0.2` is now a recorded choice rather than an unexamined default.
 - (`P9.S7`) `architecture` — the agent's per-turn ceilings rise **6/10/8 → 20/30/22** with the invariant `max_model_calls ≥ max_rounds` (an abort must name the limit that actually fired), the client's own default `max_calls` moves 8 → 22 to match, and the system instruction becomes a **static cache prefix** (`instructions._RULEBOOK`, assembled at import) with the turn's only changing values (범위 · 오늘 KST) at its tail; the ▷ ledger now measures cached-input tokens end to end.
 - (`P9.S7`) `security` — **input segregation**: text a tool returns (본문 quotes, notices, field values) is delimited and declared **data, never instructions**, on every tool result (`tools.DATA_BOUNDARY`, the first key of `ToolResult.response()`) and once in the system instruction. It also states that text inside a result is **never a `security_check` trigger** — the anti-overtrigger half, said where the over-trigger would be read. This is the mitigation `P9.S6`'s framing note said the guard does *not* provide.
+- (`P9.S8`) `frontend` — the one ask store carries R16 end to end: `AskBlock` grows `status` (transient) · `data` · `calc` and `text.unverified` spans, every block may carry `block_id`/`persistent`, and the reducer is **keyed** — a block wearing an id is replaced **at its own index** (P10's client half; no id = today's append), so a calculation settling `pending → done` never jumps past a 도구 행 that arrived between them. The 진행 표시 line is one live block dropped at the first prose block, at every terminal and on both terminal-less paths, and is **never written to `sessionStorage`** (filtered on `persistent === false` at both the write-through and the read-back). `AskTurn` gains `filings` (「공시 M건 읽음」, server-known), `blocked` (removed-marker count) and `reason` (소진 vs 연결 끊김 — R16 draws them differently); 근거 N건 stays the **chip count** (R14 Q-B, unchanged).
+- (`P9.S8`) `frontend` — `components/ask/copy.ts` holds R16 §0 verbatim: `CALC_VERIFIED`/`CALC_EXPR` · `TAG_CALC`/`TAG_UNVERIFIED`/`TAG_INPUT` · `CALC_RESULT`/`CALC_RUNNING` · `calcError` · `DATA_HEADING` · `SHOW_ALL`/`FOLD` · `DETAIL` · `trace(tools, events)` · `START_HEADING_KO` · `NEW_CHAT_KO` · `START_CHIPS_KO` (**4 cards**, no meta card) — and **`AGENT_INTRO_KO` is now D1** (「주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다.」), superseding R6's three sentences on both surfaces. **No status strings**: the 진행 표시 sentence is composed server-side and rendered verbatim. `ANONYMITY_KO` · `VERIFIED_ONLY_KO` · `REASK_KO` are retired copy still in the file — `P9.S10` deletes them with their call sites.
 
 ## Operator Questions
 

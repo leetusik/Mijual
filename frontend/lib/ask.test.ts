@@ -1,13 +1,15 @@
 /**
- * The AI 질문 store's smoke check — five cases, no framework.
+ * The AI 질문 store's smoke check — seven cases, no framework.
  *
  * Run by `npm run smoke` (`node --test "lib/*.test.ts"`). What `next build`
- * cannot see is the two things this surface is *made* of: the incremental SSE
- * decode (a chunk boundary can fall anywhere, including inside a Korean quote)
- * and the ordering rule the chips depend on — a `citation` **defines** a number
+ * cannot see is the things this surface is *made* of: the incremental SSE
+ * decode (a chunk boundary can fall anywhere, including inside a Korean quote),
+ * the ordering rule the chips depend on — a `citation` **defines** a number
  * immediately before the `text` that names it, so the chip is painted with its
- * sentence. Both are asserted here; the rendering half is `next build` and
- * `P6.S7`'s browser pass.
+ * sentence — and, from `P9.S8`, the **keyed reduce**: a block arriving twice on
+ * one `block_id` is replaced where it stands, and the transient 진행 표시 line is
+ * dropped at prose and never written to storage. The rendering half is
+ * `next build` and `P9.S9`/`P9.S11`'s browser passes.
  *
  * Repo rule: tests stay terse — minimal high-value cases, no scaffolding sprawl.
  */
@@ -207,6 +209,98 @@ test("a turn minted after a restored thread never reuses a stored id", async () 
     const ids = state.turns.map((turn) => turn.id);
     assert.deepEqual(ids.slice(0, 2), ["t1", "t2"]);
     assert.equal(new Set(ids).size, 3);
+  } finally {
+    delete scope.window;
+  }
+});
+
+
+/**
+ * A turn as `P9.S3`/`P9.S5` land it on the wire — status, a data block, and a
+ * calculation that settles on its own id **after** a 도구 행 arrived between the
+ * two. That gap is the point: 「같은 `block_id`의 후속 이벤트는 추가가 아니라
+ * 제자리 교체」, so the settled block must still sit where it was drawn.
+ */
+const R16_FRAMES = [
+  'event: session\ndata: {"session_hash":"0f3a"}\n\n',
+  'event: status\ndata: {"phase":"read","text":"질문을 읽고 있습니다","block_id":"status","persistent":false}\n\n',
+  'event: status\ndata: {"phase":"open","text":"공시 원문을 읽고 있습니다","block_id":"status","persistent":false}\n\n',
+  'event: tool_row\ndata: {"tool":"get_event","row":"이벤트 읽기 → 계양전기 · ① 유상증자 · 20260724000546","ok":true}\n\n',
+  'event: citation\ndata: {"number":1,"rcept_no":"20260724000546","api_tier":false,"quote":"배정비율"}\n\n',
+  'event: data\ndata: {"rows":[{"label":"배정비율","value":"0.2주","citation":1},{"label":"보유 주식","value":"1,000주","reader_input":true}],"block_id":"data-1","persistent":true}\n\n',
+  'event: status\ndata: {"phase":"calc","text":"계산하고 있습니다","block_id":"status","persistent":false}\n\n',
+  'event: calc\ndata: {"mode":"verified","name":"배정 신주","inputs":[{"label":"보유 주식","value":"1,000주","reader_input":true}],"state":"pending","block_id":"calc-2","persistent":true}\n\n',
+  'event: tool_row\ndata: {"tool":"calculate","row":"계산 → 배정 신주 · 1건","ok":true}\n\n',
+  'event: calc\ndata: {"mode":"verified","name":"배정 신주","inputs":[{"label":"보유 주식","value":"1,000주","reader_input":true}],"state":"done","expr":"1,000주 × 0.2주 = 200주","result":"200주","block_id":"calc-2","persistent":true}\n\n',
+  'event: text\ndata: {"text":"배정 신주는 200주입니다.","citations":[1],"unverified":[[7,11]]}\n\n',
+  'event: footer\ndata: {"count":1,"evidence":["20260724000546"],"generated_at":"2026-08-25T12:00:00+09:00","links":[]}\n\n',
+  'event: done\ndata: {"status":"done","kind":"answer","answer":"배정 신주는 200주입니다.","evidence":["20260724000546"],"quotes":["배정비율"],"blocked":1,"filings":1,"rounds":2,"tool_calls":2,"usage":{}}\n\n',
+].join("");
+
+test("a block arriving twice on one id is replaced where it stands", async () => {
+  stubStream(R16_FRAMES);
+  const store = createAskStore();
+  store.ask("1,000주면 몇 주 배정되나요?");
+
+  const state = await settled(
+    () => store.getSnapshot(),
+    (snapshot) => snapshot.turns[0]?.status === "done",
+  );
+  const turn = state.turns[0];
+
+  // Two `status` frames and two `calc` frames arrived; neither added a block, and
+  // the 진행 표시 line is gone at the first sentence (R16 §2.1).
+  assert.deepEqual(
+    turn.blocks.map((block) => block.kind),
+    ["tool", "data", "calc", "tool", "text"],
+  );
+  // The settled calculation is still **before** the 도구 행 that arrived between
+  // `pending` and `done` — the block does not jump (§4 check 5).
+  const calc = turn.blocks[2];
+  assert.equal(calc.kind === "calc" && calc.state, "done");
+  assert.equal(calc.kind === "calc" && calc.result, "200주");
+  const rows = turn.blocks[1];
+  assert.equal(rows.kind === "data" && rows.rows[0].citation, 1);
+  assert.equal(rows.kind === "data" && rows.rows[1].reader_input, true);
+  // 미확인 spans ride the sentence; the terminal's counters ride the turn.
+  const prose = turn.blocks[4];
+  assert.deepEqual(prose.kind === "text" && prose.unverified, [[7, 11]]);
+  assert.equal(turn.filings, 1);
+  assert.equal(turn.blocked, 1);
+});
+
+test("the transient 진행 표시 line is never written to sessionStorage", async () => {
+  const writes: string[] = [];
+  const scope = globalThis as { window?: unknown };
+  scope.window = {
+    sessionStorage: {
+      getItem: () => null,
+      setItem: (_key: string, value: string) => writes.push(value),
+    },
+  };
+  stubStream(R16_FRAMES);
+
+  try {
+    const store = createAskStore();
+    store.hydrate();
+    let live = false;
+    store.subscribe(() => {
+      if (store.getSnapshot().turns[0]?.blocks.some((block) => block.kind === "status")) {
+        live = true;
+      }
+    });
+    store.ask("1,000주면 몇 주 배정되나요?");
+    await settled(
+      () => store.getSnapshot(),
+      (snapshot) => snapshot.turns[0]?.status === "done",
+    );
+
+    // It really was on the screen …
+    assert.ok(live);
+    // … and it reached no write. A tab reloaded mid-turn would otherwise restore
+    // 「공시 원문을 읽고 있습니다」 under a turn `settle()` marks 중단.
+    assert.ok(writes.length > 0);
+    assert.ok(!writes.some((payload) => payload.includes('"kind":"status"')));
   } finally {
     delete scope.window;
   }

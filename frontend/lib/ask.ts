@@ -73,11 +73,92 @@ export type AskChip = {
   field_key?: string;
 };
 
+/**
+ * Every structured block carries R16 §1's two fields — **when the server sends
+ * them**, which is the whole of 「추가만 한다」.
+ *
+ * `block_id` is a turn-stable id, and a second block with the same id is an
+ * **in-place replacement, not an append** (P10). A block with no id is today's
+ * append, so every pre-R16 frame reduces exactly as it always did. `persistent`
+ * is the storage half: `false` says this block is shown to the reader and never
+ * written to the thread — the 진행 표시 line and nothing else today.
+ */
+type BlockIdentity = { block_id?: string; persistent?: boolean };
+
+/**
+ * One 라벨/값 row — the schema R16 §2.3 fixes and §2.4 **reuses** for a 계산 블록's
+ * inputs (「DataRow와 같은 행 스키마」), so both draw through one component.
+ *
+ * `citation` is the reader's chip **number**, from the same numbering the prose
+ * uses (같은 근거 = 같은 번호, R6-4) — never an href and never a rcept_no. Its
+ * absence with `reader_input` is a value the reader supplied: 「입력」 마커, 칩 없음.
+ * `value` is a string the **server** stated; the surface never formats a number.
+ */
+export type AskDataRow = {
+  label: string;
+  value: string;
+  citation?: number;
+  reader_input?: boolean;
+};
+
+/** What a 계산 블록 computed — 검증된 계산 (the product's own money math) or
+ * 식 계산 (whitelisted arithmetic). R16 §2.4: the two are never headed with the
+ * same word, because rendering them identically launders one into the other. */
+export type AskCalcMode = "verified" | "expr";
+
+/** A calculation's lifecycle **on one `block_id`**: it arrives at call time with
+ * its inputs drawn and is replaced in place by its outcome (§4 check 5 — the
+ * block must not jump between the two). */
+export type AskCalcState = "pending" | "done" | "error";
+
 /** One painted thing inside an answer, in arrival order. */
 export type AskBlock =
-  | { kind: "tool"; tool: string; row: string; ok: boolean }
-  | { kind: "text"; text: string; citations: number[] }
-  | { kind: "refusal"; family: string; text: string };
+  | (BlockIdentity & { kind: "tool"; tool: string; row: string; ok: boolean })
+  | (BlockIdentity & {
+      kind: "text";
+      text: string;
+      citations: number[];
+      /** R16 §2.5 / Q-B — character offsets **within this sentence** of a 공시
+       * figure no tool returned, unit inside the span. The surface draws the
+       * 「미확인」 marker on exactly those; the sentence stands (strip-don't-drop).
+       * Rides the wire only when non-empty, so a turn with nothing to hedge
+       * reduces to the same object a pre-R16 one did. */
+      unverified?: number[][];
+    })
+  | (BlockIdentity & { kind: "refusal"; family: string; text: string })
+  | (BlockIdentity & {
+      /**
+       * 진행 표시 — the one **transient** block (R16 §2.1).
+       *
+       * `text` is the server's own signed sentence (`mijual.agent.copy.STATUS_KO`),
+       * rendered verbatim like a 도구 행: `components/ask/copy.ts` holds **no**
+       * status strings, because the agent's Korean is composed once, server-side
+       * (`P9.S3` decision 3). `phase` is the machine-readable tag beside it.
+       */
+      kind: "status";
+      phase: string;
+      text: string;
+    })
+  | (BlockIdentity & { kind: "data"; rows: AskDataRow[]; title?: string })
+  | (BlockIdentity & {
+      kind: "calc";
+      mode: AskCalcMode;
+      /** 검증된 계산's name is the **server's** (the operation that actually ran);
+       * only 식 계산 lets the model name it (`P9.S5` decision 5). */
+      name: string;
+      inputs: AskDataRow[];
+      state: AskCalcState;
+      expr?: string;
+      result?: string;
+      /** An `error`'s reason, as data — the signed 「계산할 수 없습니다 — {이유}」
+       * sentence is composed by the surface (`copy.ts`'s `calcError`). */
+      why?: string;
+    });
+
+/** The prose kinds: what `released()` joins, and what kills the status line. */
+function isProse(block: AskBlock): block is Extract<AskBlock, { kind: "text" | "refusal" }> {
+  return block.kind === "text" || block.kind === "refusal";
+}
 
 /** 답변 푸터 — `근거 N건 · {rcept_no} · {생성시각 KST}` + 컨텍스트 링크. */
 export type AskFooter = {
@@ -118,6 +199,21 @@ export type AskTurn = {
   /** The released prose, for the next turn's `history`. From the terminal where
    * there is one, and from the released blocks where the reader pressed 중지. */
   answer: string;
+  /** 공시 M건 읽음 — how many **distinct 접수번호** this turn actually read.
+   * `TurnEnd.filings`, a **server-known** value: R16 §1 forbids parsing it back
+   * out of the 도구 행 strings, and it is the `events` half of `trace(tools,
+   * events)`. 0 until the terminal arrives, and 0 for a turn that read nothing. */
+  filings: number;
+  /** `TurnEnd.blocked` — **removed markers**, not dropped sentences (R16 §1).
+   * Under strip-don't-drop the prose survives and only an unhonoured marker is
+   * taken out, so this is a signal about the model's citing. Nothing renders it
+   * today; it rides the turn so an operator's view can. */
+  blocked: number;
+  /** Why an `aborted` / `error` turn stopped — `round_budget` · `tool_budget` ·
+   * `call_budget` mean **소진**, which R16 §2.7 draws as dimmed prose and a folded
+   * 도구 흐름 and *nothing else*; R14's 「연결이 끊겼습니다」 inset stays for the
+   * disconnect state alone. Structural, never key material. */
+  reason: string | null;
 };
 
 export type AskState = {
@@ -205,6 +301,34 @@ function settle(status: AskTurnStatus): AskTurnStatus {
   return status === "pending" || status === "streaming" ? "aborted" : status;
 }
 
+/**
+ * What may be written to the thread: **persistent blocks only** (R16 §1 —
+ * 「`StatusEvent`는 저장하지 않는다」).
+ *
+ * The filter is load-bearing rather than tidy. A write-through happens on every
+ * frame, so a tab reloaded mid-turn would otherwise restore a turn `settle()`
+ * marks 중단 with a live 「공시를 찾고 있습니다」 under it — a progress line for a
+ * turn that stopped progressing before the reader left the page.
+ */
+function persistedBlocks(blocks: AskBlock[]): AskBlock[] {
+  return blocks.filter((block) => block.persistent !== false);
+}
+
+/** A stored turn, made current: its fetch died with the page (R6's 중단 state),
+ * and a thread written before R16 carries no turn metadata — 0 and `null` are
+ * the honest readings of "this was never sent", the same reading a turn that
+ * read nothing gets. */
+function restore(turn: AskTurn): AskTurn {
+  return {
+    ...turn,
+    status: settle(turn.status),
+    blocks: persistedBlocks(turn.blocks ?? []),
+    filings: turn.filings ?? 0,
+    blocked: turn.blocked ?? 0,
+    reason: turn.reason ?? null,
+  };
+}
+
 function readThread(): Persisted | null {
   if (typeof window === "undefined") return null;
   try {
@@ -219,7 +343,7 @@ function readThread(): Persisted | null {
       scope: value.scope ?? null,
       scopeChosen: value.scopeChosen ?? false,
       sessionHash: typeof value.sessionHash === "string" ? value.sessionHash : null,
-      turns: value.turns.map((turn) => ({ ...turn, status: settle(turn.status) })),
+      turns: value.turns.map(restore),
     };
   } catch {
     // An unreadable thread is no thread. A conversation is a convenience of this
@@ -236,7 +360,10 @@ function writeThread(state: AskState): void {
       scope: state.scope,
       scopeChosen: state.scopeChosen,
       sessionHash: state.sessionHash,
-      turns: state.turns,
+      turns: state.turns.map((turn) => {
+        const blocks = persistedBlocks(turn.blocks);
+        return blocks.length === turn.blocks.length ? turn : { ...turn, blocks };
+      }),
     };
     window.sessionStorage.setItem(THREAD_KEY, JSON.stringify(payload));
   } catch {
@@ -313,7 +440,75 @@ function leading(text: unknown): string {
 /** The released prose of a turn with no terminal — the same join the server's
  * own `CitationGate.answer` uses, so a 중지 and a `done` produce one shape. */
 function released(turn: AskTurn): string {
-  return turn.blocks.flatMap((block) => (block.kind === "tool" ? [] : [block.text])).join(" ");
+  return turn.blocks
+    .filter(isProse)
+    .map((block) => block.text)
+    .join(" ");
+}
+
+// ---------------------------------------------------------------------------
+// the keyed reduce — P10's client half
+// ---------------------------------------------------------------------------
+
+/** The block identity the wire carries, **only when it carries one**. The server
+ * puts `block_id`/`persistent` on a frame together or not at all. */
+function identity(data: Record<string, unknown>): BlockIdentity {
+  const id = data.block_id;
+  if (typeof id !== "string") return {};
+  return { block_id: id, persistent: data.persistent !== false };
+}
+
+/**
+ * Put a block in the thread: **replace the one wearing its id, or append**.
+ *
+ * R16 §1: 「같은 `block_id`의 후속 이벤트는 추가가 아니라 제자리 교체」. Replacing
+ * *in place* rather than removing and pushing is the whole point — a 계산 블록 that
+ * settled `pending → done` must not jump past the 도구 행 that arrived between the
+ * two (§4 check 5), and the 진행 표시 line must stay one line rather than five.
+ */
+function place(blocks: AskBlock[], block: AskBlock): AskBlock[] {
+  if (block.block_id === undefined) return [...blocks, block];
+  const at = blocks.findIndex((existing) => existing.block_id === block.block_id);
+  if (at < 0) return [...blocks, block];
+  const next = blocks.slice();
+  next[at] = block;
+  return next;
+}
+
+/**
+ * Drop the transient 진행 표시 line.
+ *
+ * R16 §2.1 says 「첫 `TextEvent`가 오면 제거」, and the terminal is the other half
+ * (`P9.S6` note 12): a 보안 refusal turn is `status · refusal · done` and emits no
+ * `TextEvent` at all, and a stream cut on the way emits no terminal — either would
+ * leave 「질문을 읽고 있습니다」 sitting under a turn that ended. The server cannot
+ * unsend a transient block, so the client is the last word on it.
+ */
+function withoutStatus(blocks: AskBlock[]): AskBlock[] {
+  return blocks.some((block) => block.kind === "status")
+    ? blocks.filter((block) => block.kind !== "status")
+    : blocks;
+}
+
+/** The 라벨/값 rows of a `data` block or a 계산's inputs — one reading, because
+ * §2.4 gives them one schema. A row the server could not state is not sent, so
+ * nothing here invents a value or a format. */
+function dataRows(value: unknown): AskDataRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((entry) => {
+    const row = (entry ?? {}) as Partial<AskDataRow>;
+    return {
+      label: String(row.label ?? ""),
+      value: String(row.value ?? ""),
+      ...(typeof row.citation === "number" ? { citation: row.citation } : {}),
+      ...(row.reader_input ? { reader_input: true } : {}),
+    };
+  });
+}
+
+/** A terminal's counter, read as 0 when the frame predates the field. */
+function counted(value: unknown): number {
+  return typeof value === "number" ? value : 0;
 }
 
 /**
@@ -378,43 +573,83 @@ export function createAskStore(): AskStore {
           return {
             ...turn,
             status: "streaming",
-            blocks: [
-              ...turn.blocks,
-              {
-                kind: "tool",
-                tool: String(data.tool ?? ""),
-                row: String(data.row ?? ""),
-                ok: data.ok !== false,
-              },
-            ],
+            blocks: place(turn.blocks, {
+              kind: "tool",
+              tool: String(data.tool ?? ""),
+              row: String(data.row ?? ""),
+              ok: data.ok !== false,
+              ...identity(data),
+            }),
           };
         case "citation":
           return { ...turn, chips: [...turn.chips, data as unknown as AskChip] };
+        case "status":
+          // Once prose has arrived the line is gone **for good**: the loop stops
+          // emitting after the first release, and a status line reappearing under
+          // a sentence the reader is reading would be a second thing moving on a
+          // surface whose whole progress vocabulary is one replaced line.
+          return turn.blocks.some(isProse)
+            ? turn
+            : {
+                ...turn,
+                blocks: place(turn.blocks, {
+                  kind: "status",
+                  phase: String(data.phase ?? ""),
+                  text: String(data.text ?? ""),
+                  ...identity(data),
+                }),
+              };
+        case "data":
+          return {
+            ...turn,
+            status: "streaming",
+            blocks: place(turn.blocks, {
+              kind: "data",
+              rows: dataRows(data.rows),
+              ...(typeof data.title === "string" ? { title: data.title } : {}),
+              ...identity(data),
+            }),
+          };
+        case "calc":
+          return {
+            ...turn,
+            status: "streaming",
+            blocks: place(turn.blocks, {
+              kind: "calc",
+              mode: data.mode === "expr" ? "expr" : "verified",
+              name: String(data.name ?? ""),
+              inputs: dataRows(data.inputs),
+              state: data.state === "done" || data.state === "error" ? data.state : "pending",
+              ...(typeof data.expr === "string" ? { expr: data.expr } : {}),
+              ...(typeof data.result === "string" ? { result: data.result } : {}),
+              ...(typeof data.why === "string" ? { why: data.why } : {}),
+              ...identity(data),
+            }),
+          };
         case "text":
           return {
             ...turn,
             status: "streaming",
-            blocks: [
-              ...turn.blocks,
-              {
-                kind: "text",
-                text: leading(data.text),
-                citations: Array.isArray(data.citations) ? (data.citations as number[]) : [],
-              },
-            ],
+            blocks: place(withoutStatus(turn.blocks), {
+              kind: "text",
+              text: leading(data.text),
+              citations: Array.isArray(data.citations) ? (data.citations as number[]) : [],
+              ...(Array.isArray(data.unverified) && data.unverified.length > 0
+                ? { unverified: data.unverified as number[][] }
+                : {}),
+              ...identity(data),
+            }),
           };
         case "refusal":
           return {
             ...turn,
             status: "streaming",
-            blocks: [
-              ...turn.blocks,
-              {
-                kind: "refusal",
-                family: String(data.family ?? ""),
-                text: leading(data.text),
-              },
-            ],
+            blocks: place(withoutStatus(turn.blocks), {
+              kind: "refusal",
+              family: String(data.family ?? ""),
+              text: leading(data.text),
+              ...identity(data),
+            }),
           };
         case "links":
           return { ...turn, links: (data.links as AskLink[]) ?? [] };
@@ -426,7 +661,11 @@ export function createAskStore(): AskStore {
           return {
             ...turn,
             status: frame.event,
+            blocks: withoutStatus(turn.blocks),
             answer: typeof data.answer === "string" ? data.answer : released(turn),
+            filings: counted(data.filings),
+            blocked: counted(data.blocked),
+            reason: typeof data.reason === "string" ? data.reason : null,
           };
         default:
           return turn;
@@ -456,7 +695,12 @@ export function createAskStore(): AskStore {
       // and the partial answer above it stands.
       patchTurn(id, (turn) =>
         turn.status === "pending" || turn.status === "streaming"
-          ? { ...turn, status: "aborted", answer: released(turn) }
+          ? {
+              ...turn,
+              status: "aborted",
+              blocks: withoutStatus(turn.blocks),
+              answer: released(turn),
+            }
           : turn,
       );
     } catch {
@@ -469,6 +713,10 @@ export function createAskStore(): AskStore {
       patchTurn(id, (turn) => ({
         ...turn,
         status: stopped ? "aborted" : "error",
+        // A turn that ended without its terminal still loses its progress line —
+        // 중지 and a dropped socket are exactly where it would otherwise outlive
+        // the turn it was narrating.
+        blocks: withoutStatus(turn.blocks),
         answer: released(turn),
       }));
     } finally {
@@ -532,6 +780,9 @@ export function createAskStore(): AskStore {
       footer: null,
       status: "pending",
       answer: "",
+      filings: 0,
+      blocked: 0,
+      reason: null,
     };
     patch({ turns: [...state.turns, turn] });
     start(turn.id, turn.question, turn.scope);
@@ -552,6 +803,9 @@ export function createAskStore(): AskStore {
       footer: null,
       status: "pending",
       answer: "",
+      filings: 0,
+      blocked: 0,
+      reason: null,
     }));
     start(turn.id, turn.question, turn.scope);
   }
