@@ -606,6 +606,9 @@ class AskTurn:
             calls=count("calls"),
             failures=count("failures"),
             prompt_tokens=count("prompt_tokens"),
+            # R16 §3.5's measurement rides the ledger line: how much of the prompt
+            # the implicit cache served (`P9.S7`). 0 is a real reading, not a gap.
+            cached_tokens=count("cached_tokens"),
             thoughts_tokens=count("thoughts_tokens"),
             output_tokens=count("output_tokens"),
             total_tokens=count("total_tokens"),

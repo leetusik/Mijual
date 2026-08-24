@@ -137,16 +137,35 @@ class TurnBudget:
     is the other kind of limit — the one that stops *one* conversation from
     looping forever, the way ``DartClient(max_requests=…)`` stops a collector
     (N25). Every cap here ends the turn with an honest ``aborted`` terminal
-    carrying its reason; none of them is ever rendered as copy.
+    carrying its reason; none of them is ever rendered as copy (R6-5, and R16 §4
+    check 12: 「예산·한도·라운드」 appears nowhere on the reader's screen — the
+    prompt is told the same thing).
+
+    **`P9.S7` raised all three together** (build inventory 4: 「generous budgets,
+    not unlimited」). 6/10/8 was a ceiling a *researching* turn could reach: R16
+    asks the assistant to search, open, read again, calculate and then answer, and
+    a ceiling a real conversation trips is a ceiling that truncates good answers
+    rather than one that stops runaway spend. ~20 rounds is the order the record
+    names; the numbers are otherwise unremarkable and deliberately not tuned to
+    anything measured, because the point is that no honest turn reaches them.
+
+    **The one invariant, and it is not cosmetic:** ``max_model_calls`` must stay
+    **≥ ``max_rounds``**. The client's own ceiling raises
+    :class:`~mijual.agent.client.CallBudgetExceeded` *inside* the round, so a
+    smaller model-call budget fires first and the turn reports ``call_budget``
+    when what actually happened was ``round_budget`` — an abort reason that lies
+    about which limit stopped the turn. Pinned by a test.
     """
 
-    #: Model rounds. Enough for search → read → read again → answer.
-    max_rounds: int = 6
-    #: Tool executions across the whole turn.
-    max_tool_calls: int = 10
+    #: Model rounds. Enough for search → read → read again → calculate → answer,
+    #: several times over, before anything structural stops the turn.
+    max_rounds: int = 20
+    #: Tool executions across the whole turn — the ones that *cost* something
+    #: (:data:`mijual.agent.tools.BUDGET_EXEMPT` is not counted here).
+    max_tool_calls: int = 30
     #: Live model calls, enforced *inside* the client so the ceiling refuses the
-    #: call rather than being asked to stop after it.
-    max_model_calls: int = 8
+    #: call rather than being asked to stop after it. **≥ max_rounds** — see above.
+    max_model_calls: int = 22
 
 
 @dataclass(frozen=True)
@@ -515,7 +534,8 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
     under strip-don't-drop no sentence is dropped, so a turn that releases nothing
     released nothing *because the model said nothing*. Stating a refusal about
     data would be inventing a fact about a silent turn, and R16 retires both the
-    family and `REFUSAL_FALLBACK` with the gate that produced them (result.md §5).
+    family with the gate that produced them (result.md §5; `P9.S7` deleted the
+    constant that held its name).
     A silent turn is now an ordinary empty answer, and the loop selects no family
     at all: every refusal the reader reads is one the model stated in signed words.
     """

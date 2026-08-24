@@ -4,9 +4,9 @@ The agent is an **agent, not a chain** (the operator's binding addition to this
 phase): the model chooses which tool to call, in what order, and across as many
 rounds as it needs. That choice is only as good as these declarations, so the
 descriptions carry the product's rules — *values are already computed, quote them
-and never do arithmetic; a claim needs the span that backs it; nothing may be
-invented when a tool says it found nothing* — rather than only naming the
-parameters.
+and send them to the calculator rather than doing arithmetic in prose; a claim
+needs the span that backs it; nothing may be invented when a tool says it found
+nothing* — rather than only naming the parameters.
 
 **Two layers, on purpose.** :data:`TOOL_SPECS` is plain data (names, English
 descriptions, JSON-Schema parameters) and imports nothing; :func:`declarations`
@@ -49,9 +49,19 @@ class ToolSpec:
     parameters: dict[str, Any] | None = field(default=None)
 
 
-_NEVER_COMPUTE = (
+#: The paragraph the three **reading** tools' descriptions end with. **`P9.S7` reconciled it with the
+#: calculator** (R16 §3.2): 「never recompute, re-derive or do arithmetic on it」
+#: read, after `P9.S5`, as a ban on feeding a filing's own values to ``calculate``
+#: — which is the one place they are *supposed* to go. The rule that survives is
+#: the real one and it did not weaken: a derived number is drawn for the reader by
+#: a tool, never produced in prose. S1 recorded that these statements 「move
+#: together or not at all」, so this constant, ``instructions._CALCULATOR`` and the
+#: retired 「계산 요청」 family all moved in this one slice.
+_VALUES_ARE_FINAL = (
     "Every number in the result is already computed upstream in KST and is final: "
-    "quote it exactly as given, never recompute, re-derive or do arithmetic on it. "
+    "quote it exactly as given and never restate it in another form of your own. "
+    "If the reader needs a number no tool returned, call calculate with these "
+    "values as its inputs — arithmetic happens in that tool, never in your prose. "
     "A value tagged estimated=true must keep its 「추정」 mark in the answer. "
     "A value that is absent does not exist — never fill it in."
 )
@@ -70,7 +80,7 @@ TOOL_SPECS: tuple[ToolSpec, ...] = (
             "the query was a filing number, call get_event first, because a withdrawn event "
             "is readable by number without being searchable. "
             "Each hit identifies an event (company, type, rcept_no, countdown); call "
-            "get_event for the quotable field values of the one that matters. " + _NEVER_COMPUTE
+            "get_event for the quotable field values of the one that matters. " + _VALUES_ARE_FINAL
         ),
         parameters={
             "type": "object",
@@ -97,7 +107,7 @@ TOOL_SPECS: tuple[ToolSpec, ...] = (
             "handle). A field that is missing from the payload does not exist for the reader: "
             "say so, do not infer it. A withdrawn event returns state='withdrawn' with its "
             "notice and the correction row that retracted it. found=false means the filing "
-            "number is unknown or not readable. " + _NEVER_COMPUTE
+            "number is unknown or not readable. " + _VALUES_ARE_FINAL
         ),
         parameters={
             "type": "object",
@@ -118,7 +128,7 @@ TOOL_SPECS: tuple[ToolSpec, ...] = (
             "arguments — it always reads the caller's own session and can read nobody else's. "
             "For an anonymous reader it returns the fixed sample portfolio with sample=true; "
             "in that case the answer must say 구성 예시 (it is an illustrative composition, "
-            "not the reader's holdings). " + _NEVER_COMPUTE
+            "not the reader's holdings). " + _VALUES_ARE_FINAL
         ),
     ),
     ToolSpec(

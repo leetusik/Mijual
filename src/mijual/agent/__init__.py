@@ -34,9 +34,11 @@ What lives here, in the order the phase builds it:
   speaks, so a test can drive the real loop with a scripted fake.
 * :mod:`mijual.agent.instructions` — the system instruction. It **advises**; it
   never commands a tool call.
-* :mod:`mijual.agent.citations` — 인용 강제 as a gate on the generation boundary:
-  an unverified claim cannot enter the stream (R6), and the never-compute rule
-  rides the same gate.
+* :mod:`mijual.agent.citations` — 인용 강제 at the generation boundary. R16 turned
+  the gate from a dropper into a **stripper** (`P9.S4`): markers leave, resolvable
+  ones become chips, the prose survives, and a 공시 figure no tool returned is
+  *marked* 「미확인」 rather than deleted. Number traceability rides the same gate,
+  and `P9.S5`'s calculator is how a derived number becomes traceable.
 * :mod:`mijual.agent.events` — the typed event stream `P6.S4` serializes and
   `P6.S5` renders, ending in one terminal that carries everything persistence needs.
 * :mod:`mijual.agent.loop` — :func:`~mijual.agent.loop.run_turn`, the autonomous

@@ -1889,6 +1889,112 @@ against text arriving **inside** filing content. That is `P9.S7`'s input segrega
     actually triggers the tool — that is `P9.S11`'s sweep in the Operator Runtime, and §4 check 11 can
     only be seen in the flesh there.
 
+### P9.S7 — the words and the dials landed (2026-08-25)
+
+The prompt now says what the loop does. Until this slice it was deliberately **more conservative than
+the gate** (S4 note 11, S5 note 14, S6 note 9); the four §3 rewrites, the two dials and the segregation
+line close every one of those interim mismatches. Nothing here is drawable, so nothing here was seen in
+a browser: §4 checks 1 · 2 · 12 · 23 are now *structurally possible* and only observable with a live
+model in `P9.S11`.
+
+**Decisions this slice made, and why — later slices inherit every one of them.**
+
+1. **「MID」 is `MEDIUM` on the wire, and that nearly shipped as a bug.** The phase says MID
+   everywhere (intent, build inventory, DECOMP2, this plan); the SDK's vocabulary is
+   `types.ThinkingLevel = MINIMAL | LOW | MEDIUM | HIGH`. `ThinkingConfig(thinking_level="MID")` does
+   **not** raise locally — it emits `UserWarning: MID is not a valid ThinkingLevel` and happily
+   carries the string to the API, where the call would be rejected at request time, i.e. in front of
+   a reader and not in a test. `client.MID = "MEDIUM"` names the phase's word and the API's word once,
+   in one place, and `THINKING_BY_TASK`/`DEFAULT_THINKING_LEVEL` read it. Verified against the
+   installed SDK: no warning, resolves to `ThinkingLevel.MEDIUM`.
+2. **The cache prefix is a constant, not a convention.** `instructions._RULEBOOK` is assembled **once
+   at import** from the eight static blocks, and `system_instruction()` returns
+   `_RULEBOOK + "\n\n" + "THIS TURN. …"`. Making it an object rather than an ordering rule is what
+   makes 「no per-turn value above the static prefix」 checkable: a test asserts the prefix is
+   byte-identical across a scoped turn and a different date, and that neither the 접수번호 nor the
+   date appears above the split. The standing constraint is written in the module docstring, where
+   the next person to add a paragraph will read it. **The scope block was also renamed `SCOPE.` →
+   `THIS TURN.`** — it now carries both per-turn values, and the name is the seam the test splits on.
+3. **The prefix is ~5.5k tokens, so the 4,096 floor is probably crossed — but the ledger is what
+   says so.** Measured with S1B's Korean-aware heuristic (Hangul ≈ 1 token/char, else ≈ 0.25):
+   rulebook ≈ **3,046**, tool declarations ≈ **2,420**. That is an estimate of a threshold, which is
+   exactly the thing the record refused to assume: `Usage.cached_tokens` (from
+   `cached_content_token_count`), `UsageLedger.cached_tokens`, the `usage` payload key and the ▷ line
+   (`tokens prompt 9,000 (cached 7,000) + thinking …`) now carry the real number end to end, through
+   `web.ask._log_ledger` as well. `cached` is printed **inside** the prompt count because it is a
+   subset — printing it beside would make the tokens line stop adding up — and `cost_of` subtracts it
+   before pricing it at `CACHED_INPUT_DISCOUNT` (¼). **0 cached is an honest reading**, not a gap.
+   `P9.S11` should read one real turn's ▷ line and record the number in its result.
+4. **보안 is listed as a family and its sentence is deliberately not printed.** §3.3 says four
+   families; S6's reason for excluding it (teaching the model the one refusal it must not compose)
+   is still right. Both hold: the block names 보안, says *this is the one family you never write*,
+   points at the `[보안]` paragraph, and stops. Anything the model needs to *do* is in the tool
+   description and in that paragraph; the words stay where the loop emits them.
+5. **The out-of-scope example is shown to the model as an example.** §0 marks the sentence 서명 아님,
+   so the prompt frames it as 「an example of the register, not a sentence to copy」 and tells the
+   model to write its own two lines (하나: 하지 않는다 · 하나: 갈 곳). A practical consequence went to
+   `## Operator Questions`: a model handed a well-formed Korean example tends to reproduce it, so an
+   unsigned line may become de-facto copy — the operator sees it in the walkthrough.
+6. **오늘(KST) — S4 note 5 closed deliberately, and the alternative was rejected on the record.**
+   The date the instruction hands the model is not a tool value, so a sentence stating it draws a
+   「미확인」 span. Kept, and the instruction now *says* so (「one you write yourself reaches the reader
+   marked 「미확인」」), which turns the marker into a backstop rather than a common sight. Rejected:
+   seeding `CitationGate._values` with `ctx.today` — R16 §2.5 requires every number in prose to carry
+   a marker **or** a chip, and a date with neither would break that invariant to avoid a hedge.
+7. **Budgets 20 / 30 / 22, and the ceiling that must not lie.** `max_model_calls (22) ≥ max_rounds
+   (20)`, pinned by a test — the client's `CallBudgetExceeded` fires *inside* a round, so a smaller
+   model-call budget reports `call_budget` when what happened was `round_budget`. The same test pins
+   `AgentGeminiClient`'s **own default** `max_calls`, which moved 8 → 22: `run_turn` always passes the
+   budget's value, but a directly constructed client (a script, a later caller) would otherwise abort
+   a 20-round turn at call 8 with the wrong reason. The number is written out rather than imported
+   because `loop` imports `client`, not the other way round.
+8. **The raised ceiling's real cost is wall clock, not money.** Q-E accepted the *spend*. Nothing
+   bounds a turn in **time**: `AgentGeminiClient(timeout_s=120)` is per call, so a pathological
+   20-round turn can hold its `TurnLimiter` slot and its SSE connection for a long time. No deadline
+   was added here (it is not in the record and it is not this slice's scope), but `P9.S11`'s liveness
+   check is where a long turn is actually watched, and a per-turn deadline is the obvious fix if it
+   ever matters.
+9. **Input segregation is two halves, and the second one is why it works.** `tools.DATA_BOUNDARY` is
+   the **first key** of every `ToolResult.response()` — composed once on `ToolResult`, so no tool can
+   forget it — and `instructions._DATA_BOUNDARY` states the same rule once in the rulebook. At the
+   data is where it matters: by the time a filing arrives, a sentence at the top of the instruction is
+   thousands of tokens behind and the injected line is the most recent text in the context. The
+   boundary also says 「never a `security_check` trigger」, which is the anti-overtrigger half (S6 note
+   10) said at the one place the over-trigger would be read.
+10. **계산 요청's retirement was a code change, and S4's split is what made it a one-line one.**
+    Adding it to `copy.RETIRED_FAMILIES` retires it at all three recognition sites at once
+    (`family_of`, `citations._family_at_head`, `_is_family_prefix`), so a model typing 「해설은
+    계산하지 않습니다 …」 now writes prose — no `RefusalEvent`, no stored family. `REFUSAL_FALLBACK`
+    is **deleted** (§0: 「REFUSAL_FALLBACK 삭제」); the two retired names survive only as dict keys and
+    in `conversationstore.REFUSAL_FAMILIES`, which still holds all six for past rows.
+    `tests/test_agent_loop.py::test_the_five_families_…` became `…the_live_families_…` and now asserts
+    the retirement — the behaviour change is visible in the suite, not only in a docstring.
+11. **`AGENT_INTRO_KO` is D1 server-side and R6 on the surface until `P9.S8`.** Deliberate: the Python
+    constant is a transcription of the agent's own promise and is **not served** (nothing in
+    `mijual.web` reads it); the two surfaces print their own copy from
+    `frontend/components/ask/copy.ts`, which is `P9.S8`'s file. No code compares the two, so nothing
+    breaks in between — and `P9.S8` must land D1 there or the divergence becomes real.
+12. **`temperature` stays 0.2, deliberately** (the second engineering choice `DECOMP2` handed this
+    slice). changple5 runs its chat model at 0.0; this surface is a *conversation*, and the same
+    question twice should not come back word for word. Nothing that must not vary depends on the
+    sampler: signed sentences are quoted from `copy.py` rather than generated, figures are respelled
+    from `value_display`, and an untraced number is marked whatever the temperature. The rationale
+    lives in `AgentGeminiClient`'s own docstring so the next reader finds it where the number is.
+13. **`declarations._NEVER_COMPUTE` → `_VALUES_ARE_FINAL`** — S5's flagged mismatch. The old paragraph
+    ended 「never recompute, re-derive or do arithmetic on it」, which after the calculator read as a
+    ban on feeding filing values *into* `calculate`, i.e. into the one place they are supposed to go.
+    The three reading tools now end by pointing at the calculator, and the rule that survives is the
+    one that never weakened: a derived number is drawn for the reader by a tool, never produced in
+    prose. S1's 「they move together or not at all」 is now true.
+
+**Deviations from the plan's file list** (all inside the slice's own intent): `declarations.py` (item
+13 — the never-compute reconciliation the plan's §3.2 asks for lives there, not in `instructions.py`),
+`tools.py` (`DATA_BOUNDARY` + `ToolResult.response()` — the segregation's data half; composing it on
+`ToolResult` is what makes it un-forgettable), `web/ask.py` (one line: the reconstructed ledger reads
+`cached_tokens`, or the ▷ log line would print `cached 0` on every real turn and the measurement would
+exist everywhere except where the operator reads it), and `agent/__init__.py` (one stale bullet that
+still described the gate as a dropper).
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -1917,6 +2023,9 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S6`) `decisions` — R16 D3's sentence is live copy with a producer; 보안 is **recognised as a family head like every other live family** (a model that types the signed sentence is stored as a 보안 row, not as prose), the guard **overrides** any family selected earlier in the same turn (it is why the turn ended), a 보안 refusal is **bare** (no 갈 곳 링크, no 푸터 — `copy.BARE_FAMILIES`), the category enum is the model's label and never a branch, and the system instruction deliberately does **not** list 보안 (`P9.S7` owns the [보안] paragraph; the tool description is the trigger spec meanwhile).
 - (`P9.S6`) `qa` — headline check for the regression list: 주입 시도 → 「보안」 가족 문장만 (도구 행 0 · 칩 0 · 링크 0 · 푸터 0 · 점검 언급 0 · 같은 턴에 추가 프로즈 0), and the incident appears in the API log as 카테고리 · session_hash · 200자 발췌 with **no** DB row.
 
+- (`P9.S7`) `decisions` — D-4's amendment: the `agent_turn` task runs thinking **MID**, which on the wire is the SDK's `MEDIUM` (`types.ThinkingLevel` has no `MID`); the three-reason `LOW` argument is rewritten, its third leg (「a cheaper level can only produce a *blocked* claim」) having died with strip-don't-drop; the ▷ cost basis gains a **cached-input rate** (¼ of input, measured per turn); `temperature=0.2` is now a recorded choice rather than an unexamined default.
+- (`P9.S7`) `architecture` — the agent's per-turn ceilings rise **6/10/8 → 20/30/22** with the invariant `max_model_calls ≥ max_rounds` (an abort must name the limit that actually fired), the client's own default `max_calls` moves 8 → 22 to match, and the system instruction becomes a **static cache prefix** (`instructions._RULEBOOK`, assembled at import) with the turn's only changing values (범위 · 오늘 KST) at its tail; the ▷ ledger now measures cached-input tokens end to end.
+- (`P9.S7`) `security` — **input segregation**: text a tool returns (본문 quotes, notices, field values) is delimited and declared **data, never instructions**, on every tool result (`tools.DATA_BOUNDARY`, the first key of `ToolResult.response()`) and once in the system instruction. It also states that text inside a result is **never a `security_check` trigger** — the anti-overtrigger half, said where the over-trigger would be read. This is the mitigation `P9.S6`'s framing note said the guard does *not* provide.
 
 ## Operator Questions
 
@@ -2036,6 +2145,19 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   doc; or (c) some visibility of firings beyond the log — which, on the 운영 대화 로그 surface, is the
   same un-designed-UI question the `P9.DECOMP2` and `P9.S4` entries already ask? Privacy posture and
   ops appetite, not an engineering call.
+
+- **(`P9.S7`) The out-of-scope one-liner is unsigned Korean the model will probably echo.** R16 §0
+  fixes the *register* for a general investing question — 한 줄로 하지 않는다고 말하고 한 줄로 갈 곳을
+  준다 — and gives an example sentence explicitly marked **서명 아님**:
+  「투자 판단이나 종목 추천은 하지 않습니다. 대신 공시에 적힌 사실은 원문으로 확인해 드립니다.」 The
+  prompt now carries it as an example and tells the model to write its own two lines, but a model
+  handed a well-formed Korean sentence tends to reproduce it, so in practice this unsigned line may
+  become the sentence readers actually see (§4 check 2's whole 답변). Three ways out, and only the
+  operator (with the design) picks one: (a) leave it — an unsigned register example, varying per turn,
+  is exactly what the round intended; (b) sign it in a later round as real copy, so what the reader
+  reads is on the record like every other sentence; (c) remove the example from the prompt and accept
+  a less predictable line. Worth watching for during the acceptance walkthrough: ask 「주식 처음인데
+  뭐부터 사면 좋아요?」 twice and see whether the same sentence comes back.
 
 
 ## Constraints

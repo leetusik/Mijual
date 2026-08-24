@@ -8,9 +8,11 @@ The phase's rule (`P6` note 17): 「Inventing a Korean sentence is a design chan
 
 **Two provenance tiers, marked per constant.**
 
-*Signed* — the exact words or the exact format R6 fixed
+*Signed* — the exact words or the exact format a round fixed: R6
 (``docs/reference/design/rounds/06-explain/output/build-prompt.md`` §Agent and
-``…/result.md`` §Agent capabilities). These are copied character for character,
+``…/result.md`` §Agent capabilities) and, where R16 superseded it,
+``rounds/16-smart-assistant/output/build-prompt.md`` §0 (`AGENT_INTRO_KO`, the
+보안 sentence, `STATUS_KO`). These are copied character for character,
 placeholders included.
 
 *Composed* — the record signs three fact-row examples and one format, and the
@@ -46,7 +48,6 @@ __all__ = [
     "PORTFOLIO_ROW",
     "PORTFOLIO_SAMPLE_LABEL_KO",
     "PORTFOLIO_SAMPLE_ROW",
-    "REFUSAL_FALLBACK",
     "REFUSAL_SENTENCES",
     "RETIRED_FAMILIES",
     "RIGHTS_TOOL_LABEL_KO",
@@ -98,13 +99,21 @@ FEEDBACK_ROW = "의견 저장 → 운영자 검토 대기열"
 #: writes it as prose.
 FEEDBACK_SAVED_KO = "의견을 저장했습니다 — 운영자가 확인합니다."
 
-#: 에이전트 인트로, verbatim from result.md §Proposed copy. A **surface** string
-#: (`P6.S5` renders it above an empty thread), transcribed here because it is the
-#: agent's own promise and this file is where the phase keeps the agent's words.
-AGENT_INTRO_KO = (
-    "검증을 통과한 공시에 대해서만 답합니다. 모든 답에는 원문 인용이 붙습니다. "
-    "계산은 하지 않습니다 — 계산은 내 종목 조회가 합니다."
-)
+#: 에이전트 인트로 — **R16 D1, verbatim** (build-prompt §0), superseding R6's three
+#: sentences. Every clause of the old promise had been overtaken by this phase:
+#: 「검증을 통과한 공시에 대해서만 답합니다」 was contradicted the moment a greeting
+#: stopped being a refusal (`P9.S4`), 「모든 답에는 원문 인용이 붙습니다」 the moment
+#: 인용 강제 became a rule about 공시 사실 문장 only, and 「계산은 하지 않습니다」 the
+#: moment the calculator landed (`P9.S5`). D1 says what is still true, and says it
+#: as a promise about the reader rather than about the machinery.
+#:
+#: A **surface** string, transcribed here because it is the agent's own promise and
+#: this file is where the agent's words live. It is not *served*: nothing in
+#: :mod:`mijual.web` reads it, and the two surfaces that print it hold their own
+#: copy in ``frontend/components/ask/copy.ts``, which `P9.S8` lands. Until then the
+#: two sides differ on purpose — the record's word here, the shipped word there —
+#: and nothing breaks, because no code compares them.
+AGENT_INTRO_KO = "주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다."
 
 # ---------------------------------------------------------------------------
 # 거절 가족 (R6-7) — signed, and the only sentences a refusal may say
@@ -152,22 +161,28 @@ REFUSAL_SENTENCES: dict[str, str] = {
     ),
 }
 
-#: The family a turn used to fall to when nothing it generated could be verified.
-#: **Retired by R16** (result.md §5: strip-don't-drop supersedes it). `P9.S4`
-#: deleted its producer in :func:`mijual.agent.loop._finish`, so nothing selects
-#: it any more; the constant itself goes with `P9.S7`'s copy pass (build-prompt §0:
-#: 「REFUSAL_FALLBACK 삭제」), which is also what retires 계산 요청.
-REFUSAL_FALLBACK = "검증 미통과 폴백"
-
-#: Families that stay in the **stored** vocabulary for past rows and are never
-#: newly written (R16 §0: 「은퇴: … 새로 기록하지 않음」). The whitelist that a row
+#: The two families that stay in the **stored** vocabulary for past rows and are
+#: never newly written (R16 §0: 「은퇴: … 새로 기록하지 않음」). The whitelist a row
 #: is validated against is :data:`mijual.web.conversationstore.REFUSAL_FAMILIES`
 #: and it keeps all six — this is the producer side of the same decision, and the
 #: two are different by design: a turn recorded in 2026-08 must still be findable
 #: by a family the product no longer states.
 #:
-#: `P9.S7` adds 계산 요청 here when the calculator replaces it in the prompt.
-RETIRED_FAMILIES: frozenset[str] = frozenset({REFUSAL_FALLBACK})
+#: * **검증 미통과 폴백** — retired with the sentence-dropping gate that made it
+#:   true (`P9.S4`). It was the literal source of the operator's
+#:   「이 데이터는 검증을 통과하지 못했습니다」 on a greeting. Its ``REFUSAL_FALLBACK``
+#:   constant is **deleted** here (build-prompt §0: 「REFUSAL_FALLBACK 삭제」); the
+#:   name survives only as the dictionary key past rows are found by.
+#: * **계산 요청** — retired with the calculator (`P9.S5`): 「해설은 계산하지
+#:   않습니다」 describes a product that no longer exists, and the auditable
+#:   calculation block is what answers 「1,000주면 얼마?」 now.
+#:
+#: Retiring one is a **code** change, not a copy edit: :func:`family_of`,
+#: :func:`mijual.agent.citations._family_at_head` and
+#: :func:`mijual.agent.citations._is_family_prefix` all read
+#: :data:`LIVE_REFUSAL_SENTENCES`, so from here a model that types either sentence
+#: is writing prose — and under strip-don't-drop prose ships.
+RETIRED_FAMILIES: frozenset[str] = frozenset({"계산 요청", "검증 미통과 폴백"})
 
 #: The families a turn may still **state** — the mapping every recogniser reads.
 #: A retired sentence arriving from the model is therefore not a refusal at all:

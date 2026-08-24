@@ -13,10 +13,10 @@ one streams tool calls:
   a *reader-facing* surface with no quota (R6-5: 질문 수 무제한), so the ceiling
   is per turn and its job is to bound one runaway conversation, never to ration
   the reader;
-* **a ledger** — every call's tokens, the thinking level it ran at, and a ▷
-  *estimated* cost (D-4: never a billed claim). Agent spend is a server fact and
-  **joins no signed ops panel** (`P6` Finding 14): record it, leave 정확도·비용
-  alone.
+* **a ledger** — every call's tokens (including how many of them the implicit
+  cache served), the thinking level it ran at, and a ▷ *estimated* cost (D-4:
+  never a billed claim). Agent spend is a server fact and **joins no signed ops
+  panel** (`P6` Finding 14): record it, leave 정확도·비용 alone.
 
 **Key safety** is unchanged from the pattern: the credential is read in-process
 from :mod:`mijual.config`, resolved on first *use*, never printed, logged or put
@@ -47,6 +47,7 @@ from mijual.config import Settings, load_settings
 __all__ = [
     "AgentGeminiClient",
     "CallBudgetExceeded",
+    "CACHED_INPUT_DISCOUNT",
     "CallChunk",
     "DEFAULT_MODEL",
     "DEFAULT_THINKING_LEVEL",
@@ -56,6 +57,7 @@ __all__ = [
     "ModelCall",
     "ModelChunk",
     "ModelClient",
+    "MID",
     "ModelMessage",
     "PRICING",
     "Pricing",
@@ -82,21 +84,51 @@ TASK = "agent_turn"
 #: at all. Spelled out because ``None`` in a mapping reads as "no thinking".
 INHERIT_PRESET = None
 
-#: **The agent turn runs at `LOW`, and that is a decision, not a default drift.**
-#: D-4's amendment says an unlisted task runs ``LOW`` and every call records the
-#: level it ran at. Three reasons to stay there rather than reach for the preset:
-#: the surface is free and unlimited (R6-5), so per-turn cost is the product's
-#: cost; SSE's first token is a *reader-visible* latency (답변 준비 중 → 스트리밍)
-#: and thinking happens before it; and the properties that must not fail —
-#: 인용 강제, never-compute, 거절 가족 — are enforced **structurally** at the
-#: generation boundary, so a cheaper level cannot produce an unverified claim, it
-#: can only produce a blocked one. Raise it here (or per call) if a measurement
-#: says tool choice suffers; the ledger records the level either way, which is
-#: what makes two runs comparable.
-THINKING_BY_TASK: dict[str, str | None] = {TASK: "LOW"}
+#: The middle rung of ``google.genai.types.ThinkingLevel``
+#: (``MINIMAL``/``LOW``/``MEDIUM``/``HIGH``). P9 calls it **MID** throughout — the
+#: intent, the design record and D-4's amendment all use that word — but the API's
+#: own vocabulary is ``MEDIUM``, and sending ``"MID"`` gets a
+#: ``UserWarning: MID is not a valid ThinkingLevel`` here and a rejected call
+#: there. The phase's word and the SDK's word are named together, once, so the two
+#: can never be confused again.
+MID = "MEDIUM"
+
+#: **The agent turn runs at MID (``MEDIUM``), and that is a decision** — `P9.S7`,
+#: raised from ``LOW`` where `P6` deliberately put it. The original argument had
+#: three legs; the phase moved all three:
+#:
+#: * *the surface is free and unlimited (R6-5), so per-turn cost is the product's
+#:   cost* — still true, and now measured rather than feared: the ▷ ledger prices
+#:   every turn, thinking bills as output, and the operator accepted the worst case
+#:   for this surface explicitly (R16 Q-E, no abuse backstop in P9);
+#: * *SSE's first token is reader-visible latency and thinking precedes it* — true
+#:   and **quantified** (`P9.S1B`): raising the level costs roughly one second of
+#:   first-token latency, not many, and R16's 진행 표시 line now covers the wait
+#:   with a sentence instead of a blank thread. The real wait was never the
+#:   thinking level; it is a research turn's tool round trips;
+#: * *the properties that must not fail are enforced structurally, so a cheaper
+#:   level can only produce a **blocked** claim* — **this one died with `P9.S4`.**
+#:   Under strip-don't-drop nothing is blocked: an uncited sentence ships. A
+#:   cheaper level therefore no longer degrades safely into a refusal, it degrades
+#:   into confident wrong prose in front of a retail investor. That reversal is the
+#:   strongest argument for MID in the phase, and it is why the level moved in the
+#:   same phase as the gate.
+#:
+#: No ladder: Mijual has no accounts, no operator store and no env chain, so the
+#: level is a constant here and an explicit per-call override where a caller wants
+#: one (:class:`AgentGeminiClient`'s ``thinking_level=``). The ledger records the
+#: level on every call either way, which is what makes two runs comparable.
+THINKING_BY_TASK: dict[str, str | None] = {TASK: MID}
 
 #: What an unlisted task gets — D-4's own rule.
-DEFAULT_THINKING_LEVEL: str | None = "LOW"
+DEFAULT_THINKING_LEVEL: str | None = MID
+
+
+#: The published implicit-cache discount: a cached input token bills at a quarter
+#: of a fresh one. It is the *rate* that is taken from the rate card — how many
+#: tokens actually come back cached is **measured**, never assumed (see
+#: :attr:`Usage.cached_tokens`).
+CACHED_INPUT_DISCOUNT = 0.25
 
 
 @dataclass(frozen=True)
@@ -107,9 +139,15 @@ class Pricing:
     output_per_m: float
     note: str = ""
 
+    @property
+    def cached_input_per_m(self) -> float:
+        """What an implicitly cached input token costs (:data:`CACHED_INPUT_DISCOUNT`)."""
+        return self.input_per_m * CACHED_INPUT_DISCOUNT
+
 
 #: ▷ Estimate, the same rate card D-4 records: gemini-3.7-flash introductory
-#: $0.75 / $3.75 per 1M in/out through 2026-12-31, thinking billed as output.
+#: $0.75 / $3.75 per 1M in/out through 2026-12-31, thinking billed as output, and
+#: a cached input token at ¼ of a fresh one.
 PRICING: dict[str, Pricing] = {
     "gemini-3.7-flash": Pricing(0.75, 3.75, "introductory rate through 2026-12-31"),
 }
@@ -134,11 +172,28 @@ class Usage:
     thoughts_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
+    #: How many of ``prompt_tokens`` the model served from its **implicit cache**
+    #: (``cached_content_token_count``). A *subset* of the prompt count, not a
+    #: sixth number beside it, which is why :func:`cost_of` subtracts before it
+    #: multiplies.
+    #:
+    #: This field exists to **measure** R16 §3.5 rather than to believe it
+    #: (`P9.S1B` proposal P12). The static rulebook was moved above every per-turn
+    #: value so a turn's prefix can be cached; whether it is depends on crossing
+    #: Gemini's implicit-cache floor (~4,096 tokens for Flash) and on the prefix
+    #: really being byte-identical. A ledger reading 0 cached tokens on every turn
+    #: is the honest report that the reorder bought nothing — and is worth knowing.
+    cached_tokens: int = 0
 
     @property
     def billed_output(self) -> int:
         """Thinking tokens bill as output tokens."""
         return self.output_tokens + self.thoughts_tokens
+
+    @property
+    def fresh_prompt_tokens(self) -> int:
+        """Prompt tokens billed at the full input rate — the uncached ones."""
+        return max(self.prompt_tokens - self.cached_tokens, 0)
 
 
 def cost_of(model: str, usage: Usage) -> float:
@@ -147,7 +202,9 @@ def cost_of(model: str, usage: Usage) -> float:
     if price is None:
         return 0.0
     return (
-        usage.prompt_tokens * price.input_per_m + usage.billed_output * price.output_per_m
+        usage.fresh_prompt_tokens * price.input_per_m
+        + min(usage.cached_tokens, usage.prompt_tokens) * price.cached_input_per_m
+        + usage.billed_output * price.output_per_m
     ) / 1_000_000
 
 
@@ -159,6 +216,9 @@ class UsageLedger:
     calls: int = 0
     failures: int = 0
     prompt_tokens: int = 0
+    #: Of ``prompt_tokens``, the ones the implicit cache served (R16 §3.5's
+    #: measurement — see :attr:`Usage.cached_tokens`).
+    cached_tokens: int = 0
     thoughts_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
@@ -171,6 +231,7 @@ class UsageLedger:
         self.calls += 1
         self.failures += int(not ok)
         self.prompt_tokens += usage.prompt_tokens
+        self.cached_tokens += usage.cached_tokens
         self.thoughts_tokens += usage.thoughts_tokens
         self.output_tokens += usage.output_tokens
         self.total_tokens += usage.total_tokens
@@ -182,7 +243,11 @@ class UsageLedger:
         return cost_of(
             self.model,
             Usage(
-                self.prompt_tokens, self.thoughts_tokens, self.output_tokens, self.total_tokens
+                self.prompt_tokens,
+                self.thoughts_tokens,
+                self.output_tokens,
+                self.total_tokens,
+                cached_tokens=self.cached_tokens,
             ),
         )
 
@@ -193,6 +258,7 @@ class UsageLedger:
             "calls": self.calls,
             "failures": self.failures,
             "prompt_tokens": self.prompt_tokens,
+            "cached_tokens": self.cached_tokens,
             "thoughts_tokens": self.thoughts_tokens,
             "output_tokens": self.output_tokens,
             "total_tokens": self.total_tokens,
@@ -201,10 +267,17 @@ class UsageLedger:
         }
 
     def render(self) -> str:
-        """One human line, with the ▷ mark the phase rule requires."""
+        """One human line, with the ▷ mark the phase rule requires.
+
+        ``cached`` is printed **inside** the prompt count rather than beside it —
+        it is a subset, and printing it as a sixth number would make the tokens
+        line stop adding up. It is here so the operator can read, from an ordinary
+        turn's log line, whether the cache prefix (R16 §3.5) is actually being hit.
+        """
         return (
             f"calls {self.calls} ({self.failures} failed) · "
-            f"tokens prompt {self.prompt_tokens:,} + thinking {self.thoughts_tokens:,} "
+            f"tokens prompt {self.prompt_tokens:,} (cached {self.cached_tokens:,}) "
+            f"+ thinking {self.thoughts_tokens:,} "
             f"+ output {self.output_tokens:,} = {self.total_tokens:,} · "
             f"thinking {'/'.join(dict.fromkeys(self.levels)) or '-'} · "
             f"▷ ${self.cost_usd:.4f} estimated ({self.model} rate card, not billed)"
@@ -308,9 +381,27 @@ class AgentGeminiClient:
         model: model id — ``gemini-3.7-flash`` (D-4).
         max_calls: hard ceiling on live calls for this client's lifetime. One
             client per turn means one turn's ceiling; the next call past it raises
-            :class:`CallBudgetExceeded` **before** spending.
+            :class:`CallBudgetExceeded` **before** spending. The default mirrors
+            :attr:`mijual.agent.loop.TurnBudget.max_model_calls`, which
+            :func:`~mijual.agent.loop.run_turn` passes explicitly anyway — it is
+            written out rather than imported because the loop imports this module,
+            and a test pins the two together. A ceiling **below** the loop's round
+            budget would make the turn abort as ``call_budget`` when what really
+            happened was ``round_budget``: the reason would be a lie.
         thinking_level: ``"auto"`` looks :data:`THINKING_BY_TASK` up; ``None`` asks
             for the credential's project preset; a level name overrides both.
+        temperature: **kept at 0.2 deliberately** (`P9.S7`, closing the question
+            `P9.S1` raised: changple5 runs its chat model at 0.0 and nobody had
+            ever argued Mijual's value). It stays because this surface is a
+            *conversation*: the same question asked twice should not come back
+            word for word, and R16's register — 인사, 짧은 확인, 되묻는 한 줄 —
+            reads better with a little variance. Nothing that must not vary
+            depends on it: signed sentences are quoted from
+            :mod:`mijual.agent.copy` rather than generated, figures are respelled
+            from ``value_display``, and a number that no tool returned is marked
+            whatever the sampler does. Lower it to 0.0 if a measurement ever shows
+            tool choice or citation placement wobbling — the ledger records enough
+            to compare two runs.
     """
 
     def __init__(
@@ -318,7 +409,7 @@ class AgentGeminiClient:
         *,
         settings: Settings | None = None,
         model: str = DEFAULT_MODEL,
-        max_calls: int | None = 8,
+        max_calls: int | None = 22,  # = TurnBudget.max_model_calls (`P9.S7`)
         timeout_s: int = 120,
         api_key: str | None = None,
         thinking_level: str | None = "auto",
@@ -492,4 +583,8 @@ def _usage_of(chunk: Any) -> Usage | None:
         thoughts_tokens=get("thoughts_token_count"),
         output_tokens=get("candidates_token_count"),
         total_tokens=get("total_token_count"),
+        # Implicit caching reports here and nowhere else; a model or a request
+        # that caches nothing simply omits it, which reads as 0 — the honest
+        # answer to 「did the prefix reorder buy anything?」 rather than a guess.
+        cached_tokens=get("cached_content_token_count"),
     )
