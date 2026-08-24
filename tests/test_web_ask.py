@@ -111,11 +111,25 @@ def test_the_handle_arrives_first_and_the_turn_lands_as_one_row(ask) -> None:
     # sentence arrives — and a valid client token round-trips untouched.
     assert sent[0] == ("session", {"session_hash": handle, "scope": R1_RCEPT})
     assert [name for name, _ in sent] == [
-        "session", "tool_row", "tool_row", "citation", "text", "footer", "done"
+        "session",
+        "status", "status", "tool_row",  # 질문을 읽고 → 공시를 찾고 → 검색 행
+        "status", "status", "tool_row",  # 답변을 정리하고 → 원문을 읽고 → 읽기 행
+        "citation", "data",              # 칩 정의 → 공시에서 읽은 값 (R16 §2.3)
+        "status", "text", "footer", "done",
     ]
-    # 칩은 그 문장과 함께 도착한다: the definition precedes the sentence naming it.
-    assert sent[3][1]["number"] == 1 and sent[3][1]["quote"] == QUOTE
-    assert sent[4][1]["citations"] == [1] and QUOTE in sent[4][1]["text"]
+    citation, data, text = sent[7][1], sent[8][1], sent[10][1]
+    # 칩은 그 문장과 함께 도착한다: the definition precedes both the row and the
+    # sentence that name its number — same 근거, same 번호 (R6-4).
+    assert citation["number"] == 1 and citation["quote"] == QUOTE
+    assert data["rows"][0]["citation"] == 1 and data["persistent"] is True
+    assert text["citations"] == [1] and QUOTE in text["text"]
+    # 진행 표시: one line, replaced in place (one id), and never persisted.
+    statuses = [payload for name, payload in sent if name == "status"]
+    assert {payload["block_id"] for payload in statuses} == {"status"}
+    assert [payload["phase"] for payload in statuses] == [
+        "read", "search", "write", "open", "write"
+    ]
+    assert all(payload["persistent"] is False for payload in statuses)
     end = sent[-1][1]
 
     (row,) = ask.rows()
@@ -127,6 +141,10 @@ def test_the_handle_arrives_first_and_the_turn_lands_as_one_row(ask) -> None:
     assert row.evidence == end["evidence"] == [R1_RCEPT]
     assert row.quotes == end["quotes"] == [QUOTE]
     assert row.refusal_category is None
+    # R16 계약 확장 1/2: the block is stored **as the frame that was sent** — no
+    # prose paraphrase — and the transient status line is not stored at all.
+    assert row.blocks == [{"event": "data", "data": data}]
+    assert end["filings"] == 1  # 공시 1건 읽음: read, not merely listed (D8)
 
 
 def test_a_refusal_stores_its_family_and_a_junk_handle_is_replaced(ask) -> None:
@@ -140,7 +158,7 @@ def test_a_refusal_stores_its_family_and_a_junk_handle_is_replaced(ask) -> None:
 
     (row,) = ask.rows()
     assert row.session_hash == minted and row.kind == "refusal"
-    assert row.refusal_category == "철회"  # one of the five signed families
+    assert row.refusal_category == "철회"  # one of the six stored families
     assert row.answer.endswith("철회된 공시는 해설하지 않습니다.")
     # 거절도 인용 동반: the 철회 fact carries its 근거. This fixture's filing has no
     # 본문 span, so the chip is the **API-tier** one (R3: 접수번호가 인용 핸들) — a

@@ -275,11 +275,10 @@ class CitationGate:
         events: list[AgentEvent] = []
         numbers: list[int] = []
         for citation in cited:
-            number, chip = self._number_for(citation)
+            number, chip = self.cite(citation)
             numbers.append(number)
             if chip is not None:
                 events.append(chip)
-                self.chips.append(chip)
         self.released.append(text)
         events.append(TextEvent(text=text, citations=tuple(dict.fromkeys(numbers))))
         return events
@@ -287,6 +286,20 @@ class CitationGate:
     def _block(self, text: str, reason: str) -> list[AgentEvent]:
         self.blocked.append(Blocked(text=text, reason=reason))
         return []
+
+    def cite(self, citation: Citation) -> tuple[int, CitationEvent | None]:
+        """This 근거's chip number, and its **definition** the first time only.
+
+        The one door to the reader's numbering, for prose *and* for the places
+        R16 §2.6 adds a chip to (a 데이터 행's value, a 계산 블록's input): a
+        caller emits the returned :class:`~mijual.agent.events.CitationEvent`
+        immediately before the block that names the number, and 같은 근거 = 같은
+        번호 holds across all of them because they share this one counter.
+        """
+        number, chip = self._number_for(citation)
+        if chip is not None:
+            self.chips.append(chip)
+        return number, chip
 
     def _number_for(self, citation: Citation) -> tuple[int, CitationEvent | None]:
         """This 근거's chip number — assigned once, on first use (R6-4)."""

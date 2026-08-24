@@ -27,6 +27,14 @@ What the loop owns instead is everything that must not be left to a model:
   nothing verifiable;
 * **the 갈 곳 links and the 답변 푸터** — composed from the turn's own tool results
   as *data*, so the model never writes a URL or points at a filing it did not read;
+* **the 진행 표시 line** — R16 D5's five signed phrases, one alive at a time,
+  replaced as the turn moves from 질문을 읽고 → 공시를 찾고 → 원문을 읽고 → 답변을
+  정리하고, and silent from the first released sentence onward. Transient: it is
+  the one block the 대화 로그 never keeps;
+* **the 데이터 블록** — 공시에서 읽은 값, composed from a tool result's own
+  label/value reading (:func:`mijual.agent.tools.value_rows`) with each row's
+  근거 chip taken from the same numbering the prose uses. The loop does not know
+  *which* tool that is: any result that reads as labelled values gets a block;
 * **the budget** — rounds, tool calls and live model calls are all capped, and
   every cap maps to an honest ``aborted`` terminal. A turn is never silently
   truncated;
@@ -65,14 +73,24 @@ from mijual.agent.client import (
 from mijual.agent.context import ToolContext
 from mijual.agent.events import (
     AgentEvent,
+    DataBlockEvent,
+    DataRow,
     FooterEvent,
     LinksEvent,
     RefusalEvent,
+    StatusEvent,
     ToolRowEvent,
     TurnEnd,
 )
 from mijual.agent.instructions import system_instruction
-from mijual.agent.tools import TOOL_NAMES, ToolResult, UnknownTool, call_tool
+from mijual.agent.tools import (
+    STATUS_PHASE,
+    TOOL_NAMES,
+    ToolResult,
+    UnknownTool,
+    call_tool,
+    value_rows,
+)
 from mijual.web import clock
 from mijual.web.conversationstore import KIND_ANSWER, KIND_REFUSAL
 
@@ -123,6 +141,10 @@ class _Turn:
     tool_calls: int = 0
     status: str = "done"
     reason: str | None = None
+    #: The 진행 표시 phase currently on the reader's screen, if any.
+    phase: str | None = None
+    #: How many 구조화 블록 this turn has emitted — the source of their ids.
+    blocks: int = 0
 
 
 def run_turn(
@@ -166,6 +188,10 @@ def run_turn(
 
     while turn.rounds < limits.max_rounds:
         turn.rounds += 1
+        # 질문을 읽고 있습니다 → (tools) → 답변을 정리하고 있습니다. A round after the
+        # first is the model composing with what the tools gave it; if it asks for
+        # another tool instead, that call replaces the line before it runs.
+        yield from _status(turn, "read" if turn.rounds == 1 else "write")
         said = ""
         calls: list[ModelCall] = []
         try:
@@ -205,10 +231,64 @@ def run_turn(
     yield from _finish(ctx, turn, now=now)
 
 
+def _status(turn: _Turn, phase: str) -> Iterator[AgentEvent]:
+    """The one live 진행 표시 line: replace it, never add to it — and stop at prose.
+
+    Same ``block_id`` every time, so the surface swaps the sentence in place
+    (R16 §2.1: 항상 1개, phase가 바뀌면 텍스트만 교체). Two silences are deliberate:
+    the same phase twice says nothing new, and once anything has been **released**
+    the line is gone for good — the reader is reading, and a status under a
+    sentence would be a second thing moving on a surface with no animation.
+    """
+    if phase == turn.phase or turn.gate.released:
+        return
+    turn.phase = phase
+    yield StatusEvent(phase=phase, text=ko.STATUS_KO[phase])
+
+
+def _data_block(turn: _Turn, result: ToolResult) -> Iterator[AgentEvent]:
+    """공시에서 읽은 값 — a tool's labelled values, each row with its own 근거.
+
+    The chips are **defined first**, in the same emission as the block that names
+    their numbers (R6: 자리표시 칩 금지), and they come from
+    :meth:`~mijual.agent.citations.CitationGate.cite`, so a 근거 shown in a row and
+    later cited by a sentence carries one number in both places. A result with no
+    stateable rows emits nothing at all: an empty block is not a block, and the
+    wire stays additive.
+    """
+    rows: list[DataRow] = []
+    chips: list[AgentEvent] = []
+    for row in value_rows(result.payload):
+        number: int | None = None
+        if row.citation is not None:
+            number, chip = turn.gate.cite(row.citation)
+            if chip is not None:
+                chips.append(chip)
+        rows.append(
+            DataRow(
+                label=row.label,
+                value=row.value,
+                citation=number,
+                reader_input=row.reader_input,
+            )
+        )
+    if not rows:
+        return
+    turn.blocks += 1
+    yield from chips
+    yield DataBlockEvent(rows=tuple(rows), block_id=f"data-{turn.blocks}")
+
+
 def _execute(
     ctx: ToolContext, call: ModelCall, turn: _Turn, messages: list[Message]
 ) -> Iterator[AgentEvent]:
     """Run one call the model asked for, and hand the result back to the model."""
+    # Narration, not control flow: the phase is looked up and the line is replaced
+    # *before* the call runs, because the wait is the call. A tool none of R16's
+    # five phrases describes changes nothing (:data:`mijual.agent.tools.STATUS_PHASE`).
+    phase = STATUS_PHASE.get(call.name)
+    if phase is not None:
+        yield from _status(turn, phase)
     try:
         result = call_tool(call.name, ctx, call.args)
     except UnknownTool:
@@ -242,6 +322,7 @@ def _execute(
     messages.append(
         ToolMessage(name=result.tool, response=response, call_id=call.call_id)
     )
+    yield from _data_block(turn, result)
 
 
 def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[AgentEvent]:
@@ -298,10 +379,30 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
         evidence=gate.evidence,
         quotes=gate.quotes,
         blocked=len(gate.blocked),
+        filings=_filings_read(turn.results),
         rounds=turn.rounds,
         tool_calls=turn.tool_calls,
         reason=turn.reason,
         usage=turn.ledger.payload(),
+    )
+
+
+def _filings_read(results: Sequence[ToolResult]) -> int:
+    """공시 M건 읽음 — how many distinct 접수번호 this turn actually **read**.
+
+    A search *lists* filings; only a read returns one's verification contract, and
+    the contract is what says ``found``. So a hit the model never opened is not
+    counted, and the number the 도구 흐름 summary states is the one the server
+    knows by construction — R16 §1 is explicit that the surface must never parse
+    it back out of the 도구 행 strings.
+    """
+    return len(
+        {
+            rcept_no
+            for result in results
+            if result.payload.get("found") is True
+            for rcept_no in result.evidence
+        }
     )
 
 

@@ -77,7 +77,14 @@ def test_the_log_reads_back_newest_first_with_the_keys_the_panel_names(store) ->
     assert isinstance(port, Conversations)  # the P5 protocol, structurally satisfied
 
     thread, other = new_session_hash(), new_session_hash()
-    record_turn(
+    # R16 계약 확장 1/2: 구조화 블록 are stored as the **frames** the reader got,
+    # verbatim — and a turn with none stores NULL, exactly like every row written
+    # before the column existed. The panel's own row shape is unchanged (below).
+    block = {
+        "event": "data",
+        "data": {"rows": [{"label": "신주인수권증서 상장·매매기간", "value": "2026-05-14 ~ 2026-05-20", "citation": 1}]},
+    }
+    first = record_turn(
         session,
         session_hash=thread,
         question="신주인수권 매매 언제 끝나나요?",
@@ -86,6 +93,7 @@ def test_the_log_reads_back_newest_first_with_the_keys_the_panel_names(store) ->
         scope_rcept_no="20260508000928",
         evidence=["20260508000928"],
         quotes=["신주인수권증서의 매매기간: 2026.05.14 ~ 2026.05.20"],
+        blocks=[block],
     )
     record_turn(
         session,
@@ -108,6 +116,9 @@ def test_the_log_reads_back_newest_first_with_the_keys_the_panel_names(store) ->
     record_feedback(session, text="설명이 좋았어요", email="reader@mijual.kr", session_hash=thread)
     record_feedback(session, text="이건 잘 모르겠어요")
     session.commit()
+
+    assert first.blocks == [block]
+    assert session.get(ConversationTurn, 3).blocks is None  # 블록 없는 턴 = NULL
 
     log = port.conversations()
     assert log.total == 3
@@ -158,12 +169,12 @@ def test_the_log_reads_back_newest_first_with_the_keys_the_panel_names(store) ->
     }
 
 
-def test_the_write_api_takes_the_five_signed_families_and_refuses_anything_else(store) -> None:
-    """R6: 카테고리 5종만. An invented family would filter to nothing in the panel.
+def test_the_write_api_takes_the_six_stored_families_and_refuses_anything_else(store) -> None:
+    """R16: 카테고리 6값만 — 보안 added, the two retired ones kept for past rows.
 
-    And the handle is checked on the way in — a client-supplied string that is not
-    a minted handle never reaches the column, which is what keeps an address out
-    of it.
+    An invented family would filter to nothing in the panel. And the handle is
+    checked on the way in — a client-supplied string that is not a minted handle
+    never reaches the column, which is what keeps an address out of it.
     """
     session, _ = store
     for family in REFUSAL_FAMILIES:
@@ -175,7 +186,11 @@ def test_the_write_api_takes_the_five_signed_families_and_refuses_anything_else(
             answer="…",
             refusal_category=family,
         )
-    assert session.query(ConversationTurn).count() == 5
+    assert session.query(ConversationTurn).count() == 6
+    # 보안 is in the vocabulary before `P9.S6` emits it (a whitelist is a contract,
+    # not a producer), and the two superseded families stay findable for old rows.
+    assert "보안" in REFUSAL_FAMILIES
+    assert {"계산 요청", "검증 미통과 폴백"} <= set(REFUSAL_FAMILIES)
 
     def refused(**kw):
         with pytest.raises(ValueError):

@@ -44,6 +44,7 @@ __all__ = [
     "RIGHTS_TOOL_LABEL_KO",
     "SEARCH_ITEM",
     "SEARCH_ROW",
+    "STATUS_KO",
     "family_of",
     "search_row",
 ]
@@ -130,6 +131,30 @@ REFUSAL_SENTENCES: dict[str, str] = {
 #: one family the *loop* may select on its own, because it is a statement about
 #: the data rather than about the reader's question.
 REFUSAL_FALLBACK = "검증 미통과 폴백"
+
+
+# ---------------------------------------------------------------------------
+# 진행 표시 (R16 D5) — signed, and the only sentences a status line may say
+# ---------------------------------------------------------------------------
+#: The five phases and their sentences, **verbatim** from R16 build-prompt §0
+#: (`docs/reference/design/rounds/16-smart-assistant/output/build-prompt.md`,
+#: ``STATUS_KO``). The keys are :data:`mijual.agent.events.STATUS_PHASES`.
+#:
+#: They live here, server-side, for the same reason the 도구 행 strings do: the
+#: agent's Korean is composed once and the surface renders it **verbatim**
+#: (:class:`~mijual.agent.events.StatusEvent` carries the sentence beside its
+#: phase), so there is no second copy of a signed string in TypeScript to drift
+#: from this one.
+#:
+#: R16 §2.1: the line is 진행 중인 상태 — 항상 하나, phase가 바뀌면 텍스트만 교체,
+#: 첫 문장에 소멸, **애니메이션 없음**. It is never stored (transient).
+STATUS_KO: dict[str, str] = {
+    "read": "질문을 읽고 있습니다",
+    "search": "공시를 찾고 있습니다",
+    "open": "공시 원문을 읽고 있습니다",
+    "calc": "계산하고 있습니다",
+    "write": "답변을 정리하고 있습니다",
+}
 
 
 def family_of(sentence: str) -> str | None:

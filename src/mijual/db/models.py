@@ -1174,13 +1174,19 @@ class ConversationTurn(Base):
       근거 rcept_no 목록 and 인용 칩 원문. Quotes are stored **verbatim**: R6
       forbids a reconstructed quote, and a stored summary would make the log's
       대화 재생 a paraphrase of what the reader saw.
-    * **No portfolio/holdings column and no structured tool payload** (phase Open
-      Question 1). A turn keeps the prose the reader saw and nothing more.
+    * **``blocks`` — added by R16, and the one thing beyond prose this table
+      keeps.** P6 answered its Open Question 1 with 「a turn keeps the prose the
+      reader saw and nothing more」; R16 superseded exactly that line for
+      *structured blocks the prose cannot carry* (result.md §3-15) and nothing
+      else — it is still no portfolio, no holdings and no raw tool payload, only
+      the blocks the reader was actually shown.
 
     ``kind`` is constrained at the database (``answer`` | ``refusal`` — the port's
-    own vocabulary). ``refusal_category`` is **not**: the five family names are
-    *signed Korean copy*, and copy can be re-signed, while these rows — unlike
-    every pipeline table (N16) — are not re-collectable. The vocabulary is
+    own vocabulary). ``refusal_category`` is **not**: the family names are *signed
+    Korean copy*, and copy can be re-signed, while these rows — unlike every
+    pipeline table (N16) — are not re-collectable. R16 re-signing five families
+    into six (보안 added, two kept read-only for past rows) cost this table nothing
+    at all, which is the argument the choice was made for. The vocabulary is
     enforced on write instead
     (:func:`mijual.web.conversationstore.record_turn`), so a re-signed family
     never costs a destructive migration.
@@ -1207,12 +1213,23 @@ class ConversationTurn(Base):
     kind: Mapped[str] = mapped_column(String(8), nullable=False)
     #: The prose the reader saw — an answer, or the refusal's 3-part sentence.
     answer: Mapped[str] = mapped_column(Text, nullable=False)
-    #: One of the five signed families, and only on a refusal.
+    #: One of the six stored families (R16: four live, two read-only for past
+    #: rows), and only on a refusal.
     refusal_category: Mapped[str | None] = mapped_column(String(20))
     #: 근거 rcept_no 목록 — the filings the reply rests on.
     evidence: Mapped[dict | list | None] = mapped_column(JSONBody, nullable=False)
     #: 인용 칩 원문 — verbatim spans, never reconstructed (R6).
     quotes: Mapped[dict | list | None] = mapped_column(JSONBody, nullable=False)
+    #: 구조화 블록 원형 — the turn's data/calculation blocks as the **frames** the
+    #: reader received (R16 §7 계약 확장 1/2: 「프로즈로 환언하지 않는다」). A
+    #: calculation's audit path — inputs, each input's 근거, the expression — does
+    #: not exist in the prose, so storing only ``answer`` would lose it.
+    #: **Nullable and default-free on purpose**: this repo has no Alembic (N16) and
+    #: :func:`mijual.db.schema_sync.ensure_columns` adds exactly that shape to a
+    #: live table — every other shape it refuses. NULL is a turn with no blocks and
+    #: also every row written before R16; the two read the same, which is the
+    #: honest reading of both.
+    blocks: Mapped[dict | list | None] = mapped_column(JSONBody)
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<ConversationTurn {self.session_hash} {self.kind} {self.created_at}>"

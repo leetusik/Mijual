@@ -6,17 +6,17 @@
 ## Pointer
 
 - Current phase: `P9`
-- Current slice: `P9.S3`
-- Next slice: `P9.S4`
+- Current slice: `P9.S4`
+- Next slice: `P9.S5`
 - Waiting on operator: `none`
 - Open deferred jobs: `13`
-- Rebuilt at: `2026-08-25T04:22:12+09:00`
+- Rebuilt at: `2026-08-25T04:46:40+09:00`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
-| [ ] `P9` | `planned` | `pending` | Smart Mijual Assistant | `P9.S3` | `works/phases/active/P9` |
+| [ ] `P9` | `planned` | `pending` | Smart Mijual Assistant | `P9.S4` | `works/phases/active/P9` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -28,7 +28,7 @@
 | [x] `P9.S1B` | `done` | research best-practice agents beyond changple5 | `research` | `works/phases/active/P9/slices/P9.S1B` |
 | [x] `P9.S2` | `done` | design round 1: unified assistant & rich chat surface | `co-work` | `works/phases/active/P9/slices/P9.S2` |
 | [x] `P9.DECOMP2` | `done` | second decomposition: cut build slices from the signed design | `decomposition` | `works/phases/active/P9/slices/P9.DECOMP2` |
-| [ ] `P9.S3` | `todo` | R16 event vocabulary, block ids and the two storage contracts | `implementation` | `works/phases/active/P9/slices/P9.S3` |
+| [x] `P9.S3` | `done` | R16 event vocabulary, block ids and the two storage contracts | `implementation` | `works/phases/active/P9/slices/P9.S3` |
 | [ ] `P9.S4` | `todo` | citations: strip don't drop, and the 미확인 claim marker | `implementation` | `works/phases/active/P9/slices/P9.S4` |
 | [ ] `P9.S5` | `todo` | calculator tool and the calculation block | `implementation` | `works/phases/active/P9/slices/P9.S5` |
 | [ ] `P9.S6` | `todo` | security_check guard, hard reject and the 보안 family | `implementation` | `works/phases/active/P9/slices/P9.S6` |

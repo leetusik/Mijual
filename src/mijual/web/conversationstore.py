@@ -45,7 +45,7 @@ import re
 import secrets
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterator, Sequence
+from typing import Any, Callable, Iterator, Mapping, Sequence
 
 from sqlalchemy import Select, and_, case, func, or_, select
 from sqlalchemy.orm import Session
@@ -75,12 +75,29 @@ KIND_ANSWER = "answer"
 KIND_REFUSAL = "refusal"
 KINDS = (KIND_ANSWER, KIND_REFUSAL)
 
-#: The five refusal families, R6 §거절: 「reason code별 문구 생성 금지 — 카테고리
-#: 5종 (철회 · 확정 전 · 공시에 없음 · 검증 미통과 폴백 · 계산 요청)만」. These are
-#: the stored vocabulary because they are what the panel's filter sends
-#: (`frontend/components/ops/copy.ts` ``REFUSAL_CATEGORIES_KO``) — inventing an
-#: English token for a signed Korean family would be a design change.
-REFUSAL_FAMILIES = ("철회", "확정 전", "공시에 없음", "검증 미통과 폴백", "계산 요청")
+#: The refusal families this column may hold: **six values**, four live and two
+#: read-only. R16 re-signed R6's five (build-prompt §0, result.md §7 계약 확장 2/2):
+#:
+#: * live — 철회 · 확정 전 · 공시에 없음 (R6, verbatim) and **보안**, the sixth
+#:   family the prompt-injection guard states (`P9.S6` is what emits it; a
+#:   whitelist is a contract, not a producer, so it is declared here first);
+#: * retired — 계산 요청 (superseded by the auditable calculator) and 검증 미통과
+#:   폴백 (superseded by strip-don't-drop). They stay in the vocabulary **for past
+#:   rows only**: thousands of stored turns carry them, R7's filter must still find
+#:   those, and nothing new is ever written with either.
+#:
+#: They are the stored vocabulary because they are what the panel's filter sends
+#: (`frontend/components/ops/copy.ts` ``REFUSAL_CATEGORIES_KO``, the same six in the
+#: same order) — inventing an English token for a signed Korean family would be a
+#: design change.
+REFUSAL_FAMILIES = (
+    "철회",
+    "확정 전",
+    "공시에 없음",
+    "보안",
+    "계산 요청",
+    "검증 미통과 폴백",
+)
 
 #: 범위 for a turn asked outside any single event. R6 §범위 모델 signs the words
 #: (「그 외 = `범위: 전체 공시`」); the column stores NULL and the row says this.
@@ -146,6 +163,7 @@ def record_turn(
     refusal_category: str | None = None,
     evidence: Sequence[str] = (),
     quotes: Sequence[str] = (),
+    blocks: Sequence[Mapping[str, Any]] = (),
 ) -> ConversationTurn:
     """Persist one turn — the answer **or** the refusal, with its citations.
 
@@ -155,11 +173,19 @@ def record_turn(
     the 인용 칩 원문, **verbatim** — R6 forbids a reconstructed quote, and a
     summarised one would make the log's 대화 재생 a paraphrase.
 
+    ``blocks`` is R16's contract extension: the turn's **structured blocks, as
+    frames**, stored exactly as they were sent (result.md §3-15: 「구조화 블록은
+    프로즈로 환언되지 않는다」). A calculation's audit path — its inputs, each
+    input's 근거, its expression — has no existence in prose, so paraphrasing it
+    into ``answer`` would be losing it. Absent for a turn that produced none: the
+    column is NULL rather than an empty list, so a row from before R16 and a row
+    with no blocks read the same.
+
     Four things are refused here rather than written, because each one would
     corrupt something the panel promises:
 
     * an unknown ``kind`` (the filter has two values);
-    * a ``refusal_category`` outside the five signed families, and a refusal with
+    * a ``refusal_category`` outside the six stored families, and a refusal with
       none — R6 allows no per-reason-code wording, so the family *is* the
       category, and an invented one would appear in a filter that cannot find it;
     * a category on an answer;
@@ -174,7 +200,7 @@ def record_turn(
     if kind == KIND_REFUSAL:
         if refusal_category not in REFUSAL_FAMILIES:
             raise ValueError(
-                f"refusal_category must be one of the five signed families "
+                f"refusal_category must be one of the six stored families "
                 f"{REFUSAL_FAMILIES}, not {refusal_category!r}"
             )
     elif refusal_category is not None:
@@ -191,6 +217,7 @@ def record_turn(
         refusal_category=refusal_category,
         evidence=[str(item) for item in evidence],
         quotes=[str(item) for item in quotes],
+        blocks=[dict(block) for block in blocks] or None,
     )
     session.add(turn)
     session.flush()

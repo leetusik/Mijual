@@ -224,9 +224,15 @@ export const REFUSAL_KO = "거절";
 export const KIND_VALUES = { answer: "answer", refusal: "refusal" } as const;
 
 /**
- * The five refusal families, R6's own list — build-prompt §거절: "reason code별
- * 문구 생성 금지 — **카테고리 5종 (철회 · 확정 전 · 공시에 없음 · 검증 미통과
- * 폴백 · 계산 요청)**만."
+ * The refusal families — **six values**, and the exact mirror of
+ * `mijual.web.conversationstore.REFUSAL_FAMILIES` (same values, same order).
+ *
+ * R6 signed five (build-prompt §거절: "reason code별 문구 생성 금지 — **카테고리
+ * 5종**만"); R16 re-signed them (build-prompt §0 + result.md §7 계약 확장 2/2):
+ * **보안** is the new sixth family, and 계산 요청 · 검증 미통과 폴백 are **retired
+ * — kept here read-only, for past rows**. Both are still in the filter on purpose:
+ * turns stored under them exist, and a 품질 점검 that cannot find them would be a
+ * hole in the log rather than a tidier dropdown. Nothing new is written with either.
  *
  * They travel as the filter's *value* too. P6 owns the storage vocabulary
  * (`refusal_category` is an opaque string to `P5.S9`'s port), and inventing an
@@ -238,8 +244,9 @@ export const REFUSAL_CATEGORIES_KO = [
   "철회",
   "확정 전",
   "공시에 없음",
-  "검증 미통과 폴백",
+  "보안",
   "계산 요청",
+  "검증 미통과 폴백",
 ];
 
 /** "스키마 (R6 계약과 정합): 세션 = 익명 해시, 시각 KST, 범위 (이벤트 rcept_no

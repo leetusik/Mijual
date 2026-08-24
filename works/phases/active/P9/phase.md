@@ -1527,6 +1527,96 @@ regression item 15 still describes the 340 rail (contradicts §2.7b/item 20); §
 say "질문 카드 5장"/meta card where D11 + `START_CHIPS_KO` sign exactly 4 and retire the meta card.
 `DECOMP2` and the build slices must follow the signed copy, not these three lines.
 
+### P9.S3 — the contract slice landed (2026-08-25)
+
+**What is now on the wire** (a real turn, `search_events` → `get_event` → answer, as the suite drives it):
+
+```
+session · status(read) · status(search) · tool_row · status(write) · status(open) · tool_row
+        · citation · data · status(write) · text · footer · done(filings=1)
+```
+
+**Decisions this slice had to make, and why — every one of them is a thing later slices inherit.**
+
+1. **`block_id` / `persistent` live on the event base, keyword-only.** Adding them as ordinary
+   dataclass fields would have broken every subclass's field order; `field(..., kw_only=True)` (3.13)
+   keeps `ToolRowEvent("get_event", row)` working. They ride on the wire **only when `block_id` is
+   set** (`AgentEvent._block_fields`), so every pre-R16 frame is byte-identical to yesterday's — which
+   is what makes 「추가만 한다」 literally true rather than approximately.
+2. **The status line's id is the constant `"status"`.** One id per turn *is* the "exactly one alive"
+   rule: the client's keyed reduce (`P9.S8`) replaces rather than appends, and nothing has to
+   remember to clear it. `StatusEvent` validates its `phase` against `events.STATUS_PHASES`.
+3. **`StatusEvent` carries `phase` **and** its sentence.** Build-prompt §1's table names only `phase`,
+   but §0 signs `STATUS_KO` in **`copy.py`** — server-side. This repo's convention is that the
+   agent's Korean is composed once and rendered verbatim (도구 행, 거절 문장), so the event carries
+   the text and `frontend/components/ask/copy.ts` gains **no** status strings. `P9.S8`/`P9.S9` render
+   `frame.data.text` and switch on `phase`. (The reference `r16-parts.babel.js` holds its own
+   `A16_STATUS` map because a mock has no server; that is not a second source of truth.)
+4. **Status phases are a lookup keyed by tool name (`tools.STATUS_PHASE`), and deliberately partial.**
+   `search_events → search`, `get_event → open`; `get_portfolio` / `save_feedback` / `get_contact`
+   change **nothing** — none of D5's five phrases describes them and inventing a sixth is a design
+   change. `read` is the first round, `write` every round after it. The loop's 「no tool name in the
+   control flow」 property is intact: the map only *narrates* a call, nothing branches on it.
+   **Known cosmetic effect:** a multi-round turn shows `write` for a beat before the next tool's phase
+   replaces it, because nobody can know whether a round will call a tool until it does. Honest, no
+   animation, replaced in place — flagged for `P9.S9`/`P9.S11` to look at in the flesh.
+5. **The `DataBlockEvent` producer seam (the question `DECOMP2` left open).** The loop asks
+   `tools.value_rows(payload)` — a sibling of `citations_in` — for the label/value reading of any
+   result, so **no tool name appears in the loop** and `P9.S5`'s calculator can supply rows the same
+   way. Today exactly one payload answers: `get_event`'s `fields` mapping, whose Korean labels are the
+   product's own (`present.FIELD_NAMES_KO`) and whose rows carry the citation triple.
+6. **A row exists only where the server can state the value without inventing a format** —
+   `추후결정` (the product's signed word), `value_display` (figures), a scalar `value`, or a
+   `{start_date, end_date}` period written `start ~ end` (**exactly** what
+   `frontend/components/event/Fields.tsx::Period` already renders — transferred, not invented).
+   **Composite shapes (청약 취급처 목록, 발행가액 산식, 콜·풋 스케줄) get no row**: `Fields.tsx`
+   renders those per shape and a second rendering in Python would fork the product's field surface.
+   → **`P9.S9` inherits this**: if the design wants those rows, the value-composition seam must be
+   decided (server-side vocabulary vs. a typed row schema — the latter is a design change), and until
+   then a filing whose only renderable fields are composite emits **no block at all** (an empty block
+   is never emitted; the wire stays additive).
+7. **A data row's chip is the *same* chip as the prose's** — `CitationGate.cite()` (new public door
+   over `_number_for`) allocates from the one numbering, so 같은 근거 = 같은 번호 (R6-4) holds across
+   프로즈 · 데이터 행 · (later) 계산 입력, and the `CitationEvent` definition is emitted immediately
+   **before** the block that names it (자리표시 칩 금지). **Consequence to know about:** a data-row
+   chip is a chip the reader saw, so it counts in the client's 「근거 N건」 (`Answer.tsx` counts
+   `turn.chips.length`) and lands in `TurnEnd.evidence`/`quotes` and therefore in the stored row.
+   That is exactly what the record signs (fixture ② in `r16-parts.babel.js`: three data rows, prose
+   citing only [1], `foot.n = 3`). **Between now and `P9.S9` those chips are defined but not drawn**,
+   so a turn that reads a filing with several quoted fields shows a 근거 N건 larger than the visible
+   chip count. Transitional, invisible to the operator (the gate opens after `P9.S11`), and it
+   resolves the moment the data rows render — but `P9.S9`/`P9.S11` should confirm it, not rediscover it.
+8. **`TurnEnd.filings`** = distinct 접수번호 whose **contract** a tool returned (`payload["found"] is
+   True`), i.e. filings *read*, not filings *listed* by a search. Server-known, never parsed out of a
+   도구 행 (R16 §1). `P9.S8` reads `data.filings` for D8's 「공시 M건 읽음」.
+9. **Storage is generic, keyed by `block_id`.** `_Released.absorb` keeps any event that is
+   `persistent` and carries a `block_id`, storing `event.frame()` — the exact frame the reader
+   received — in a dict keyed by the id, so a `pending → done` replacement stores **one** block in its
+   final state. `P9.S5` writes no storage code. **Watch out:** giving `ToolRowEvent` a `block_id`
+   later would make tool rows stored automatically; that would be a storage change, so decide it
+   deliberately rather than as a side effect of wanting replacement.
+10. **The column is `conversation_turn.blocks`, nullable and default-free**, added by
+    `schema_sync.ensure_columns` (verified against a live table holding rows: added once, idempotent,
+    no row touched). NULL means both "this turn had no blocks" and "written before R16" — the same
+    reading, honestly. `make stack-up`'s `db-ensure` step runs `ensure_columns`, so the operator's
+    stack picks it up with no reset.
+11. **The ops read side is untouched.** `_turn_row` does **not** serve `blocks`, so R7's row shape and
+    its test are unchanged: the payload is stored (regression item 16 satisfied at the payload level)
+    and *serving* it waits on the operator's answer to the `P9.DECOMP2` Operator Question (a/b/c).
+12. **Refusal vocabulary = 6 values in one order** — `철회 · 확정 전 · 공시에 없음 · 보안 · 계산 요청 ·
+    검증 미통과 폴백` — in `conversationstore.REFUSAL_FAMILIES` and mirrored value-for-value in
+    `ops/copy.ts::REFUSAL_CATEGORIES_KO`. `record_turn`'s error message now says 「six stored
+    families」. The two retired values stay **writable by the API** but nothing writes them: `P9.S4`
+    deletes the 검증 미통과 폴백 producer and `P9.S7` retires 계산 요청 from the prompt/copy.
+13. **`TextEvent.unverified` is a field with no producer yet** — always empty, therefore never on the
+    wire. `P9.S4` fills it (P16 claim-level spans).
+
+**Deviations from the plan's file list** (all inside the slice's own intent, none of them new scope):
+`agent/citations.py` gained the 6-line public `cite()` (the chip numbering has exactly one owner and
+a data row must not open a second one), and `agent/tools.py` gained `ValueRow` + `value_rows()` +
+`STATUS_PHASE` (payload-shape knowledge belongs beside `citations_in`, and keeping it out of
+`loop.py` is what preserves 「no tool name in the control flow」).
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -1539,6 +1629,9 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S2`) `security` — Q-D signed: guard logging = category + 200-char excerpt + session_hash, log-only, no DB; security refusal copy D3 never mentions the check.
 - (`P9.S2`) `api`/`architecture` — event vocabulary extension signed (StatusEvent, DataBlockEvent, CalcBlockEvent, TextEvent.unverified, RefusalEvent 6-family, TurnEnd semantics) + structured-block storage in `record_turn` (contract change, additive).
 - (`P9.DECOMP2`) none — decomposition changed no durable truth; the build slices each append their own note.
+- (`P9.S3`) `api` — the SSE vocabulary landed: every event carries `block_id`/`persistent` (same id = in-place replacement; absent id = today's append), new `status` (transient, phase + its signed sentence) and `data` (rows `{label, value, citation?, reader_input?}`) frames, `text.unverified` spans (field only), `done` gains `filings` (공시 M건 읽음, server-known).
+- (`P9.S3`) `architecture` — `record_turn` stores structured blocks **verbatim as the frames sent** in a new nullable `conversation_turn.blocks` column (landed via `schema_sync.ensure_columns`, no Alembic); `_Released.absorb` is generic over any persistent block keyed by `block_id`, so `P9.S5`'s calc blocks need no second storage change; the transient status line is never stored.
+- (`P9.S3`) `decisions` — refusal vocabulary is now **six values** (`보안` added as a contract before `P9.S6` emits it; `계산 요청`·`검증 미통과 폴백` kept **read-only for past rows**), mirrored in `frontend/components/ops/copy.ts::REFUSAL_CATEGORIES_KO`; the ops panel's row shape is unchanged (blocks are stored, not served — see the `P9.DECOMP2` Operator Question).
 
 ## Operator Questions
 

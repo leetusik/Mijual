@@ -32,6 +32,15 @@ prose *from the frames this module wrote to the wire* — the same strings, in t
 same order, never re-read out of the prose — and it is used **only** when there is
 no terminal. The terminal always wins where it exists.
 
+**3b. The structured blocks — verbatim, and only from the frames.** R16 added
+blocks the prose cannot carry (a 데이터 블록's rows and their 근거; a 계산 블록's
+inputs, expression and result), and its storage contract is that the log keeps
+them **as they were sent**, never paraphrased. :class:`_Released` therefore keeps
+every *persistent* block keyed by its ``block_id`` — so a block replaced in place
+is stored once, in the state the reader ended up looking at — and hands the frames
+to :func:`record_turn`. The transient 진행 표시 line is not one of them and is
+never stored.
+
 **4. The ledger line.** ``TurnEnd.usage`` is rendered to the **server log** and
 nowhere else: recording agent spend is prudent, and adding a row to R7's signed
 정확도·비용 panel would be a design change (`P6` Finding 14).
@@ -66,7 +75,13 @@ from sqlalchemy.orm import Session
 
 from mijual.agent import HistoryTurn, ToolContext, run_turn
 from mijual.agent.client import DEFAULT_MODEL, ModelClient, UsageLedger
-from mijual.agent.events import CitationEvent, RefusalEvent, TextEvent, TurnEnd
+from mijual.agent.events import (
+    AgentEvent,
+    CitationEvent,
+    RefusalEvent,
+    TextEvent,
+    TurnEnd,
+)
 from mijual.web import clock
 from mijual.web.auth import current_account
 from mijual.web.conversationstore import (
@@ -331,6 +346,7 @@ class _Released:
         self._family: str | None = None
         self._evidence: list[str] = []
         self._quotes: list[str] = []
+        self._blocks: dict[str, dict[str, Any]] = {}
         self.terminal: TurnEnd | None = None
 
     def absorb(self, event: object) -> None:
@@ -346,6 +362,15 @@ class _Released:
                 self._evidence.append(event.rcept_no)
             if event.quote is not None and event.quote not in self._quotes:
                 self._quotes.append(event.quote)
+        elif isinstance(event, AgentEvent) and event.persistent and event.block_id:
+            # **Generic on purpose** (R16 §1): any persistent structured block —
+            # a 데이터 블록 today, a 계산 블록 when `P9.S5` lands — is kept as the
+            # exact frame that went to the reader, keyed by its ``block_id`` so a
+            # ``pending`` → ``done`` replacement stores the block **once**, in its
+            # final state, the same way the surface drew it. Nothing here knows
+            # what kind of block it is, so no second storage change is needed for
+            # the next kind.
+            self._blocks[event.block_id] = event.frame()
 
     @property
     def answer(self) -> str:
@@ -370,6 +395,22 @@ class _Released:
         return self.terminal.quotes if self.terminal else tuple(self._quotes)
 
     @property
+    def blocks(self) -> tuple[dict[str, Any], ...]:
+        """구조화 블록 원형 — the frames themselves, in the order they arrived.
+
+        R16 §7 / result.md §3-15: 「프로즈로 환언하지 않는다」. A calculation's audit
+        path — its inputs, each input's 근거, the expression — does not exist in
+        prose, so paraphrasing the block into the answer string *is* losing it.
+        The frame is what the reader received, which makes the stored block and the
+        rendered one the same object rather than two readings of one.
+
+        Unlike the prose, this has no terminal to prefer: a block is only ever
+        known from the frames that were written, so a 중지 mid-turn keeps the blocks
+        the reader had already seen.
+        """
+        return tuple(self._blocks.values())
+
+    @property
     def storable(self) -> bool:
         """A turn is logged when it ended, or when the reader saw something.
 
@@ -378,7 +419,7 @@ class _Released:
         purpose is 품질 점검. Every terminal is stored, ``aborted`` and ``error``
         included — those are the turns worth reading.
         """
-        return self.terminal is not None or bool(self.answer)
+        return self.terminal is not None or bool(self.answer) or bool(self._blocks)
 
     def end(self, *, status: str, reason: str | None, scope: str | None) -> TurnEnd:
         """A terminal for a failure the *transport* hit, in the stream's own shape."""
@@ -545,6 +586,7 @@ class AskTurn:
                     refusal_category=record.refusal_category,
                     evidence=record.evidence,
                     quotes=record.quotes,
+                    blocks=record.blocks,
                 )
             session.commit()
         except Exception:  # noqa: BLE001 — a log write must not raise at the exit

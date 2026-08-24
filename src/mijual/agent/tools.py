@@ -64,10 +64,12 @@ from mijual.web.reads import (
 
 __all__ = [
     "MAX_SEARCH_RESULTS",
+    "STATUS_PHASE",
     "TOOL_NAMES",
     "Citation",
     "ToolResult",
     "UnknownTool",
+    "ValueRow",
     "call_tool",
     "citations_in",
     "fact_rows",
@@ -76,6 +78,7 @@ __all__ = [
     "get_portfolio",
     "save_feedback",
     "search_events",
+    "value_rows",
 ]
 
 #: How many events one search may list. The row states the true count either way
@@ -590,6 +593,21 @@ TOOL_NAMES: tuple[str, ...] = (
     "get_contact",
 )
 
+#: Which 진행 표시 phase a tool call is *in*, for the tools whose work one of R16
+#: D5's five signed phrases actually describes (:data:`mijual.agent.copy.STATUS_KO`).
+#:
+#: Deliberately partial. 내 포트폴리오 읽기, 의견 저장 and 운영자 연락처 are none of
+#: 찾는 중 / 원문 읽는 중 / 계산 중, and the record signs no sixth phrase — so those
+#: calls **change nothing** and the line the turn already carries stays. Mislabelling
+#: them would be inventing copy by misuse; saying nothing is honest and free.
+#:
+#: This is a lookup, never a branch: :func:`mijual.agent.loop.run_turn` reads it to
+#: *narrate* a call, and no control flow anywhere depends on a tool's name.
+STATUS_PHASE: dict[str, str] = {
+    "search_events": "search",
+    "get_event": "open",
+}
+
 
 def call_tool(name: str, ctx: ToolContext, arguments: Mapping[str, Any] | None = None) -> ToolResult:
     """Execute one function call the model asked for.
@@ -623,3 +641,110 @@ def call_tool(name: str, ctx: ToolContext, arguments: Mapping[str, Any] | None =
 def fact_rows(results: Iterable[ToolResult]) -> list[str]:
     """The turn's 도구 행 in call order — what `P6.S5` renders above the answer."""
     return [result.fact_row for result in results]
+
+
+# ---------------------------------------------------------------------------
+# 공시에서 읽은 값 — the label/value reading of a payload (R16 §2.3)
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class ValueRow:
+    """One row of a 데이터 블록, **before** the citation has a reader's number.
+
+    The sibling of :func:`citations_in`: that walk answers 「what may this turn's
+    prose rest on」, this one answers 「which of those values can be *shown* as a
+    labelled line」. Both speak in :class:`Citation` objects, because the reader's
+    chip **number** is the citation gate's to assign (same 근거 = same 번호, R6-4);
+    :func:`mijual.agent.loop.run_turn` resolves each row to
+    :class:`~mijual.agent.events.DataRow` on its way to the wire.
+    """
+
+    label: str
+    value: str
+    citation: Citation | None = None
+    reader_input: bool = False
+
+
+#: A period, as `frontend/components/event/Fields.tsx`'s ``Period`` writes it —
+#: the product's existing convention, transferred rather than invented.
+_PERIOD_KEYS = ("start_date", "end_date")
+
+
+def _stated(node: Mapping[str, Any]) -> str | None:
+    """This field's value **as one string**, or ``None`` if the server cannot say it.
+
+    Four shapes, and no fifth:
+
+    * ``display`` other than ``"value"`` — 추후결정, the product's own signed word
+      for *no date*, which the detail page renders as the badge alone;
+    * a figure's ``value_display`` — the reader's spelling, already computed by
+      :mod:`mijual.agent.figures` (3200 → 3,200);
+    * a scalar ``value`` — an ISO day, a ratio, a 본문 label's own text;
+    * a ``{start_date, end_date}`` period → ``start ~ end``.
+
+    **Everything else is not a row.** A 청약 취급처 list, a 발행가액 산식 or a
+    콜·풋 스케줄 is rendered by ``components/event/Fields.tsx``, per shape, on the
+    detail page — and a second rendering of those shapes in Python would be a fork
+    of the product's field surface. The honest answer is to show what can be shown
+    and leave the rest to the prose that cites it.
+    """
+    display = node.get("display")
+    if isinstance(display, str) and display and display != "value":
+        return display
+    shown = node.get(figures.DISPLAY_KEY)
+    if isinstance(shown, str) and shown:
+        return shown
+    value = node.get("value")
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (str, int, float)):
+        text = str(value).strip()
+        return text or None
+    if isinstance(value, Mapping) and any(key in value for key in _PERIOD_KEYS):
+        start, end = (value.get(key) for key in _PERIOD_KEYS)
+        start = str(start).strip() if isinstance(start, str) else None
+        end = str(end).strip() if isinstance(end, str) else None
+        if start and end and start != end:
+            return f"{start} ~ {end}"
+        return start or end
+    return None
+
+
+def value_rows(payload: Mapping[str, Any]) -> tuple[ValueRow, ...]:
+    """The 라벨/값 rows a tool payload can be **shown** as, in the contract's order.
+
+    Reads the ``fields`` mapping — the gate-passing fields of one event, each with
+    the Korean row label the detail page prints (``korean_name``, from
+    :data:`mijual.present.FIELD_NAMES_KO`) and the citation triple that answers
+    「왜 이 값?」. A field with no Korean label has no row: naming it here would be
+    inventing copy, and an English ``field_key`` on a Korean surface is worse than
+    a missing line.
+
+    A payload with no such mapping — a search, a portfolio, a 0건 miss — has no
+    rows, and an empty block is never emitted (additive on the wire).
+    """
+    fields = payload.get("fields")
+    if not isinstance(fields, Mapping):
+        return ()
+    rows: list[ValueRow] = []
+    for node in fields.values():
+        if not isinstance(node, Mapping):
+            continue
+        label = node.get("korean_name")
+        stated = _stated(node)
+        if not isinstance(label, str) or not label or stated is None:
+            continue
+        rcept_no = node.get("rcept_no")
+        citation = None
+        if isinstance(rcept_no, str) and rcept_no:
+            span = node.get("span")
+            quote = node.get("quote")
+            citation = Citation(
+                rcept_no=rcept_no,
+                quote=quote if isinstance(quote, str) else None,
+                span=(int(span[0]), int(span[1]))
+                if isinstance(span, (list, tuple)) and len(span) == 2
+                else None,
+                field_key=node.get("field_key"),
+            )
+        rows.append(ValueRow(label=label, value=stated, citation=citation))
+    return tuple(rows)

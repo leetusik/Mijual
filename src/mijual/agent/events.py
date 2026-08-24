@@ -24,6 +24,16 @@ not because the surface should style it differently (R6: alert 색·아이콘 �
 *end* a turn; the partial answer above them stands (R6 §SSE: 부분 답변 유지 —
 지우기 금지). There is deliberately no "replace" or "clear" event.
 
+*A block is identified, and a second event with its id replaces it.* R16 §1:
+every structured event carries a turn-stable ``block_id`` and a ``persistent``
+flag, and 「같은 ``block_id``의 후속 이벤트는 추가가 아니라 제자리 교체」 — which is
+what lets a 계산 블록 go ``pending`` → ``done`` without jumping, and the 진행 표시
+line be *replaced* rather than accumulated. An event with **no** ``block_id`` is
+today's append, so the addition is backward compatible (§1 「추가만 한다」).
+``persistent`` says whether the block belongs to the message history: a data or
+calculation block does (the 대화 로그 stores it verbatim — replaying prose alone
+would lose the audit path), a :class:`StatusEvent` does not.
+
 *The terminal carries what persistence needs.* :class:`TurnEnd` holds the released
 prose, the ``kind``, the ``refusal_category``, the 근거 rcept_no 목록 and the 인용
 칩 원문 — exactly :func:`mijual.web.conversationstore.record_turn`'s arguments —
@@ -43,12 +53,16 @@ from typing import Any, ClassVar
 __all__ = [
     "AgentEvent",
     "CitationEvent",
+    "DataBlockEvent",
+    "DataRow",
     "FooterEvent",
     "LinksEvent",
     "RefusalEvent",
+    "StatusEvent",
     "TextEvent",
     "ToolRowEvent",
     "TurnEnd",
+    "STATUS_PHASES",
     "TERMINAL_STATUSES",
 ]
 
@@ -58,16 +72,42 @@ __all__ = [
 #: partial answer above them is real and must be storable (R6 §SSE).
 TERMINAL_STATUSES = ("done", "aborted", "error")
 
+#: The five phases a :class:`StatusEvent` may report, R16 D5. The **sentence** for
+#: each is signed copy and lives in :data:`mijual.agent.copy.STATUS_KO`; this is
+#: the vocabulary the surface switches on.
+STATUS_PHASES = ("read", "search", "open", "calc", "write")
+
 
 @dataclass(frozen=True)
 class AgentEvent:
-    """One thing the reader's surface is told. Serializable by construction."""
+    """One thing the reader's surface is told. Serializable by construction.
+
+    ``block_id`` and ``persistent`` are the two fields R16 §1 puts on *every*
+    structured event, and both are keyword-only so no subclass's own field order
+    changes. ``block_id is None`` means "append me", which is what every event
+    before R16 did and still does — the id is the opt-in to **replacement**, and
+    it rides on the wire only when it exists.
+    """
 
     #: The event name the transport puts in the SSE ``event:`` line.
     EVENT: ClassVar[str] = "event"
 
+    #: Turn-stable id of the block this event *is*. A second event with the same
+    #: id replaces it in place; ``None`` appends.
+    block_id: str | None = field(default=None, kw_only=True)
+    #: Does this block belong to the stored turn? ``False`` = transient: sent to
+    #: the reader, never written to the 대화 로그 (R16: 진행 표시 한 줄뿐).
+    persistent: bool = field(default=True, kw_only=True)
+
     def payload(self) -> dict[str, Any]:
         raise NotImplementedError
+
+    def _block_fields(self, out: dict[str, Any]) -> dict[str, Any]:
+        """Add the block identity — **only when there is one** (additive on the wire)."""
+        if self.block_id is not None:
+            out["block_id"] = self.block_id
+            out["persistent"] = self.persistent
+        return out
 
     @property
     def event(self) -> str:
@@ -94,7 +134,7 @@ class ToolRowEvent(AgentEvent):
     ok: bool = True
 
     def payload(self) -> dict[str, Any]:
-        return {"tool": self.tool, "row": self.row, "ok": self.ok}
+        return self._block_fields({"tool": self.tool, "row": self.row, "ok": self.ok})
 
 
 @dataclass(frozen=True)
@@ -133,7 +173,7 @@ class CitationEvent(AgentEvent):
             out["span"] = list(self.span)
         if self.field_key is not None:
             out["field_key"] = self.field_key
-        return out
+        return self._block_fields(out)
 
 
 @dataclass(frozen=True)
@@ -148,25 +188,39 @@ class TextEvent(AgentEvent):
 
     ``citations`` are display numbers whose :class:`CitationEvent` definitions
     were emitted immediately before this event.
+
+    ``unverified`` is R16 §2.5 / Q-B: character offsets, **within this sentence**,
+    of a filing-specific figure no tool returned. The surface draws the 「미확인」
+    marker on exactly those spans; the sentence itself stands (strip-don't-drop —
+    the turn is never replaced by a fixed one). The field exists here from `P9.S3`
+    so the vocabulary is one contract; `P9.S4` is what fills it, and until then it
+    is always empty and therefore never on the wire.
     """
 
     EVENT: ClassVar[str] = "text"
 
     text: str
     citations: tuple[int, ...] = ()
+    unverified: tuple[tuple[int, int], ...] = ()
 
     def payload(self) -> dict[str, Any]:
-        return {"text": self.text, "citations": list(self.citations)}
+        out: dict[str, Any] = {"text": self.text, "citations": list(self.citations)}
+        if self.unverified:
+            out["unverified"] = [list(span) for span in self.unverified]
+        return self._block_fields(out)
 
 
 @dataclass(frozen=True)
 class RefusalEvent(AgentEvent):
     """② of R6's 3-part refusal: the signed family sentence, verbatim.
 
-    ``family`` is one of the five signed Korean categories
+    ``family`` is one of the **six** stored Korean categories
     (:data:`mijual.web.conversationstore.REFUSAL_FAMILIES`) — the most specific
     thing the surface may say, because a reader payload carries no gate reason
-    code and R6 forbids per-reason-code wording.
+    code and R6 forbids per-reason-code wording. R16 re-signed that vocabulary:
+    four families are live (철회 · 확정 전 · 공시에 없음 · 보안) and two — 계산 요청
+    and 검증 미통과 폴백 — stay in the whitelist **read-only, for past rows**, so a
+    turn may still be *found* by them and none may be newly written.
 
     The surface renders it as **ordinary prose** in body ink: 오류 상태가 아님,
     alert 색·아이콘 금지.
@@ -178,7 +232,94 @@ class RefusalEvent(AgentEvent):
     text: str
 
     def payload(self) -> dict[str, Any]:
-        return {"family": self.family, "text": self.text}
+        return self._block_fields({"family": self.family, "text": self.text})
+
+
+@dataclass(frozen=True)
+class StatusEvent(AgentEvent):
+    """진행 표시 — the one **transient** block: what the turn is doing right now.
+
+    R16 D5 signs five phases and five sentences, and the sentence travels with the
+    phase for the same reason a 도구 행 does: the agent's Korean is composed
+    server-side (:data:`mijual.agent.copy.STATUS_KO`) and rendered **verbatim**, so
+    the signed strings live in one file rather than two.
+
+    Three properties, all of them structural rather than stylistic:
+
+    * **exactly one is alive.** Every status of a turn carries the same
+      ``block_id``, so each new phase *replaces* the line instead of adding one.
+    * **it is never stored.** ``persistent=False``: the 대화 로그 replays the turn,
+      and a 찾는 중 line replayed a week later is noise, not evidence.
+    * **it dies at the first sentence.** The surface drops it when prose arrives;
+      the loop stops emitting once anything has been released, so the two agree.
+
+    R16 §2.1 is explicit that the surface draws it with **no animation** — the
+    spinner/typing-dot ban is not superseded.
+    """
+
+    EVENT: ClassVar[str] = "status"
+
+    phase: str
+    text: str
+    block_id: str | None = field(default="status", kw_only=True)
+    persistent: bool = field(default=False, kw_only=True)
+
+    def __post_init__(self) -> None:
+        if self.phase not in STATUS_PHASES:
+            raise ValueError(f"phase must be one of {STATUS_PHASES}, not {self.phase!r}")
+
+    def payload(self) -> dict[str, Any]:
+        return self._block_fields({"phase": self.phase, "text": self.text})
+
+
+@dataclass(frozen=True)
+class DataRow:
+    """One 라벨/값 pair — the row schema R16 §2.3 fixes, shared with the 계산 블록.
+
+    ``value`` is a **string the server states**, never a shape the surface has to
+    know how to render: the block is 「공시에서 읽은 값」, and a value the server
+    cannot state without inventing a format is not a row (see
+    :func:`mijual.agent.tools.value_rows`).
+
+    ``citation`` is the reader's chip **number** (the same number the same 근거
+    carries in prose — R6-4), or ``None``. ``reader_input`` marks a value the
+    reader supplied, which the surface labels 「입력」 and gives no chip.
+    """
+
+    label: str
+    value: str
+    citation: int | None = None
+    reader_input: bool = False
+
+    def payload(self) -> dict[str, Any]:
+        out: dict[str, Any] = {"label": self.label, "value": self.value}
+        if self.citation is not None:
+            out["citation"] = self.citation
+        if self.reader_input:
+            out["reader_input"] = True
+        return out
+
+
+@dataclass(frozen=True)
+class DataBlockEvent(AgentEvent):
+    """공시에서 읽은 값 — label/value rows, each with its own 근거 (R16 §2.3).
+
+    Persistent: the 대화 로그 stores the block **verbatim**, because the rows carry
+    what prose does not (which value, from which filing, under which label). The
+    heading is the surface's ``DATA_HEADING`` unless the server sends a ``title``;
+    ``None`` is the ordinary case and means "use the signed default".
+    """
+
+    EVENT: ClassVar[str] = "data"
+
+    rows: tuple[DataRow, ...] = ()
+    title: str | None = None
+
+    def payload(self) -> dict[str, Any]:
+        out: dict[str, Any] = {"rows": [row.payload() for row in self.rows]}
+        if self.title is not None:
+            out["title"] = self.title
+        return self._block_fields(out)
 
 
 @dataclass(frozen=True)
@@ -195,7 +336,7 @@ class LinksEvent(AgentEvent):
     links: tuple[dict[str, Any], ...] = ()
 
     def payload(self) -> dict[str, Any]:
-        return {"links": [dict(link) for link in self.links]}
+        return self._block_fields({"links": [dict(link) for link in self.links]})
 
 
 @dataclass(frozen=True)
@@ -219,12 +360,14 @@ class FooterEvent(AgentEvent):
         return len(self.evidence)
 
     def payload(self) -> dict[str, Any]:
-        return {
-            "count": self.count,
-            "evidence": list(self.evidence),
-            "generated_at": self.generated_at,
-            "links": [dict(link) for link in self.links],
-        }
+        return self._block_fields(
+            {
+                "count": self.count,
+                "evidence": list(self.evidence),
+                "generated_at": self.generated_at,
+                "links": [dict(link) for link in self.links],
+            }
+        )
 
 
 @dataclass(frozen=True)
@@ -243,9 +386,17 @@ class TurnEnd(AgentEvent):
     everything the tools returned, so the log replays the answer rather than the
     research.
 
-    ``blocked`` counts sentences the citation gate refused to release. It is not
-    an error; it is the gate working, and it is on the terminal so an operator can
-    see the rate rather than infer it from prose.
+    ``blocked`` counts **markers the gate removed**, not sentences it dropped
+    (R16 §1: 「삭제된 문장 수가 아니라 제거된 마커 수」). Under strip-don't-drop the
+    prose survives and only an unresolvable marker is taken out, so the number is
+    a signal about the model's citing rather than about what the reader lost. It
+    still rides the terminal so an operator sees the rate rather than infers it.
+    (`P9.S3` re-documents it; `P9.S4` is what makes the counter count markers.)
+
+    ``filings`` is 「공시 M건 읽음」's M — how many **distinct 접수번호** this turn
+    actually read. The server knows it because a tool returned each filing's
+    contract, and the surface must never parse it back out of the 도구 행 strings
+    (R16 §1).
     """
 
     EVENT: ClassVar[str] = "done"
@@ -258,6 +409,7 @@ class TurnEnd(AgentEvent):
     evidence: tuple[str, ...] = ()
     quotes: tuple[str, ...] = ()
     blocked: int = 0
+    filings: int = 0
     rounds: int = 0
     tool_calls: int = 0
     #: Why an ``aborted`` / ``error`` turn stopped — structural, never key material.
@@ -277,6 +429,7 @@ class TurnEnd(AgentEvent):
             "evidence": list(self.evidence),
             "quotes": list(self.quotes),
             "blocked": self.blocked,
+            "filings": self.filings,
             "rounds": self.rounds,
             "tool_calls": self.tool_calls,
             "usage": dict(self.usage),

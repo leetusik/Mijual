@@ -34,9 +34,11 @@ from mijual.agent.client import (
 )
 from mijual.agent.events import (
     CitationEvent,
+    DataBlockEvent,
     FooterEvent,
     LinksEvent,
     RefusalEvent,
+    StatusEvent,
     TextEvent,
     ToolRowEvent,
     TurnEnd,
@@ -137,6 +139,38 @@ def test_the_model_chooses_the_tools_and_chains_rounds_until_it_can_answer(ctx) 
     assert end.usage["calls"] == 3 and end.usage["thinking_levels"] == ["LOW"] * 3
     assert end.usage["cost_usd_estimate"] > 0  # ▷ estimate, never a billed figure
     assert of(events, FooterEvent)[0].count == 1
+    # 공시 M건 읽음 (R16 D8): the search *listed* two events, the turn **read** one —
+    # a server-known number, never parsed back out of a 도구 행.
+    assert end.filings == 1
+
+
+def test_the_status_line_narrates_the_turn_and_the_data_block_carries_its_근거(ctx) -> None:
+    """R16 §1/§2.1/§2.3: one transient line, replaced — and 공시에서 읽은 값 rows."""
+    model = ScriptedModel(
+        calls("search_events", query="계양전기"),
+        calls("get_event", rcept_no=R1_RCEPT),
+        says(f"공시 원문은 「{QUOTE}」입니다[[cite:c3]]."),
+    )
+    events = list(run_turn(ctx, "계양전기 증서 매매기간요?", client=model))
+
+    status = of(events, StatusEvent)
+    # 항상 하나 (one id = replacement, never accumulation), transient, and the last
+    # one is emitted **before** the first sentence — nothing narrates over prose.
+    assert [event.phase for event in status] == ["read", "search", "write", "open", "write"]
+    assert {event.block_id for event in status} == {"status"}
+    assert not any(event.persistent for event in status)
+    assert events.index(status[-1]) < events.index(of(events, TextEvent)[0])
+
+    (block,) = of(events, DataBlockEvent)
+    assert block.persistent and block.block_id == "data-1" and block.title is None
+    (row,) = block.rows
+    # The label is the field's own Korean name and the value is stated as one
+    # string (a period as `Fields.tsx`'s `Period` writes it) — never a shape the
+    # surface has to know how to render.
+    assert row.label == "신주인수권증서 상장·매매기간" and " ~ " in row.value
+    # 같은 근거 = 같은 번호: the row and the sentence carry one chip, defined once.
+    assert row.citation == 1 and of(events, TextEvent)[0].citations == (1,)
+    assert len(of(events, CitationEvent)) == 1
 
 
 def test_an_unverified_claim_cannot_enter_the_stream(ctx) -> None:
