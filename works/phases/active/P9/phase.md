@@ -1694,6 +1694,110 @@ Nothing is dropped, no turn is replaced, and `loop._finish` selects no refusal f
     `tests/test_web_ask.py`), so today's `lib/ask.ts` and both views render a turn exactly as
     before. The 「미확인」 marker itself is `P9.S9`'s to draw; until then the span is data.
 
+### P9.S5 — the calculator landed (2026-08-25)
+
+**What is now on the wire** (a real turn, `get_event` → `calculate` → answer, as the suite drives it):
+
+```
+session · status(read) · status(open) · tool_row · citation · data · status(write)
+        · status(calc) · calc(pending) · tool_row · calc(done) · text · footer · done
+```
+
+The calculation block reaches the reader **before** its own 도구 행 and **before** any number exists.
+
+**Decisions this slice made, and why — later slices inherit every one of them.**
+
+1. **One tool, `calculate`, whose `op` enum is the namespace** (S1B: 「one namespaced tool with an
+   `op` enum」). The other five names are flat verbs, so a prefixed sixth would have been the odd one;
+   what is namespaced is the *operations*, and the enum is what makes an invalid operation
+   unrepresentable rather than merely discouraged. `TOOL_SPECS` still imports nothing, so the enum is
+   written there as data and a test pins it to `tools.CALC_OPS`.
+2. **Five named ops, and the exclusions are the decision.** Live: `allotted_shares` ·
+   `excess_subscription_cap` · `lapsed_warrants` · `d_day` · `lockup_release_date`. **Out on purpose:**
+   `warrant_intrinsic_value`, `warrant_intrinsic_value_floor`, `lapsed_warrant_value` and
+   `implied_reference_price` are the ▷ **추정** family (`present/money.py`, `mijual.estimate`) — R16
+   §2.5 closes the marker family at **three, exclusive**, so a ▷ value returned as a 「계산」 result
+   would quietly lose its 추정 mark, and naming a fourth marker is a design change. `window_state`
+   returns an English state token the record signs no Korean for; `add_months`'s product instance
+   **is** `lockup_release_date`. The 식 계산 hatch — labelled as arithmetic — is where such a
+   multiplication honestly lives until a round decides otherwise (→ Operator Questions).
+3. **The inputs *are* the arguments.** One list, drawn as the block's rows and consumed as the op's
+   parameters: `{key, label, value, display?, cite?}`. A named op must receive **exactly** its own
+   parameters — no extra (an argument the function never takes would be drawn as an input that did not
+   enter the number) and none missing (the server fills in no default: a value nobody stated would be
+   drawn as if the reader had given it). That is why 「블록은 도구 호출 시점에 입력만이라도 먼저
+   나타난다」 costs no second description of the call.
+4. **`reader_input` is not a flag the model sets — it is the *absence* of a `cite`.** 공시에서 온 값은
+   그 결과의 참조 id(`c2`)를 달고 오고, 독자가 준 값은 아무것도 달지 않는다. `CitationGate.cite_ref()`
+   (new public door beside `cite()`) resolves the id, so a 계산 입력's chip is the **same number** the
+   prose uses for that filing (같은 근거 = 같은 번호, R6-4). An id that names nothing is **not** a chip
+   and is counted in `gate.blocked`, exactly as an unresolvable marker is; the row then reads as the
+   reader's — the conservative direction, because the one thing that must never happen is an invented
+   number wearing a 근거 칩.
+5. **The heading's name is the server's for a verified calculation, the model's only for `expr`.**
+   `copy.CALC_NAMES_KO` maps each op to the product's own existing word (배정 신주 · 초과청약 한도 ·
+   소멸 증서 · D-day · 전매제한 해제일 — each traced to its source in the constant's docstring), so
+   「검증된 계산 · {이름}」 always names **the operation that actually ran**; the model cannot mislabel
+   one. 식 계산 has no operation to name, so there the model supplies it.
+6. **The 식 줄 is display, and it cannot drift.** Each op declares a `formula` template over its own
+   parameter keys (`"{allotted} × {excess_ratio}"`), filled with the inputs' **displays** and closed
+   with ` = {result}` — R4 already writes a formula that way (「= {n}주 × 배정비율 {ratio}」) and the
+   R16 fixture reads 「1,000주 × 0.2주 = 200주」, which is what this composes byte for byte. A test pins
+   every template's placeholders to the function's parameters, so the line can never describe an
+   arithmetic the function does not do.
+7. **Errors: one reader-visible kind, one model-visible kind.** A call that is not a calculation at all
+   (unknown op, missing parameter, no inputs) is **never drawn** — no block, `계산 → 0건`, and English
+   guidance the model can correct itself with. A **drawn** calculation that cannot run settles the
+   block as `error`, and its `why` is the input that stopped it, **in its own label and display**
+   (`확정 발행가액 미공시`) — no Korean sentence is invented for it, and the record's own error row
+   `계산 → 확정 발행가액 미공시 · 0건` comes out of that composition exactly. The signed
+   「계산할 수 없습니다 — {이유}」 wrapper is the surface's (`P9.S8`/`P9.S9`).
+8. **`expr` is an AST node whitelist over `Decimal`, never `eval`.** `ast.parse(mode="eval")` then a
+   recursive walk that accepts **only** `Expression` · `Constant`(finite int/float) · `Name`(bound to a
+   declared input) · `UnaryOp`(±) · `BinOp`(+ − × ÷) — every other node shape is refused **before its
+   operands are read**, so there is no call, attribute, subscript, comprehension or `**` to reason
+   about. Two ceilings (160 chars, 48 nodes) keep a whitelisted expression a *small* one, non-finite
+   constants and results are refused, and division by zero is guidance. Covered by a test that walks
+   `__import__(…)`, `a.__class__`, `a ** 999999`, an undeclared name, `a / 0`, a comprehension and
+   `open(…)`.
+9. **Budget-exempt, without making the terminal lie.** `tools.BUDGET_EXEMPT` is a property declared
+   beside the tools (so no tool **name** enters the loop's control flow, the S3 rule), and `_Turn`
+   gained a second counter: `tool_calls` still reports **every** tool that ran (the terminal, the ▷
+   ledger, 도구 N번), while `billed` is what the ceiling counts. **Known residual for `P9.S7`** (which
+   owns budgets): a single round containing many calculations is bounded only by `max_rounds` and by
+   what the model actually emits — zero-I/O, but not zero blocks.
+10. **A computed figure is traceable by construction — `P9.S4`'s deliberate gap closes here.** The
+    result node is **figure-shaped** (`value` + `estimated: False`), so `ToolResult.__post_init__`
+    gives it `value_display` and `CitationGate.learn` harvests it into `_values` with the inputs. A
+    sentence restating 「200주」 therefore carries **no 「미확인」 span**, and the reader's own 「1,000주」
+    stops being marked the moment it goes through the calculator — exactly the resolution `P9.S4`
+    note 4 predicted. Nothing about the check was weakened to get there.
+11. **The result is not a 근거.** The calculation carries no `Citation`, so it adds nothing to
+    `gate.evidence`, the footer, `TurnEnd.evidence` or the stored row — 근거 N건 stays 칩의 수 (§2.4).
+    A calc **input**'s chip does count, and should: it is a filing value the reader saw.
+12. **Storage needed no code.** `_Released.absorb` was made generic by `P9.S3`, so the `pending` →
+    `done` pair stores **one** block on one id, in its final state, as the frame the reader received.
+    Asserted in `tests/test_web_ask.py`.
+13. **The model authors the input `label`/`display` (and the `expr` name).** Deliberate, and the
+    record's own design: 계산 입력 rows are by definition either the filing's field name or the
+    reader's own phrasing, neither of which exists server-side, and the audit path is the **chip**
+    rather than the label. The server still owns every *signed* string (row format, op names, units).
+14. **Interim mismatches `P9.S7` closes** (the prompt stays more conservative than the tools, the safe
+    direction): `instructions._NEVER_COMPUTE` still tells the model a computed number is discarded, and
+    `declarations._NEVER_COMPUTE` — the blurb on the **other five** tools — still ends 「never
+    recompute, re-derive or do arithmetic on it」, which now reads as a ban on feeding those values to
+    the calculator. Left untouched on purpose: S1 recorded that the never-compute statements 「move
+    together or not at all」 and `P9.S7` owns that pass. The calculator's **own** description states the
+    boundary (arithmetic happens in the tool, never in prose), so the tool is usable in the meantime.
+
+**Deviations from the plan's file list** (all inside the slice's own intent): the plan names
+`declarations.py`, `tools.py`, `loop.py`; landing them also needed `events.py` (`CalcBlockEvent` +
+`CALC_MODES`/`CALC_STATES`), `citations.py` (the 6-line `cite_ref()` — the chip numbering keeps exactly
+one owner), `copy.py` (the three composed 도구 행 formats + `CALC_NAMES_KO`/`CALC_UNITS_KO`) and
+`__init__.py` (the export and the 「five tools」 line). `declarations._schema` also gained `enum`/`items`
+support — without it the enum and the structured `inputs` array would have been silently dropped by
+the SDK schema builder.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -1712,6 +1816,11 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S4`) `backend` — the citation gate **strips instead of dropping**: markers are removed (resolvable ones become chips), an uncited sentence ships, an untraceable 공시 figure becomes a 「미확인」 span, a quote no tool returned loses its quotation marks (인용문 재구성 금지, not superseded), `CitationGate.blocked` is a **count of unhonoured markers**, and `loop._finish` no longer states 검증 미통과 폴백 — the loop now selects no refusal family at all.
 - (`P9.S4`) `api` — `text.unverified` now **rides the wire** (character offsets within the sentence, unit included; absent when empty) and `done.blocked` carries removed-marker counts; a `done` turn that called **no tool** emits **no `footer` frame** (R16 §4 check 1).
 - (`P9.S4`) `decisions` — R6's generation-boundary *judgement* is superseded by R16 strip-don't-drop (the boundary itself stays); 검증 미통과 폴백 is retired as a **producer** (`copy.RETIRED_FAMILIES` splits the producer side from the six-value stored whitelist, which keeps all six for past rows); 「미확인」 is claim-level (Q-B), marks 공시 figure shapes only, and a reader-typed figure is deliberately untraced until the calculator returns it.
+- (`P9.S5`) `api` — new `calc` frame (`block_id`/`persistent`, `mode: verified|expr`, `name`, `inputs` [DataRow row schema], `expr?`, `result?`, `state: pending|done|error`, `why?`), emitted **at call time** with its inputs and replaced in place on the same `block_id`; a calculation result is never counted in 근거 N건, and the stored `blocks` column keeps the block in its final state.
+- (`P9.S5`) `architecture` — the agent has a **sixth tool**, `calculate`: one tool whose `op` enum is a window onto five `mijual.calc` primitives (배정 신주 · 초과청약 한도 · 소멸 증서 · D-day · 전매제한 해제일 — the ▷ 추정 family deliberately excluded) plus an `expr` escape hatch; it is **budget-exempt** (zero I/O, counted by a separate `billed` counter so the terminal still reports every tool that ran), the loop draws its block before the call from `tools.calc_plan` and settles it from `tools.calc_outcome` (still no tool name in the control flow), and `mijual.calc` remains the LLM-free home of the product's money math.
+- (`P9.S5`) `security` — the calculator's escape hatch evaluates model-authored arithmetic through an **AST node whitelist over `Decimal`** (`ast.parse(mode="eval")`; only Expression/Constant/Name/UnaryOp/BinOp with + − × ÷; bounded at 160 chars and 48 nodes; non-finite values and division by zero refused) — **never `eval`**, and `ast.literal_eval` is not an arithmetic evaluator. A `Name` resolves only to an input the model declared, and a citation id that names nothing is never rendered as a 근거 칩 (it is counted in `TurnEnd.blocked` instead).
+- (`P9.S5`) `decisions` — R16's never-compute supersession lands: the agent may derive a number **only** through the auditable calculator, 「검증된 계산」(제품의 검증된 연산) and 「식 계산」(산술) are never rendered identically, a computed figure enters the turn's traceable values so restating it in prose is no longer marked 「미확인」 (`P9.S4`'s deliberate gap), a calculation input's chip counts as 근거 while the result does not, and the heading of a verified calculation is **server-named** so it always names the operation that ran.
+
 
 ## Operator Questions
 
@@ -1801,6 +1910,25 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   the `P9.DECOMP2` entry above already asks about data and calculation blocks. Is 품질 점검 fine with
   「the answer as prose」 (today), or does an unverified claim need to be reviewable as such? Only the
   operator can weigh it — the same trade as (a)/(b)/(c) above, and answerable together with it.
+
+- **(`P9.S5`) Should the ▷ 추정 calculations be reader-facing, and under which marker?**
+  `mijual.calc` holds four more primitives the calculator does **not** expose —
+  `warrant_intrinsic_value`, `warrant_intrinsic_value_floor`, `lapsed_warrant_value` and
+  `implied_reference_price` — because the product marks their values ▷ 「추정」 while R16 §2.5 closes
+  the marker family at three **exclusive** markers (추정 · 계산 · 미확인). A 증서 이론가치 returned as a
+  「계산」 result would silently lose its 추정 mark, and 「계산이면서 추정」 has no signed rendering. The
+  reader can still reach the same multiplication through 식 계산, labelled as arithmetic. Keep it that
+  way, or open a round for a 추정 계산 rendering? Only the operator (with the design) can decide
+  whether 「내 증서는 얼마어치인가」 belongs in the assistant at all.
+
+- **(`P9.S5`) Two small readings the record does not settle, both visible in the flesh.**
+  (a) **Flooring is silent in the 식 줄.** 배정 신주 and 초과청약 한도 floor (단수주 절사), so
+  「1,000주 × 0.2314082845 = 231주」 is exact but does not say the 0.4 share was dropped; R4's own
+  캡션 says 「1주 미만 버림」, but that is R4's copy on R4's surface and R16 signs no such phrase for the
+  계산 블록. (b) **식 계산 results carry no unit** — 「200주 × 3,200원 = 640,000」 — because a unit on
+  arithmetic would be the server asserting what the arithmetic *meant*, and the alternative is letting
+  the model write one. Both are worth a look during the acceptance walkthrough; either fix is new
+  signed copy, i.e. a design round.
 
 ## Constraints
 

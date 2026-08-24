@@ -52,6 +52,7 @@ from typing import Any, ClassVar
 
 __all__ = [
     "AgentEvent",
+    "CalcBlockEvent",
     "CitationEvent",
     "DataBlockEvent",
     "DataRow",
@@ -62,6 +63,8 @@ __all__ = [
     "TextEvent",
     "ToolRowEvent",
     "TurnEnd",
+    "CALC_MODES",
+    "CALC_STATES",
     "STATUS_PHASES",
     "TERMINAL_STATUSES",
 ]
@@ -76,6 +79,17 @@ TERMINAL_STATUSES = ("done", "aborted", "error")
 #: each is signed copy and lives in :data:`mijual.agent.copy.STATUS_KO`; this is
 #: the vocabulary the surface switches on.
 STATUS_PHASES = ("read", "search", "open", "calc", "write")
+
+#: What a :class:`CalcBlockEvent` computed, R16 §2.4 / D6. ``verified`` is a named
+#: :mod:`mijual.calc` operation — the product's own money math — and ``expr`` is the
+#: escape hatch's arithmetic. The surface heads them with **different words**
+#: (검증된 계산 / 식 계산) because rendering them identically launders arithmetic
+#: into product truth (result.md §3-7).
+CALC_MODES = ("verified", "expr")
+
+#: A calculation's lifecycle on one ``block_id``: it appears at call time with its
+#: inputs already drawn and is **replaced in place** by its outcome (R16 §2.4).
+CALC_STATES = ("pending", "done", "error")
 
 
 @dataclass(frozen=True)
@@ -322,6 +336,64 @@ class DataBlockEvent(AgentEvent):
         out: dict[str, Any] = {"rows": [row.payload() for row in self.rows]}
         if self.title is not None:
             out["title"] = self.title
+        return self._block_fields(out)
+
+
+@dataclass(frozen=True)
+class CalcBlockEvent(AgentEvent):
+    """계산 블록 — 입력 · 식 · 결과, R16's headline element (§2.4, D6).
+
+    **Auditability is half inputs, half result**, so the block is emitted at the
+    moment the tool is called, carrying the inputs the model handed it and
+    ``state="pending"``; the same ``block_id`` arrives again with ``done`` or
+    ``error`` and *replaces* it, which is what keeps the block from jumping
+    (§4 check 5). Nothing is retracted: a replacement is the same block, later.
+
+    ``mode`` is the one thing that must never be rendered identically
+    (:data:`CALC_MODES`): a ``verified`` result is what :mod:`mijual.calc` — the
+    product's own money math — computed, and an ``expr`` result is what a whitelisted
+    arithmetic expression evaluated. Both are auditable; only the first is *product
+    truth*, and the heading's single word is what keeps them apart.
+
+    ``inputs`` reuse :class:`DataRow` exactly (§2.4: 같은 행 스키마): a value the
+    reader supplied carries ``reader_input`` (the 「입력」 marker, no chip) and a
+    value read from a filing carries its citation **number**, from the same
+    numbering the prose uses (:meth:`~mijual.agent.citations.CitationGate.cite`).
+
+    ``result`` is the reader's spelling of the computed value, unit included, and
+    the surface marks it 「계산」. It is **not** counted in 근거 N건 (§2.4): a
+    calculation is not a filing, and the 근거 count is the chips'.
+
+    ``why`` is the guidance an ``error`` carries — data, never a traceback; the
+    signed 「계산할 수 없습니다 — {이유}」 sentence is composed by the surface.
+    """
+
+    EVENT: ClassVar[str] = "calc"
+
+    mode: str = "verified"
+    name: str = ""
+    inputs: tuple[DataRow, ...] = ()
+    expr: str | None = None
+    result: str | None = None
+    state: str = "pending"
+    why: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.mode not in CALC_MODES:
+            raise ValueError(f"mode must be one of {CALC_MODES}, not {self.mode!r}")
+        if self.state not in CALC_STATES:
+            raise ValueError(f"state must be one of {CALC_STATES}, not {self.state!r}")
+
+    def payload(self) -> dict[str, Any]:
+        out: dict[str, Any] = {
+            "mode": self.mode,
+            "name": self.name,
+            "inputs": [row.payload() for row in self.inputs],
+            "state": self.state,
+        }
+        for key, value in (("expr", self.expr), ("result", self.result), ("why", self.why)):
+            if value is not None:
+                out[key] = value
         return self._block_fields(out)
 
 

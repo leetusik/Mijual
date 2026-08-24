@@ -28,6 +28,11 @@ from __future__ import annotations
 __all__ = [
     "AGENT_INTRO_KO",
     "BOARD_POINTER_KO",
+    "CALC_MISS_ROW",
+    "CALC_NAMES_KO",
+    "CALC_NONE_ROW",
+    "CALC_ROW",
+    "CALC_UNITS_KO",
     "CONTACT_ROW",
     "CONTACT_UNSET_ROW",
     "EVENT_MISS_ROW",
@@ -237,6 +242,61 @@ RIGHTS_TOOL_LABEL_KO: dict[str, str] = {
     "R1": "① 유상증자",
     "R2": "② 전환사채",
     "R3": "③ 주식매수청구권",
+}
+
+
+#: 계산, in the same ``{도구} → {결과}`` grammar as every other row — transcribed
+#: from the round's own reference implementation
+#: (``rounds/16-smart-assistant/output/r16-parts.babel.js``:
+#: ``계산 → 초과청약 한도 · 1,000주 × 0.2주 = 200주`` and
+#: ``계산 → 확정 발행가액 미공시 · 0건``). 「계산」 is R16 D6's own word (진행 줄
+#: 「계산 중」, 결과 마커 「계산」, 머리말 「검증된 계산」/「식 계산」) and 「0건」 is the
+#: count idiom :data:`EVENT_MISS_ROW` already writes, so neither row coins a word.
+#:
+#: Three rows, because a calculation fails in two different places: ``CALC_ROW``
+#: when it computed, ``CALC_MISS_ROW`` when a **drawn** calculation could not (the
+#: reason names the input that stopped it, in its own label and value — no sentence
+#: is invented for it), and ``CALC_NONE_ROW`` when the call was never a drawable
+#: calculation at all, which is the model's mistake and carries no reason the
+#: reader could act on.
+CALC_ROW = "계산 → {name} · {expr}"
+CALC_MISS_ROW = "계산 → {why} · 0건"
+CALC_NONE_ROW = "계산 → 0건"
+
+#: The 계산 블록 머리말's name for each **named** operation — 「검증된 계산 · {이름}」.
+#: Every one of them is the product's own existing word, not a coined one, and the
+#: server (never the model) supplies it: the heading of a verified calculation must
+#: name the operation that actually ran.
+#:
+#: * 배정 신주 — R4's own caption label (``frontend/components/lookup/copy.ts``:
+#:   「배정 {k}주 = {n}주 × 배정비율 {ratio}」);
+#: * 초과청약 한도 — :func:`mijual.calc.excess_subscription_cap`'s own docstring
+#:   (「§7 #4's arithmetic: 초과청약 한도 = 배정주식수 × 초과청약비율」);
+#: * 소멸 증서 — :mod:`mijual.present.summary`'s own words (「소멸 증서 and 발행 증서
+#:   are cited counts」), R4 writes the count 「발행 − 청약 = 소멸 {k}주」;
+#: * D-day — the board's own vocabulary (:attr:`mijual.calc.DDay.label`), not Korean
+#:   at all;
+#: * 전매제한 해제일 — :func:`mijual.calc.lockup_release_date`'s own docstring, and
+#:   :data:`mijual.present.FIELD_NAMES_KO`'s 「보호예수 / 전매제한 해제일」.
+CALC_NAMES_KO: dict[str, str] = {
+    "allotted_shares": "배정 신주",
+    "excess_subscription_cap": "초과청약 한도",
+    "lapsed_warrants": "소멸 증서",
+    "d_day": "D-day",
+    "lockup_release_date": "전매제한 해제일",
+}
+
+#: The unit each named operation's **result** is read in. 「주」 is the product's own
+#: share unit wherever it counts one (R4: 「+{k}주」, 「발행 − 청약 = 소멸 {k}주」; R16's
+#: own calculation fixture reads 「200주」), and a date or a D-day label carries none.
+#: The escape hatch has no entry here at all: 식 계산 returns arithmetic, and a unit
+#: on it would be the server asserting what the arithmetic *meant*.
+CALC_UNITS_KO: dict[str, str] = {
+    "allotted_shares": "주",
+    "excess_subscription_cap": "주",
+    "lapsed_warrants": "주",
+    "d_day": "",
+    "lockup_release_date": "",
 }
 
 

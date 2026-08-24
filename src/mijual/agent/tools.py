@@ -1,20 +1,26 @@
-"""The five tools the agent calls — verified-contract values, and nothing else.
+"""The six tools the agent calls — verified-contract values, and nothing else.
 
-R6 §Agent names them and fixes what they are for: ``search_events(query)`` →
+R6 §Agent names five and fixes what they are for: ``search_events(query)`` →
 이벤트 목록/단건, ``get_event(rcept_no)`` → 검증 계약, ``get_portfolio()`` →
 포트폴리오 + 상류 계산, ``save_feedback(text, email?)`` → 운영자 대기열,
-``get_contact()`` → 운영자 연락처. Everything here is deterministic and
-model-free: no LLM call, no HTTP, no SSE. `P6.S3` owns the loop that decides
-*which* of these to call and `P6.S5` renders their fact rows.
+``get_contact()`` → 운영자 연락처. R16 adds the sixth: ``calculate(op, inputs, …)``
+→ 계산 블록, the agent's one **auditable** window onto arithmetic (`P9.S5`).
+Everything here is deterministic and model-free: no LLM call, no HTTP, no SSE.
+`P6.S3` owns the loop that decides *which* of these to call and `P6.S5` renders
+their fact rows.
 
-**No tool computes a number, and that is enforced by construction.** Every value
-a tool returns is the object :mod:`mijual.present` already derived and
+**No tool computes a number except the one that exists to, and it computes
+nothing of its own.** Every value the other five return is the object
+:mod:`mijual.present` already derived and
 :mod:`mijual.web.reads` already assembled — the same payload the corresponding
 reader surface serves, passed through untouched. D-day, 환산, 금액 and 소멸률 are
 therefore *readings*, 「추정」 tags survive because they are carried in the payload
 rather than re-applied here, and a won amount before 확정발행가 is absent for the
 one reason that matters: it is unconstructable upstream (R6 §Hard rules,
-`api` §The presentation contract).
+`api` §The presentation contract). :func:`calculate` derives a number **only**
+through :mod:`mijual.calc` — the product's own LLM-free money math — or through a
+whitelisted arithmetic expression, and the reader is always told which of the two
+ran. It is a window onto that module, not a second implementation of it.
 
 **Figures travel display-ready.** Beside each figure's exact ``value`` sits the
 same number in the product's own thousands grouping (``3200`` → ``3,200``), so the
@@ -40,13 +46,17 @@ the agent reads persisted rows, it never collects or extracts.
 
 from __future__ import annotations
 
+import ast
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import date
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from mijual import calc
 from mijual.agent import copy as ko
 from mijual.agent import figures
 from mijual.agent.context import ToolContext
@@ -63,13 +73,23 @@ from mijual.web.reads import (
 )
 
 __all__ = [
+    "BUDGET_EXEMPT",
+    "CALC_OPS",
+    "CALC_TOOL",
+    "EXPR_OP",
     "MAX_SEARCH_RESULTS",
     "STATUS_PHASE",
     "TOOL_NAMES",
+    "CalcInput",
+    "CalcOp",
+    "CalcPlan",
     "Citation",
     "ToolResult",
     "UnknownTool",
     "ValueRow",
+    "calc_outcome",
+    "calc_plan",
+    "calculate",
     "call_tool",
     "citations_in",
     "fact_rows",
@@ -90,8 +110,19 @@ MAX_SEARCH_RESULTS = 8
 _FILING_NUMBER = re.compile(r"\A\d{14}\Z")
 
 
+def _text(value: Any) -> str:
+    """One model-supplied scalar as trimmed text. Anything unstringable is empty."""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, bool) or value is None:
+        return ""
+    if isinstance(value, (int, float)):
+        return str(value).strip()
+    return ""
+
+
 class UnknownTool(ValueError):
-    """The model called a name that is not one of the five. `P6.S3` decides what
+    """The model called a name that is not one of the six. `P6.S3` decides what
     to tell it; there is deliberately no fallback tool to absorb the mistake."""
 
 
@@ -581,16 +612,513 @@ def get_contact(ctx: ToolContext) -> ToolResult:
 
 
 # ---------------------------------------------------------------------------
+# calculate — the auditable calculator (R16 §2.4, build inventory item 3)
+# ---------------------------------------------------------------------------
+#: The sixth tool's name. **One tool, many named operations** — the ``op`` enum is
+#: the namespace (S1B: 「one namespaced tool with an ``op`` enum」, over two tools or
+#: a free-text expression parameter), so 「어떤 계산인가」 is a closed vocabulary the
+#: model picks from rather than a string it composes.
+CALC_TOOL = "calculate"
+
+#: The escape hatch's ``op`` value. Named deliberately in the enum beside the real
+#: operations, because the reader is told which one ran: 「검증된 계산」 is
+#: :mod:`mijual.calc`'s own arithmetic and 「식 계산」 is this — auditable **as
+#: arithmetic**, never as product truth (R16 result.md §3-7).
+EXPR_OP = "expr"
+
+#: Tools that cost no OpenDART request, no model call and no query — changple5's
+#: zero-I/O precedent (`P9.S1` item 3), and the reason a calculation never eats the
+#: turn's tool budget: refusing to compute because a *search* budget ran out would
+#: be a ceiling the reader can feel with nothing behind it.
+#:
+#: A property of the tool, declared here beside the tool: :func:`mijual.agent.loop.run_turn`
+#: asks the set, so no tool **name** enters the loop's control flow.
+BUDGET_EXEMPT: frozenset[str] = frozenset({CALC_TOOL})
+
+
+class _CalcRefused(Exception):
+    """A drawn calculation that could not run: what the reader reads, and why.
+
+    ``why`` is **data, never a sentence** — the offending input as the model
+    labelled it and as the reader reads it (「확정 발행가액 미공시」). The signed
+    「계산할 수 없습니다 — {이유}」 line around it is the surface's (R16 D6), and
+    ``guidance`` is the English the *model* gets: actionable, never a traceback
+    (Anthropic tool-design guidance, `P9.S1B` mechanic A).
+    """
+
+    def __init__(self, why: str, guidance: str) -> None:
+        super().__init__(guidance)
+        self.why = why
+        self.guidance = guidance
+
+
+@dataclass(frozen=True)
+class CalcOp:
+    """One named operation, as the tool exposes :mod:`mijual.calc`'s own function.
+
+    ``params`` are the function's parameters **in formula order**, each with the
+    shape its value must arrive in; ``formula`` is the 식 줄's arithmetic with one
+    placeholder per parameter. The formula is **display only** — the number comes
+    from ``fn`` and nothing here recomputes it — and a test pins its placeholders
+    to ``params`` so the line can never drift from the function it describes.
+    """
+
+    fn: Any
+    params: tuple[tuple[str, str], ...]
+    formula: str
+
+    @property
+    def keys(self) -> tuple[str, ...]:
+        return tuple(key for key, _ in self.params)
+
+
+#: The operations the model may name, and the whole of what 「검증된 계산」 means.
+#:
+#: **Chosen, not enumerated.** :mod:`mijual.calc` also holds ``warrant_intrinsic_value``,
+#: ``warrant_intrinsic_value_floor``, ``lapsed_warrant_value`` and
+#: ``implied_reference_price`` — the ▷ **추정** family (:mod:`mijual.present.money`,
+#: :mod:`mijual.estimate`), whose values the product marks 「추정」. R16 §2.5 closes the
+#: marker family at three and makes them **exclusive**, so a ▷ value returned as a
+#: 「계산」 result would quietly lose its 추정 mark; naming a fourth marker is a design
+#: change, so those four stay out and the 식 계산 hatch — labelled as arithmetic — is
+#: where such a multiplication honestly lives. ``window_state`` is out for a different
+#: reason: it returns an English state token the record signs no Korean for.
+#: ``add_months`` is out because its product instance **is** ``lockup_release_date``.
+CALC_OPS: dict[str, CalcOp] = {
+    "allotted_shares": CalcOp(
+        fn=calc.allotted_shares,
+        params=(("held", "int"), ("allotment_ratio", "number")),
+        formula="{held} × {allotment_ratio}",
+    ),
+    "excess_subscription_cap": CalcOp(
+        fn=calc.excess_subscription_cap,
+        params=(("allotted", "int"), ("excess_ratio", "number")),
+        formula="{allotted} × {excess_ratio}",
+    ),
+    "lapsed_warrants": CalcOp(
+        fn=calc.lapsed_warrants,
+        params=(("issued", "int"), ("exercised", "int")),
+        formula="{issued} − {exercised}",
+    ),
+    "d_day": CalcOp(
+        fn=calc.d_day,
+        params=(("target", "date"), ("reference", "date")),
+        formula="{target} − {reference}",
+    ),
+    "lockup_release_date": CalcOp(
+        fn=calc.lockup_release_date,
+        params=(("issued", "date"), ("months", "int")),
+        formula="{issued} + {months}",
+    ),
+}
+
+
+@dataclass(frozen=True)
+class CalcInput:
+    """One argument of a calculation — **and one row of its block** (R16 §2.4).
+
+    The two are the same list on purpose: the block is drawn from what the tool is
+    about to be handed, so 「입력 + 각 입력의 근거」 is the call itself rather than a
+    second description of it.
+
+    ``key`` names the operation's parameter (or the name the expression uses),
+    ``value`` is the number as arithmetic reads it, ``display`` is the same value as
+    the reader reads it (unit included), and ``cite`` is the reference id
+    :meth:`~mijual.agent.citations.CitationGate.learn` handed the model for the
+    filing the value was read from — absent for a value the **reader** gave, which
+    is what the 「입력」 marker says.
+    """
+
+    key: str
+    label: str
+    value: str
+    display: str
+    cite: str | None = None
+
+
+@dataclass(frozen=True)
+class CalcPlan:
+    """A well-formed calculation, read **before** it runs — the block's pending half."""
+
+    mode: str
+    op: str
+    name: str
+    inputs: tuple[CalcInput, ...]
+    expr: str | None = None
+    unit: str = ""
+
+
+#: What the model is told when a call was not a calculation at all. English, and
+#: actionable: 「what you sent」 is never echoed back (it may carry filing text).
+_CALC_GUIDANCE = (
+    "not a calculation: pass op (one of the listed operations, or 'expr'), and one "
+    "input per parameter — each with key, label, value. A named op needs exactly its "
+    "own parameters; 'expr' needs name and expr as well. Values are plain numbers "
+    "(1000, 0.2) or ISO dates (2026-08-30), never text with units in them."
+)
+
+#: The 식 줄's operators, as arithmetic is written for a reader rather than for a
+#: parser. R4 already writes a formula this way (「= {n}주 × 배정비율 {ratio}」).
+_EXPR_SYMBOLS = (("*", " × "), ("/", " ÷ "), ("+", " + "), ("-", " − "))
+#: An expression's own names — the keys its inputs declared.
+_EXPR_NAME = re.compile(r"[A-Za-z_][A-Za-z_0-9]*")
+#: Two ceilings on the escape hatch, so a whitelisted expression is also a *small*
+#: one: no expression a reader's question implies is longer than this.
+_EXPR_MAX_CHARS = 160
+_EXPR_MAX_NODES = 48
+#: The most decimal places an 식 계산 result is stated to. The named operations
+#: never need it (they return 주, a date or a D-day label); a division does.
+_EXPR_PLACES = Decimal("0.0001")
+
+
+def _calc_request(arguments: Mapping[str, Any] | None) -> CalcPlan | None:
+    """Read the model's arguments as a calculation, or ``None`` if they are not one.
+
+    Shape only — nothing is computed here — because **the loop reads the same plan
+    before the tool runs** (:func:`calc_plan`) and the two must agree exactly: a
+    block drawn for a call that then turns out not to be a calculation would sit
+    ``pending`` forever.
+    """
+    args: Mapping[str, Any] = arguments or {}
+    op = _text(args.get("op"))
+    if op != EXPR_OP and op not in CALC_OPS:
+        return None
+
+    rows: dict[str, CalcInput] = {}
+    raw = args.get("inputs")
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        return None
+    for node in raw:
+        if not isinstance(node, Mapping):
+            return None
+        key, label = _text(node.get("key")), _text(node.get("label"))
+        value = _text(node.get("value"))
+        if not key or not label or not value or key in rows:
+            return None
+        display = _text(node.get("display")) or figures.grouped(value) or value
+        cite = _text(node.get("cite")) or None
+        rows[key] = CalcInput(key=key, label=label, value=value, display=display, cite=cite)
+    if not rows:
+        return None
+
+    if op == EXPR_OP:
+        expr, name = _text(args.get("expr")), _text(args.get("name"))
+        if not expr or not name:
+            return None
+        return CalcPlan(
+            mode="expr", op=op, name=name, inputs=tuple(rows.values()), expr=expr
+        )
+
+    operation = CALC_OPS[op]
+    if set(rows) != set(operation.keys):
+        # Exactly its own parameters — no more (an argument the function never
+        # takes would be drawn as an input that did not enter the number) and no
+        # fewer (the server does not fill one in: a default nobody stated would be
+        # a value with no source, drawn as if the reader had given it).
+        return None
+    return CalcPlan(
+        mode="verified",
+        op=op,
+        name=ko.CALC_NAMES_KO[op],
+        inputs=tuple(rows[key] for key in operation.keys),
+        unit=ko.CALC_UNITS_KO[op],
+    )
+
+
+def calc_plan(name: str, arguments: Mapping[str, Any] | None) -> CalcPlan | None:
+    """This call as a calculation the surface can draw **now**, or ``None``.
+
+    The sibling of :func:`value_rows` and :data:`STATUS_PHASE`: argument-shape
+    knowledge lives here beside the tool, so :func:`mijual.agent.loop.run_turn` can
+    put the 계산 블록 on the screen at call time (R16 §2.4: 「블록은 도구 호출 시점에
+    입력만이라도 먼저 나타난다」) without naming a tool in its control flow.
+    """
+    return _calc_request(arguments) if name == CALC_TOOL else None
+
+
+def calc_outcome(result: ToolResult) -> Mapping[str, Any] | None:
+    """The calculation a result carries, or ``None`` — the block's ``done``/``error``."""
+    node = result.payload.get("calc")
+    return node if isinstance(node, Mapping) else None
+
+
+def calculate(ctx: ToolContext, arguments: Mapping[str, Any] | None = None) -> ToolResult:
+    """계산 — the agent's one auditable window onto arithmetic (R16, item 3).
+
+    Two ways in, and the reader is always told which one ran: a **named operation**
+    is :mod:`mijual.calc` — the product's own LLM-free money math, unchanged and
+    not re-implemented here — and ``op="expr"`` is a whitelisted arithmetic
+    expression over the inputs. The tool is the *window*: every number still comes
+    out of ``mijual.calc`` or out of the four arithmetic operators, and never out of prose.
+
+    ``ctx`` is deliberately **unread**. This tool touches no session, no filing and
+    no setting — which is exactly the property that makes it
+    :data:`BUDGET_EXEMPT` — and it is taken only so the dispatcher hands every tool
+    the same thing.
+
+    A failure is **guidance, never a traceback** (`P9.S1B` mechanic A): the model
+    gets an English sentence saying what to send instead, and the reader gets the
+    input that stopped the calculation, in its own label and value.
+    """
+    del ctx  # zero I/O — see BUDGET_EXEMPT
+    plan = _calc_request(arguments)
+    if plan is None:
+        # Never drawn, so nothing is left pending on the reader's screen: this is
+        # the model's mistake to correct, not a state the reader can act on.
+        return ToolResult(
+            tool=CALC_TOOL,
+            fact_row=ko.CALC_NONE_ROW,
+            payload={"calculated": False, "guidance": _CALC_GUIDANCE},
+            ok=False,
+        )
+
+    try:
+        value = _compute(plan)
+    except _CalcRefused as refused:
+        # An expression that could not be read names no input, so the calculation's
+        # own name stands in: the reader is told *which* calculation failed, always.
+        why = refused.why or plan.name
+        return ToolResult(
+            tool=CALC_TOOL,
+            fact_row=ko.CALC_MISS_ROW.format(why=why),
+            payload={
+                "calculated": False,
+                "calc": _calc_payload(plan) | {"state": "error", "why": why},
+                "guidance": refused.guidance,
+            },
+            ok=False,
+        )
+
+    stated = _shown(value, plan.unit)
+    line = f"{_formula(plan)} = {stated}"
+    node = _calc_payload(plan) | {
+        "state": "done",
+        "expr": line,
+        "result": _result_payload(value, stated),
+    }
+    return ToolResult(
+        tool=CALC_TOOL,
+        fact_row=ko.CALC_ROW.format(name=plan.name, expr=line),
+        payload={"calculated": True, "calc": node},
+    )
+
+
+def _calc_payload(plan: CalcPlan) -> dict[str, Any]:
+    """The plan as the stored block reads it — inputs verbatim, audit path intact."""
+    return {
+        "mode": plan.mode,
+        "op": plan.op,
+        "name": plan.name,
+        "inputs": [
+            {
+                "key": row.key,
+                "label": row.label,
+                "value": row.value,
+                "estimated": False,
+                "display": row.display,
+                **({"cite": row.cite} if row.cite else {}),
+            }
+            for row in plan.inputs
+        ],
+    }
+
+
+def _result_payload(value: Any, stated: str) -> dict[str, Any]:
+    """The computed value, **figure-shaped** so the rest of the agent recognises it.
+
+    ``value``/``estimated`` is the pair :mod:`mijual.agent.figures` reads, so the
+    result arrives display-ready (``ToolResult.__post_init__``) and, more
+    importantly, :meth:`~mijual.agent.citations.CitationGate.learn` harvests it into
+    the turn's traceable values — which is what lets the answer *restate* the
+    computed number in prose without the 「미확인」 marker. A calculation is not a
+    filing, so it gains no citation and is **never counted in 근거 N건** (R16 §2.4).
+    """
+    node: dict[str, Any] = {"value": _exact(value), "estimated": False, "display": stated}
+    if isinstance(value, calc.DDay):
+        node["days"] = value.days
+    return node
+
+
+def _compute(plan: CalcPlan) -> Any:
+    """Run the plan: parse every input, then the operation or the expression."""
+    kinds = (
+        {key: "number" for key in (row.key for row in plan.inputs)}
+        if plan.mode == "expr"
+        else dict(CALC_OPS[plan.op].params)
+    )
+    values: dict[str, Any] = {}
+    for row in plan.inputs:
+        parsed = _parsed(row.value, kinds[row.key])
+        if parsed is None:
+            raise _CalcRefused(
+                why=f"{row.label} {row.display}",
+                guidance=(
+                    f"{row.key} is not a {kinds[row.key]}: send the value as a plain "
+                    "number (1000, 0.2) or an ISO date (2026-08-30). If the filing has "
+                    "not stated it yet, say so in your answer instead of calculating."
+                ),
+            )
+        values[row.key] = parsed
+
+    if plan.mode == "expr":
+        return _evaluated(plan.expr or "", values)
+
+    operation = CALC_OPS[plan.op]
+    out = operation.fn(*(values[key] for key in operation.keys))
+    if out is None:
+        # A `mijual.calc` primitive declining its own inputs (a non-positive 개월수,
+        # a date that is not one). The product refused, so the calculator reports the
+        # refusal rather than inventing a number around it.
+        raise _CalcRefused(
+            why=plan.name,
+            guidance=f"{plan.op} cannot be computed from those inputs; check each one.",
+        )
+    return out
+
+
+def _parsed(text: str, kind: str) -> Any:
+    """One input value, in the shape its parameter takes. ``None`` = not that shape."""
+    if kind == "date":
+        try:
+            return date.fromisoformat(text)
+        except ValueError:
+            return None
+    number = _decimal(text)
+    if number is None or not number.is_finite():
+        return None
+    if kind == "int":
+        return int(number) if number == number.to_integral_value() else None
+    return number
+
+
+def _decimal(text: str) -> Decimal | None:
+    """``"1,000"`` → ``Decimal("1000")``. Separators only — no unit, no conversion."""
+    try:
+        return Decimal(text.replace(",", "").replace(" ", ""))
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _evaluated(source: str, values: Mapping[str, Any]) -> Decimal:
+    """The escape hatch: ``ast.parse`` + a **node whitelist** over :class:`Decimal`.
+
+    Never :func:`eval`, and :func:`ast.literal_eval` is not an arithmetic evaluator
+    (it evaluates literals, not expressions) — `P9.S1B` mechanic A. Only an
+    expression of numbers, the four operators, unary sign and parentheses survives;
+    a name resolves only to an input the model declared, and **every other node
+    shape is refused before its operands are even read**, so there is no call, no
+    attribute, no subscript, no comprehension and no power operator to reason about.
+    """
+    if len(source) > _EXPR_MAX_CHARS:
+        raise _CalcRefused(why="", guidance="expression too long; simplify it")
+    try:
+        tree = ast.parse(source, mode="eval")
+    except (SyntaxError, ValueError):
+        raise _CalcRefused(
+            why="", guidance="expr must be arithmetic over your input keys, e.g. 'shares * price'"
+        ) from None
+    if len(list(ast.walk(tree))) > _EXPR_MAX_NODES:
+        raise _CalcRefused(why="", guidance="expression too large; simplify it")
+    result = _node(tree.body, values)
+    if not result.is_finite():
+        raise _CalcRefused(why="", guidance="the expression does not evaluate to a number")
+    return result
+
+
+def _node(node: ast.AST, values: Mapping[str, Any]) -> Decimal:
+    """One whitelisted node. Anything else raises — the whitelist *is* the safety."""
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            raise _CalcRefused(why="", guidance="expr takes numbers, names and + - * / only")
+        number = Decimal(str(node.value))
+        if not number.is_finite():
+            raise _CalcRefused(why="", guidance="expr takes finite numbers only")
+        return number
+    if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+        value = values.get(node.id)
+        if not isinstance(value, Decimal):
+            raise _CalcRefused(
+                why="",
+                guidance=f"'{node.id}' is not one of the inputs you sent; declare it as an input",
+            )
+        return value
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        operand = _node(node.operand, values)
+        return -operand if isinstance(node.op, ast.USub) else operand
+    if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
+        left, right = _node(node.left, values), _node(node.right, values)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if right == 0:
+            raise _CalcRefused(why="", guidance="division by zero; check the divisor")
+        return left / right
+    raise _CalcRefused(why="", guidance="expr takes numbers, names and + - * / only")
+
+
+def _formula(plan: CalcPlan) -> str:
+    """The 식 줄 — the arithmetic, written with the values the reader reads.
+
+    Display only: the number is the operation's, and this line describes it. For a
+    named operation the shape is the operation's own :attr:`CalcOp.formula` (pinned
+    to its parameters by a test); for the escape hatch it is the model's expression
+    with its names replaced by the same displays the input rows show.
+    """
+    displays = {row.key: row.display for row in plan.inputs}
+    if plan.mode != "expr":
+        return CALC_OPS[plan.op].formula.format(**displays)
+    text = plan.expr or ""
+    for symbol, spaced in _EXPR_SYMBOLS:
+        text = text.replace(symbol, spaced)
+    text = _EXPR_NAME.sub(lambda match: displays.get(match.group(0), match.group(0)), text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _shown(value: Any, unit: str) -> str:
+    """The computed value as the reader reads it — grouped, with its unit."""
+    if isinstance(value, calc.DDay):
+        return value.label
+    if isinstance(value, date):
+        return value.isoformat()
+    text = _exact(value)
+    return (figures.grouped(text) or text) + unit
+
+
+def _exact(value: Any) -> str:
+    """The value as the payload writes it — the exact number, never a rounding of it."""
+    if isinstance(value, calc.DDay):
+        return value.label
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, int):
+        return str(value)
+    number: Decimal = value
+    if number == number.to_integral_value():
+        return str(int(number))
+    if -number.as_tuple().exponent > 4:
+        # An 식 계산 division only. Stated to four places, once, at the end — the
+        # product's own convention for money (`mijual.calc` rounds 원 the same way),
+        # rather than showing a reader 28 significant digits of Decimal context.
+        number = number.quantize(_EXPR_PLACES, rounding=ROUND_HALF_UP)
+    return format(number, "f").rstrip("0").rstrip(".")
+
+
+# ---------------------------------------------------------------------------
 # dispatch
 # ---------------------------------------------------------------------------
-#: The five, in the order R6 lists them. `P6.S3` hands the same five to the SDK
-#: (:func:`mijual.agent.declarations.declarations`) — one list, one truth.
+#: The six, in the order R6 lists its five plus R16's calculator. `P6.S3` hands
+#: the same six to the SDK (:func:`mijual.agent.declarations.declarations`) — one
+#: list, one truth.
 TOOL_NAMES: tuple[str, ...] = (
     "search_events",
     "get_event",
     "get_portfolio",
     "save_feedback",
     "get_contact",
+    CALC_TOOL,
 )
 
 #: Which 진행 표시 phase a tool call is *in*, for the tools whose work one of R16
@@ -606,6 +1134,7 @@ TOOL_NAMES: tuple[str, ...] = (
 STATUS_PHASE: dict[str, str] = {
     "search_events": "search",
     "get_event": "open",
+    CALC_TOOL: "calc",
 }
 
 
@@ -615,9 +1144,12 @@ def call_tool(name: str, ctx: ToolContext, arguments: Mapping[str, Any] | None =
     Arguments arrive from a model and are treated as such: the declared ones are
     read by name and coerced to text, and anything else is ignored rather than
     passed on — there is no argument on any tool that could carry an identity, so
-    ignoring extras costs nothing and closes the shape entirely. An unknown name
-    raises :class:`UnknownTool`; inventing a sixth tool is the model's mistake to
-    be told about, not something to absorb silently.
+    ignoring extras costs nothing and closes the shape entirely. :func:`calculate`
+    is the one tool whose arguments are structured rather than scalar, and it does
+    its own reading (:func:`_calc_request`) with the same posture: a shape it cannot
+    read is guidance back to the model, never an exception. An unknown name raises
+    :class:`UnknownTool`; inventing a seventh tool is the model's mistake to be told
+    about, not something to absorb silently.
     """
     args: Mapping[str, Any] = arguments or {}
 
@@ -635,6 +1167,8 @@ def call_tool(name: str, ctx: ToolContext, arguments: Mapping[str, Any] | None =
         return save_feedback(ctx, text("text"), text("email") or None)
     if name == "get_contact":
         return get_contact(ctx)
+    if name == CALC_TOOL:
+        return calculate(ctx, args)
     raise UnknownTool(f"{name!r} is not one of {TOOL_NAMES}")
 
 

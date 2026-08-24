@@ -31,7 +31,7 @@ from mijual.web.ask import TurnLimiter, _Released
 from mijual.web.conversationstore import is_session_hash, new_session_hash
 from mijual.web.csrf import CSRF_HEADER
 from mijual.web.errors import ApiError
-from test_agent_loop import QUOTE, ScriptedModel, calls, says
+from test_agent_loop import QUOTE, ScriptedModel, calls, computes, says
 from test_agent_tools import R1_RCEPT, WITHDRAWN_RCEPT, _corpus
 
 #: search → read → answer. The same shape `test_agent_loop` proves the loop with.
@@ -39,6 +39,19 @@ ANSWER_TURN = (
     calls("search_events", query="계양전기"),
     calls("get_event", rcept_no=R1_RCEPT),
     says(f"매매기간은 「{QUOTE}」로 공시되어 있습니다[[cite:c3]]."),
+)
+#: 계산 — 공시를 읽고, 그 값으로 계산하고, 답한다 (R16's headline turn).
+CALC_TURN = (
+    calls("get_event", rcept_no=R1_RCEPT),
+    computes(
+        op="excess_subscription_cap",
+        inputs=[
+            {"key": "allotted", "label": "보유 주식수", "value": "1000", "display": "1,000주"},
+            {"key": "excess_ratio", "label": "초과청약 비율", "value": "0.2",
+             "display": "0.2주", "cite": "c2"},
+        ],
+    ),
+    says("초과청약은 200주까지 할 수 있습니다[[cite:c2]]."),
 )
 #: 철회 — ① the cited status fact, ② the signed family sentence.
 REFUSAL_TURN = (
@@ -148,6 +161,26 @@ def test_the_handle_arrives_first_and_the_turn_lands_as_one_row(ask) -> None:
     # prose paraphrase — and the transient status line is not stored at all.
     assert row.blocks == [{"event": "data", "data": data}]
     assert end["filings"] == 1  # 공시 1건 읽음: read, not merely listed (D8)
+
+
+def test_a_calculation_is_stored_once_in_the_state_it_settled_in(ask) -> None:
+    """R16 §1's storage clause, for the block it was written for.
+
+    계산의 감사 경로(입력 · 각 입력의 근거 · 식)는 프로즈에 존재하지 않으므로 환언은 곧
+    유실이다: the block is stored as the **frame the reader received**, and the
+    ``pending`` → ``done`` pair is one block on one id, kept in its final state.
+    """
+    sent = frames(ask.turn("계양전기 1,000주면 초과청약 몇 주?", *CALC_TURN))
+    blocks = [payload for name, payload in sent if name == "calc"]
+    assert [payload["state"] for payload in blocks] == ["pending", "done"]
+    assert len({payload["block_id"] for payload in blocks}) == 1  # 제자리 교체
+    assert blocks[-1]["result"] == "200주" and blocks[-1]["persistent"] is True
+    assert blocks[0]["inputs"][0]["reader_input"] is True  # 독자가 준 값 = 「입력」
+    assert blocks[0]["inputs"][1]["citation"] == 1  # 공시에서 온 값 = 인용 칩
+
+    (row,) = ask.rows()
+    stored = [block for block in row.blocks if block["event"] == "calc"]
+    assert stored == [{"event": "calc", "data": blocks[-1]}]
 
 
 def test_a_refusal_stores_its_family_and_a_junk_handle_is_replaced(ask) -> None:

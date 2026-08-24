@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -19,10 +20,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from mijual.agent import ToolContext, get_contact, get_event, get_portfolio, save_feedback
-from mijual.agent import search_events
-from mijual.agent.declarations import TOOL_SPECS
+from mijual.agent import calculate, search_events
+from mijual.agent import copy as ko
+from mijual.agent.declarations import TOOL_SPECS, spec_of
 from mijual.agent.figures import grouped
-from mijual.agent.tools import TOOL_NAMES, call_tool
+from mijual.agent.tools import CALC_OPS, EXPR_OP, TOOL_NAMES, calc_plan, call_tool
 from mijual.config import Settings
 from mijual.db.models import (
     Account,
@@ -243,11 +245,80 @@ def test_feedback_lands_in_the_queue_and_the_contact_is_honest_when_unset(store)
     assert given.payload == {"configured": True, "contact": "ops@mijual.kr"}
     assert given.fact_row == "운영자 연락처 → ops@mijual.kr"
 
-    # The dispatcher runs exactly the five the model is declared, and no sixth.
+    # The dispatcher runs exactly the tools the model is declared, and no other.
     assert tuple(spec.name for spec in TOOL_SPECS) == TOOL_NAMES
     assert call_tool("get_contact", _ctx(store)).fact_row == unset.fact_row
     with pytest.raises(ValueError):
         call_tool("delete_everything", _ctx(store))
+
+
+def _calc(op: str, *inputs: dict, **rest) -> object:
+    """One call, as the model sends it — no session: this tool reads none."""
+    return calculate(None, {"op": op, "inputs": list(inputs), **rest})
+
+
+def test_the_calculator_is_a_window_onto_calc_and_never_an_evaluator() -> None:
+    """R16 §2.4 + item 3: named ops are product truth, `expr` is arithmetic, and the
+    escape hatch is an AST whitelist over `Decimal` — never `eval`.
+
+    The named case is the record's own headline (build-prompt §4 check 4), down to
+    the fact row `r16-parts.babel.js` prints: 1,000주 × 0.2주 = 200주.
+    """
+    held = {"key": "allotted", "label": "보유 주식수", "value": "1000", "display": "1,000주"}
+    ratio = {"key": "excess_ratio", "label": "초과청약 비율", "value": "0.2",
+             "display": "0.2주", "cite": "c2"}
+    done = _calc("excess_subscription_cap", held, ratio)
+    assert done.fact_row == "계산 → 초과청약 한도 · 1,000주 × 0.2주 = 200주"
+    node = done.payload["calc"]
+    assert node["mode"] == "verified" and node["state"] == "done"
+    assert node["name"] == "초과청약 한도"  # server-named: the heading names what ran
+    assert node["result"]["display"] == "200주" and node["result"]["value"] == "200"
+    # Figure-shaped, so the value arrives display-ready and the gate can trace it.
+    assert node["inputs"][0]["value_display"] == "1,000"
+    # The inputs are the arguments: the block is the call, not a description of it.
+    assert [row["key"] for row in node["inputs"]] == ["allotted", "excess_ratio"]
+
+    # 식 계산 — the same block, labelled as arithmetic rather than product truth.
+    shares = {"key": "shares", "label": "청약 주식수", "value": "200", "display": "200주"}
+    price = {"key": "price", "label": "확정 발행가액", "value": "3200", "display": "3,200원"}
+    hatch = _calc("expr", shares, price, name="청약 필요 금액", expr="shares * price")
+    assert hatch.payload["calc"]["mode"] == "expr"
+    assert hatch.payload["calc"]["expr"] == "200주 × 3,200원 = 640,000"
+
+    # A value the filing has not stated stops the calculation, and what the reader
+    # is told is the input itself — the record's own row, no sentence invented.
+    unstated = dict(price, value="미공시", display="미공시")
+    refused = _calc("expr", shares, unstated, name="청약 필요 금액", expr="shares * price")
+    assert refused.ok is False and refused.fact_row == "계산 → 확정 발행가액 미공시 · 0건"
+    assert refused.payload["calc"]["state"] == "error"
+    assert refused.payload["calc"]["why"] == "확정 발행가액 미공시"
+    assert "not a number" in refused.payload["guidance"]  # guidance, never a traceback
+
+    # Everything outside the whitelist is refused *before* it is evaluated: no call,
+    # no attribute, no power operator, no undeclared name, no division by zero.
+    a = {"key": "a", "label": "수", "value": "2", "display": "2"}
+    for expr in ("__import__('os').system('ls')", "a.__class__", "a ** 999999",
+                 "b + 1", "a / 0", "[a for a in (1,)]", "open('x')"):
+        stopped = _calc("expr", a, name="식", expr=expr)
+        assert stopped.ok is False, expr
+        assert stopped.payload["calc"]["state"] == "error", expr
+        assert "Traceback" not in stopped.payload["guidance"]
+
+    # A call that is not a calculation is never drawn for the reader at all: no
+    # block, no reason to act on — just guidance the model can correct itself with.
+    assert calc_plan("calculate", {"op": "nope", "inputs": []}) is None
+    assert calc_plan("get_event", {"rcept_no": "1"}) is None
+    short = _calc("allotted_shares", {"key": "held", "label": "보유", "value": "10"})
+    assert short.ok is False and "calc" not in short.payload
+    assert short.fact_row == "계산 → 0건" and calc_plan("calculate", short.payload) is None
+
+    # The 식 줄 describes the function it ran, so it can never drift from it — and
+    # every operation the model may name has its Korean name and its unit.
+    for op, spec in CALC_OPS.items():
+        assert sorted(re.findall(r"{(\w+)}", spec.formula)) == sorted(spec.keys)
+        assert op in ko.CALC_NAMES_KO and op in ko.CALC_UNITS_KO
+    declared = spec_of("calculate").parameters["properties"]["op"]["enum"]
+    assert declared == [*CALC_OPS, EXPR_OP]
 
 
 def test_the_agent_package_imports_no_spending_module() -> None:

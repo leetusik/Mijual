@@ -33,6 +33,7 @@ from mijual.agent.client import (
     UsageChunk,
 )
 from mijual.agent.events import (
+    CalcBlockEvent,
     CitationEvent,
     DataBlockEvent,
     FooterEvent,
@@ -77,6 +78,11 @@ def says(text: str, size: int = 7) -> list[TextChunk]:
 
 def calls(name: str, **args) -> list[CallChunk]:
     return [CallChunk(ModelCall(name=name, args=args))]
+
+
+def computes(**args) -> list[CallChunk]:
+    """A `calculate` call. Its own helper because the tool has an argument `name`."""
+    return [CallChunk(ModelCall(name="calculate", args=args))]
 
 
 @pytest.fixture()
@@ -357,6 +363,95 @@ def test_a_greeting_is_answered_and_a_budget_ends_a_turn_honestly(ctx) -> None:
     assert events[-1].status == "error" and events[-1].reason == "ServerError"
     assert events[-1].answer.endswith(f"「{QUOTE}」입니다.")  # 부분 답변 유지
     assert not of(events, FooterEvent)  # 완료가 아니므로 푸터 없음
+
+
+def test_the_calculation_block_is_drawn_before_the_number_exists(ctx) -> None:
+    """R16 §2.4 / §4 checks 4–6: 입력이 먼저, 제자리 교체, 근거 N건에는 안 센다.
+
+    The calculator is the round's headline element, and its auditability is *half*
+    inputs: the block reaches the reader while the calculation is still `pending`,
+    carrying each input with its own 근거 — or with the 「입력」 marker when the value
+    is the reader's. The result then replaces it **on the same block_id**.
+    """
+    model = ScriptedModel(
+        calls("get_event", rcept_no=R1_RCEPT),
+        computes(
+            op="excess_subscription_cap",
+            inputs=[
+                {"key": "allotted", "label": "보유 주식수", "value": "1000",
+                 "display": "1,000주"},
+                {"key": "excess_ratio", "label": "초과청약 비율", "value": "0.2",
+                 "display": "0.2주", "cite": "c2"},
+            ],
+        ),
+        says("초과청약은 200주까지 할 수 있습니다[[cite:c2]]."),
+    )
+    events = list(run_turn(ctx, "계양전기 1,000주면 초과청약 몇 주?", client=model))
+
+    pending, settled = of(events, CalcBlockEvent)
+    assert pending.state == "pending" and pending.result is None and pending.persistent
+    # 제자리 교체 — the same block, later, so the surface does not make it jump.
+    assert settled.block_id == pending.block_id and settled.inputs == pending.inputs
+    assert settled.state == "done" and settled.mode == "verified"
+    assert settled.name == "초과청약 한도" and settled.result == "200주"
+    assert settled.expr == "1,000주 × 0.2주 = 200주"
+    # 입력 2행: 독자가 준 값은 「입력」(칩 없음), 공시에서 온 값은 칩 — 그리고 그 칩은
+    # 프로즈가 쓰는 것과 **같은 번호**다 (같은 근거 = 같은 번호).
+    assert [(row.value, row.reader_input, row.citation) for row in pending.inputs] == [
+        ("1,000주", True, None),
+        ("0.2주", False, 1),
+    ]
+    # The block is on screen before its own tool row, and the turn said 계산하고 있습니다.
+    calc_row = [row for row in of(events, ToolRowEvent) if row.tool == "calculate"][0]
+    assert events.index(pending) < events.index(calc_row)
+    assert "calc" in [event.phase for event in of(events, StatusEvent)]
+
+    text = of(events, TextEvent)[0]
+    # `P9.S4`'s deliberate gap closes here: a figure the calculator returned is
+    # traceable, so restating it in prose is no longer marked 미확인.
+    assert text.text == "초과청약은 200주까지 할 수 있습니다." and text.unverified == ()
+    # 계산 결과는 「근거 N건」에 세지 않는다 — 근거는 칩의 수다 (§2.4).
+    assert of(events, FooterEvent)[0].count == 1 and events[-1].evidence == (R1_RCEPT,)
+
+
+def test_a_calculation_fails_as_guidance_and_costs_no_tool_budget(ctx) -> None:
+    """§4 check 6 and the zero-I/O precedent — the two halves nothing else covers."""
+    stuck = ScriptedModel(
+        computes(
+            op="expr",
+            name="청약 필요 금액",
+            expr="shares * price",
+            inputs=[
+                {"key": "shares", "label": "청약 주식수", "value": "200", "display": "200주"},
+                {"key": "price", "label": "확정 발행가액", "value": "미공시",
+                 "display": "미공시"},
+            ],
+        ),
+        says("확정 전 금액은 해설하지 않습니다."),
+    )
+    events = list(run_turn(ctx, "200주 청약하면 얼마 필요해요?", client=stuck))
+    blocks = of(events, CalcBlockEvent)
+    assert [block.state for block in blocks] == ["pending", "error"]
+    # 무엇이 막았는지는 그 입력의 이름과 값이 말한다 (서명된 문장은 표면이 쓴다), and
+    # a failed calculation draws no 식 줄 at all.
+    assert blocks[1].why == "확정 발행가액 미공시" and blocks[1].expr is None
+    assert of(events, ToolRowEvent)[0].row == "계산 → 확정 발행가액 미공시 · 0건"
+    assert of(events, RefusalEvent)[0].family == "확정 전"
+
+    # Budget-exempt: four calculations under a ceiling of one, and the turn still
+    # ends `done` — while the terminal still reports every tool that ran.
+    counting = ScriptedModel(
+        *[
+            computes(op="expr", name="합", expr="a + a",
+                     inputs=[{"key": "a", "label": "수", "value": "1", "display": "1"}])
+            for _ in range(4)
+        ],
+        says("2입니다."),
+    )
+    events = list(
+        run_turn(ctx, "1 더하기 1?", client=counting, budget=TurnBudget(max_tool_calls=1))
+    )
+    assert events[-1].status == "done" and events[-1].tool_calls == 4
 
 
 def test_a_saved_의견_is_confirmed_and_never_refused(ctx) -> None:

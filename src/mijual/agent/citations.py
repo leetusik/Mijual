@@ -372,6 +372,28 @@ class CitationGate:
             self.chips.append(chip)
         return number, chip
 
+    def cite_ref(self, ref: str | None) -> tuple[int | None, CitationEvent | None]:
+        """A 근거 by the **model's own reference id** — the calculator's door in.
+
+        The model names a citation the only way it can: with the ``c1``/``c4`` id
+        :meth:`learn` handed it (the closed citation space). A 계산 입력 that carries
+        one is a filing value and gets that filing's chip — the *same* number the
+        prose will use, because it comes through :meth:`cite`; one that carries none
+        is a value the reader gave, which is what the 「입력」 marker says.
+
+        An id that names nothing is **not** a chip and is counted in
+        :attr:`blocked`, exactly as an unresolvable marker is: the model wrote a
+        reference to something no tool returned, and nothing was honoured. The value
+        then reads as the reader's — the conservative direction, since the one thing
+        that must never happen is an invented number wearing a 근거 칩.
+        """
+        citation = self._by_ref.get(ref) if ref else None
+        if citation is None:
+            if ref:
+                self.blocked += 1
+            return None, None
+        return self.cite(citation)
+
     def _number_for(self, citation: Citation) -> tuple[int, CitationEvent | None]:
         """This 근거's chip number — assigned once, on first use (R6-4)."""
         key = _key(citation)

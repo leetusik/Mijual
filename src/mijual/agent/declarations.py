@@ -1,4 +1,4 @@
-"""What the model is told the five tools are — the Gemini function declarations.
+"""What the model is told the six tools are — the Gemini function declarations.
 
 The agent is an **agent, not a chain** (the operator's binding addition to this
 phase): the model chooses which tool to call, in what order, and across as many
@@ -18,7 +18,9 @@ tests run the tools against the corpus for free.
 
 The names match :data:`mijual.agent.tools.TOOL_NAMES` exactly and a test pins
 them together: a declaration the dispatcher cannot execute would be a tool the
-model calls into nothing.
+model calls into nothing. The calculator's ``op`` enum is pinned the same way —
+this module still **imports nothing**, so the enum is written here as data and a
+test holds it to :data:`mijual.agent.tools.CALC_OPS`.
 """
 
 from __future__ import annotations
@@ -144,6 +146,119 @@ TOOL_SPECS: tuple[ToolSpec, ...] = (
             "a form, or a promise that one is coming."
         ),
     ),
+    ToolSpec(
+        name="calculate",
+        description=(
+            "Derive a number the reader asked for that no other tool returned — this is the "
+            "only place arithmetic may happen. Prefer a named op: those run the product's own "
+            "verified math and are shown to the reader as 검증된 계산. "
+            "allotted_shares(held, allotment_ratio) = 배정 신주, floored. "
+            "excess_subscription_cap(allotted, excess_ratio) = 초과청약 한도, floored. "
+            "lapsed_warrants(issued, exercised) = 소멸 증서, never negative. "
+            "d_day(target, reference) = the countdown between two dates. "
+            "lockup_release_date(issued, months) = 전매제한 해제일, whole calendar months. "
+            "Use op='expr' only when no named op fits: it evaluates a small arithmetic "
+            "expression (+ - * / and parentheses) over your own input keys and is shown as "
+            "식 계산 — arithmetic, not verified product truth. "
+            "WHEN NOT TO USE ME: never to restate, re-format, convert or round a number a "
+            "tool already returned (quote that one exactly as it came); never to fill in a "
+            "value the filing has not stated — if 확정 발행가액 is not published yet, say so "
+            "instead of calculating around it; never invent an input the reader never gave you. "
+            "Every input you send is drawn for the reader as its own row before the result "
+            "exists, so send the value's real source: a value read from a filing carries the "
+            "citation id from that tool result, and a value the reader typed carries none and "
+            "is marked 「입력」. A result comes back display-ready — quote its display string. "
+            "ok=false is guidance, not a crash: read it, fix the call or answer without the "
+            "number, and never mention this tool to the reader."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "allotted_shares",
+                        "excess_subscription_cap",
+                        "lapsed_warrants",
+                        "d_day",
+                        "lockup_release_date",
+                        "expr",
+                    ],
+                    "description": (
+                        "Which calculation. A named operation runs the product's own math; "
+                        "'expr' is the arithmetic escape hatch and needs name and expr too."
+                    ),
+                },
+                "inputs": {
+                    "type": "array",
+                    "description": (
+                        "One entry per parameter of the chosen op — exactly its parameters, "
+                        "no more and no fewer — or one per name used in expr. These are also "
+                        "the rows the reader sees, in this order."
+                    ),
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": (
+                                    "The op's parameter name (held, allotment_ratio, …), or "
+                                    "the name expr uses for this value."
+                                ),
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": (
+                                    "The Korean label the reader reads for this value — the "
+                                    "filing's own field name, or what the reader called it."
+                                ),
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": (
+                                    "The number itself: digits only, e.g. 1000 or 0.2314082845 "
+                                    "(a ratio is a decimal fraction, never a percent), or an "
+                                    "ISO date, e.g. 2026-08-30. No units inside this string."
+                                ),
+                            },
+                            "display": {
+                                "type": "string",
+                                "description": (
+                                    "The same value as the reader reads it, unit included: "
+                                    "1,000주 · 3,200원 · 12개월. Omit it and the grouped number "
+                                    "is shown alone."
+                                ),
+                            },
+                            "cite": {
+                                "type": "string",
+                                "description": (
+                                    "The citation id from the tool result this value was read "
+                                    "from (c1, c4, …). Omit it entirely for a value the reader "
+                                    "gave you — that is what marks the row 「입력」."
+                                ),
+                            },
+                        },
+                        "required": ["key", "label", "value"],
+                    },
+                },
+                "expr": {
+                    "type": "string",
+                    "description": (
+                        "op='expr' only: arithmetic over your input keys, e.g. "
+                        "'shares * price'. Numbers, + - * / and parentheses; nothing else."
+                    ),
+                },
+                "name": {
+                    "type": "string",
+                    "description": (
+                        "op='expr' only: what this calculation is, in Korean, for the block's "
+                        "heading (청약 필요 금액). A named op is titled for you."
+                    ),
+                },
+            },
+            "required": ["op", "inputs"],
+        },
+    ),
 )
 
 
@@ -163,16 +278,23 @@ def _schema(node: dict[str, Any], types: Any) -> Any:
     properties = {
         key: _schema(value, types) for key, value in (node.get("properties") or {}).items()
     }
+    items = node.get("items")
     return types.Schema(
         type=kind,
         description=node.get("description"),
         properties=properties or None,
         required=list(node.get("required") or ()) or None,
+        # An array's element shape and a string's closed vocabulary. Both are the
+        # calculator's (`P9.S5`): the ``op`` enum is what makes an invalid operation
+        # unrepresentable rather than merely discouraged, and ``items`` is what lets
+        # one argument carry a *list of rows* instead of a string the tool re-parses.
+        items=_schema(items, types) if isinstance(items, dict) else None,
+        enum=[str(value) for value in node["enum"]] if node.get("enum") else None,
     )
 
 
 def declarations() -> list[Any]:
-    """The five as ``google.genai.types.FunctionDeclaration``, for `P6.S3`'s loop.
+    """The six as ``google.genai.types.FunctionDeclaration``, for `P6.S3`'s loop.
 
     The SDK is imported **here**, inside the call, so importing this package
     costs nothing and needs nothing installed (:mod:`mijual.extract.client`'s

@@ -10,7 +10,7 @@ loop is written to make it checkable:
 There is **no tool name in the control flow**. Nothing is fetched before the model
 speaks, nothing is fetched after it, no tool is called because the question
 matched a pattern, and no ordering is imposed on the calls it asks for. The model
-receives five declarations and a system instruction that *advises*; every call in
+receives six declarations and a system instruction that *advises*; every call in
 a turn, including the decision to make none, is its own. A turn ends when the
 model emits a round with no function calls — that is, when it decides it is ready
 to answer.
@@ -37,6 +37,13 @@ What the loop owns instead is everything that must not be left to a model:
   label/value reading (:func:`mijual.agent.tools.value_rows`) with each row's
   근거 chip taken from the same numbering the prose uses. The loop does not know
   *which* tool that is: any result that reads as labelled values gets a block;
+* **the 계산 블록** — drawn **before** the call runs, from the arguments themselves
+  (:func:`mijual.agent.tools.calc_plan`), and replaced in place on the same
+  ``block_id`` when the result arrives. Auditability is half inputs and half
+  result, so the inputs are on the reader's screen while the calculation is still
+  ``pending``. Again no tool name reaches the control flow: the loop asks whether
+  *this call* reads as a calculation, exactly as it asks whether *this result*
+  reads as labelled values;
 * **the budget** — rounds, tool calls and live model calls are all capped, and
   every cap maps to an honest ``aborted`` terminal. A turn is never silently
   truncated;
@@ -50,8 +57,8 @@ consumer closing the generator. No HTTP, no SSE and no persistence exists here.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Iterator, Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any
 
@@ -75,6 +82,7 @@ from mijual.agent.client import (
 from mijual.agent.context import ToolContext
 from mijual.agent.events import (
     AgentEvent,
+    CalcBlockEvent,
     DataBlockEvent,
     DataRow,
     FooterEvent,
@@ -85,10 +93,14 @@ from mijual.agent.events import (
 )
 from mijual.agent.instructions import system_instruction
 from mijual.agent.tools import (
+    BUDGET_EXEMPT,
     STATUS_PHASE,
     TOOL_NAMES,
+    CalcPlan,
     ToolResult,
     UnknownTool,
+    calc_outcome,
+    calc_plan,
     call_tool,
     value_rows,
 )
@@ -140,6 +152,11 @@ class _Turn:
     results: list[ToolResult] = field(default_factory=list)
     rounds: int = 0
     tool_calls: int = 0
+    #: Tool calls that **cost budget** — every call except a zero-I/O one
+    #: (:data:`mijual.agent.tools.BUDGET_EXEMPT`). Separate from ``tool_calls`` on
+    #: purpose: the terminal reports how many tools ran, the ceiling counts what
+    #: running them costs, and conflating the two would make the ▷ ledger lie.
+    billed: int = 0
     status: str = "done"
     reason: str | None = None
     #: The 진행 표시 phase currently on the reader's screen, if any.
@@ -218,13 +235,21 @@ def run_turn(
         if not calls:
             break  # the model decided it was ready to answer
 
-        if turn.tool_calls + len(calls) > limits.max_tool_calls:
+        # 계산 is **budget-exempt** (changple5's zero-I/O precedent, `P9.S1` item 3):
+        # it spends no request and no token, and a turn that stopped calculating
+        # because a *search* ceiling was near would be a limit the reader can feel
+        # with nothing behind it. The exemption is a property declared beside the
+        # tools, so no tool name enters this control flow.
+        billable = sum(1 for call in calls if call.name not in BUDGET_EXEMPT)
+        if turn.billed + billable > limits.max_tool_calls:
             turn.status, turn.reason = "aborted", "tool_budget"
             break
 
         messages.append(ModelMessage(text=said, calls=tuple(calls)))
         for call in calls:
             turn.tool_calls += 1
+            if call.name not in BUDGET_EXEMPT:
+                turn.billed += 1
             yield from _execute(ctx, call, turn, messages)
     else:
         turn.status, turn.reason = "aborted", "round_budget"
@@ -280,6 +305,67 @@ def _data_block(turn: _Turn, result: ToolResult) -> Iterator[AgentEvent]:
     yield DataBlockEvent(rows=tuple(rows), block_id=f"data-{turn.blocks}")
 
 
+def _calc_pending(turn: _Turn, plan: CalcPlan) -> tuple[CalcBlockEvent, list[AgentEvent]]:
+    """The 계산 블록 as it appears **at call time** — inputs drawn, result unknown.
+
+    Half of auditability is here (R16 §2.4: 「블록은 도구 호출 시점에 입력만이라도 먼저
+    나타난다」): the reader sees what the calculation was handed and where each value
+    came from before there is any number to be persuaded by. Each input that names a
+    근거 is resolved through :meth:`~mijual.agent.citations.CitationGate.cite_ref`,
+    so its chip is the **same number** the prose will use for that filing; one that
+    names none is the reader's own value and carries the 「입력」 marker instead.
+    """
+    rows: list[DataRow] = []
+    chips: list[AgentEvent] = []
+    for row in plan.inputs:
+        number, chip = turn.gate.cite_ref(row.cite)
+        if chip is not None:
+            chips.append(chip)
+        rows.append(
+            DataRow(
+                label=row.label,
+                value=row.display,
+                citation=number,
+                reader_input=number is None,
+            )
+        )
+    turn.blocks += 1
+    block = CalcBlockEvent(
+        mode=plan.mode,
+        name=plan.name,
+        inputs=tuple(rows),
+        state="pending",
+        block_id=f"calc-{turn.blocks}",
+    )
+    return block, chips
+
+
+def _calc_settled(block: CalcBlockEvent, result: ToolResult | None) -> CalcBlockEvent:
+    """The same block, later: ``pending`` → ``done`` | ``error``, **same id**.
+
+    A replacement rather than a second block (R16 §1), so the surface swaps the
+    result row in place and the block does not jump (§4 check 5). The inputs are
+    carried through unchanged — they are what the calculation ran on, whatever it
+    returned.
+
+    ``result is None`` is the defensive branch: the tool raised, which it does not
+    do (it answers a shape it cannot read with guidance), and a block already on the
+    reader's screen must still settle. It settles as the honest thing — this
+    calculation did not happen — named by the calculation itself.
+    """
+    outcome = calc_outcome(result) if result is not None else None
+    if outcome is None:
+        return replace(block, state="error", why=block.name)
+    computed = outcome.get("result")
+    return replace(
+        block,
+        state=str(outcome.get("state") or "error"),
+        expr=outcome.get("expr"),
+        result=computed.get("display") if isinstance(computed, Mapping) else None,
+        why=outcome.get("why"),
+    )
+
+
 def _execute(
     ctx: ToolContext, call: ModelCall, turn: _Turn, messages: list[Message]
 ) -> Iterator[AgentEvent]:
@@ -290,10 +376,21 @@ def _execute(
     phase = STATUS_PHASE.get(call.name)
     if phase is not None:
         yield from _status(turn, phase)
+
+    # Does *this call* read as a calculation? The same question shape as 「does this
+    # result read as labelled values」 — argument knowledge lives with the tools
+    # (:func:`mijual.agent.tools.calc_plan`), never as a name in this function.
+    plan = calc_plan(call.name, call.args)
+    block: CalcBlockEvent | None = None
+    if plan is not None:
+        block, chips = _calc_pending(turn, plan)
+        yield from chips
+        yield block
+
     try:
         result = call_tool(call.name, ctx, call.args)
     except UnknownTool:
-        # Told, not absorbed: there is no sixth tool and no fallback that would
+        # Told, not absorbed: there is no seventh tool and no fallback that would
         # let an invented call quietly succeed. The model gets to correct itself.
         messages.append(
             ToolMessage(
@@ -304,6 +401,8 @@ def _execute(
         )
         return
     except Exception as exc:  # noqa: BLE001 — reported structurally, never as prose
+        if block is not None:
+            yield _calc_settled(block, None)
         messages.append(
             ToolMessage(
                 name=call.name,
@@ -323,6 +422,8 @@ def _execute(
     messages.append(
         ToolMessage(name=result.tool, response=response, call_id=call.call_id)
     )
+    if block is not None:
+        yield _calc_settled(block, result)
     yield from _data_block(turn, result)
 
 
