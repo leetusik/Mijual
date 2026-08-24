@@ -430,3 +430,14 @@
 {"ts": "2026-08-25T02:05:09+09:00", "type": "slice_status_changed", "slice": "P9.S2", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-25T03:51:02+09:00", "type": "slice_status_changed", "slice": "P9.S2", "old_status": "pending", "new_status": "in_progress"}
 {"ts": "2026-08-25T04:12:23+09:00", "type": "slice_status_changed", "slice": "P9.S2", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-25T04:13:09+09:00", "type": "slice_status_changed", "slice": "P9.DECOMP2", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-25T04:17:17+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S3"}
+{"ts": "2026-08-25T04:17:17+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S4"}
+{"ts": "2026-08-25T04:17:21+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S5"}
+{"ts": "2026-08-25T04:17:21+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S6"}
+{"ts": "2026-08-25T04:17:21+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S7"}
+{"ts": "2026-08-25T04:17:25+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S8"}
+{"ts": "2026-08-25T04:17:25+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S9"}
+{"ts": "2026-08-25T04:17:25+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S10"}
+{"ts": "2026-08-25T04:17:26+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S11"}
+{"ts": "2026-08-25T04:22:12+09:00", "type": "slice_status_changed", "slice": "P9.DECOMP2", "old_status": "in_progress", "new_status": "done"}

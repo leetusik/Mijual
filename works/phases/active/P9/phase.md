@@ -64,6 +64,235 @@ inventory (below, under *Findings & Notes*) stands in for them until `P9.DECOMP2
 - The **acceptance gate** is the orchestrator's call right after this slice: the phase changes the
   operator-visible `/ask` chat surface, so `--require` is the expected declaration.
 
+### DECOMP2 (2026-08-25)
+
+_Filled by `P9.DECOMP2`, after the R16 design landed and was signed._
+
+The design has decided what gets built, so the build inventory (items 1–8, below) can now be cut into
+slices. **Nine slices: five backend, three frontend, one fidelity**, in that order — the stream must
+carry the new vocabulary before the surface is asked to draw it, and P10 (stable `block_id` +
+in-place replacement) lands in the **first** backend slice because every structured element added
+after it would otherwise invent its own progressive state privately.
+
+| slice | kind | risk | order | depends on | what it covers |
+| --- | --- | --- | --- | --- | --- |
+| `P9.S3` | implementation | high | 4 | `P9.DECOMP2` | R16 event vocabulary + `block_id`/`persistent`/in-place replacement (P10) + both signed contract changes (structured-block storage · 6-value refusal vocabulary) |
+| `P9.S4` | implementation | high | 5 | `P9.S3` | Citations: strip-don't-drop replaces the sentence-dropping gate; `미확인` claim spans (Q-B) |
+| `P9.S5` | implementation | high | 6 | `P9.S3` | Calculator tool (named ops + `expr` escape hatch) and the calculation block's `pending → done\|error` lifecycle |
+| `P9.S6` | implementation | high | 7 | `P9.S3` | `security_check` tool, the after-model hard reject, the `보안` refusal (D3) and Q-D logging |
+| `P9.S7` | implementation | high | 8 | `P9.S4` `P9.S5` `P9.S6` | Prompt rewrite (§3.1–3.4), cache prefix + cached-token field, budgets to ~20, thinking MID, input segregation, the retired signed copy |
+| `P9.S8` | implementation | high | 9 | `P9.S7` | Client store: `AskBlock` union + keyed reduce on `block_id`, transient status, R16 strings in `components/ask/copy.ts` |
+| `P9.S9` | implementation | high | 10 | `P9.S8` | The five elements — CalcBlock · DataBlock · StatusLine · ToolTrace fold · the three-marker family — plus `Answer.tsx`'s §2.8 child order |
+| `P9.S10` | implementation | high | 11 | `P9.S9` | `/ask` re-cut (rail retired · start screen · 새 대화 · sticky composer), widget empty state, and the three retirements |
+| `P9.S11` | implementation | high | 12 | `P9.S10` | Fidelity + functional sweep in the Operator Runtime (dev **and** production build), build-prompt §4's 26 checks, the whole `## Regression Checklist` |
+
+**Every one of them is `risk: high`** — each writes real code and each spans more than one file. No
+`low` slice emerged: even the smallest piece here (the ops refusal-filter mirror) is one edit inside a
+larger vocabulary change and must not be separated from it.
+
+#### What each slice covers, and where the record puts it
+
+**`P9.S3` — the contract slice (P10 first).** Build-prompt §1 end to end.
+- `agent/events.py`: the event base gains **`block_id`** (turn-stable) and **`persistent`**; a second
+  event with the same `block_id` is an **in-place replacement, not an append**. Absent `block_id` =
+  today's append behaviour, so the addition is backward compatible (§1 「추가만 한다」).
+- New `StatusEvent` (transient, `phase ∈ read|search|open|calc|write`, D5's five signed phrases live
+  in `agent/copy.py`) and `DataBlockEvent` (`title|None`, rows of `{label, value, citation|None,
+  reader_input}`). `TextEvent` gains `unverified: tuple[(start, end), …]` — the **field** only; `P9.S4`
+  fills it. `RefusalEvent.family` moves to the 6-value whitelist. `TurnEnd`: `blocked` is re-documented
+  as **removed markers, not dropped sentences**, and the turn's **distinct rcept_no count** rides on it
+  for D8's 「공시 M건 읽음」 (the record: a server-known value, *never* parsed back out of tool rows).
+- `agent/loop.py`: the emission points. Exactly **one** `StatusEvent` alive at a time, replaced as the
+  phase changes and gone at the first `TextEvent`; `DataBlockEvent` composed from tool results that
+  read as label/value pairs, each row carrying its own citation number (`gate.learn` already returns
+  the reference ids, so no new citation machinery is needed).
+- **Contract change 1/2 — storage.** `web/ask.py::_Released.absorb` + `conversationstore.record_turn`
+  + a new column on `db/models.ConversationTurn` store structured blocks **verbatim** (result.md §7,
+  §3-15: no prose paraphrase — the audit path *is* the payload). Make `absorb` **generic over any
+  persistent structured event** so `P9.S5`'s calc blocks need no second storage change. The column must
+  be **nullable and default-free**: this repo has no Alembic (N16) and `db/schema_sync.ensure_columns`
+  adds exactly that shape and raises on anything else.
+- **Contract change 2/2 — vocabulary.** `conversationstore.REFUSAL_FAMILIES` → six values, mirrored in
+  `frontend/components/ops/copy.ts::REFUSAL_CATEGORIES_KO`. `보안` is added here even though `P9.S6` is
+  what emits it (a whitelist is a contract, not a producer); the two retired families stay
+  **read-only, for past rows**, and `record_turn`'s own error message names five families today.
+
+**`P9.S4` — strip, don't drop.** `agent/citations.py::CitationGate._release` stops judging: markers are
+stripped, resolvable ones become chips, prose survives. S1's cheapest honest path — **keep the sentence
+cut, delete the judgement** — so `TextEvent.citations` stays per sentence and `Answer.tsx` keeps
+working (recorded as a deliberate compatibility choice, not where the field is heading). `_block`
+becomes a **counter of removed markers** feeding `TurnEnd.blocked`. `loop._finish`'s
+`not gate.released` fallback and `copy.REFUSAL_FALLBACK` retire with it — that fallback is the literal
+source of the operator's 「이 데이터는 검증을 통과하지 못했습니다」. **Q-B lands here**: a filing-specific
+number no tool returned is *marked*, never dropped — `TextEvent.unverified` spans (P16 claim level;
+`learn()` already harvests every tool value into `_values`). §2.5's rule is the acceptance bar:
+마커도 칩도 없는 숫자는 존재해서는 안 되고, if the server cannot compute a span it emits the sentence
+anyway and counts the fact on `TurnEnd`. **Keep**: the closed citation space, `_number_for` (같은 근거
+= 같은 번호), chip-arrives-with-its-claim, and **P8** — a tool's own signed string (`NOT_FOUND_KO` +
+관제 현황판) still reaches the reader verbatim rather than paraphrased.
+
+**`P9.S5` — the calculator.** One namespaced tool with an **`op` enum** over `mijual.calc`'s named
+operations (`d_day`, `allotted_shares`, `excess_subscription_cap`, `lapsed_warrant_value`,
+`warrant_intrinsic_value`, `implied_reference_price`, `lockup_release_date`, …) plus a clearly-labelled
+**`expr` escape hatch**: `ast.parse(…, mode="eval")` + a node whitelist over `Decimal`, **never
+`eval`** (and `literal_eval` is not an arithmetic evaluator). `declarations.TOOL_SPECS` +
+`tools.TOOL_NAMES` + `call_tool`; **budget-exempt** (zero-I/O tool precedent); errors read as
+guidance, not tracebacks; 「when *not* to use me」 goes in the tool description (P11). Surface half:
+`CalcBlockEvent` appears **at call time with its inputs already drawn** (half of auditability) and is
+replaced in place `pending → done|error` on the same `block_id`; `mode: verified|expr` is what keeps
+「제품이 계산한 값」 and 「식을 계산한 값」 from rendering identically (§3-7 — rendering them the same
+launders one into the other). `figures.with_display` already runs in `ToolResult.__post_init__`, so a
+result arrives display-ready. A calculation is **not** counted in 근거 N건 (§2.4).
+
+**`P9.S6` — the guard.** A sixth tool `security_check(category, excerpt)` whose docstring *is* the
+trigger spec and whose body is a defensive no-op. The **hard reject** sits exactly where build-prompt
+§1 puts it: in `loop.run_turn`, right after `model.stream(...)` returns and `calls` has been collected,
+**before `_execute`** — no tool of that round runs, no `ModelMessage` is appended, `RefusalEvent(family
+="보안")` carries D3's sentence, the turn ends, and the model gets **no second chance** to soften it.
+Logging (Q-D): **category + 200-char excerpt + `session_hash`, log-only, no DB row**. The reader never
+learns a check happened (§3-3). Over-triggering is the practical failure mode: the anti-overtrigger
+rule belongs in the tool description (P11) and in its own prompt paragraph (`P9.S7`), never as a
+refusal trigger.
+
+**`P9.S7` — the words and the dials.** Build-prompt §3 in full.
+- `instructions.py`: `_CITATIONS`' middle third (unrecognised marker **removed**, sentence **stands**;
+  citation compulsion only on **공시 사실** sentences); `_NEVER_COMPUTE` → calculator guidance, with
+  `HOW TO WRITE A FIGURE` (`value_display`) untouched and **browser-side calculation still banned**;
+  `_refusal_block()` → four families + 「범위 밖은 거절이 아니다」; `FINALLY` rewritten so two-to-three
+  cited sentences is a **ceiling, not a floor**, with the 인사·짧은 확인·메타 carve-out written
+  **twice** (범위 절 + 인용 절), plus the out-of-scope one-liner register and the 「어느 회사인지 되묻는다」
+  rule (§0 register).
+- §3.5 cache prefix: static rulebook first, `SCOPE` + 오늘(KST) to the **tail**, and this as a standing
+  constraint — any per-turn value placed above the static prefix re-breaks it. `client.Usage` +
+  `_usage_of` gain the cached-input field and `cost_of` a cached rate (P12) so the ▷ ledger *measures*
+  whether the 4,096-token implicit-caching floor is crossed instead of assuming it.
+- Budgets to ~20 rounds with tool and model calls scaled — **`max_model_calls ≥ max_rounds`** or the
+  client ceiling fires before the loop's and the abort reason lies. Ceilings stay structural and are
+  never rendered as copy (R6-5).
+- Thinking `LOW → MID` (`client.THINKING_BY_TASK`, `DEFAULT_THINKING_LEVEL`), with the module
+  docstring's three-reason argument **rewritten, not deleted**: its third reason (a cheaper level can
+  only produce a *blocked* claim) dies the moment `P9.S4` lands, and that is the strongest argument for
+  MID in the phase. No thinking ladder — Mijual has no users, no operator store, no env chain.
+- **Input segregation (P9, ~10 lines)**: filing text returned by a tool is delimited and declared as
+  **data, never instructions**. Highest security value per line in the phase.
+- `agent/copy.py`: D1 `AGENT_INTRO_KO`; `REFUSAL_SENTENCES` loses 「계산 요청」 and 「검증 미통과 폴백」;
+  `REFUSAL_FALLBACK` is deleted (its last use site went in `P9.S4`). D3's 보안 sentence lands with
+  `P9.S6`, which is the slice that emits it. **Careful:** `copy.family_of`,
+  `citations._family_at_head` and `citations._is_family_prefix` recognise a family by **exact string
+  match**, so retiring one is a code change in three places, not a copy edit.
+
+**`P9.S8` — the client store.** `frontend/lib/ask.ts`: the `AskBlock` union grows (`status` ·
+`data` · `calc`, plus `unverified` spans on `text`), and the reducer stops being a pure push — a block
+with a `block_id` is **replaced in place** (P10's client half; absent id keeps today's append). The
+transient `StatusEvent` is held as at most one live line and dropped at the first `text` block; it is
+never persisted to `sessionStorage`. New `switch (frame.event)` cases stay additive so both views keep
+rendering mid-build. `frontend/components/ask/copy.ts` gains the R16 strings verbatim from §0
+(`CALC_VERIFIED` · `CALC_EXPR` · `TAG_CALC` · `TAG_UNVERIFIED` · `TAG_INPUT` · `CALC_RESULT` ·
+`CALC_RUNNING` · `calcError` · `DATA_HEADING` · `SHOW_ALL` · `FOLD` · `DETAIL` · `trace` ·
+`START_HEADING_KO` · `NEW_CHAT_KO` · `START_CHIPS_KO` (**4 cards**) · D1 `AGENT_INTRO_KO`). The
+retired constants (`ANONYMITY_KO`, `VERIFIED_ONLY_KO`, `REASK_KO`) are removed in `P9.S10` **with their
+call sites**, so the build never breaks in between.
+
+**`P9.S9` — the five elements.** New components under `frontend/components/ask/`, used by **both**
+views through `Answer.tsx` (widget and `/ask` are two views over one store — **do not fork**):
+StatusLine (§2.1, 2px **dashed** left border against the tool row's solid, `role="status"`, **no
+animation** — the spinner/typing-dot ban is *not* superseded), ToolTrace (§2.2, flat at ≤3 rows or
+while streaming, folded to `trace(tools, events)` + 자세히 at ≥4 on completion, fold state never
+stored), DataBlock/DataRow (§2.3, three columns `minmax(0,40%) minmax(0,1fr) auto` — 36% at ≤767 —
+value cell scrolls alone, **the third column never scrolls out of view**, `align-self: stretch` not
+`width:100%`, 6-row fold, `margin-inline:-12px` at ≤767, **no 3-column table**), CalcBlock (§2.4,
+`--border-strong`, heading = `--live` word + name, inputs reusing the DataRow schema, expr line,
+one reserved slot so the block does not jump between `pending` and `done`, `error` with **no alert
+colour or icon**), and the **three-marker family** 추정 · 계산 · 미확인 — all three inherit
+`EstimateMarker`'s geometry (`frontend/components/EstimateMarker.tsx` + its module CSS) rather than
+re-deriving it. `Answer.tsx` gets §2.8's child order: 도구 흐름 → 구조화 블록(서버 순서) → 프로즈 →
+링크 → 진행/끝맺음 → 푸터, single `gap`, blocks always full width. CSS comes from
+`output/r16-ask.css` (**token-only, zero new tokens**); class names follow this repo's CSS Module
+convention while **the numbers transfer exactly**. Citation chips gain new *places* (data value, calc
+input) but are **the same component** — and per §2.6 a chip sits **after the sentence's full stop**.
+
+**`P9.S10` — the page, the widget, and the retirements.** `/ask` becomes a single `max-width: 760px`
+column (§2.7b): the **340 rail and its two-column grid are deleted**, the empty state is vertically
+centred (`min-height 560px`, 420 at ≤767) with `START_HEADING_KO` → D1 intro → composer → **4** start
+cards (2 columns, 1 at ≤767; pressing a card sends its own sentence verbatim), 「새 대화」 exists
+**only when a thread does** as a sticky `.atop` that empties the thread and builds no history UI, and
+the composer becomes bottom-sticky `.abar` with **no wrapping frame and no divider**. Widget: empty
+state carries the D1 intro and **no anonymity line**. Three retirements land together — the **범위 chip
+and its ×** (header and rail; `AskPageScope.tsx`, and the widget header keeps only ↗ and ×; the store's
+`scope` may stay, it simply is not drawn), the **anonymity line** (both surfaces), and **`다시 질문`**
+(`Answer.tsx` footer + `REASK_KO`; 재시도 stays on interrupted turns only). The exhausted turn gets
+**no new string, no inset, no button** (D4) — dimmed prose and a folded tool trace are the whole
+signal, and R14's 「연결이 끊겼습니다」 inset stays for the disconnect state alone. Preset strips on
+event-detail remain untouched.
+
+**`P9.S11` — fidelity and the functional sweep.** Two mandatory yardsticks (design-cowork §Verifying):
+**matches the record** *and* **works as a product**. Walk build-prompt §4's **26 checks** in the
+Operator Runtime — `make stack-up`, **dev**, `http://127.0.0.1:3000` on this Mac (and the tailnet URL
+from another device), Chrome desktop plus a mobile viewport — **and additionally in the production
+build** (`cd frontend && npm run build && npm run start`), because dev-only bug classes live in that
+gap. Then the functional sweep: every visible control does something observable, focus/hover/keyboard
+on every new control, liveness over time (status line replacement, `pending → done` without the block
+jumping, a long streaming turn), and typing-and-waiting rather than submit-only. Re-run the **whole**
+`## Regression Checklist` in `docs/current/qa.md`, not just P9's lines, and append this phase's
+headline checks through the **Doc impact** list. **RESPECT THE DESIGN**: a departure from the record is
+fixed here (or in a `fix` slice); anything the record never settled, or drew and that reads badly in
+the flesh, is **catalogued as an `## Operator Questions` line, never silently improved**.
+
+#### Standing constraints every build slice inherits
+
+1. **RESPECT THE DESIGN.** `output/build-prompt.md` is the binding contract and `output/result.md` the
+   decision record. Do not invent a Korean sentence, do not rewrite a signed one, do not drop,
+   simplify, restyle or "improve" an approved element. New copy = a design change = back to a round.
+2. **Three known-stale lines in the landed build-prompt** (catalogued in `### P9.S2 — R16 design
+   landed`): regression item 15 still describes the 340 rail; §2.7b's prose and item 21 say 「질문 카드
+   5장」 and a meta card. **The signed copy governs** — the rail is retired (§2.7b/item 20) and
+   `START_CHIPS_KO` + D11 sign exactly **four** cards with **no** meta card.
+3. **Operator Runtime.** `docs/current/operations.md` → `## Operator Runtime` is filled (not
+   `UNFILLED`): `make stack-up`, dev mode, `http://127.0.0.1:3000` + the tailnet URL, Chrome desktop +
+   a mobile viewport, production build via `npm run build && npm run start`. Any slice claiming
+   real-browser verification verifies **there**, and in the production build where the two differ.
+4. **Additive on the wire.** New events and fields ride only when non-empty, so `lib/ask.ts`'s
+   `switch (frame.event)` and both views keep working through the whole build.
+5. **Invariants nothing may break** (from the build inventory): no OpenDART call and no LLM call
+   outside the agent in a request path; the model is reached only through `mijual.agent`;
+   `mijual.agent` imports no spending module (all three AST-scanned by tests); every derived number
+   still comes from an auditable tool. Plus: one store for both views, 767 as the single breakpoint,
+   no history UI, no quota copy, no alert colour on a refusal, and the spinner/typing-dot ban.
+6. **Docs are versioned once, at `P9.REVIEW`.** Every build slice appends a one-line **Doc impact**
+   note instead of running `doc-new-version`.
+7. **Tests stay small** (contract §Hard Rules). Extend the existing suites — `tests/test_agent_loop.py`,
+   `tests/test_agent_tools.py`, `tests/test_web_ask.py`, `tests/test_web_conversations.py`,
+   `frontend/lib/*.test.ts` (`npm run smoke`) — with minimal high-value cases; the 26-check sweep and
+   the operator's eyes are what make this phase safe, not a large conformance suite.
+8. **Validation levers.** Backend: `pytest` (targeted files first, then the suite). Frontend:
+   `cd frontend && npm run typecheck && npm run smoke && npm run build`. Everything:
+   `python3 scripts/workflow.py validate`.
+
+#### Deliberately not slices
+
+- **No separate P12/P3 cache slice** — the cached-token field and the prefix reorder ride in `P9.S7`,
+  as S1B recommended (a standing constraint on the prompt, not an optimisation project).
+- **No ops-panel renderer for the stored blocks.** R16 designed the `/ask` and widget surfaces only;
+  drawing blocks in 대화 로그 would be un-designed UI. `P9.S3` stores the payload (regression item 16
+  is satisfiable at the payload level) and the question goes to the operator — see
+  `## Operator Questions`.
+- **No `P5` session-memory work, no `P6` feedback-instruction rewrite** — both were flagged
+  out-of-phase by S1 and remain deferred-job candidates.
+- **No plan.md pre-filled anywhere.** Each of the nine folders holds only `slice.json`; the
+  orchestrator writes each plan at that slice's own turn.
+- **`--order` is fractional-capable**: a `fix` slice (`P9.F1`, …) or an inserted build slice goes at
+  e.g. `--order 6.5` without renumbering anything.
+
+#### Two build notes that are engineering choices, not design ones
+
+- **`temperature=0.2`** (`client.py` ~line 325) versus changple5's `0.0`: S1 flagged that nobody has
+  ever argued Mijual's value. `P9.S7` should either keep it **deliberately** (a conversational
+  assistant plausibly wants it) or change it, and record which — not leave it unexamined a second time.
+- **Who emits `DataBlockEvent`.** The record specifies the element, not its producer. `P9.S3` decides
+  the seam (tool results whose payload reads as label/value pairs are the obvious source, and
+  `gate.learn` already supplies the per-row citation ids) and records it, so `P9.S9` renders one shape
+  rather than two.
+
 ## Findings & Notes
 
 _Durable findings and cross-slice notes; `DECOMP` seeds this, and each slice appends when it finishes._
@@ -1309,6 +1538,7 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S2`) `decisions` — R16 supersessions: `AGENT_INTRO_KO`→D1, never-compute→auditable calculator, refusal families 5→6 (계산 요청·검증 미통과 폴백 retired, 보안 added), R14 「다시 질문」 retired; non-superseded list recorded in result.md §5.
 - (`P9.S2`) `security` — Q-D signed: guard logging = category + 200-char excerpt + session_hash, log-only, no DB; security refusal copy D3 never mentions the check.
 - (`P9.S2`) `api`/`architecture` — event vocabulary extension signed (StatusEvent, DataBlockEvent, CalcBlockEvent, TextEvent.unverified, RefusalEvent 6-family, TurnEnd semantics) + structured-block storage in `record_turn` (contract change, additive).
+- (`P9.DECOMP2`) none — decomposition changed no durable truth; the build slices each append their own note.
 
 ## Operator Questions
 
@@ -1375,6 +1605,19 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   scope outside 공시 + 규제 플래그 → Q-A (공시 사실 해설로 한정 — the flag's conservative branch);
   guard logging → Q-D (category + 200-char excerpt + session_hash, log-only). The review should treat
   these as **answered**, not unrouted.
+
+- **(`P9.DECOMP2`) Does the 운영 대화 로그 panel need to *show* the stored structured blocks?** R16
+  signs the storage contract — `record_turn` keeps a calculation's inputs, expression, result and each
+  input's 근거 **verbatim**, because prose cannot carry that audit path (result.md §3-15, §7) — and
+  regression item 16 asks that a replayed turn restore the blocks 「원형 그대로」. But R16 designed the
+  `/ask` page and the widget only: the ops panel (`frontend/components/ops/Conversations.tsx`) has no
+  designed element for a data or calculation block, and inventing one in a build slice would be
+  un-designed UI on an operator surface. So `P9.S3` stores the payload and item 16 is verified **at the
+  payload level**. Does the operator want (a) payload-only for P9 — the panel keeps showing question ·
+  answer · family · 근거 as it does today; (b) a plain, undesigned dump of the block payload in the
+  panel so 품질 점검 can actually read a calculation; or (c) a later design round for the 대화 로그
+  surface? Only the operator can weigh 품질 점검 value against putting undesigned UI in front of
+  themselves.
 
 ## Constraints
 

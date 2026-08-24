@@ -1,16 +1,18 @@
 {
-  "id": "P9.DECOMP2",
+  "id": "P9.S7",
   "phase_id": "P9",
-  "name": "second decomposition: cut build slices from the signed design",
-  "kind": "decomposition",
-  "status": "done",
-  "order": 3,
+  "name": "prompt rewrite, budgets, thinking MID, cache prefix and input segregation",
+  "kind": "implementation",
+  "status": "todo",
+  "order": 8,
   "depends_on": [
-    "P9.S2"
+    "P9.S4",
+    "P9.S5",
+    "P9.S6"
   ],
-  "created_at": "2026-08-25T01:15:55+09:00",
-  "started_at": "2026-08-25T04:13:09+09:00",
-  "completed_at": "2026-08-25T04:22:12+09:00",
+  "created_at": "2026-08-25T04:17:21+09:00",
+  "started_at": null,
+  "completed_at": null,
   "risk": "high",
   "source": {
     "type": "manual",
