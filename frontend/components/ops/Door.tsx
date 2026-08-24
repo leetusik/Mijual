@@ -46,7 +46,9 @@ export function Door() {
 
   return (
     <div className={styles.door}>
+      {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
       <form
+        suppressHydrationWarning
         className={styles.doorCard}
         onSubmit={(event) => {
           event.preventDefault();
@@ -73,6 +75,7 @@ export function Door() {
         <label className={styles.doorField}>
           <span className={styles.doorLabel}>{OPERATOR_ID_KO}</span>
           <input
+            suppressHydrationWarning
             className={styles.doorInput}
             name="id"
             autoComplete="off"
@@ -84,6 +87,7 @@ export function Door() {
         <label className={styles.doorField}>
           <span className={styles.doorLabel}>{PASSWORD_KO}</span>
           <input
+            suppressHydrationWarning
             className={styles.doorInput}
             name="password"
             type="password"

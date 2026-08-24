@@ -103,7 +103,8 @@ export function ResetConfirmPanel({ token }: { token: string }) {
           <h1 className={styles.title}>{RESET_LINK_KO}</h1>
         </div>
 
-        <form className={styles.form} noValidate onSubmit={onSubmit}>
+        {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
+        <form className={styles.form} noValidate onSubmit={onSubmit} suppressHydrationWarning>
           <div className={styles.field}>
             <div className={styles.labelRow}>
               <label className={styles.label} htmlFor="reset-password">
@@ -112,6 +113,7 @@ export function ResetConfirmPanel({ token }: { token: string }) {
               <span className={styles.rule}>{PASSWORD_RULE_KO}</span>
             </div>
             <input
+              suppressHydrationWarning
               id="reset-password"
               className={styles.input}
               type="password"

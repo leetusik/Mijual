@@ -45,7 +45,10 @@ export function Composer({
   const running = state !== "idle";
 
   return (
+    // Extensions and mobile autofill stamp their own attributes onto form
+    // controls before React hydrates; `SearchRow.tsx` carries the full note.
     <form
+      suppressHydrationWarning
       className={styles.composer}
       onSubmit={(event) => {
         event.preventDefault();
@@ -55,6 +58,7 @@ export function Composer({
       }}
     >
       <input
+        suppressHydrationWarning
         ref={inputRef}
         className={styles.input}
         type="text"

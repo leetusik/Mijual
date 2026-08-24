@@ -57,10 +57,21 @@ export function Conversations({ page, filters }: { page: OpsPage; filters: LogFi
   return (
     <>
       <Panel note={ANONYMOUS_PROMISE_KO}>
-        <form className={styles.filters} method="get" action={OPS_ROUTES.conversations}>
+        {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
+        <form
+          suppressHydrationWarning
+          className={styles.filters}
+          method="get"
+          action={OPS_ROUTES.conversations}
+        >
           <label className={styles.field}>
             <span className={styles.fieldLabel}>{FILTER_KIND_KO}</span>
-            <select className={styles.select} name="kind" defaultValue={filters.kind ?? ""}>
+            <select
+              suppressHydrationWarning
+              className={styles.select}
+              name="kind"
+              defaultValue={filters.kind ?? ""}
+            >
               <option value="" />
               <option value={KIND_VALUES.answer}>{ANSWER_KO}</option>
               <option value={KIND_VALUES.refusal}>{REFUSAL_KO}</option>
@@ -72,6 +83,7 @@ export function Conversations({ page, filters }: { page: OpsPage; filters: LogFi
                 filter's value too: inventing an English token for each would be
                 pre-implementing a vocabulary P6 owns. */}
             <select
+              suppressHydrationWarning
               className={styles.select}
               name="refusal_category"
               defaultValue={filters.refusal_category ?? ""}
@@ -88,6 +100,7 @@ export function Conversations({ page, filters }: { page: OpsPage; filters: LogFi
             <label className={styles.field}>
               <span className={styles.fieldLabel}>{LOG_SESSION_KO}</span>
               <input
+                suppressHydrationWarning
                 className={styles.input}
                 name="session"
                 defaultValue={filters.session}

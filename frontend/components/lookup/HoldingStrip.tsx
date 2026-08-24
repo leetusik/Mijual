@@ -68,7 +68,9 @@ export function HoldingStrip({
         {HOLDING_LABEL_KO}
       </label>
 
+      {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
       <input
+        suppressHydrationWarning
         id="holding-shares"
         ref={inputRef}
         className={styles.num}

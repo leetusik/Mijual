@@ -57,10 +57,17 @@ export function RowInspect({
 
   return (
     <Panel title={ROW_INSPECT_KO} note={`${from}–${to} / ${rows.count}`}>
-      <form className={styles.filters} method="get" action={OPS_ROUTES.gates}>
+      {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
+      <form
+        suppressHydrationWarning
+        className={styles.filters}
+        method="get"
+        action={OPS_ROUTES.gates}
+      >
         <label className={styles.field}>
           <span className={styles.fieldLabel}>field_key</span>
           <input
+            suppressHydrationWarning
             className={styles.input}
             name="field_key"
             defaultValue={filters.field_key ?? ""}
@@ -69,7 +76,12 @@ export function RowInspect({
         </label>
         <label className={styles.field}>
           <span className={styles.fieldLabel}>reason_code</span>
-          <select className={styles.select} name="reason_code" defaultValue={filters.reason_code ?? ""}>
+          <select
+            suppressHydrationWarning
+            className={styles.select}
+            name="reason_code"
+            defaultValue={filters.reason_code ?? ""}
+          >
             <option value="" />
             {codes.map((code) => (
               <option key={code} value={code}>
@@ -80,7 +92,12 @@ export function RowInspect({
         </label>
         <label className={styles.field}>
           <span className={styles.fieldLabel}>gate_status</span>
-          <select className={styles.select} name="gate_status" defaultValue={filters.gate_status ?? ""}>
+          <select
+            suppressHydrationWarning
+            className={styles.select}
+            name="gate_status"
+            defaultValue={filters.gate_status ?? ""}
+          >
             <option value="" />
             {statuses.map((status) => (
               <option key={status} value={status}>
@@ -92,6 +109,7 @@ export function RowInspect({
         <label className={styles.field}>
           <span className={styles.fieldLabel}>rcept_no</span>
           <input
+            suppressHydrationWarning
             className={styles.input}
             name="rcept_no"
             defaultValue={filters.rcept_no ?? ""}

@@ -193,9 +193,22 @@ export function SearchRow({
   }
 
   return (
-    <form className={classNames.form} action={ROUTES.stocks} method="get" role="search">
+    // `suppressHydrationWarning` on the form and the input is not papering over
+    // a mismatch of ours: password managers and mobile Chrome's autofill stamp
+    // their own attributes (`__gchrome_uniqueid` and friends) onto every form
+    // control *before* React hydrates, and React then reports the extension's
+    // attribute as a server/client divergence. It suppresses one element deep,
+    // so a real mismatch in anything nested here is still reported.
+    <form
+      className={classNames.form}
+      action={ROUTES.stocks}
+      method="get"
+      role="search"
+      suppressHydrationWarning
+    >
       <span className={`${styles.field} ${variant === "hero" ? styles.hero : styles.surface}`}>
         <input
+          suppressHydrationWarning
           className={classNames.input}
           type="text"
           name="q"

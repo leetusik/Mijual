@@ -111,7 +111,9 @@ export function AddHolding({
 
       <CraftPanel className={styles.add}>
         <div className={styles.search}>
+          {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
           <input
+            suppressHydrationWarning
             className={styles.searchInput}
             type="text"
             value={query}

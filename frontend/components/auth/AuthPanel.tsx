@@ -207,7 +207,8 @@ export function AuthPanel() {
         </div>
 
         {/* noValidate: the browser says nothing, the slot below says it in Korean. */}
-        <form className={styles.form} noValidate onSubmit={onSubmit}>
+        {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
+        <form className={styles.form} noValidate onSubmit={onSubmit} suppressHydrationWarning>
           <div className={styles.field}>
             <div className={styles.labelRow}>
               <label className={styles.label} htmlFor="auth-email">
@@ -215,6 +216,7 @@ export function AuthPanel() {
               </label>
             </div>
             <input
+              suppressHydrationWarning
               id="auth-email"
               ref={emailRef}
               className={styles.input}
@@ -238,6 +240,7 @@ export function AuthPanel() {
               {signingUp ? <span className={styles.rule}>{PASSWORD_RULE_KO}</span> : null}
             </div>
             <input
+              suppressHydrationWarning
               id="auth-password"
               className={styles.input}
               type="password"

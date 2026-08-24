@@ -386,7 +386,9 @@ function LapsedMoney({
         <>
           <div className={styles.claim}>
             <label className={styles.claimLabel}>
+              {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
               <input
+                suppressHydrationWarning
                 type="checkbox"
                 className={styles.claimBox}
                 checked={checked}
