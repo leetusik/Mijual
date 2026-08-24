@@ -287,6 +287,29 @@ function nextId(): string {
   return `t${SESSION_TAG}-${counter}`;
 }
 
+/**
+ * A block's text as it enters the store — **R14 Q-E's normalization**, and the
+ * whole of it.
+ *
+ * The citation gate releases one verified sentence per `text` frame and the
+ * sentences arrive with the whitespace the model wrote between them, so the
+ * second and later frames carry a leading space or newline. R6 signs 스트리밍 as
+ * 「프로즈 자람」 — one paragraph growing — and the live surface instead rendered a
+ * line per sentence with a visible indent on each continuation (R14 walk finding
+ * 3). The round decided the paragraph, and decided that the fix belongs **here**
+ * rather than in CSS: a `<br>`, a `white-space: pre-wrap` or a `display: block`
+ * in prose would each be a second answer to the same question, and the store is
+ * the one place a block's text is written. The only gap between two sentences is
+ * therefore `Ask.module.css`'s `0.25em`.
+ *
+ * **Leading only.** Trailing whitespace is left alone (a sentence may legitimately
+ * end where the next frame continues it), and the reader's own question keeps its
+ * `white-space: pre-wrap` — 독자가 친 것은 독자가 친 그대로다.
+ */
+function leading(text: unknown): string {
+  return String(text ?? "").replace(/^\s+/, "");
+}
+
 /** The released prose of a turn with no terminal — the same join the server's
  * own `CitationGate.answer` uses, so a 중지 and a `done` produce one shape. */
 function released(turn: AskTurn): string {
@@ -375,7 +398,7 @@ export function createAskStore(): AskStore {
               ...turn.blocks,
               {
                 kind: "text",
-                text: String(data.text ?? ""),
+                text: leading(data.text),
                 citations: Array.isArray(data.citations) ? (data.citations as number[]) : [],
               },
             ],
@@ -389,7 +412,7 @@ export function createAskStore(): AskStore {
               {
                 kind: "refusal",
                 family: String(data.family ?? ""),
-                text: String(data.text ?? ""),
+                text: leading(data.text),
               },
             ],
           };

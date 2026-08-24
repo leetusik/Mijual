@@ -22,13 +22,25 @@
  * them. A string this file duplicated would be a second copy of a signed
  * sentence, and the two could drift.
  *
- * ## Two strings this slice reuses rather than invents, flagged for `P6.S7`
+ * ## The two strings this file once reused rather than invented — one closed
  *
- * R6 signs no label for the composer's idle send button and no accessible name
- * for the question field. Per the phase rule (「reuse the nearest signed one and
- * flag it」) the button takes R6-2's own free-input affordance 「직접 질문 입력 →」
- * and the field takes the surface's signed name 「AI 질문」. Both are recorded in
- * `works/phases/active/P6/phase.md` for `P6.S7`/`P6.REVIEW` to confirm.
+ * R6 signed no label for the composer's idle send button and no accessible name
+ * for the question field, so per the phase rule (「reuse the nearest signed one
+ * and flag it」) the button took R6-2's free-input affordance 「직접 질문 입력 →」
+ * and the field took the surface's signed name 「AI 질문」.
+ *
+ * **R14 Q-C closed the first one**: the operator specified 「보내기」 in the round's
+ * session, it is signed below as `SEND_KO`, and `ASK_SUBMIT_KO` went back to being
+ * the strip's free-input chip and only that. The field's accessible name is still
+ * the reuse it always was (`ASK_LABEL_KO`), and stays flagged.
+ *
+ * ## R14 also **retires** a string (finding 10)
+ *
+ * `API_TIER_KO` — R3's 「DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용
+ * 핸들」 — is gone: a span-less citation block is now the `DART 원문 {rcept_no} ↗`
+ * link alone, because 스팬 and 인용 핸들 are our contract's vocabulary and the
+ * link's existence is what that sentence was doing. This closes **P7 Q7①**, and
+ * the retirement is registered in `docs/reference/design/grounding/copy-inventory.md`.
  */
 
 import { ASK_LABEL_KO, BOARD_LABEL_KO, STOCKS_LABEL_KO } from "@/components/chrome/copy";
@@ -113,10 +125,6 @@ export const RETRY_KO = "재시도";
 // 인라인 인용 + 푸터 (build-prompt §인라인 인용)
 // ---------------------------------------------------------------------------
 
-/** 「API-tier 사실 (quote 없음): 블록에 "DART 공시 API 수치 — 원문 스팬 없음,
- * 접수번호가 인용 핸들" + 링크 (R3 규칙)」, verbatim. */
-export const API_TIER_KO = "DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용 핸들";
-
 /** 「verbatim quote + `DART 원문 {rcept_no} ↗`」 — the citation block's own link,
  * and the same words the 갈 곳 링크 uses for 「DART 원문 rcept_no verbatim」. */
 export function dartSourceLabel(rceptNo: string): string {
@@ -162,15 +170,30 @@ export const FEEDBACK_SAVED_KO = "의견을 저장했습니다 — 운영자가 
 export const FEEDBACK_TOOL = "save_feedback";
 
 // ---------------------------------------------------------------------------
-// 입력 (R6-2 · reused, flagged above)
+// 입력 (R14 Q-C · R6-2)
 // ---------------------------------------------------------------------------
 
-/** R6-2: 「자유 입력은 한 단계 뒤 ("직접 질문 입력 →")」 — the signed affordance for
- * typing your own question, reused as the composer's idle button text.
+/**
+ * 「보내기」 — the composer's idle button, **signed by R14 (2026-08-24, Q-C)** and
+ * specified by the operator in that round's own session.
  *
- * On the 질문 스트립 it is that affordance **in its own place**: the last chip,
- * which opens the surface in the event's 범위 and sends nothing (R6-2's
- * presets-first order — 프리셋 먼저, 자유 입력 한 단계 뒤). */
+ * It is the one string this round wrote for a control (its other nine are the
+ * preset questions in `presets.ts`). The three-text machine R6 signed is
+ * unchanged — 보내기 → 답변 준비 중… → 중지, one button whose text is replaced —
+ * and this is the first text finally saying what pressing it does. R14 result.md
+ * §Copy, and `build-prompt.md` §2.
+ */
+export const SEND_KO = "보내기";
+
+/** R6-2: 「자유 입력은 한 단계 뒤 ("직접 질문 입력 →")」 — the signed affordance for
+ * typing your own question.
+ *
+ * **R14 Q-C sent it back to its own place** and it is now used in exactly one:
+ * the 질문 스트립's last chip, which opens the surface in the event's 범위 and
+ * sends nothing (R6-2's presets-first order — 프리셋 먼저, 자유 입력 한 단계 뒤).
+ * Its stint as the composer's idle button — a reuse this file flagged for `P6.S7`
+ * — ended there: 「직접 질문 입력 →」 on the control that submits an already-typed
+ * question told the reader to do what they had just done. */
 export const ASK_SUBMIT_KO = "직접 질문 입력 →";
 
 // ---------------------------------------------------------------------------
@@ -205,21 +228,22 @@ export const VERIFIED_ONLY_KO = "검증된 필드만 근거로 답합니다 — 
 // ---------------------------------------------------------------------------
 
 /**
- * The one preset question the record itself writes.
+ * The **first** preset question the record wrote — R6's own.
  *
  * result.md §Composition examples: 「Panel: 계양전기 `20260724000546` — "실권주는
  * 어떻게 처리되나요?" 답변, 근거 = forfeited_share_method · excess_subscription의
  * verbatim quote」 — a question about a **gate-passing field** of one event, which
  * is exactly what R6-2 says a preset is (「프리셋은 그 이벤트의 게이트 통과
- * 필드에서 생성」). So where `forfeited_share_method` is served, its chip is this
- * sentence verbatim instead of the field's own label.
+ * 필드에서 생성」).
  *
- * Every other chip is the served `korean_name` — the label the page's own field
- * row prints, off the wire. **Nothing here composes a Korean sentence**: a
- * template like 「{label}은 어떻게 되나요?」 would be invented copy, and it would
- * read wrongly over half the field names (a 기간 is not 처리되는 것). The rule and
- * its consequence — a strip that mixes one signed sentence with field labels — is
- * recorded in `presets.ts` and flagged for `P6.S7`/`P6.REVIEW`.
+ * **R14 Q-D made every chip work the way this one always did**: nine more
+ * sentences were signed (R14-D1…D9) so each chip *sends* a question while
+ * *reading* the served `korean_name`, and this one was kept exactly as R6 wrote
+ * it rather than re-signed. The table lives in `presets.ts`, which is also where
+ * the round's no-fallback rule is stated — a key with no signed sentence renders
+ * no chip at all. Templates stay banned: 「{label}은 어떻게 되나요?」 would be
+ * invented copy and would read wrongly over half the field names (a 기간 is not
+ * 처리되는 것). The `P6.S7` flag this docstring used to carry is **closed by R14**.
  */
 export const FORFEITED_QUESTION_KO = "실권주는 어떻게 처리되나요?";
 export const FORFEITED_FIELD = "forfeited_share_method";

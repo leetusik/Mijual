@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { CraftPanel } from "@/components";
-import { getEvent } from "@/lib/api";
-import type { AskScope } from "@/lib/ask";
 import { Answer } from "./Answer";
 import { Composer, type ComposerState } from "./Composer";
 import {
@@ -14,9 +12,9 @@ import {
   VERIFIED_ONLY_KO,
   scopeLabel,
 } from "./copy";
-import { presetsFor, type AskPreset } from "./presets";
 import { QuestionStrip } from "./QuestionStrip";
 import { useAskState, useAskStore } from "./useAsk";
+import { useScopePresets } from "./useScopePresets";
 import ask from "./Ask.module.css";
 import styles from "./AskPage.module.css";
 
@@ -31,6 +29,11 @@ import styles from "./AskPage.module.css";
  * > **모바일 (≤480px)**: 위젯·런처 없음 — AI 질문 = 전폭 페이지 하나. 프리셋 =
  * > 가로 스크롤 한 줄 (타깃 ≥44px), 인용 블록 전폭 (180px 캡 + 스크롤), 입력 바
  * > 하단 sticky (44px), 도구 행 유지. (R6 §Mobile)
+ *
+ * **The width in that quote is the one thing R14 superseded** (Q-A): the mobile
+ * grammar above now begins at **767px**, so this page is the whole surface for
+ * every window a widget no longer exists in. The four rules themselves stand
+ * verbatim, and the record's own words are kept here as the record wrote them.
  *
  * Four things follow, and all four are decisions rather than layout:
  *
@@ -124,36 +127,4 @@ export function AskPage() {
       </div>
     </main>
   );
-}
-
-/**
- * The 범위 event's gate-passing fields, read the same way the detail page reads
- * them — so a preset chip on this page and the one on `/events/{rcept_no}` are
- * generated from one payload by one rule (`presets.ts`).
- *
- * `GET /events/{rcept_no}` is the page's own contract call, anonymous and
- * read-only, and its `fields` map already holds **only** what the gate passed. A
- * failure or an abort yields **no chips** rather than a message: R6 writes no copy
- * for a preset row that could not be built, and the composer below is the surface
- * either way. A 철회 event yields none either — 「답할 수 없는 질문은 프리셋으로
- * 제안하지 않음」, and 철회 is the refusal family the agent would answer with.
- */
-function useScopePresets(scope: AskScope | null): AskPreset[] {
-  const [presets, setPresets] = useState<AskPreset[]>([]);
-  const rceptNo = scope?.rcept_no ?? null;
-
-  useEffect(() => {
-    setPresets([]);
-    if (!rceptNo) return;
-    const controller = new AbortController();
-    getEvent(rceptNo, { signal: controller.signal })
-      .then((detail) => {
-        if (controller.signal.aborted) return;
-        setPresets(detail.state === "withdrawn" ? [] : presetsFor(detail.fields));
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [rceptNo]);
-
-  return presets;
 }

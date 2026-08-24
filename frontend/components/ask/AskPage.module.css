@@ -1,9 +1,13 @@
 /* 전용 페이지 (R6 §Surfaces 개정 ④, §Mobile).
  *
  * The record's literals here are **340** (the rail) and **44px** (the mobile
- * input bar and its targets); the breakpoint is R1's own 480 (so the desktop
- * side starts at 481px, the same line `useAsk.ts`'s `DESKTOP_QUERY` draws).
- * Everything else is a token.
+ * input bar and its targets); the breakpoint is the product's single **767**
+ * (so the desktop side starts at 768px, the same line `useAsk.ts`'s
+ * `DESKTOP_QUERY` draws) — **R14 Q-A** moved it off R1's narrower pair, because on this
+ * surface the line also decides whether the widget and the launcher exist at all.
+ * R14 f9 adds the desktop rhythm's own three numbers: the chat column stops at
+ * **760**, the two columns centre as one **1124** bundle, and the rail is
+ * **sticky**. Everything else is a token.
  *
  * **There is no frame** — 「챗 표면 프레임 없음: 패널·브래킷 없이 페이지에 직접」.
  * So this file gives the chat column no background, no border and no shadow; the
@@ -59,19 +63,30 @@
   background: var(--paper);
 }
 
-/* ≥481px: 「우측 340 레일」. The rail is placed into the second column while
-   keeping its DOM lead, so reading order and visual order can differ on purpose. */
-@media (min-width: 481px) {
+/* ≥768px: 「우측 340 레일」. The rail is placed into the second column while
+   keeping its DOM lead, so reading order and visual order can differ on purpose.
+
+   R14 f9 — the chat column measures **760px** and stops there, and the pair
+   centres inside `max-width: 1124px` (760 + 24 + 340). At 1564px the prose no
+   longer crosses a whole column and the right column no longer stands empty for a
+   page's height. The rail is `sticky` at `--space-6`: on a short thread the empty
+   column below it is margin, and on a long one the 범위 · 약속 · 인트로 stay in
+   view instead of scrolling away. */
+@media (min-width: 768px) {
   .columns {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-columns: minmax(0, 760px) 340px;
     gap: var(--space-6);
     align-items: start;
+    max-width: 1124px;
+    margin-inline: auto;
   }
 
   .rail {
     grid-column: 2;
     grid-row: 1;
+    position: sticky;
+    top: var(--space-6);
   }
 
   .chat {

@@ -30,16 +30,24 @@ export function useAskState(): AskState {
 }
 
 /**
- * 「모바일 (≤480px): 위젯·런처 없음」 (R6 §Surfaces / §Mobile) — as a **render**
- * decision, not a `display: none`.
+ * 「위젯·런처 없음」 below the surface's breakpoint (R6 §Surfaces / §Mobile) — as a
+ * **render** decision, not a `display: none`.
  *
- * R1's breakpoints are 480 / 768 / 1120, so the desktop surface starts at 481px.
+ * **R14 Q-A moved that line onto the product's single 767**, so the desktop
+ * surface starts at **768px**: R1's own narrower breakpoint survived here longer
+ * than anywhere else (R10 §0 settled the 767 line and R13 deleted the last block
+ * still drawn at the old one), and here the line is not layout — it decides
+ * whether the widget and the launcher **exist**. Every window between the old line
+ * and 767 used to receive a launcher and a squeezed widget; each now receives the
+ * same full-width `/ask` page a phone does. `Ask.module.css` and `AskPage.module.css` draw the
+ * same 767/768 line, and `AskSurface` is where it becomes a render.
+ *
  * Server-rendered as `false` and corrected on mount, the same shape
  * `lib/motion.ts`'s `useReducedMotion` uses and for the same reason: a media
  * query is a client fact, and prerendering the wrong side of it would flash a
  * launcher onto a phone.
  */
-export const DESKTOP_QUERY = "(min-width: 481px)";
+export const DESKTOP_QUERY = "(min-width: 768px)";
 
 export function useDesktop(): boolean {
   const [desktop, setDesktop] = useState(false);

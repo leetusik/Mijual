@@ -23,10 +23,12 @@ import styles from "./Strip.module.css";
  * `setScope` (the reader's own choice, which is what a chip press is), `ask`, and
  * then whichever surface is the reader's:
  *
- * - **desktop** → `open()`, the widget (「위젯을 이벤트 범위로 열며 질문 전송」);
- * - **≤480px** → `/ask`, the whole surface there (「모바일: 페이지」). Going back
- *   returns the reader to this page with the conversation intact, because the
- *   thread lives in `lib/ask.ts` rather than in either view;
+ * - **>767px** → `open()`, the widget (「위젯을 이벤트 범위로 열며 질문 전송」);
+ * - **≤767px** → `/ask`, the whole surface there (「모바일: 페이지」 — at R14 Q-A's
+ *   boundary, which is `useDesktop`'s own, so a 600px window routes to the page
+ *   rather than opening a widget that no longer exists there). Going back returns
+ *   the reader to this page with the conversation intact, because the thread lives
+ *   in `lib/ask.ts` rather than in either view;
  * - **already on `/ask`** → nothing to open; the question simply starts.
  *
  * `setScope` rather than `setPageScope`: the page's *ambient* 범위 is bound by
@@ -35,7 +37,14 @@ import styles from "./Strip.module.css";
  * `{rcept_no, name}` because the signed chip prints 「범위: {종목} · {rcept_no}」.
  *
  * The last chip is R6-2's 「직접 질문 입력 →」 — presets first, free input one step
- * behind: it opens the same surface in the same 범위 and sends **nothing**.
+ * behind: it opens the same surface in the same 범위 and sends **nothing**. R14
+ * Q-C gave that string back to this chip alone; the composer's button is 「보내기」.
+ *
+ * **A chip reads its label and sends its question** (R14 Q-D). The visible text is
+ * the served `korean_name`, and the sentence it sends is the round's signed one —
+ * so the `title` and the accessible name are that **sentence**, which is what
+ * pressing the chip actually does. `presets.ts` holds the table and the rule that
+ * a key with no signed sentence renders no chip at all.
  */
 export function QuestionStrip({
   scope,
@@ -78,6 +87,8 @@ export function QuestionStrip({
             key={preset.key}
             type="button"
             className={styles.chip}
+            title={preset.question}
+            aria-label={preset.question}
             onClick={() => press(preset.question)}
           >
             {preset.label}

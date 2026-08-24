@@ -45,10 +45,21 @@ function group(blocks: readonly AskBlock[]): Group[] {
   return groups;
 }
 
-/** 「근거 N건 · {rcept_no} · {생성시각 KST}」 — the format's own `·`, and every
+/**
+ * 「근거 N건 · {rcept_no} · {생성시각 KST}」 — the format's own `·`, and every
  * 근거 the answer rests on rather than only the first. The instant is sliced,
  * never re-parsed into a `Date`: the server emits `+09:00` and the browser
- * derives no time (`lib/format.ts`). */
+ * derives no time (`lib/format.ts`).
+ *
+ * **N is the number of chips on the screen** (R14 Q-B — 하나의 근거 = 하나의 칩,
+ * the operator's own sentence). The server's `footer.count` counts distinct
+ * **filings**, which the rcept_no list right beside it already says: an answer
+ * resting on five numbered chips from one filing printed 「근거 1건」 directly
+ * under [1][2][3][4][5], and to a first-time reader that is a contradiction. So
+ * the count is taken from `turn.chips` and the evidence list stays the server's.
+ * The wire is unchanged — this is a **client-side** reading of the same frame, and
+ * the divergence is deliberate and recorded (`P8.S15`, phase note).
+ */
 function footerFacts(count: number, evidence: readonly string[], instant: string): string {
   const stamp = instant ? kstStamp(instant) : null;
   return [
@@ -165,7 +176,7 @@ export function Answer({
       {turn.footer ? (
         <p className={styles.footer}>
           <span className={styles.footerFacts}>
-            {footerFacts(turn.footer.count, turn.footer.evidence, turn.footer.generated_at)}
+            {footerFacts(turn.chips.length, turn.footer.evidence, turn.footer.generated_at)}
           </span>
           <span className={styles.links}>
             {footerLinks.map((link) => (

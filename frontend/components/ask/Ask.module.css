@@ -12,6 +12,19 @@
  * **Motion is fades and one caret.** R6 §SSE: 「모션: 페이드만. 버블 슬라이드·
  * 타이핑 점·스피너 금지」 — state changes are text replacement. The launcher's
  * Saturn is the one exception and it lives in `Launcher.module.css`.
+ *
+ * ## What **R14** re-cut (2026-08-24, `rounds/14-ask/output/ask/r14-ask.css`)
+ *
+ * The geometry canon this file is now ported from, declaration by declaration.
+ * R6's literals above all stand; what moved is: the surface's breakpoint (R6's
+ * own narrower line → **767**, Q-A — and here it decides where the widget
+ * *exists*, `AskSurface`),
+ * the widget's retired `max-width` guard, the 도구 행 as one **nowrap** line that
+ * scrolls (f5 — 접수번호 never breaks mid-number, R10 §0), the disabled send as
+ * the **ghost tier** rather than a dimmed solid (f13), one hover rule per control
+ * (f11 — closes P7 Q9 on this surface), thin product scrollbars on the thread and
+ * the quote (f14), and the API-tier block reduced to its link alone (f10 —
+ * `API_TIER_KO` retired with `.apiTier`, closing P7 Q7①).
  */
 
 .widget {
@@ -23,10 +36,10 @@
   flex-direction: column;
   width: 440px;
   height: 620px;
-  /* Guards, not a redesign: they bite only on a window narrower or shorter than
-     the signed panel plus its margins, where the alternative is a widget that
-     runs off the screen. A desktop window renders 440×620 exactly. */
-  max-width: calc(100vw - 2 * var(--space-6));
+  /* One guard, not a redesign: it bites only on a window **shorter** than the
+     signed panel plus its margins. R14 retired the width guard with the 767
+     boundary — the narrowest window that renders a widget at all is 768px, which
+     fits 440 + 2×24 — so a widget is 440×620 exactly wherever it exists. */
   max-height: calc(100dvh - 2 * var(--space-6));
   background: #0e1a15;
   border: 1px solid var(--border-strong);
@@ -117,6 +130,22 @@
   gap: var(--space-5);
   padding: var(--space-4);
   overflow-y: auto;
+  /* f14 — the same thin bar the product's other scrolling panels use, instead of
+     the platform's default grey one. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.thread::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thread::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+}
+
+.thread::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .intro {
@@ -179,7 +208,13 @@
 
 /* 도구 행: mono `--text-xs` `--ink-3`, 좌측 2px `--border-soft` hairline —
    「모바일에서도 생략 금지」. The string is the tool's own and is printed verbatim;
-   the surface composes nothing. */
+   the surface composes nothing.
+
+   R14 f5: **one line that scrolls**, never a wrapped one. `word-break: break-all`
+   split a 접수번호 across two lines at 390 (`2026072400054⏎6`), which R10 §0
+   forbids — 숫자는 줄바꿈하지 않는다. The overflow is horizontal, contained so the
+   page never bounces sideways, and its bar is hidden: the row is evidence, not a
+   scroller to admire. */
 .toolRow {
   margin: 0;
   padding-left: var(--space-2);
@@ -188,15 +223,29 @@
   font-size: var(--text-xs);
   line-height: var(--leading-base);
   color: var(--ink-3);
-  word-break: break-all;
+  white-space: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
 }
 
-/* 거절도 같은 프로즈 경로 — alert 색·아이콘 금지 (R6 §거절). */
+.toolRow::-webkit-scrollbar {
+  display: none;
+}
+
+/* 거절도 같은 프로즈 경로 — alert 색·아이콘 금지 (R6 §거절).
+
+   R14 Q-E: **한 단락으로 자란다.** Sentences are inline spans and the only gap
+   between two of them is the `0.25em` below — no `<br>`, no `white-space:
+   pre-wrap`, no `display: block` anywhere in prose. The whitespace the stream
+   carries in front of a sentence is normalized at the **store** boundary
+   (`lib/ask.ts`), so nothing here has to defend against it. */
 .prose {
   margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-base);
   color: var(--ink-1);
+  text-wrap: pretty;
 }
 
 .sentence + .sentence {
@@ -235,6 +284,16 @@
   line-height: 1.4;
   color: var(--live);
   cursor: pointer;
+}
+
+/* f11 — one hover rule per control: the chip's border goes opaque `--live`, and
+   an open chip carries the `--live-tint` fill. */
+.chip:hover {
+  border-color: var(--live);
+}
+
+.chip[aria-expanded="true"] {
+  background: var(--live-tint);
 }
 
 /* 제자리 인용 블록 — the Citation primitive's own anatomy and timing, shared as
@@ -277,16 +336,21 @@
   font-size: var(--text-base);
   line-height: var(--leading-base);
   color: var(--ink-1);
+  /* f14 — the quote's own scroll gets the same thin bar as the thread. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
-/* API-tier 사실: 「원문 스팬 없음, 접수번호가 인용 핸들」 — the block says so in
-   the signed words instead of showing a quote it does not have. */
-.apiTier {
-  display: block;
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-base);
-  color: var(--ink-2);
+.quote::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quote::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+}
+
+.quote::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .quoteLink {
@@ -295,6 +359,15 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--live);
+}
+
+/* f10 — API-tier (quote 없음): the block is the `DART 원문 {rcept_no} ↗` link and
+   nothing else, so there is nothing above it to sit under. R3's sentence — 「DART
+   공시 API 수치 — 원문 스팬 없음, 접수번호가 인용 핸들」 — is **retired** with
+   `API_TIER_KO` and its `.apiTier` rule: the link's existence is what that
+   sentence was doing (R14 finding 10, closing P7 Q7①). */
+.quoteLinkSolo {
+  margin-top: 0;
 }
 
 /* --- 푸터 · 갈 곳 · 중단 행 --------------------------------------------- */
@@ -395,7 +468,8 @@
   color: var(--ink-3);
 }
 
-/* 「버튼 텍스트 교체 + disabled」 — one button, three texts, no spinner. */
+/* 「버튼 텍스트 교체 + disabled」 — one button, three texts, no spinner
+   (보내기 → 답변 준비 중… → 중지). */
 .send {
   min-height: 36px;
   padding-inline: var(--space-3);
@@ -407,20 +481,46 @@
   color: var(--ink-1);
   white-space: nowrap;
   cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
 }
 
+/* f11 — the solid button's hover is its **border** only. */
+.send:hover {
+  border-color: var(--live);
+}
+
+/* f13 — a disabled send is the **ghost tier**, not a dimmed solid: `opacity: .72`
+   still read as pressable. No fill, soft hairline, quietest ink — and no hover,
+   because there is nothing to press. */
 .send:disabled {
+  background: none;
+  border-color: var(--border-soft);
+  color: var(--ink-3);
   cursor: default;
-  opacity: 0.72;
 }
 
-/* ≤480px there is no widget and no launcher, so the **only** composer on this
- * side of the breakpoint is the dedicated page's (`AskPage.tsx`) — and R6 §Mobile
- * fixes its bar: 「입력 바 하단 sticky (44px)」, with ≥44px targets. The widget's
- * own 36px controls are untouched, because the widget never renders here. */
-@media (max-width: 480px) {
+.send:disabled:hover {
+  border-color: var(--border-soft);
+}
+
+/* ≤767px there is no widget and no launcher (R14 Q-A moved R6's own narrower line
+ * onto the product's single 767 boundary), so the **only** composer on this side is
+ * the dedicated page's (`AskPage.tsx`) — and R6 §Mobile fixes its bar: 「입력 바
+ * 하단 sticky (44px)」, with ≥44px targets. The widget's own 36px controls are
+ * untouched, because the widget never renders here. */
+@media (max-width: 767px) {
   .input,
   .send {
     min-height: 44px;
+  }
+
+  /* 「인용 블록 전폭」 (R6 §Mobile, drawn by R14's canon as the `.m390` mirror):
+     on a phone the quote pushes back out through the answer box's own padding
+     and spans it edge to edge, so a 180px-capped 원문 gets the whole width the
+     surface has. The padding it gives back is what keeps the text off the
+     hairline. */
+  .quotePanel {
+    margin-inline: calc(-1 * var(--space-3));
+    padding-inline: var(--space-3);
   }
 }

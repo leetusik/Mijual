@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { dartUrl } from "@/lib/api";
 import type { AskChip } from "@/lib/ask";
-import { API_TIER_KO, dartSourceLabel } from "./copy";
+import { dartSourceLabel } from "./copy";
 import styles from "./Ask.module.css";
 
 /**
@@ -25,10 +25,13 @@ import styles from "./Ask.module.css";
  *
  * - the chip's text is the **number**, and the same 근거 keeps it for the whole
  *   answer (the server assigns it once, on first use);
- * - a chip with no quote is the **API-tier** citation (R3 rule): the block says
- *   「DART 공시 API 수치 — 원문 스팬 없음, 접수번호가 인용 핸들」 in the signed
- *   words and links out. That is a citation, not a missing one — unlike the
- *   primitive's third state, which renders no chip at all.
+ * - a chip with no quote is the **API-tier** citation (R3 rule), and **R14
+ *   finding 10 re-cut what its block holds**: the `DART 원문 {rcept_no} ↗` link,
+ *   alone (`.quoteLinkSolo`, so nothing sits above it to need a top margin). R3's
+ *   explanatory sentence `API_TIER_KO` is retired — 원문 스팬 and 인용 핸들 are our
+ *   contract's vocabulary, and the link's existence already is what the sentence
+ *   said. It is still a citation, not a missing one — unlike the primitive's third
+ *   state, which renders no chip at all. Closes P7 Q7①.
  *
  * `span` is carried on the payload and deliberately **not rendered**: an offset
  * is internal, exactly as the primitive records.
@@ -55,15 +58,17 @@ export function InlineCitation({ chip }: { chip: AskChip }) {
       >
         <span className={styles.quoteClip}>
           <span className={styles.quotePanel}>
-            {chip.quote === undefined ? (
-              <span className={styles.apiTier}>{API_TIER_KO}</span>
-            ) : (
+            {chip.quote === undefined ? null : (
               // The filing's own words: never paraphrased, corrected or
               // re-punctuated, so the whitespace it was filed with survives too.
               <span className={styles.quote}>{chip.quote}</span>
             )}
             <a
-              className={styles.quoteLink}
+              className={
+                chip.quote === undefined
+                  ? `${styles.quoteLink} ${styles.quoteLinkSolo}`
+                  : styles.quoteLink
+              }
               href={dartUrl(chip.rcept_no)}
               target="_blank"
               rel="noopener noreferrer"

@@ -21,7 +21,8 @@ import styles from "./Launcher.module.css";
  *
  * ## Where it renders, and where it must not
  *
- * `AskSurface` decides: desktop only (≤480px renders **nothing** — 위젯·런처 없음),
+ * `AskSurface` decides: desktop only (≤767px renders **nothing** — 위젯·런처 없음,
+ * R14 Q-A's boundary),
  * never on `/ask` (전용 페이지에는 런처 렌더 금지 — 중복 표면 금지), and never
  * inside the ops chrome (which `SiteChrome` never wraps in the reader tree at
  * all). The corner is R2's deliberately empty one and vocky's trigger is chrome-

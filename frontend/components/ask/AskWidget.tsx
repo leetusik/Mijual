@@ -13,7 +13,9 @@ import {
   CLOSE_GLYPH,
   scopeLabel,
 } from "./copy";
+import { QuestionStrip } from "./QuestionStrip";
 import { useAskState, useAskStore } from "./useAsk";
+import { useScopePresets } from "./useScopePresets";
 import styles from "./Ask.module.css";
 
 /**
@@ -28,6 +30,14 @@ import styles from "./Ask.module.css";
  * SSE fetch live in the store at the persistent-layout level, so closing this
  * panel — or walking to `/ask` — interrupts nothing (「스트리밍 중 이동/전환에도
  * 끊김 없음」). `P6.S6`'s page is the second view over the same store.
+ *
+ * **R14 moved two things here.** The widget now exists only above **767px**
+ * (Q-A — `AskSurface` decides it, and the panel's `max-width` guard went with the
+ * boundary: the narrowest window that renders one fits 440 exactly). And an empty
+ * thread whose 범위 is an event fills its middle with the **질문 스트립** under the
+ * intro (finding 8) — the same chips the detail page shows, without the free-input
+ * chip, because the composer is right below. A 전체 공시 widget's empty middle
+ * stays empty: that **is** the state, and the round minted no empty-state copy.
  */
 export function AskWidget() {
   const store = useAskStore();
@@ -35,6 +45,8 @@ export function AskWidget() {
   const router = useRouter();
   const thread = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
+
+  const presets = useScopePresets(state.turns.length === 0 ? state.scope : null);
 
   const last = state.turns[state.turns.length - 1];
   const composer: ComposerState =
@@ -91,6 +103,15 @@ export function AskWidget() {
           <p className={styles.introText}>{AGENT_INTRO_KO}</p>
           <p className={styles.anonymity}>{ANONYMITY_KO}</p>
         </div>
+
+        {/* finding 8 — 빈 스레드 · 범위 = 이벤트: the preset row is what the middle
+            of this panel is for. It disappears the moment there is a turn to
+            read, and it never appears in 전체 공시 범위, where there is no event
+            to generate chips from. `freeInput={false}`: the composer below is the
+            free input, and a chip pointing at it would be a second one. */}
+        {state.turns.length === 0 && state.scope ? (
+          <QuestionStrip scope={state.scope} presets={presets} freeInput={false} />
+        ) : null}
 
         {state.turns.map((turn) => (
           <div key={turn.id} className={styles.turn}>

@@ -1215,6 +1215,20 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] 480 은퇴: Portfolio.module.css has exactly one media query (max-width 767px) and no built CSS rule under any 480px query carries a Portfolio-module class; at 390/767 every 보유 종목 control is ≥44px (P8)`
 - `P8.S13`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R13's tail: **신규 0건**; two operator revisions (`EMPTY_TITLE_KO` → 「보유 종목이 비어 있습니다」, `SAMPLE_BANNER_KO` → 「샘플 보유 종목 — …」); two compositions of existing signed constants (the rail `← ` + **`HOLDINGS_LABEL_KO`**, and `perHoldingCaption` 「배정 {k}주 × 「추정」{unit}원」 on the 소멸 금액); two withdrawn R5 clauses (R5-4's 종료, R5-7's 상시 delete sentence); `MISSED_DETAIL_KO` moved not reworded; the superseded R5 geometry; and the note that the login page's 「실제 공시 4건」 is untouched while its 「예시 포트폴리오」 collides with §4b (Q47).
 
+- `P8.S15`: **frontend** — R14 supersedes R6's boundary and four of its renderings on the AI 질문 surface. `DESKTOP_QUERY` is `(min-width: 768px)` and both ask modules draw the single 767 line, so **the launcher and the widget exist only >767** (a render decision in `AskSurface`, not a media query); the widget's `max-width` guard is deleted (`max-height` stays) and it measures 440×620 wherever it exists. `AskPage.module.css`'s desktop block is `minmax(0, 760px) 340px` with `max-width: 1124px; margin-inline: auto` and a `position: sticky; top: var(--space-6)` rail — the effective bundle is **1072/708** because `main.content` (R2's 1120 shell) binds first (Q57). `Ask.module.css` is the round's canon ported declaration-for-declaration: nowrap scrolling 도구 행 (`word-break: break-all` retired), ghost `:disabled` send (`opacity:.72` retired) with border-only hover, `.chip` hover + `[aria-expanded]` tint, thin thread/quote scrollbars, `.apiTier` deleted and `.quoteLinkSolo` added, and a ≤767 rule giving the quote block the answer box's full width (R6 §Mobile 「인용 블록 전폭」, previously unimplemented). `presets.ts` holds a **field key → signed question** table (`FIELD_ORDER`'s ten keys, R14-D1…D9 + R6's 실권주) and a **no-fallback rule** — an unsigned key renders no chip; `AskPreset.question` is no longer `label`. `lib/ask.ts` normalizes a block's **leading** whitespace at the store boundary (`leading()`, `text` + `refusal`), so prose is one paragraph without any CSS help. New module `components/ask/useScopePresets.ts` — the hook `AskPage` had, now shared with the widget's empty scoped thread. Add supersession rows for R6 §Surfaces · §Mobile · §인라인 인용 (API-tier) and R3's API-tier sentence.
+- `P8.S15`: **product** — **481–767 no longer has a widget or a launcher**: every window below 768 gets the same full-width `/ask` a phone gets, and a 질문 스트립 chip there routes to the page instead of opening a widget. A preset chip **shows the served `korean_name` and sends a signed question**, so the thread no longer shows noun-phrase 「questions」; a field key with no signed sentence produces no chip at all. An empty widget scoped to an event now offers that event's presets under the intro; an unscoped one offers nothing, which is the state (no empty-state copy was minted). The completed answer's 「근거 N건」 counts **the numbers on the screen** (하나의 근거 = 하나의 칩), not the filings — a deliberate client/server divergence, see the note below.
+- `P8.S15`: **experience** — 「보내기」 is the composer's idle word (R14 Q-C, operator-specified); a send that cannot be pressed is a ghost, not a dimmed solid; an answer grows as one paragraph; a span-less citation block is its `DART 원문 {rcept_no} ↗` link alone (**P7 Q7① closed**); one hover rule per control on this surface — strip chip soft→strong, free chip + ink-2→ink-1, citation chip border → opaque `--live`, solid send border → `--live`, header icons and 범위 × ink-2→ink-1 (**P7 Q9 closed here**); a 접수번호 in a 도구 행 never breaks mid-number (it scrolls); thread and quote scrollbars are the product's thin ones.
+- `P8.S15`: **qa** — `## Regression Checklist` gains R14's boxes (below). No count moves: `pytest` **142**, `npm run smoke` **16/16**, `npm run build` green.
+  - `- [ ] AI 질문 경계: at 767/600/390 no launcher and no widget exist in the DOM on any reader route, and at 768 the widget is exactly 440×620 with 24px margins; opening it shifts <main> by 0px (P8)`
+  - `- [ ] 프리셋 칩: every chip reads its served korean_name and sends its signed sentence (title = aria-label = the sentence); pressing one at 1440 puts the sentence in the thread and at 390 routes to /ask with the scope intact (P8)`
+  - `- [ ] 한 단락: a streamed answer renders one <p> with inline sentences — 0 <br>, no pre-wrap in prose, no leading indent on continuation sentences (P8)`
+  - `- [ ] 근거 N건: the footer's N equals the count of distinct chip numbers in that answer (a 5-chip answer says 5건), and the rcept_no list plus the KST stamp follow it (P8)`
+  - `- [ ] 인용 블록: a quoted chip opens quote + DART link in place (180px cap, re-tap closes, inert when shut); a span-less chip opens the DART link alone with no explanatory sentence; at 390 the block spans the answer box edge to edge (P8)`
+  - `- [ ] 컴포저: empty = ghost disabled (no fill, border-soft, ink-3, opacity 1) → typed = solid 보내기 → pending = 답변 준비 중… disabled with no bubble and no spinner → streaming = 중지 (P8)`
+  - `- [ ] 도구 행: every tool row is one nowrap line that scrolls horizontally with its scrollbar hidden; no 접수번호 is split across lines at 390 (P8)`
+  - `- [ ] 480 은퇴: rg "480|481" over frontend/components/ask and frontend/lib/ask.ts returns only the verbatim R6 §Mobile quote in AskPage.tsx, marked superseded (P8)`
+- `P8.S15`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R14's tail: **신규 10건** (`SEND_KO`「보내기」 + the nine preset questions R14-D1…D9, dated and reasoned), **회수 2건** (`API_TIER_KO` deleted outright; `ASK_SUBMIT_KO`'s composer use, the constant surviving on the strip's free chip), chip labels stay server-owned (no label table in the repo), no empty-state copy minted, and the superseded R6/R3 clauses listed as 경계·배치 rather than copy.
+
 ### R11 walk — surface 4 (내 종목 조회 + 놓친 돈 조회기), 2026-08-24, operator runtime
 
 Walked by the orchestrator at `http://127.0.0.1:3000` (Chrome desktop 1456px + 390px same-origin
@@ -1583,6 +1597,68 @@ identically in dev and production, which is `P8.S9`'s lesson applied rather than
 `next-env.d.ts` untouched) · `pytest` **142** · `workflow validate` clean.
 
 
+### `P8.S15` — R14 applied: what the AI 질문 surface is now, and what the review inherits (2026-08-24)
+
+Built from `rounds/14-ask/output/build-prompt.md` §1–§5 and verified against §6 items **1–20** in the
+operator's runtime (`127.0.0.1:3000` + the tailnet `100.77.164.42:3000`, `next dev`) **and** a
+production build on `:3100`, at 1564/1440/1280/1024/900/768/767/600/390, with real turns through the
+agent. Full measurement table in `slices/P8.S15/result.md`. 17 files changed, 1 added, none deleted.
+
+1. **The 767 line is now an existence line, and it is a render decision.** `DESKTOP_QUERY` is
+   `(min-width: 768px)`; `AskSurface` returns `null` below it, so at 767/600/390 there is **no
+   launcher and no widget in the DOM at all** (measured on every reader route). A 질문 스트립 chip
+   below the line routes to `/ask` — `QuestionStrip` reads the same `useDesktop`, so the two can
+   never disagree. The widget's `max-width` guard is gone: the narrowest window that renders one is
+   768, which fits 440 + 2×24, and it measures 440×620 exactly at 768 · 1024 · 1440.
+2. **A chip's label and its question are two different strings now** (`presets.ts`). Later surfaces
+   that render `QuestionStrip` (event detail, and the page's own row) get this for free, but note the
+   **no-fallback rule**: a field key outside the signed table renders **no chip**. If a future round
+   adds a field key to `FIELD_ORDER`, its chip does not appear until a round signs its question —
+   that is deliberate (a label-sending fallback would unwind Q-D one key at a time), and it is the
+   first thing to check if someone reports "a field has no chip".
+3. **The footer diverges from the wire on purpose.** `Answer.tsx` prints `turn.chips.length`, not
+   `turn.footer.count`: the server counts distinct **filings** (the rcept_no list beside it already
+   says that), the screen counts **근거 = 칩** (Q-B, the operator's own sentence). No backend file was
+   touched and the SSE contract is unchanged. The build-prompt allowed either side; the plan chose
+   the client. Measured on three real answers: chips `[1,1,2,3]` → 3건, `[1,2,2,2,2]` → 2건,
+   `[1,1,1,1]` → 1건.
+4. **One paragraph is a store rule, not a CSS rule.** `lib/ask.ts`'s `leading()` strips a block's
+   **leading** whitespace as it enters the store (`text` and `refusal`); prose carries no `<br>`, no
+   `pre-wrap`, no `display: block`, and the only inter-sentence gap is `.sentence + .sentence`'s
+   `0.25em`. The reader's own question keeps its `pre-wrap`. Trailing whitespace is untouched.
+5. **`API_TIER_KO` is deleted** (not merely unused) and `.apiTier` with it; the span-less citation is
+   `.quoteLink.quoteLinkSolo` alone. **P7 Q7① is closed.** Any later surface that wants an
+   "API-tier" sentence would have to re-sign one.
+6. **The canon's `.m390` mirror is card harness *except* where the rule is R6's own.** 「인용 블록
+   전폭」 was adopted into the ≤767 block (it is R6 §Mobile and §6 item 15 checks it, and it had never
+   been implemented); the mirror's `.apage` padding is the card standing in for the app's `content`
+   shell and was **not** adopted. Same convention R13 used.
+7. **There is no vocky trigger to hide.** R8 (`P8.S3`) deleted `VockyTrigger`/`VockyScript` and all
+   three `data-vocky-trigger` elements, and the app renders **0** `position: fixed` nodes on `/ask`
+   at any width. The 36×36 ⓝ the R14 walk saw at 390 is **Next's dev-tools badge** (`nextjs-portal`
+   shadow root), present under `next dev` only — absent from the production build. So Q-F's ≤767 rule
+   is already true everywhere and this slice wrote no render rule for a component that does not
+   exist. Item 17's measurement stands for the record: with a real thread in a 520px-tall viewport
+   the sticky bar **does** reach the viewport bottom at 768/900/1024 and its box then intersects that
+   dev badge — dev only. → **Q56**.
+8. **The `/ask` desktop bundle is capped by R2's page shell.** The canon's `max-width: 1124px` is in
+   the file, but `main.content` (`--bp-lg` 1120 + 2×24 padding) is tighter, so the measured bundle is
+   **1072** and the chat column **708** at ≥1280 — inside §6 item 16's stated 「≤760, centred, sticky
+   rail」, but not the record's own 1124/760. Not invented away. → **Q57**.
+9. **A chip's accessible name is now its sentence** while the visible label is the served noun phrase
+   (build-prompt §3 says 「`title`/접근명은 보내는 문장」). That is what landed; it also means WCAG
+   2.5.3 「Label in Name」 does not hold for these ten controls. → **Q58**.
+10. **`FEEDBACK_SEND_KO` in `components/chrome/copy.ts` is also 「보내기」** (R8's 의견 panel). Two
+    surfaces, two constants, one word — the copy convention's per-surface rule, deliberately **not**
+    merged: R8 owns one and R14 the other, and a shared constant would let one round's revision move
+    the other surface's button.
+
+**Gates:** `npm run typecheck` clean · `npm run smoke` **16/16** · `npm run build` green (scratch
+copy, `next-env.d.ts` untouched) · `pytest` **142** · `workflow validate` clean · console 0 app
+errors on all three origins (only the pre-existing `favicon.ico` 404, R15's scope) · `overflowX` 0
+at every width on both routes.
+
+
 ## Operator Questions
 
 _Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._
@@ -1857,6 +1933,37 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   labels (new Korean = signed in-round). R14 session. **Answered by R14 signoff:** labels shown, signed sentences sent (R14-D1…D9); no-fallback rule.
 - **Q55 (R14 Q-C) — the composer's idle button 「직접 질문 입력 →」 doubles as the send button** (an
   R6-2 chip string reused). Keep or sign a distinct send label. R14 session. **Answered by R14 signoff:** 「보내기」 signed; `ASK_SUBMIT_KO` stays strip-only.
+- **Q56 (`P8.S15`) — the 「vocky ⓝ」 R14 Q-F legislated for does not exist in the product; the badge in
+  the corner is Next's dev tools.** R8 (`P8.S3`) deleted `VockyTrigger`, `VockyScript` and every
+  `data-vocky-trigger`, and the app renders **0** `position: fixed` elements on `/ask` at 390 / 768 /
+  1024 in dev **and** production. The 36×36 ⓝ at the bottom-left of the walk's 390 screenshot is
+  `nextjs-portal`'s dev-tools button (x 20–56, 36px above the viewport bottom), which exists only
+  under `next dev` — the production build on `:3100` has no `nextjs-portal` at all. So Q-F's rule
+  (「`/ask` ≤767에서 vocky 트리거를 렌더하지 않는다」) is satisfied by construction and this slice
+  invented nothing to hide it. **Item 17, measured for the record:** with a real thread in a 520px
+  viewport the `/ask` sticky bar does reach the viewport bottom at 768 / 900 / 1024 (`left: 24`), and
+  its box then intersects that dev badge — **in dev only**. (a) accept it as dev tooling, invisible
+  to any reader (suggested); (b) move or disable it in `next.config.ts` (`devIndicators` —
+  `bottom-right` would collide with the launcher instead, so effectively "off"); (c) something else.
+  Worth 10 seconds in the operator's own browser before deciding.
+- **Q57 (`P8.S15`) — the `/ask` desktop bundle cannot reach the signed 1124/760 inside R2's page
+  shell.** R14 f9 signs a `minmax(0,760px) 340px` pair centred at `max-width: 1124px`; the rule is in
+  `AskPage.module.css` exactly as signed, but `main.content` (R2's shell, `--bp-lg` **1120** + 2×24
+  padding) binds first, so the measured bundle is **1072** and the chat column **708** at 1280 /
+  1440 / 1564 (rail 340 sticky, centring exact). §6 item 16's own checks pass (chat ≤760, bundle
+  centred, rail sticky, bar under the last element), so nothing is broken — but the record's numbers
+  are not the screen's. (a) accept 1072/708, the shell being the product's own decision (default);
+  (b) let `/ask` opt out of the 1120 shell so the signed 1124/760 is reachable — a one-route
+  exception to a chrome-wide constant, which is why it is not this slice's call.
+- **Q58 (`P8.S15`) — a preset chip's accessible name is now its sentence, and its visible label is
+  not contained in it.** build-prompt §3 signs 「칩의 `title`/접근명은 보내는 문장이다(라벨은 눈에
+  보이는 텍스트)」, so each chip carries `title` = `aria-label` = e.g. 「신주인수권증서는 언제부터
+  언제까지 매매할 수 있나요?」 while reading 「신주인수권증서 상장·매매기간」. That is what a screen
+  reader now announces — arguably better, since it is what pressing does — but **WCAG 2.5.3 「Label in
+  Name」 does not hold**: a voice-control user saying the words they can see does not match the
+  accessible name. (a) keep the record as signed (default); (b) drop the `aria-label` and keep only
+  `title`, so the accessible name returns to the visible label and the sentence stays a tooltip;
+  (c) make the accessible name contain both (「{label} — {question}」), which no round has signed.
 
 ## Constraints
 

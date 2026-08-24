@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type RefObject } from "react";
-import { ASK_LABEL_KO, ASK_SUBMIT_KO, PREPARING_KO, STOP_KO } from "./copy";
+import { ASK_LABEL_KO, PREPARING_KO, SEND_KO, STOP_KO } from "./copy";
 import styles from "./Ask.module.css";
 
 /** Which of R6's SSE states the composer is in. `idle` covers 완료 and 중단 —
@@ -18,9 +18,17 @@ export type ComposerState = "idle" | "pending" | "streaming";
  * disabled-looking third control. 중지 is the same button again, and it stops the
  * turn by aborting the fetch — there is no stop endpoint to call (`P6.S4`).
  *
- * The two strings R6 does not write are reused rather than invented and are
- * flagged in `phase.md`: the idle button takes R6-2's 「직접 질문 입력 →」 and the
- * field's accessible name is the surface's own 「AI 질문」.
+ * **R14 Q-C named the idle text 「보내기」** (`SEND_KO`, operator-specified in that
+ * round's session), so the three texts are 보내기 → 답변 준비 중… → 중지 and
+ * R6-2's 「직접 질문 입력 →」 went back to the strip's free-input chip. The field's
+ * accessible name is still the surface's own 「AI 질문」 — the one reuse this
+ * surface still carries, and still flagged in `copy.ts`.
+ *
+ * **Disabled is the ghost tier, not a dimmed solid** (R14 f13): an empty field and
+ * a 답변 준비 중… both render the button with no fill, a soft hairline and
+ * `--ink-3` — a control that cannot be pressed no longer looks pressable. The
+ * geometry (36px, ≤767 44px) is unchanged, and so is the fact that `disabled` is a
+ * real attribute rather than a look.
  */
 export function Composer({
   state,
@@ -64,7 +72,7 @@ export function Composer({
           className={styles.send}
           disabled={state === "pending" || text.trim() === ""}
         >
-          {state === "pending" ? PREPARING_KO : ASK_SUBMIT_KO}
+          {state === "pending" ? PREPARING_KO : SEND_KO}
         </button>
       )}
     </form>
