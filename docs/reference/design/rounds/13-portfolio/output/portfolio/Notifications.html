@@ -1,0 +1,41 @@
+<!-- @dsCard group="⏳ P8.S12 · Portfolio" viewport="1280x2200" name="Notifications" subtitle="알림 설정 — 프레임(레일 + h1 승격, finding 12) · 시점 칩 다중선택(빈 선택도 설정) · KakaoTalk 「예정」 무컨트롤 · 수신 주소 변경 4상태 + R12 물림 오류 줄(13) · 계정 삭제 제자리 무장" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="r13-portfolio.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r13-parts.jsx"></script>
+<script type="text/babel">
+const ADDRESS = 'reader@example.com';
+function Case({ label, children }) { return <div className="case"><PLab>{label}</PLab>{children}</div>; }
+
+function App() {
+  return <div className="psurf">
+    <PLab>알림 설정 · /portfolio/notifications (게이트, 401 → /auth/login) — 계정 메뉴의 두 번째 목적지</PLab>
+    <PNotify address={ADDRESS} />
+    <PLab>칩을 눌러 보십시오 — 다중선택, 저장은 즉시(서버가 답한 값으로 되돌아온다). 전부 해제하는 것도 설정이다: 메일을 보내지 않는다는 뜻이고, 이 표면의 유일한 off 스위치다</PLab>
+
+    <div className="note"><b>finding 12 — 프레임.</b> 이 페이지에는 <code>h1</code>도, nav 말고 나갈 길도 없었다. 둘 다 새 카피 없이 고친다: <code>h2</code> 「마감 임박 이메일」을 <b>이 페이지의 <code>h1</code></b>으로 승격(제목은 이미 이 페이지의 것이었다), 그리고 첫 줄에 레일 하나 — 화살표 + 서명된 층 이름 <b>「← 보유 종목」</b>. R12가 인증 화면에 「← 관제 현황판」을 준 것과 같은 이유이고, 목적지는 이 독자가 실제로 온 곳이다. 레일은 전폭 바가 아니라 열의 첫 행이다.</div>
+
+    <div className="cases">
+      <Case label="수신 주소 변경 — 입력 중 (계정 이메일 자체를 고친다)"><PNotify bare address={ADDRESS} editing focus /></Case>
+      <Case label="오류 — R12에서 물려받은 invalid_email 줄 (finding 13)"><PNotify bare address={ADDRESS} editing draft="reader@example" error /></Case>
+    </div>
+    <div className="note"><b>finding 13 — 물림은 원하는 것이다.</b> <code>P8.S11</code> 전에는 <code>invalid_email</code>이 아무 문장에도 매핑되지 않아 <b>조용히 실패</b>했다. 지금은 「이메일 주소 형식이 올바르지 않습니다.」가 붙는다 — R12의 규칙 그대로 <b>본문 잉크 한 줄</b>, 필드 테두리를 물들이지 않고 빨강이 아니다(<code>--alert</code>는 이 제품에서 소멸·임박만 뜻한다). 비밀번호 재입력은 없다: R5의 Notify 행은 주소 + 변경뿐이고, 더 파괴적인 계정 삭제도 재입력을 받지 않는다.</div>
+
+    <div className="cases">
+      <Case label="시점 칩 전부 해제 — 유효한 설정 (메일 없음). 기본값으로 되돌리지 않는다"><PNotify bare address={ADDRESS} lead={[]} /></Case>
+      <Case label="계정 삭제 제자리 무장 — 이때 문장이 나타난다 · 두 번째 누름이 삭제한다 (모달·오버레이 없음)"><PNotify bare address={ADDRESS} armed /></Case>
+    </div>
+    <div className="note"><b>계정 삭제 = 제자리 무장.</b> 확인 다이얼로그가 아니라 이 라운드 자신의 인터랙션 어휘다: 액션 열이 <b>계정 삭제 · 취소</b>로 바뀌고(행 편집의 가로 교체, 개정 ④와 같은 문법) 두 번째 누름이 지운다. 새 카피 없음, 오버레이 없음, 한 번의 오클릭으로 되돌릴 수 없는 일이 벌어지지 않음. <b>이번 세션 개정:</b> 「계정을 삭제하면 … 남는 것이 없습니다.」는 상시 노출을 그치고 <b>첫 누름(=무장) 다음에만</b> 말한다 — 지울 생각이 없는 독자가 삭제의 결과를 상시로 읽을 이유는 없고, 무장한 독자는 돌이킬 수 없는 누름 <b>전에</b> 이것을 읽는다. 로그아웃·계정 삭제·취소는 <b>같은 상자 크기</b>(104px 밑바닥)를 쓴다.</div>
+
+    <div className="cases">
+      <Case label="저장 중 — 컨트롤 비활성 (칩도 함께). 스피너·오버레이 없음"><PNotify bare address={ADDRESS} busy /></Case>
+    </div>
+    <div className="note"><b>KakaoTalk 행은 컨트롤이 없다.</b> 기억해서가 아니라 구조적으로: 뒤에 서버 필드가 <b>존재하지 않는다</b>(<code>P5.S8</code> 노트 12). 라벨 + 「예정」 칩 + 문장, 그리고 동작하지 않는 스위치는 없다 (R5-5).</div>
+    <div className="note"><b>이 표면이 보내지 않는 것.</b> 설정만 저장되고 메일은 여기서 나가지 않는다 — 채널·스케줄·본문은 P4의 것이다. 로그아웃과 계정 삭제는 둘 다 새 문서 로드로 떠난다: 세션이 사라졌으므로 클라이언트 라우터가 캐시한 게이트 페이로드는 전부 낡았고, Back이 아무도 로그인하지 않은 보유 종목를 복원해서는 안 된다.</div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

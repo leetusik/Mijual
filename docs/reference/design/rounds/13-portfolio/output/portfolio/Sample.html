@@ -1,0 +1,50 @@
+<!-- @dsCard group="⏳ P8.S12 · Portfolio" viewport="1280x2360" name="Sample" subtitle="익명 = 샘플 모드 — 배너 · 편집 가능(브라우저 저장, Q-D: 종료 컨트롤 없음) · 캡션 「본인 표시」 · Q-E: R12 전환 밴드가 지나간 마감 다음에, 리드 줄 없이" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../account/r12-auth.css"><link rel="stylesheet" href="r13-portfolio.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r13-parts.jsx"></script>
+<script type="text/babel">
+function App() {
+  const [rows, setRows] = React.useState(P_HOLDINGS);
+  const [editing, setEditing] = React.useState(null);
+  const [undo, setUndo] = React.useState(null);
+  const [claims, setClaims] = React.useState({});
+  const [offer, setOffer] = React.useState(true);
+  const timer = React.useRef(null);
+  const held = (row) => rows.some((h) => h.name === row.name);
+
+  const remove = (row) => {
+    setEditing(null);
+    setRows(rows.filter((r) => r.code !== row.code));
+    setUndo({ code: row.code, name: row.name, shares: row.shares, row });
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setUndo(null), 8000);
+  };
+
+  return <div className="psurf">
+    <PLab>보유 종목 · 샘플 모드 (익명 = 이 표면, 리다이렉트도 게이트도 없음 — R8) · 종목 추가 없음(계정 어포던스) · 보유량 캡션 없음</PLab>
+    <PBanner />
+    <PHoldings rows={rows} mode="sample" editing={editing} undo={undo}
+      onEdit={setEditing} onCancel={() => setEditing(null)}
+      onSave={(row, d) => { const n = parseInt(d, 10); if (!isNaN(n)) setRows(rows.map((r) => (r.code === row.code ? { ...r, shares: n } : r))); setEditing(null); }}
+      onDelete={remove}
+      onUndo={() => { if (!undo) return; if (timer.current) window.clearTimeout(timer.current); setRows([...rows.filter((r) => r.code !== undo.code), undo.row]); setUndo(null); }} />
+    <PLab>편집·삭제·체크는 이 브라우저(localStorage)에만 — 서버로 가는 익명 쓰기는 존재하지 않는다. 행·요소·D-day는 여전히 서버의 것이고, 클라이언트는 자기가 가진 두 숫자만 덮어쓴다</PLab>
+
+    <PDeadlines reference={P_REF} upcoming={P_UPCOMING_ROWS.filter(held)} past={P_PAST_ROWS.filter(held)} caption="local"
+      claims={claims} onClaim={(row, on) => setClaims({ ...claims, [row.id]: on })} />
+    <PLab>샘플에서 행을 지우면 그 종목의 D-day 행도 목록에서 사라진다 (같은 필터) · 캡션은 「본인 표시」 — 샘플은 계정 사실을 말하지 않는다 (주소도, 알림 설정 진입도 없음)</PLab>
+
+    {offer ? <POffer onDismiss={() => setOffer(false)} /> : <PLab>닫힘 — 세션당 1회. 익명 표면의 어떤 값도 이 제안 때문에 바뀌지 않는다</PLab>}
+    <PLab>Q-E — R12 전환 밴드. 자리: 지나간 마감 <b>다음</b>. 서열은 R12가 서명한 그대로 — 데이터 패널(브래킷+글로우) &gt; 제안(inset, 브래킷 없음) &gt; 한 줄 링크 &gt; nav 로그인. 숫자 위에 서지 않고, 게이트가 아니고, 닫을 수 있다</PLab>
+
+    <div className="note"><b>Q-E — 밴드에 리드 줄이 없는 이유.</b> R12의 리드는 「이 보유량은 탭을 닫으면 사라집니다」다. 샘플 편집은 <code>localStorage</code>에 남으므로 <b>이 표면에서 그 문장은 거짓</b>이다. 그래서 밴드는 R12의 본문(「계정에 저장하면 마감이 다가올 때 이메일로 알립니다.」) + CTA(「저장하고 알림 받기」) + 닫기로 선다 — <b>새 카피 0건</b>, 거짓 0건. 샘플이 무엇인지는 위 배너가 이미 말했다.</div>
+    <div className="note"><b>Q-D — 샘플 리셋/종료: 돌아오지 않는다 (운영자 결정).</b> R8이 크롬에서 없앤 R5-4의 「종료: 샘플·브라우저 저장분 삭제 후 로드 전 상태 복귀」는 이로써 <b>공식 회수</b>된다. 결과는 그대로 기록해 둔다: 샘플에서 계양전기를 지운 독자는 그 브라우저에서 다시 볼 수 없다 (<code>clearSample()</code>은 계정 이전에서만 실행된다). 이 표면은 그 사실을 문장으로 위장하지 않는다 — 편집은 진짜고, 배너는 이것이 예시 구성이라고만 말한다.</div>
+    <div className="note"><b>finding 9 — 로그인 페이지의 「실제 공시 4건」.</b> 바꾸지 않는다. 그 숫자는 <b>공시 건수</b>이고 사실이다 (4건이 다가오는 2 + 지나간 3 = 5행을 만든다). 세는 독자에게 어긋나 보이는 것은 문장이 아니라 두 단위가 같은 자리에 있기 때문인데, 그 자리는 R12의 것이고 여기서 카피를 새로 만들 값은 아니다 — <code>P8.S13</code> 회귀 항목으로만 남긴다.</div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

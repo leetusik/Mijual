@@ -336,6 +336,57 @@ no conversion moment on the anonymous sample surface; 「실제 공시 4건」 v
 notifications` frameless (no h1, no rail); 수신 주소 변경 silently inherits R12's `invalid_email`
 line. §2b decisions routed as **Q41–Q45** below.
 
+### R13 landed spec — read back 2026-08-24 (`P8.S12` gate 2), awaiting literal signoff
+
+Read back with DesignSync from "Mijual Design System" and **landed as-is** under
+`docs/reference/design/rounds/13-portfolio/output/`: `result.md`, `build-prompt.md`,
+`portfolio/r13-portfolio.css` (geometry canon), `portfolio/r13-parts.jsx`, and the four cards
+`portfolio/{Home,Sample,Notifications,Mobile}.html` (line-1 `@dsCard group="⏳ P8.S12 ·
+Portfolio"`). Token delta **none**, **new Korean 0** — every string transcribed from
+`portfolio/copy.ts` / R12's parts; two compositions of existing tokens only (rail `← ` +
+`PORTFOLIO_LABEL_KO`, `「」` + `PLANNED_CHIP_KO`). The operator's post-session text corrections
+(css comment typos/track numbers, result.md §7 measurements 161px / top 1095 / 390 249px·y973)
+were re-fetched and landed byte-exact.
+
+**Binding decisions (the apply slice `P8.S13` builds these, RESPECT THE DESIGN):**
+
+1. **D-day rows = four content-independent tracks** `84px · minmax(0,1fr) · 212px · 208px`
+   (gap 4px 16px), shared by both sections; row bodies `grid-column:2/-1`, money line
+   `minmax(0,1fr) 208px` so every 금액 right edge equals the countdown edge; no column headers,
+   no vertical rules; surface `max-width:960px`; past chip + date on **one line**; anchor
+   「기준 {ref} (KST)」 **once per block**, outside the sections.
+2. **Holdings** tracks `minmax(0,1.15fr) 132px minmax(0,1.5fr) 152px` + rights cell tracks
+   `52px minmax(0,1fr) auto` (countdowns share one right edge); empty rights cell = `.pslot`
+   dashed hairline 56px, `aria-hidden`, no sentence/box/`—`; inline edit = in-place column swap;
+   delete = immediate + 8s undo inset row (restored row lands last); `?add=` prefill + focus,
+   repeat 담기 opens the row's edit.
+3. **Q-B re-decided in session:** 「놓친 돈 상세 →」 renders **inside the money line**
+   (`.pmlead`, after label+basis) and **not on a checked row** (returns on uncheck); control line
+   = checkbox only; `.pmlead{min-height:32px}` (44px ≤767) so checking moves **0px** (measured).
+   Caption always renders (finding 5).
+4. **Notifications**: rail 「← 보유 종목」 + `h2`→`h1`; row grid `104px minmax(0,1fr) auto`;
+   `authErrorKo` line inherited from R12 (intended); chips `aria-pressed`, empty selection valid;
+   KakaoTalk no control; **계정 삭제 arm-in-place with the signed sentence rendered only when
+   armed** (withdraws R5's 상시 clause); 로그아웃·계정 삭제·취소 in equal `.pact.wide` boxes.
+5. **Sample**: no 종목 추가, no holdings caption, claim caption 「본인 표시」; **no reset/종료
+   control** (Q-D — R5-4's 종료 clause officially withdrawn; `clearSample()` migrate-only);
+   **R12 offer band after 지나간 마감** (Q-E), *without* the lead line (false on this surface),
+   body + CTA + 닫기 only, session-once, dismissible.
+6. **Terminology (session revision): reader surfaces never say 「포트폴리오」** — the layer is
+   **보유 종목**. `EMPTY_TITLE_KO` → 「보유 종목이 비어 있습니다」, `SAMPLE_BANNER_KO` → 「샘플
+   보유 종목 — …」 (operator revision of R5 strings, applied in `P8.S13`); routes/paths/component
+   names unchanged.
+7. **480px media queries deleted** (both blocks), single 767 boundary; ≤767 grammars per canon
+   (holdings card, D-day two-column, notifications stack, 44px floors).
+8. Regression: build-prompt §6 items 1–13 (incl. 5b's measured 0px shift, 「포트폴리오」 0건,
+   delete-sentence armed-only, 480 media 0건, login page 「실제 공시 4건」 unchanged).
+
+**Read-back observations:** the Sample card loads `../account/r12-auth.css` to reuse `.aoffer`
+verbatim (tier proof); card sample data uses a placeholder corp_code for 대동기어 (card harness
+only); 대동기어's lapse caption omitted in cards because the walk lacked the factors — the apply
+slice renders real served data (both captions where served); `stock_code` omitted in cards for
+the same data-gap reason → **Q46**.
+
 ## Operator Questions` below, never
   invented**; Doc impact goes on the running list, and only the review versions docs.
 - **`P8.S1` (`fix`)** — the `t1` collision, below.
@@ -1607,15 +1658,27 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   operator says otherwise.
 
 - **Q41 (R13 Q-A / P7 Q4) — a 챙겼습니다 row: stays in 지나간 마감 re-labelled (signed R5-8) or
-  disappears?** Default **stays**.
+  disappears?** Default **stays**. _Answered in the R13 session (2026-08-24): **stays** (default)._
 - **Q42 (R13 Q-B / P7 Q8-D) — 「놓친 돈 상세 →」 on a checked row:** keep (default) or change/remove.
+  _Answered 2026-08-24 — **re-decided in session**: the link **disappears on a checked row** (moved
+  into the money line `.pmlead`; `min-height` keeps the shift at a measured 0px; returns on
+  uncheck). P7 Q8-D fully closed._
 - **Q43 (R13 Q-C / P7 Q7④+fifth) — `carryOverKo`'s 세션 wording** (keep the promise as-is, default,
   or re-say in reader language — one dated exception) **and the account caption** (keep 「본인 표시 ·
-  계정에 저장」, default, or drop to 「본인 표시」).
+  계정에 저장」, default, or drop to 「본인 표시」). _Answered 2026-08-24: **keep both** (defaults)._
 - **Q44 (R13 Q-D) — does a sample reset/종료 control return?** R5-4's signed 종료 has no home since
-  R8. Default: the behaviour returns, the session picks the home.
+  R8. Default: the behaviour returns, the session picks the home. _Answered 2026-08-24 —
+  **reversed**: no reset/종료 control returns; permanent browser edits accepted; R5-4's 종료
+  clause officially withdrawn (`clearSample()` migrate-only)._
 - **Q45 (R13 Q-E) — does the R12 conversion band render on the anonymous sample portfolio?**
-  Default: session decides placement under the R12 ladder rules.
+  Default: session decides placement under the R12 ladder rules. _Answered 2026-08-24: **yes** —
+  after 지나간 마감, without R12's lead line (false on this surface): body + CTA + 닫기 only._
+- **Q46 (R13 read-back) — `stock_code` in the holdings 종목 cell.** The product renders it today
+  (mono meta under the name); the R13 cards omit it because the walk data did not carry it, and
+  the record's rule is \"값이 없는 자리는 ⋯ — never invented\" while the canon still defines
+  `.phmeta` for exactly this line. Reading: an availability gap, not a removal — `P8.S13` keeps
+  rendering the served `stock_code` at the `.phmeta` tier. (a) keep rendering (default); (b) drop
+  it. Confirmable at signoff.
 
 ## Constraints
 

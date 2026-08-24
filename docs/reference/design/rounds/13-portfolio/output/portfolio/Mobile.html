@@ -1,0 +1,41 @@
+<!-- @dsCard group="⏳ P8.S12 · Portfolio" viewport="1280x2200" name="Mobile" subtitle="390 — 단일 767 경계(480 두 개 회수, finding 11) · D-day 행은 두 열, 카운트다운·금액이 오른쪽 edge · 보유 종목은 카드 + 44px 액션 · 알림 설정 스택" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../account/r12-auth.css"><link rel="stylesheet" href="r13-portfolio.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head><body class="cosmos"><div id="root"></div>
+<script type="text/babel" src="r13-parts.jsx"></script>
+<script type="text/babel">
+function Frame({ label, children }) { return <div className="case"><PLab>{label}</PLab><div className="m390"><div className="psurf">{children}</div></div></div>; }
+
+function App() {
+  const [claims, setClaims] = React.useState({ 'hs-r1': true });
+  return <div className="psurf" style={{ maxWidth: 'none' }}>
+    <PLab>390 — 하나의 경계(767)만 남는다. 회수된 것: 보유 종목 그리드의 <code>min-width:480</code>, 지나간 행 요약의 <code>max-width:480</code>. 481–767 창에서 4열 표와 데스크톱 행이 ~600px 화면에 서던 문제가 여기서 끝난다</PLab>
+    <div className="cases">
+      <Frame label="샘플 모드 — 배너 · 보유 종목 카드 · 인라인 편집 · 되돌리기">
+        <PBanner />
+        <PHoldings rows={P_HOLDINGS.slice(0, 3)} mode="sample" editing="00113058"
+          undo={{ code: '00133618', name: '세기상사', shares: 100 }} />
+      </Frame>
+      <Frame label="D-day 두 섹션 — 칩·이름은 왼쪽, 카운트다운과 금액은 같은 오른쪽 edge">
+        <PDeadlines reference={P_REF} upcoming={P_UPCOMING_ROWS} past={P_PAST_ROWS} caption="local"
+          claims={claims} onClaim={(row, on) => setClaims({ ...claims, [row.id]: on })} />
+      </Frame>
+      <Frame label="계정 모드 — 종목 추가 패널(하단) · 빈 상태 + 이월 제안 · R12 전환 밴드">
+        <PSec title={P_ADD_SECTION}><PAdd /></PSec>
+        <PEmpty />
+        <PCarry variant="session" entries={[{ code: '00102618', name: '계양전기', shares: 500 }]} />
+        <POffer />
+      </Frame>
+      <Frame label="알림 설정 — 라벨 위 · 값 아래 · 액션 44px">
+        <PNotify address="reader@example.com" />
+      </Frame>
+    </div>
+    <div className="note"><b>390의 행 문법.</b> D-day 행은 두 열이 된다: 칩 → 종목명 → 지배 라벨(왼쪽) / 카운트다운(오른쪽), 그리고 ①의 환산 셀은 R11의 카드 규칙대로 라벨·값 두 열로 쌓인다. <b>금액은 카운트다운과 같은 오른쪽 edge</b>를 유지한다 — 데스크톱에서 정렬을 만든 그 규칙이 여기서도 같은 일을 한다. 보유 종목은 종목명 + 보유량 한 줄, 권리 요약 한 줄, 그리고 <b>44px 액션 두 개</b>가 폭을 나눠 갖는 카드다.</div>
+    <div className="note"><b>히트 영역.</b> ≤767에서 액션·칩·프리셋·체크박스 라벨·상세 링크·되돌리기가 모두 44px 이상. 데스크톱에서는 32px 바닥(R10 §0).</div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>
