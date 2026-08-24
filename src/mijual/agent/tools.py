@@ -1,10 +1,12 @@
-"""The six tools the agent calls — verified-contract values, and nothing else.
+"""The seven tools the agent calls — verified-contract values, and nothing else.
 
 R6 §Agent names five and fixes what they are for: ``search_events(query)`` →
 이벤트 목록/단건, ``get_event(rcept_no)`` → 검증 계약, ``get_portfolio()`` →
 포트폴리오 + 상류 계산, ``save_feedback(text, email?)`` → 운영자 대기열,
 ``get_contact()`` → 운영자 연락처. R16 adds the sixth: ``calculate(op, inputs, …)``
-→ 계산 블록, the agent's one **auditable** window onto arithmetic (`P9.S5`).
+→ 계산 블록, the agent's one **auditable** window onto arithmetic (`P9.S5`), and
+the seventh: ``security_check(category, excerpt)`` — the guard whose **call** is
+the whole signal and whose body never runs (`P9.S6`).
 Everything here is deterministic and model-free: no LLM call, no HTTP, no SSE.
 `P6.S3` owns the loop that decides *which* of these to call and `P6.S5` renders
 their fact rows.
@@ -76,7 +78,10 @@ __all__ = [
     "BUDGET_EXEMPT",
     "CALC_OPS",
     "CALC_TOOL",
+    "EXCERPT_CHARS",
     "EXPR_OP",
+    "GUARD_CATEGORIES",
+    "GUARD_TOOL",
     "MAX_SEARCH_RESULTS",
     "STATUS_PHASE",
     "TOOL_NAMES",
@@ -84,6 +89,7 @@ __all__ = [
     "CalcOp",
     "CalcPlan",
     "Citation",
+    "Incident",
     "ToolResult",
     "UnknownTool",
     "ValueRow",
@@ -98,6 +104,8 @@ __all__ = [
     "get_portfolio",
     "save_feedback",
     "search_events",
+    "security_check",
+    "security_incident",
     "value_rows",
 ]
 
@@ -626,15 +634,6 @@ CALC_TOOL = "calculate"
 #: arithmetic**, never as product truth (R16 result.md §3-7).
 EXPR_OP = "expr"
 
-#: Tools that cost no OpenDART request, no model call and no query — changple5's
-#: zero-I/O precedent (`P9.S1` item 3), and the reason a calculation never eats the
-#: turn's tool budget: refusing to compute because a *search* budget ran out would
-#: be a ceiling the reader can feel with nothing behind it.
-#:
-#: A property of the tool, declared here beside the tool: :func:`mijual.agent.loop.run_turn`
-#: asks the set, so no tool **name** enters the loop's control flow.
-BUDGET_EXEMPT: frozenset[str] = frozenset({CALC_TOOL})
-
 
 class _CalcRefused(Exception):
     """A drawn calculation that could not run: what the reader reads, and why.
@@ -1107,11 +1106,100 @@ def _exact(value: Any) -> str:
 
 
 # ---------------------------------------------------------------------------
+# security_check — the guard whose **call** is the whole signal (R16 §1, `P9.S6`)
+# ---------------------------------------------------------------------------
+#: The seventh tool's name. changple5's shape, re-derived (`P9.S1` item 5): the
+#: model calling this tool *is* the detection, and :func:`mijual.agent.loop.run_turn`
+#: ends the turn on the call itself — nothing here is computed, decided or scored.
+#:
+#: **What it is, honestly** (`P9.S1B` mechanic E): a *behavioural* layer, not
+#: prompt-injection protection. What makes injection low-impact on this surface is
+#: structural — read-only tools, no private data, no outbound channel — and a
+#: detector bound to the model is one layer on top of that, never a boundary.
+GUARD_TOOL = "security_check"
+
+#: What the model classifies the attempt as. Guidance for the model and a label for
+#: the log line — **the reject branches on none of them**: the call is the signal,
+#: so an unrecognised category is recorded as sent rather than turned into a
+#: different outcome. Pinned to the declaration's enum by a test.
+GUARD_CATEGORIES: tuple[str, ...] = (
+    "role_hijack",
+    "prompt_extraction",
+    "instruction_override",
+    "persona_request",
+)
+
+#: Q-D, signed at R16: the incident is logged as **카테고리 + 200자 발췌 +
+#: session_hash**, log-only, no DB row. 200 is the record's own number (changple5
+#: truncates the same way), and the excerpt is cut **here**, at the reading, so a
+#: longer one cannot reach the log by any path.
+EXCERPT_CHARS = 200
+#: The model's own label for the attempt, bounded the same way. Small: a category
+#: is a word, and an unbounded model-authored string in a log line is not one.
+CATEGORY_CHARS = 40
+
+
+@dataclass(frozen=True)
+class Incident:
+    """One security_check call, read as what Q-D says may be recorded — and no more.
+
+    Two fields, both already truncated: the model's category and the reader's own
+    words up to :data:`EXCERPT_CHARS`. No question text, no history, no identity —
+    the caller adds ``session_hash`` (the anonymous handle, `P6.S1`) when it logs.
+    """
+
+    category: str
+    excerpt: str
+
+
+def security_incident(name: str, arguments: Mapping[str, Any] | None) -> Incident | None:
+    """Does *this call* read as the guard firing? The sibling of :func:`calc_plan`.
+
+    Argument-shape knowledge lives here beside the tool, so the loop can hard-reject
+    the turn (R16 §1: 「`_execute` 이전」) without a tool **name** in its control flow
+    — the property `P6.S3` set and every slice since has kept. Shape only: nothing
+    is judged, because the *call* is the judgement.
+    """
+    if name != GUARD_TOOL:
+        return None
+    args: Mapping[str, Any] = arguments or {}
+    return Incident(
+        category=_text(args.get("category"))[:CATEGORY_CHARS] or "unspecified",
+        excerpt=_text(args.get("excerpt"))[:EXCERPT_CHARS],
+    )
+
+
+def security_check(
+    ctx: ToolContext, category: str = "", excerpt: str = ""
+) -> ToolResult:
+    """The detector's body — **unreachable in the loop**, and defensive if reached.
+
+    :func:`mijual.agent.loop.run_turn` rejects the turn the moment this call is
+    collected, before any tool of that round runs, so this never executes. It exists
+    for the day the reject is bypassed, and then it must still not tell the reader
+    anything: it carries **no 사실 행** (R16 §4 check 11: 점검 언급 0 — the reader
+    never learns a check happened), computes nothing, stores nothing, and answers
+    the model with the one fact it may have — the request was refused.
+    """
+    # Nothing is read: the arguments are :func:`security_incident`'s (the loop logs
+    # them), the session is not touched, and no I/O of any kind happens here.
+    del ctx, category, excerpt
+    return ToolResult(
+        tool=GUARD_TOOL,
+        fact_row="",
+        payload={"refused": True},
+        ok=False,
+    )
+
+
+# ---------------------------------------------------------------------------
 # dispatch
 # ---------------------------------------------------------------------------
-#: The six, in the order R6 lists its five plus R16's calculator. `P6.S3` hands
-#: the same six to the SDK (:func:`mijual.agent.declarations.declarations`) — one
-#: list, one truth.
+#: The seven, in the order R6 lists its five plus R16's calculator and its guard.
+#: `P6.S3` hands the same seven to the SDK
+#: (:func:`mijual.agent.declarations.declarations`) — one list, one truth. Six of
+#: them do work; :data:`GUARD_TOOL` is the one whose **call** is the work, and the
+#: model is told about it exactly as it is told about the others.
 TOOL_NAMES: tuple[str, ...] = (
     "search_events",
     "get_event",
@@ -1119,7 +1207,23 @@ TOOL_NAMES: tuple[str, ...] = (
     "save_feedback",
     "get_contact",
     CALC_TOOL,
+    GUARD_TOOL,
 )
+
+#: Tools that cost no OpenDART request, no model call and no query — changple5's
+#: zero-I/O precedent (`P9.S1` item 3), and the reason a calculation never eats the
+#: turn's tool budget: refusing to compute because a *search* budget ran out would
+#: be a ceiling the reader can feel with nothing behind it.
+#:
+#: A property of the tool, declared here beside the tool: :func:`mijual.agent.loop.run_turn`
+#: asks the set, so no tool **name** enters the loop's control flow.
+#:
+#: :data:`GUARD_TOOL` is in it for the same reason and one more: a guard call must
+#: never be able to end a turn as ``tool_budget`` instead of as the refusal it is.
+#: The loop rejects before it counts, so the exemption is belt-and-braces — the
+#: property belongs to the tool either way, not to the order of two checks.
+BUDGET_EXEMPT: frozenset[str] = frozenset({CALC_TOOL, GUARD_TOOL})
+
 
 #: Which 진행 표시 phase a tool call is *in*, for the tools whose work one of R16
 #: D5's five signed phrases actually describes (:data:`mijual.agent.copy.STATUS_KO`).
@@ -1128,6 +1232,10 @@ TOOL_NAMES: tuple[str, ...] = (
 #: 찾는 중 / 원문 읽는 중 / 계산 중, and the record signs no sixth phrase — so those
 #: calls **change nothing** and the line the turn already carries stays. Mislabelling
 #: them would be inventing copy by misuse; saying nothing is honest and free.
+#:
+#: :data:`GUARD_TOOL` is absent for a stronger reason: it is never narrated at all,
+#: because the reader never learns a check happened (R16 §4 check 11). It never even
+#: reaches :func:`mijual.agent.loop._execute` — the turn ends first.
 #:
 #: This is a lookup, never a branch: :func:`mijual.agent.loop.run_turn` reads it to
 #: *narrate* a call, and no control flow anywhere depends on a tool's name.
@@ -1169,6 +1277,10 @@ def call_tool(name: str, ctx: ToolContext, arguments: Mapping[str, Any] | None =
         return get_contact(ctx)
     if name == CALC_TOOL:
         return calculate(ctx, args)
+    if name == GUARD_TOOL:
+        # Defensive only: :func:`mijual.agent.loop.run_turn` ends the turn on this
+        # call before any tool of the round runs, so the dispatcher never gets here.
+        return security_check(ctx, text("category"), text("excerpt"))
     raise UnknownTool(f"{name!r} is not one of {TOOL_NAMES}")
 
 

@@ -113,9 +113,15 @@ def _refusal_block() -> str:
         "검증 미통과 폴백": "the data did not pass verification and nothing citable "
         "is left to say.",
     }
-    for family, sentence in ko.REFUSAL_SENTENCES.items():
-        lines.append(f"* {family} — {reasons[family]}")
-        lines.append(f'  say exactly: "{sentence}"')
+    # The families the model is **told to state** — deliberately not every family in
+    # the stored vocabulary. R16's 보안 sentence is emitted by the loop's hard reject
+    # (`P9.S6`), never composed by the model, so listing it here would teach the model
+    # to write the one refusal it must not write; what the model is told about the
+    # guard is its tool description. `P9.S7` rewrites this whole block into R16's four
+    # families with its own [보안] paragraph and its anti-overtrigger clause.
+    for family, reason in reasons.items():
+        lines.append(f"* {family} — {reason}")
+        lines.append(f'  say exactly: "{ko.REFUSAL_SENTENCES[family]}"')
     lines += [
         "",
         "Say nothing more specific than the family: there is no reason code to",

@@ -10,10 +10,13 @@ loop is written to make it checkable:
 There is **no tool name in the control flow**. Nothing is fetched before the model
 speaks, nothing is fetched after it, no tool is called because the question
 matched a pattern, and no ordering is imposed on the calls it asks for. The model
-receives six declarations and a system instruction that *advises*; every call in
+receives seven declarations and a system instruction that *advises*; every call in
 a turn, including the decision to make none, is its own. A turn ends when the
 model emits a round with no function calls — that is, when it decides it is ready
-to answer.
+to answer. **One call ends it sooner**, and it is the single exception worth
+knowing: a ``security_check`` call is a refusal, not a tool, and the turn stops on
+it — asked as a property of the call (:func:`mijual.agent.tools.security_incident`)
+so even that exception carries no tool name here.
 
 What the loop owns instead is everything that must not be left to a model:
 
@@ -44,6 +47,13 @@ What the loop owns instead is everything that must not be left to a model:
   ``pending``. Again no tool name reaches the control flow: the loop asks whether
   *this call* reads as a calculation, exactly as it asks whether *this result*
   reads as labelled values;
+* **the 보안 하드 리젝트** — R16's guard is a detector whose *call* is the whole
+  signal, so the turn ends where the call is found: no tool of that round runs, no
+  ``ModelMessage`` is appended, the signed 「보안」 sentence goes out, and the model
+  is not asked again. The incident is logged (카테고리 · 200자 발췌 · session_hash)
+  and stored nowhere else. It is a **behavioural** layer, not prompt-injection
+  protection — what makes injection low-impact here is structural (read-only tools,
+  no private data, no outbound channel), and this is one layer on top (`P9.S1B`);
 * **the budget** — rounds, tool calls and live model calls are all capped, and
   every cap maps to an honest ``aborted`` terminal. A turn is never silently
   truncated;
@@ -57,6 +67,7 @@ consumer closing the generator. No HTTP, no SSE and no persistence exists here.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
@@ -87,6 +98,7 @@ from mijual.agent.events import (
     DataRow,
     FooterEvent,
     LinksEvent,
+    RefusalEvent,
     StatusEvent,
     ToolRowEvent,
     TurnEnd,
@@ -97,17 +109,24 @@ from mijual.agent.tools import (
     STATUS_PHASE,
     TOOL_NAMES,
     CalcPlan,
+    Incident,
     ToolResult,
     UnknownTool,
     calc_outcome,
     calc_plan,
     call_tool,
+    security_incident,
     value_rows,
 )
 from mijual.web import clock
 from mijual.web.conversationstore import KIND_ANSWER, KIND_REFUSAL
 
 __all__ = ["HistoryTurn", "TurnBudget", "run_turn"]
+
+#: Q-D's only sink: the incident is **logged**, never stored (`P9.S6`). No DB row,
+#: no counter, no analytics column — the anonymous 대화 로그 row this turn already
+#: writes is the turn, and the incident detail lives in the operator's log alone.
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -230,6 +249,27 @@ def run_turn(
             turn.status, turn.reason = "error", str(exc) or "model_error"
             break
 
+        # 보안 하드 리젝트 (R16 §1, `P9.S6`) — **here**: `calls` is collected and
+        # `_execute` has not run. A guard call means no tool of this round runs, no
+        # ``ModelMessage`` is appended (the model gets no second chance to soften
+        # its own refusal), and the turn ends on the signed sentence. It sits
+        # *before* the flush on purpose: prose still in the gate's buffer never
+        # reaches the reader, which is as close to §4 check 11's 「같은 턴에 추가
+        # 프로즈 0」 as a stream allows. It sits before the budget check for a
+        # second reason — a guard call must end the turn as the refusal it is,
+        # never as ``tool_budget``.
+        incident = next(
+            (
+                found
+                for call in calls
+                if (found := security_incident(call.name, call.args)) is not None
+            ),
+            None,
+        )
+        if incident is not None:
+            yield from _reject(ctx, turn, incident)
+            break
+
         yield from turn.gate.flush()
 
         if not calls:
@@ -255,6 +295,41 @@ def run_turn(
         turn.status, turn.reason = "aborted", "round_budget"
 
     yield from _finish(ctx, turn, now=now)
+
+
+def _reject(ctx: ToolContext, turn: _Turn, incident: Incident) -> Iterator[AgentEvent]:
+    """The guard fired: the signed sentence, the log line, and the end of the turn.
+
+    changple5's after-model hook re-derived where Mijual already has the structural
+    equivalent (`P9.S1` item 5). Everything the hook does is done here: the
+    tool-calling round is discarded rather than executed, the model is not asked
+    again, and the incident is recorded.
+
+    **Q-D, exactly as R16 signed it**: 카테고리 + 200자 발췌 + ``session_hash``,
+    log-only, no DB row. The excerpt is the reader's own words and the handle is
+    the anonymous one (`P6.S1`) — a truncation done in
+    :func:`mijual.agent.tools.security_incident`, so a longer one cannot reach the
+    log by any path.
+
+    **The reader never learns a check happened** (R16 §3-3): the sentence is the
+    whole of what the surface receives, and it is the same 「보안」 family a stored
+    row is later found by. What it deliberately does *not* say is that anything was
+    detected, which tool exists, or what the model thought the category was.
+
+    The family is set even when an earlier sentence of this same turn already
+    selected one: the guard is why the turn ended, and 품질 점검 filtering 보안 must
+    find it.
+    """
+    log.info(
+        "agent security_check · %s · %s · %s",
+        incident.category,
+        ctx.session_hash,
+        incident.excerpt,
+    )
+    sentence = ko.REFUSAL_SENTENCES[ko.SECURITY_FAMILY]
+    turn.gate.family = ko.SECURITY_FAMILY
+    turn.gate.released.append(sentence)
+    yield RefusalEvent(family=ko.SECURITY_FAMILY, text=sentence)
 
 
 def _status(turn: _Turn, phase: str) -> Iterator[AgentEvent]:
@@ -413,7 +488,12 @@ def _execute(
         return
 
     turn.results.append(result)
-    yield ToolRowEvent(tool=result.tool, row=result.fact_row, ok=result.ok)
+    if result.fact_row:
+        # 도구 행 없는 도구는 그리지 않는다. Every tool R6 and R16 signed has a row;
+        # the one that does not is the guard's defensive body (`P9.S6`), which the
+        # reject makes unreachable and which must not become a visible row even if
+        # it ever is reached — 점검 언급 0 (§4 check 11) as a structure, not a habit.
+        yield ToolRowEvent(tool=result.tool, row=result.fact_row, ok=result.ok)
 
     response: dict[str, Any] = result.response()
     # The citations go back **with their reference ids**: the model can only cite
@@ -452,8 +532,14 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
         gate.released.append(ko.FEEDBACK_SAVED_KO)
 
     links = _links(turn.results)
+    # 뒤에 아무것도 붙지 않는 거절 (:data:`mijual.agent.copy.BARE_FAMILIES`): R16 §4
+    # check 11 writes the 보안 turn as **the sentence alone** — 링크 0, and by the
+    # same reading no 푸터 either, since 「근거 N건 · 생성시각」 is a statement about
+    # an answer this turn declined to give. A property of the family, so the loop
+    # branches on a set rather than on a Korean string.
+    bare = gate.family in ko.BARE_FAMILIES
     if turn.status == "done":
-        if gate.family is not None:
+        if gate.family is not None and not bare:
             # ③ 갈 곳 링크 — the third move of R6's refusal, as data.
             yield LinksEvent(links=links)
         # 완료 → 푸터, **when the turn read something**. A 중단/오류 turn gets none
@@ -464,7 +550,7 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
         # check 1 says it plainly: 「안녕」 → 도구 행 0 · 칩 0 · **푸터 없음**. A turn
         # that *did* read and then cited nothing still gets one — 근거 0건 is then
         # a true reading, and the 관제 현황판 pointer of a 0건 search rides in it.
-        if turn.results:
+        if turn.results and not bare:
             yield FooterEvent(
                 evidence=gate.evidence,
                 generated_at=clock.iso(now or clock.now()),

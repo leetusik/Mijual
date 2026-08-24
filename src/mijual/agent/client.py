@@ -301,7 +301,7 @@ class ModelClient(Protocol):
 
 
 class AgentGeminiClient:
-    """Streaming Gemini calls with the five declarations, a ceiling and a ledger.
+    """Streaming Gemini calls with the tool declarations, a ceiling and a ledger.
 
     Args:
         settings: process settings (defaults to :func:`mijual.config.load_settings`).

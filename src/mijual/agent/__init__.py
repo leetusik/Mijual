@@ -17,10 +17,12 @@ What lives here, in the order the phase builds it:
 * :mod:`mijual.agent.context` — :class:`~mijual.agent.context.ToolContext`, the
   server-side half of a tool call (session, KST day, anonymous handle, account or
   ``None``, 범위). No tool takes an identity as an argument.
-* :mod:`mijual.agent.tools` — the six tools: R6's five, returning **verified
+* :mod:`mijual.agent.tools` — the seven tools: R6's five, returning **verified
   contract values only**, each with its signed 사실 행 and its citations, plus
   R16's ``calculate`` — the one auditable window onto arithmetic, a window onto
-  :mod:`mijual.calc` rather than a second implementation of it.
+  :mod:`mijual.calc` rather than a second implementation of it — and R16's
+  ``security_check``, the guard whose *call* is the signal and whose body never
+  runs: the loop ends the turn on it (`P9.S6`).
 * :mod:`mijual.agent.copy` — the Korean strings, transcribed from R6 with their
   provenance. Inventing a Korean sentence is a design change.
 * :mod:`mijual.agent.declarations` — the Gemini ``FunctionDeclaration`` set, built
@@ -75,6 +77,7 @@ from mijual.agent.tools import (
     get_portfolio,
     save_feedback,
     search_events,
+    security_check,
 )
 
 __all__ = [
@@ -103,4 +106,5 @@ __all__ = [
     "run_turn",
     "save_feedback",
     "search_events",
+    "security_check",
 ]

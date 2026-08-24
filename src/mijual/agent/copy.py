@@ -27,6 +27,7 @@ from __future__ import annotations
 
 __all__ = [
     "AGENT_INTRO_KO",
+    "BARE_FAMILIES",
     "BOARD_POINTER_KO",
     "CALC_MISS_ROW",
     "CALC_NAMES_KO",
@@ -51,6 +52,7 @@ __all__ = [
     "RIGHTS_TOOL_LABEL_KO",
     "SEARCH_ITEM",
     "SEARCH_ROW",
+    "SECURITY_FAMILY",
     "STATUS_KO",
     "family_of",
     "search_row",
@@ -107,9 +109,14 @@ AGENT_INTRO_KO = (
 # ---------------------------------------------------------------------------
 # 거절 가족 (R6-7) — signed, and the only sentences a refusal may say
 # ---------------------------------------------------------------------------
-#: The five families and their sentences, **verbatim** from result.md §Proposed
-#: copy (「거절 가족 (R6-7)」) — 철회 · 확정 전 · 공시에 없음 · 계산 요청 · 폴백, in
-#: the record's own order. The keys are
+#: The family name, once, so nothing spells it twice. R16 signs it in
+#: :data:`mijual.web.conversationstore.REFUSAL_FAMILIES`' own six-value order.
+SECURITY_FAMILY = "보안"
+
+#: The six families and their sentences, **verbatim**: five from R6's result.md
+#: §Proposed copy (「거절 가족 (R6-7)」) — 철회 · 확정 전 · 공시에 없음 · 계산 요청 ·
+#: 폴백 — and 보안, R16's new one (build-prompt §0, D3), in the record's own order.
+#: The keys are
 #: :data:`mijual.web.conversationstore.REFUSAL_FAMILIES`, the exact strings R7's
 #: 거절 카테고리 filter sends, so a stored row is findable by the panel that was
 #: built for it.
@@ -126,11 +133,19 @@ AGENT_INTRO_KO = (
 #:   not a softer refusal — under strip-don't-drop it is simply prose, and it
 #:   reaches the reader as prose (uncited, and stored as an answer rather than as
 #:   a refusal). Recognition runs over :data:`LIVE_REFUSAL_SENTENCES`, not over
-#:   this mapping: two of these five are retired and may not be newly recorded.
+#:   this mapping: two of these six are retired and may not be newly recorded.
+#:
+#: 보안 is the one family the **loop** states rather than the model: it is what the
+#: hard reject says (:func:`mijual.agent.loop.run_turn`, `P9.S6`). It is still
+#: recognised here like the others, deliberately — see :data:`LIVE_REFUSAL_SENTENCES`.
 REFUSAL_SENTENCES: dict[str, str] = {
     "철회": "철회된 공시는 해설하지 않습니다.",
     "확정 전": "확정 전 금액은 해설하지 않습니다.",
     "공시에 없음": "공시에 없는 내용은 해설하지 않습니다.",
+    # R16 D3, verbatim from build-prompt §0. Two sentences: the refusal and the
+    # standing invitation back to 공시 — which is also why it carries **no 갈 곳
+    # 링크** (:data:`BARE_FAMILIES`): the second sentence is the 갈 곳.
+    SECURITY_FAMILY: "그 요청에는 답변하지 않습니다. 공시에 대한 질문은 언제든 받습니다.",
     "계산 요청": "해설은 계산하지 않습니다 — 계산은 검증된 수치로 내 종목 조회가 합니다.",
     "검증 미통과 폴백": (
         "이 데이터는 검증을 통과하지 못했습니다. 검증되지 않은 내용은 해설하지 않습니다."
@@ -159,11 +174,32 @@ RETIRED_FAMILIES: frozenset[str] = frozenset({REFUSAL_FALLBACK})
 #: it is ordinary prose, and under strip-don't-drop ordinary prose ships (which is
 #: the honest outcome — the alternative would be writing a retired family to the
 #: 대화 로그 the moment the model happens to type its words).
+#:
+#: **보안 is live here on purpose** (`P9.S6`). The loop's hard reject is what
+#: normally states it, but a model that types the signed sentence itself has done
+#: the same thing the other three live families do — refused in the record's own
+#: words — and the honest record of that turn is a 보안 row the operator can find
+#: in 대화 로그, not prose that hides one. Recognising it also keeps the two paths
+#: from disagreeing: one sentence, one family, whoever emitted it.
 LIVE_REFUSAL_SENTENCES: dict[str, str] = {
     family: sentence
     for family, sentence in REFUSAL_SENTENCES.items()
     if family not in RETIRED_FAMILIES
 }
+
+#: Families whose sentence is followed by **nothing** — no 갈 곳 링크, no 답변 푸터.
+#:
+#: R6's refusal is three moves (사실 · 가족 문장 · 갈 곳 링크) because it declines
+#: *a question about 공시* and the reader still has somewhere to go. R16 §4 check 11
+#: writes the 보안 turn differently and exactly: 「보안」 가족 문장만 — 도구 실행 0 ·
+#: 인용 0 · **링크 0** · 점검 언급 0 · 같은 턴에 추가 프로즈 0. Its sentence already
+#: carries its own invitation (「공시에 대한 질문은 언제든 받습니다」), and a
+#: 내 종목 조회 link under it would be the surface offering a destination to a
+#: request the product just declined to serve.
+#:
+#: Read by :func:`mijual.agent.loop._finish`, so the rule is a property of the
+#: family and not a branch on a Korean string in the loop.
+BARE_FAMILIES: frozenset[str] = frozenset({SECURITY_FAMILY})
 
 
 # ---------------------------------------------------------------------------

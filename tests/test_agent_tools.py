@@ -1,4 +1,4 @@
-"""The five agent tools (P6.S2): what they may return, and what they must not.
+"""The agent tools (P6.S2): what they may return, and what they must not.
 
 Deterministic and free — no model, no key, no network, no docker. The corpus is
 the same in-memory SQLite shape ``test_web_board.py`` uses, cut to the cases R6's
@@ -24,7 +24,18 @@ from mijual.agent import calculate, search_events
 from mijual.agent import copy as ko
 from mijual.agent.declarations import TOOL_SPECS, spec_of
 from mijual.agent.figures import grouped
-from mijual.agent.tools import CALC_OPS, EXPR_OP, TOOL_NAMES, calc_plan, call_tool
+from mijual.agent.tools import (
+    BUDGET_EXEMPT,
+    CALC_OPS,
+    EXCERPT_CHARS,
+    EXPR_OP,
+    GUARD_CATEGORIES,
+    GUARD_TOOL,
+    TOOL_NAMES,
+    calc_plan,
+    call_tool,
+    security_incident,
+)
 from mijual.config import Settings
 from mijual.db.models import (
     Account,
@@ -319,6 +330,36 @@ def test_the_calculator_is_a_window_onto_calc_and_never_an_evaluator() -> None:
         assert op in ko.CALC_NAMES_KO and op in ko.CALC_UNITS_KO
     declared = spec_of("calculate").parameters["properties"]["op"]["enum"]
     assert declared == [*CALC_OPS, EXPR_OP]
+
+
+def test_the_guard_is_a_declaration_whose_body_never_speaks_to_the_reader() -> None:
+    """`P9.S6`: the *call* is the signal — the tool computes nothing and shows nothing.
+
+    The loop's hard reject is what ends the turn (`test_agent_loop.py`); what is
+    checked here is the half that lives beside the tools — the reading of the call
+    (Q-D's two fields, truncated), the budget property, and the defensive body.
+    """
+    incident = security_incident(GUARD_TOOL, {"category": "role_hijack", "excerpt": "x" * 400})
+    assert incident is not None and incident.category == "role_hijack"
+    # Q-D: 200자 발췌 — cut here, so a longer one cannot reach a log by any path.
+    assert len(incident.excerpt) == EXCERPT_CHARS
+    # Shape only, and only this tool: every other call reads as no incident at all.
+    assert security_incident("get_event", {"rcept_no": R1_RCEPT}) is None
+    assert security_incident(GUARD_TOOL, {}).category == "unspecified"
+
+    # Budget-exempt (zero I/O), and the category vocabulary is one list, not two.
+    assert GUARD_TOOL in BUDGET_EXEMPT and GUARD_TOOL in TOOL_NAMES
+    assert spec_of(GUARD_TOOL).parameters["properties"]["category"]["enum"] == list(
+        GUARD_CATEGORIES
+    )
+    # The description **is** the trigger spec, and half of it is what is *not* one.
+    assert "WHEN NOT TO USE ME" in spec_of(GUARD_TOOL).description
+
+    # The body: unreachable, and defensive if reached — no 사실 행 to render, no
+    # Korean at all, nothing stored. 점검 언급 0 (R16 §4 check 11) by construction.
+    defensive = call_tool(GUARD_TOOL, None, {"category": "prompt_extraction", "excerpt": "…"})
+    assert defensive.fact_row == "" and defensive.ok is False
+    assert defensive.payload == {"refused": True} and defensive.citations == ()
 
 
 def test_the_agent_package_imports_no_spending_module() -> None:
