@@ -44,7 +44,6 @@
  */
 
 import { ASK_LABEL_KO, BOARD_LABEL_KO, STOCKS_LABEL_KO } from "@/components/chrome/copy";
-import type { AskScope } from "@/lib/ask";
 
 export { ASK_LABEL_KO, BOARD_LABEL_KO, STOCKS_LABEL_KO };
 
@@ -68,37 +67,30 @@ export { ASK_LABEL_KO, BOARD_LABEL_KO, STOCKS_LABEL_KO };
  */
 export const AGENT_INTRO_KO = "주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다.";
 
-/**
- * 세션·저장 (R6-6 개정), verbatim — and **the exact wording is the point**.
- *
- * The round replaced its own earlier copy when server-side storage landed:
- * 「저장 이력 없음」 and 「탭을 닫으면 사라집니다」 are **forbidden** because they
- * became false, and `security` restates the ban. This sentence says both true
- * things at once — the reader is anonymous and unlimited, and the conversation is
- * kept anonymously for 품질 점검.
- */
-export const ANONYMITY_KO =
-  "완전 익명 — 로그인도, 질문 수 제한도 없습니다 · 대화는 익명으로 저장됩니다 (품질 점검용)";
-
-// **R16 §0 폐기 ⓐ**: this line is removed from both the widget's empty thread and
-// the start screen — 「R6-5는 **기능으로** 지켜진다(로그인·이력·quota 표기 없음)」.
-// The constant stays here until `P9.S10` deletes it **with its two call sites**, so
-// the build never breaks between the two slices. Same for `VERIFIED_ONLY_KO` (the
-// 340 레일's promise line, 폐기 ②) and `REASK_KO` (「다시 질문」, §2.7b 폐기).
-
 // ---------------------------------------------------------------------------
-// 범위 (build-prompt §범위 모델)
+// 은퇴한 문자열 (R16 §0 폐기 — `P9.S10`, 2026-08-25)
+//
+// Four strings left this file with their call sites, and none of them is coming
+// back as a rewrite: a retired sentence is retired, not restated.
+//
+// - **`ANONYMITY_KO`** 「완전 익명 — 로그인도, 질문 수 제한도 없습니다 · 대화는
+//   익명으로 저장됩니다 (품질 점검용)」 (폐기 ⓐ) — removed from the widget's empty
+//   thread and from the start screen. R6-5 은 **기능으로** 지켜진다: there is no
+//   login, no history and no quota to declare, so the surface declares nothing.
+//   R6-6's ban on 「저장 이력 없음」/「탭을 닫으면 사라집니다」 still stands — this
+//   retirement removes a true sentence, it does not license a false one.
+// - **`VERIFIED_ONLY_KO`** 「검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용」
+//   (폐기 ②) — the 340 레일's promise line went with the rail, and both halves of
+//   it stopped being true this phase anyway (`P9.S4` 인용 강제 → 공시 사실 문장만,
+//   `P9.S5` the auditable calculator). `AGENT_INTRO_KO` is the surviving promise.
+// - **`SCOPE_ALL_KO` / `scopeLabel`** 「범위: {종목} · {rcept_no}」/「범위: 전체
+//   공시」 (폐기 ①) — the chip and its × are gone from the header and the rail
+//   both. The **state** stays (`lib/ask.ts`'s `scope`, and the server's own
+//   `SCOPE_ALL_KO`, which is a different string: 「전체 공시」 without the label),
+//   it is simply never drawn.
+// - **`REASK_KO`** 「다시 질문」 (§2.7b 폐기) — the completed footer ends at
+//   이벤트 상세; 재시도 stays, and only on an interrupted turn.
 // ---------------------------------------------------------------------------
-
-/** 「그 외 = `범위: 전체 공시`」. The same words `mijual.web.conversationstore`
- * stores as `SCOPE_ALL_KO`, so the screen and the log say one thing. */
-export const SCOPE_ALL_KO = "범위: 전체 공시";
-
-/** 「헤더 칩 `범위: {종목} · {rcept_no}`」 — the format, filled by the event the
- * widget was opened on. */
-export function scopeLabel(scope: AskScope | null): string {
-  return scope ? `범위: ${scope.name} · ${scope.rcept_no}` : SCOPE_ALL_KO;
-}
 
 // ---------------------------------------------------------------------------
 // 헤더 (build-prompt §Surfaces · result.md §This-session revisions ②)
@@ -152,10 +144,6 @@ export function dartSourceLabel(rceptNo: string): string {
 export function evidenceCount(count: number): string {
   return `근거 ${count}건`;
 }
-
-/** 「컨텍스트 링크 (필드로 이동 / 이벤트 상세 / 다시 질문)」 — the footer's own
- * action, which puts the reader back in the question field. */
-export const REASK_KO = "다시 질문";
 
 /** 「③ 갈 곳 링크 (DART 원문 rcept_no verbatim · **이벤트 상세** · 내 종목 조회)」
  * (§거절), and the same destination the footer's context links name. */
@@ -213,7 +201,7 @@ export const SEND_KO = "보내기";
 export const ASK_SUBMIT_KO = "직접 질문 입력 →";
 
 // ---------------------------------------------------------------------------
-// 패널 카피 (result.md §Proposed copy) — the 질문 스트립 heading and the 340 레일
+// 패널 카피 (result.md §Proposed copy) — the 질문 스트립 heading
 // ---------------------------------------------------------------------------
 
 /**
@@ -228,16 +216,6 @@ export const ASK_SUBMIT_KO = "직접 질문 입력 →";
  * writes no label for it.
  */
 export const ASK_ABOUT_KO = "이 공시에 대해 질문";
-
-/**
- * 「패널: … "검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용"」, verbatim
- * (result.md §Proposed copy).
- *
- * The promise line. It renders in the dedicated page's **340 레일** — see
- * `AskPage.tsx` for why the rail's contents are these four signed things and
- * nothing else.
- */
-export const VERIFIED_ONLY_KO = "검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용";
 
 // ---------------------------------------------------------------------------
 // 질문 스트립 (R6-2 · result.md §Composition examples)

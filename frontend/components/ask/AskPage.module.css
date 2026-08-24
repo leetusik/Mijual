@@ -1,61 +1,165 @@
-/* 전용 페이지 (R6 §Surfaces 개정 ④, §Mobile).
+/* 전용 페이지 — **R16 §2.7b, 레일 없음** (`output/r16-ask.css`의 `.apagec` ·
+ * `.acol1` · `.atop` · `.anew` · `.astart` · `.acards` · `.acard`, declaration by
+ * declaration; R14's `.apage`/`.abar` stand unchanged).
  *
- * The record's literals here are **340** (the rail) and **44px** (the mobile
- * input bar and its targets); the breakpoint is the product's single **767**
- * (so the desktop side starts at 768px, the same line `useAsk.ts`'s
- * `DESKTOP_QUERY` draws) — **R14 Q-A** moved it off R1's narrower pair, because on this
- * surface the line also decides whether the widget and the launcher exist at all.
- * R14 f9 adds the desktop rhythm's own three numbers: the chat column stops at
- * **760**, the two columns centre as one **1124** bundle, and the rail is
- * **sticky**. Everything else is a token.
+ * R6's 「우측 340 레일」 and R14 f9's two-column bundle (`minmax(0,760px) 340px`
+ * centred inside 1124) are **retired** (§0 폐기 ②): the page is one chat column.
+ * What survives from that rhythm is the number that mattered — the column still
+ * stops at **760** and centres — and R6 §Mobile's 「입력 바 하단 sticky (44px)」.
  *
- * **There is no frame** — 「챗 표면 프레임 없음: 패널·브래킷 없이 페이지에 직접」.
- * So this file gives the chat column no background, no border and no shadow; the
- * only panel is `.rail`, and it is a `CraftPanel` (R2.1's own).
+ * The literals here are the record's own: **760** (the column), **640** (the start
+ * block), **560 / 420** (the empty state's height, ≤767), **56px** and **12px**
+ * (a card), **32 / 44px** (the 새 대화 target), and the product's single **767**
+ * breakpoint. Everything else is a token — zero new tokens, as R16 requires.
+ *
+ * **There is still no frame** — 「챗 표면 프레임 없음: 패널·브래킷 없이 페이지에
+ * 직접」. With the rail gone the page now has no panel at all.
  */
 
+/* R14 `.apage`, unchanged. */
 .page {
   display: flex;
   flex-direction: column;
   padding-block: var(--space-6) var(--space-16);
 }
 
-/* Mobile-first: 전폭 페이지 하나 — the rail's contents stack above the chat,
-   because a 340px rail cannot sit beside a 390px viewport and the four things it
-   carries (범위 · 약속 · 인트로 · 세션) are the surface's own opening. */
-.columns {
+/* `.acol1` — 「열 하나: max-width 760px, margin-inline auto. 오른쪽 열 없음,
+   sticky aside 없음」. Mobile-first and desktop-identical: the max-width simply
+   stops binding on a narrow window, so this file draws no second layout. */
+.column {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  width: 100%;
+  max-width: 760px;
   min-width: 0;
+  margin-inline: auto;
 }
 
-.rail {
+/* `.apagec` — 「빈 상태: 페이지 세로 가운데(min-height 560px, ≤767 420px)」. The
+   height is a floor, not a box: a short viewport scrolls rather than clipping. */
+.centered {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  min-width: 0;
+  justify-content: center;
+  min-height: 560px;
+  width: 100%;
 }
 
-/* 「검증된 필드만 근거로 답합니다 — 모든 답에 원문 인용」 — the panel's promise,
-   quieter than the intro it introduces. */
-.promise {
+/* `.astart` — 「폭 640 블록 … 시작 화면은 가운데 정렬(입력 텍스트와 카드 안의
+   질문만 왼쪽 정렬)」. */
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 640px;
+  min-width: 0;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink-1);
+}
+
+/* D1 아래 한 줄 — the intro is quieter here than in the widget's thread, where it
+   is the panel's opening rather than a line under a greeting. */
+.intro {
   margin: 0;
   font-size: var(--text-sm);
   line-height: var(--leading-base);
   color: var(--ink-2);
 }
 
-.chat {
+/* `.astartc` + `.astart .ain` — the composer keeps only the input's own 1px
+   (`Ask.module.css`'s `.composerPlain`), and the **typed text stays
+   left-aligned**: `text-align` inherits, so a centred start block would otherwise
+   centre the reader's own question as they type it. */
+.startComposer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+}
+
+.startComposer input {
+  text-align: left;
+}
+
+/* `.acards` / `.acard` — 「2열 그리드(≤767 1열), 카드 = --surface-raised + 1px
+   --border-soft, 최소 높이 56px, 패딩 12px, sans --text-sm ink-1, hover 시 테두리
+   --live. 누르면 카드의 문장이 그대로 전송된다」. Four cards, no 메타 card. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
   min-width: 0;
 }
 
-/* 「입력 바 하단 sticky」. Opaque with the page's own `--paper` so growing prose
-   never reads through it; `sticky`, so the page adds no `position: fixed`. */
+.card {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+  text-align: left;
+  word-break: keep-all;
+  text-wrap: pretty;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.card:hover {
+  border-color: var(--live);
+}
+
+/* `.atop` / `.anew` — 「대화 중에는 열 오른쪽 위에 sticky, 배경 --paper, mono
+   --text-xs ink-2 밑줄, 32/44px 타깃」. It is a sibling of the column rather than
+   a child so it can carry the column's own 760 and stay put while the thread
+   scrolls under it. Opaque `--paper`, the same convention as the bottom bar. */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+  padding-block: var(--space-2);
+  background: var(--paper);
+}
+
+.new {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.new:hover {
+  color: var(--ink-1);
+}
+
+/* R14 `.abar` — 「입력 바 하단 sticky」. Opaque with the page's own `--paper` so
+   growing prose never reads through it; `sticky`, so the page adds no
+   `position: fixed`. */
 .bar {
   position: sticky;
   bottom: 0;
@@ -63,34 +167,24 @@
   background: var(--paper);
 }
 
-/* ≥768px: 「우측 340 레일」. The rail is placed into the second column while
-   keeping its DOM lead, so reading order and visual order can differ on purpose.
-
-   R14 f9 — the chat column measures **760px** and stops there, and the pair
-   centres inside `max-width: 1124px` (760 + 24 + 340). At 1564px the prose no
-   longer crosses a whole column and the right column no longer stands empty for a
-   page's height. The rail is `sticky` at `--space-6`: on a short thread the empty
-   column below it is margin, and on a long one the 범위 · 약속 · 인트로 stay in
-   view instead of scrolling away. */
-@media (min-width: 768px) {
-  .columns {
-    display: grid;
-    grid-template-columns: minmax(0, 760px) 340px;
-    gap: var(--space-6);
-    align-items: start;
-    max-width: 1124px;
-    margin-inline: auto;
+/* ≤767 — R16's own mirror of the four rules that change on a phone: one column of
+   cards, a shorter empty state, a smaller greeting, and a 44px target (R6 §Mobile,
+   and the product's single 767 boundary). The widget does not exist here, so this
+   page is the whole surface. */
+@media (max-width: 767px) {
+  .centered {
+    min-height: 420px;
   }
 
-  .rail {
-    grid-column: 2;
-    grid-row: 1;
-    position: sticky;
-    top: var(--space-6);
+  .heading {
+    font-size: var(--text-xl);
   }
 
-  .chat {
-    grid-column: 1;
-    grid-row: 1;
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .new {
+    min-height: 44px;
   }
 }

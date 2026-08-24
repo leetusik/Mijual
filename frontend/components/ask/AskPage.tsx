@@ -1,20 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { CraftPanel } from "@/components";
 import { Answer } from "./Answer";
 import { Composer, type ComposerState } from "./Composer";
 import {
   AGENT_INTRO_KO,
-  ANONYMITY_KO,
   ASK_LABEL_KO,
-  CLOSE_GLYPH,
-  VERIFIED_ONLY_KO,
-  scopeLabel,
+  NEW_CHAT_KO,
+  START_CHIPS_KO,
+  START_HEADING_KO,
 } from "./copy";
-import { QuestionStrip } from "./QuestionStrip";
 import { useAskState, useAskStore } from "./useAsk";
-import { useScopePresets } from "./useScopePresets";
 import ask from "./Ask.module.css";
 import styles from "./AskPage.module.css";
 
@@ -22,48 +18,52 @@ import styles from "./AskPage.module.css";
  * 전용 페이지 — the second view over the one conversation, and the whole surface
  * on a phone.
  *
- * > **전용 페이지의 챗 표면은 프레임 없음** — 패널·브래킷 없이 페이지에 직접,
- * > 우측 340 레일만 패널 (R6 §Surfaces, 개정 ④). 페이지에는 런처 렌더 금지
- * > (중복 표면 금지). 위젯이 열려 있으면 닫고 리다이렉트 — 대화·범위 그대로.
- * >
- * > **모바일 (≤480px)**: 위젯·런처 없음 — AI 질문 = 전폭 페이지 하나. 프리셋 =
- * > 가로 스크롤 한 줄 (타깃 ≥44px), 인용 블록 전폭 (180px 캡 + 스크롤), 입력 바
- * > 하단 sticky (44px), 도구 행 유지. (R6 §Mobile)
+ * **R16 re-cut this page whole** (§2.7b, `P9.S10`). The two-column grid and the
+ * 340 rail it held are **retired** (§0 폐기 ②), and what is left is one column:
  *
- * **The width in that quote is the one thing R14 superseded** (Q-A): the mobile
- * grammar above now begins at **767px**, so this page is the whole surface for
- * every window a widget no longer exists in. The four rules themselves stand
- * verbatim, and the record's own words are kept here as the record wrote them.
+ * > 열 하나: `max-width 760px`, `margin-inline auto`. 오른쪽 열 없음, sticky
+ * > aside 없음. … **빈 상태:** 페이지 세로 가운데(`min-height 560px`, ≤767 420px)에
+ * > 폭 640 블록 — `START_HEADING_KO` → `AGENT_INTRO_KO` → **컴포저** → 시작용
+ * > **질문 카드**. **익명 줄 없음** … **대화 상태:** 스레드가 열을 채우고 컴포저는
+ * > 하단 sticky. (§2.7b)
  *
- * Four things follow, and all four are decisions rather than layout:
+ * So the page has exactly two states, and the thread is what tells them apart:
  *
- * 1. **No frame.** The chat is `<main>`'s own children — no `CraftPanel`, no
- *    corner brackets, no border. The single panel on this page is the 340 rail,
- *    and it *is* a `CraftPanel`, because the record contrasts 「패널·브래킷 없이」
- *    with 「레일만 패널」 and this product's panel is the craft panel (R2.1).
- * 2. **A second view, never a second store.** Everything here reads
- *    `useAskState()` and calls the same `lib/ask.ts` the widget calls, so arriving
- *    mid-stream simply renders the snapshot as it grows — the fetch belongs to the
- *    store, which outlives both surfaces (`P6.S5` note 22).
- * 3. **Arriving closes the widget.** 「위젯이 열려 있으면 닫고 리다이렉트」: the
- *    header's external-link already does it, and this does it for every other way
- *    in (the nav slot, the footer link, a typed URL) — `close()` touches the
- *    thread not at all, so 「대화·범위 그대로」 holds. `AskSurface` additionally
- *    renders neither launcher nor widget on this route (`P6.S5`).
- * 4. **The rail's contents are the nearest signed strings, and that is flagged.**
- *    R6 fixes the rail's width and its panel-ness and writes nothing about what is
- *    in it (there are no R6 cards in this repository — phase note, §Context). So
- *    it carries the four things the design does write for this surface: the 범위
- *    chip 「범위: {종목} · {rcept_no}」 with its × (R6 §범위 모델 — the widget puts
- *    it in a header this page does not have), the panel promise 「검증된 필드만
- *    근거로 답합니다 — 모든 답에 원문 인용」, the agent intro, and the 세션·저장
- *    line. ⚠ `P6.S7`/`P6.REVIEW` confirm this against the record's own Page card.
+ * 1. **시작 화면** — no turn yet. The composer stands in the middle of the screen
+ *    with the greeting and D1's promise above it and **four** question cards
+ *    below (the landed build-prompt's 「5장」 and its 제품 메타 카드 are two of the
+ *    three stale lines the signed copy overrides — `copy.ts::START_CHIPS_KO`).
+ *    Pressing a card **sends the card's own sentence**: 「카드의 문장이 곧 보내는
+ *    질문이다」, which is why R14's label≠question convention (`presets.ts`) is
+ *    explicitly *not* applied here.
+ * 2. **대화 상태** — the thread fills the column and the composer is
+ *    bottom-sticky. 「새 대화」 appears **only here** (「시작 화면에는 그리지
+ *    않는다 — 비울 것이 없다」), sticky at the column's top right, and it empties
+ *    the thread and nothing else: no history list, no titles, no restore (R6's
+ *    ban stands).
+ *
+ * The four things the rail used to carry are settled rather than moved: the 범위
+ * chip and the 익명 줄 are retired outright (폐기 ⓐ·①), the promise line went with
+ * the rail (폐기 ②), and the intro is now the start screen's own second line.
+ *
+ * What did **not** change:
+ *
+ * - **No frame.** The chat is `<main>`'s own children — 「챗 표면 프레임 없음:
+ *   패널·브래킷 없이 페이지에 직접」. The page's one panel was the rail, and the
+ *   rail is gone, so this surface now has no `CraftPanel` at all.
+ * - **A second view, never a second store.** Everything here reads
+ *   `useAskState()` and calls the same `lib/ask.ts` the widget calls, so arriving
+ *   mid-stream simply renders the snapshot as it grows.
+ * - **Arriving closes the widget.** 「위젯이 열려 있으면 닫고 리다이렉트」 —
+ *   `close()` touches the thread not at all, so 「대화·범위 그대로」 holds.
+ * - **No auto-scroll.** The widget scrolls its own 620px thread box; scrolling the
+ *   document under a reader as prose grows is ambient motion R1 keeps off data
+ *   surfaces, and the sticky bar is what keeps the input reachable instead.
  */
 export function AskPage() {
   const store = useAskStore();
   const state = useAskState();
   const input = useRef<HTMLInputElement>(null);
-  const presets = useScopePresets(state.scope);
 
   useEffect(() => {
     store.close();
@@ -72,59 +72,65 @@ export function AskPage() {
   const last = state.turns[state.turns.length - 1];
   const composer: ComposerState =
     last?.status === "pending" ? "pending" : last?.status === "streaming" ? "streaming" : "idle";
+  const thread = state.turns.length > 0;
+
+  // One composer, two placements. The page's is `plain`: 입력창 자신의 1px만,
+  // 구분선 없음 (§2.7b) — the widget's R14 geometry is untouched.
+  const composerBox = (
+    <Composer plain state={composer} inputRef={input} onAsk={store.ask} onStop={store.stop} />
+  );
 
   return (
     <main className={`content ${styles.page}`} aria-label={ASK_LABEL_KO}>
-      <div className={styles.columns}>
-        {/* 우측 340 레일 — the page's only panel. It leads in the DOM so the
-            surface reads 범위 → 약속 → 인트로 → 대화 in every layout, which is
-            also the order the widget's thread opens with. */}
-        <CraftPanel as="aside" className={styles.rail}>
-          <p className={ask.scope}>
-            <span className={ask.scopeText}>{scopeLabel(state.scope)}</span>
-            {state.scope ? (
-              <button type="button" className={ask.scopeClear} onClick={store.clearScope}>
-                {CLOSE_GLYPH}
-              </button>
-            ) : null}
-          </p>
-          <p className={styles.promise}>{VERIFIED_ONLY_KO}</p>
-          <p className={ask.introText}>{AGENT_INTRO_KO}</p>
-          <p className={ask.anonymity}>{ANONYMITY_KO}</p>
-        </CraftPanel>
+      {thread ? (
+        <>
+          {/* 「새 대화」 — 스레드가 있을 때만 존재한다. Sticky at the top of the
+              column so a long thread never scrolls it away, and its only action is
+              to empty the thread (`store.newChat`). */}
+          <div className={styles.top}>
+            <button type="button" className={styles.new} onClick={store.newChat}>
+              {NEW_CHAT_KO}
+            </button>
+          </div>
 
-        <div className={styles.chat}>
-          {/* The conversation, directly on the page. No auto-scroll: the widget
-              scrolls its own 620px thread box, but scrolling the document under a
-              reader as prose grows is ambient motion R1 keeps off data surfaces —
-              the sticky bar below keeps the input reachable instead. */}
-          {state.turns.map((turn) => (
-            <div key={turn.id} className={ask.turn}>
-              <p className={ask.question}>{turn.question}</p>
-              {turn.blocks.length > 0 || turn.status === "aborted" || turn.status === "error" ? (
-                <Answer
-                  turn={turn}
-                  onRetry={() => store.retry(turn.id)}
-                  onReask={() => input.current?.focus()}
-                />
-              ) : null}
+          <div className={styles.column}>
+            {state.turns.map((turn) => (
+              <div key={turn.id} className={ask.turn}>
+                <p className={ask.question}>{turn.question}</p>
+                {turn.blocks.length > 0 || turn.status === "aborted" || turn.status === "error" ? (
+                  <Answer turn={turn} onRetry={() => store.retry(turn.id)} />
+                ) : null}
+              </div>
+            ))}
+
+            {/* 「입력 바 하단 sticky (44px)」 — `position: sticky`, so nothing on
+                this page is newly `position: fixed`. */}
+            <div className={styles.bar}>{composerBox}</div>
+          </div>
+        </>
+      ) : (
+        // 빈 상태 — 페이지 세로 가운데. The block is centre-aligned; only the typed
+        // question and the questions inside the cards are left-aligned.
+        <div className={styles.centered}>
+          <div className={styles.start}>
+            <h1 className={styles.heading}>{START_HEADING_KO}</h1>
+            <p className={styles.intro}>{AGENT_INTRO_KO}</p>
+            <div className={styles.startComposer}>{composerBox}</div>
+            <div className={styles.cards}>
+              {START_CHIPS_KO.map((question) => (
+                <button
+                  key={question}
+                  type="button"
+                  className={styles.card}
+                  onClick={() => store.ask(question)}
+                >
+                  {question}
+                </button>
+              ))}
             </div>
-          ))}
-
-          {/* 프리셋 — the same 질문 스트립 as the detail page's, generated from the
-              same gate-passing fields, shown while the 범위 is an event. 자유 입력
-              is not one step behind here: the composer is the next element. */}
-          {state.scope && presets.length > 0 ? (
-            <QuestionStrip scope={state.scope} presets={presets} freeInput={false} />
-          ) : null}
-
-          {/* 「입력 바 하단 sticky (44px)」 — `position: sticky`, so nothing on this
-              page is newly `position: fixed`. */}
-          <div className={styles.bar}>
-            <Composer state={composer} inputRef={input} onAsk={store.ask} onStop={store.stop} />
           </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

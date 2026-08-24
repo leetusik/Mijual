@@ -29,17 +29,25 @@ export type ComposerState = "idle" | "pending" | "streaming";
  * `--ink-3` — a control that cannot be pressed no longer looks pressable. The
  * geometry (36px, ≤767 44px) is unchanged, and so is the fact that `disabled` is a
  * real attribute rather than a look.
+ *
+ * **`plain` is `/ask`'s composer** (R16 §2.7b, `.apage .acom`): 「감싸는
+ * 테두리·그림자 없음(입력창 자신의 1px만 — 이중 프레임 금지), `/ask`에서는
+ * `border-top` 구분선도 없음. 위젯 컴포저의 R14 기하는 그대로.」 So the flag drops
+ * the widget's divider and its inline padding and touches nothing else — one
+ * component, two placements, no second composer.
  */
 export function Composer({
   state,
   inputRef,
   onAsk,
   onStop,
+  plain = false,
 }: {
   state: ComposerState;
   inputRef: RefObject<HTMLInputElement | null>;
   onAsk: (question: string) => void;
   onStop: () => void;
+  plain?: boolean;
 }) {
   const [text, setText] = useState("");
   const running = state !== "idle";
@@ -49,7 +57,7 @@ export function Composer({
     // controls before React hydrates; `SearchRow.tsx` carries the full note.
     <form
       suppressHydrationWarning
-      className={styles.composer}
+      className={plain ? `${styles.composer} ${styles.composerPlain}` : styles.composer}
       onSubmit={(event) => {
         event.preventDefault();
         if (running || text.trim() === "") return;

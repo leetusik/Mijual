@@ -17,7 +17,6 @@ import {
   DISCONNECTED_KO,
   FEEDBACK_SAVED_KO,
   FEEDBACK_TOOL,
-  REASK_KO,
   RETRY_KO,
   evidenceCount,
 } from "./copy";
@@ -98,15 +97,7 @@ function footerFacts(count: number, evidence: readonly string[], instant: string
  * caret blinks at its end · `done` — the footer fades in · `aborted`/`error` —
  * the partial answer **stays**, dimmed to `--ink-2`.
  */
-export function Answer({
-  turn,
-  onRetry,
-  onReask,
-}: {
-  turn: AskTurn;
-  onRetry: () => void;
-  onReask: () => void;
-}) {
+export function Answer({ turn, onRetry }: { turn: AskTurn; onRetry: () => void }) {
   const { tools, blocks, prose, status } = answerParts(turn.blocks);
   const live = turn.status === "pending" || turn.status === "streaming";
   const streaming = turn.status === "streaming";
@@ -228,7 +219,10 @@ export function Answer({
           <span className={styles.footerFacts}>
             {footerFacts(turn.chips.length, turn.footer.evidence, turn.footer.generated_at)}
           </span>
-          <span className={styles.links}>
+          {/* 「푸터는 `근거 N건` + 접수번호 + KST 스탬프 + `이벤트 상세`(오른쪽
+              끝)까지다」 (§2.7b) — 다시 질문 held that end until R16 retired it,
+              so the 갈 곳 링크 take the auto margin it used to carry. */}
+          <span className={`${styles.links} ${styles.footerLinks}`}>
             {footerLinks.map((link) => (
               <LinkOut
                 key={link.key}
@@ -238,9 +232,6 @@ export function Answer({
               />
             ))}
           </span>
-          <button type="button" className={styles.reask} onClick={onReask}>
-            {REASK_KO}
-          </button>
         </p>
       ) : null}
     </div>

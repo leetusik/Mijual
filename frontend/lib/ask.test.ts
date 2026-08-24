@@ -1,5 +1,5 @@
 /**
- * The AI 질문 store's smoke check — seven cases, no framework.
+ * The AI 질문 store's smoke check — eight cases, no framework.
  *
  * Run by `npm run smoke` (`node --test "lib/*.test.ts"`). What `next build`
  * cannot see is the things this surface is *made* of: the incremental SSE
@@ -8,8 +8,9 @@
  * immediately before the `text` that names it, so the chip is painted with its
  * sentence — and, from `P9.S8`, the **keyed reduce**: a block arriving twice on
  * one `block_id` is replaced where it stands, and the transient 진행 표시 line is
- * dropped at prose and never written to storage. The rendering half is
- * `next build` and `P9.S9`/`P9.S11`'s browser passes.
+ * dropped at prose and never written to storage — and, from `P9.S10`, that
+ * 「새 대화」 empties the stored thread as well as the live one. The rendering half
+ * is `next build` and `P9.S9`/`P9.S11`'s browser passes.
  *
  * Repo rule: tests stay terse — minimal high-value cases, no scaffolding sprawl.
  */
@@ -301,6 +302,51 @@ test("the transient 진행 표시 line is never written to sessionStorage", asyn
     // 「공시 원문을 읽고 있습니다」 under a turn `settle()` marks 중단.
     assert.ok(writes.length > 0);
     assert.ok(!writes.some((payload) => payload.includes('"kind":"status"')));
+  } finally {
+    delete scope.window;
+  }
+});
+
+/**
+ * 「새 대화」 (R16 §2.7b) — 「스레드를 비우는 동작만 … 이력 목록·제목·복원을 만들지
+ * 않는다」.
+ *
+ * Two halves are worth pinning, and neither is visible to `next build`: the
+ * stored thread has to be emptied **with** the live one (a 새 대화 that left the
+ * turns in `sessionStorage` would restore them on the next reload — a history the
+ * record forbids), and the 범위 and the session handle have to survive, because
+ * the control was given exactly one job and minting a second `session_hash` would
+ * fork the 대화 로그's own grouping.
+ */
+test("새 대화 empties the thread and the storage behind it, and nothing else", async () => {
+  const items = new Map<string, string>();
+  const scope = globalThis as { window?: unknown };
+  scope.window = {
+    sessionStorage: {
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        items.set(key, value);
+      },
+    },
+  };
+  stubStream(FRAMES);
+
+  try {
+    const store = createAskStore();
+    store.hydrate();
+    store.setScope({ rcept_no: "20260724000546", name: "계양전기" });
+    store.ask("청약은 언제 시작하나요?");
+    await settled(
+      () => store.getSnapshot(),
+      (snapshot) => snapshot.turns[0]?.status === "done",
+    );
+
+    store.newChat();
+    const after = store.getSnapshot();
+    assert.deepEqual(after.turns, []);
+    assert.equal(after.sessionHash, "0f3a");
+    assert.deepEqual(after.scope, { rcept_no: "20260724000546", name: "계양전기" });
+    assert.deepEqual(JSON.parse(items.get("mijual.ask.thread") ?? "{}").turns, []);
   } finally {
     delete scope.window;
   }

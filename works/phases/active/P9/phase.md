@@ -2158,6 +2158,68 @@ not ported — the latter is `P9.S10`'s).
     settle the layout questions above, not enough to claim §4's checks. `P9.S11` owns that, and the
     26-check sweep is where 8·8b·9·10·13·14·17·18 are actually seen.
 
+### P9.S10 — the page, the widget, and the retirements landed (2026-08-25)
+
+`/ask` is now §2.7b's single 760 column — the 340 rail and its two-column grid are gone, an empty page
+is the centred start screen, a thread turns it into thread + bottom-sticky composer with 「새 대화」
+above it — the widget header is two icons, and the three retirements landed **with their call sites**.
+No file outside `frontend/components/ask/` + `frontend/lib/ask*.ts` was touched; Python untouched.
+
+**Decisions this slice made, and why — `P9.S11` inherits every one of them.**
+
+1. **「새 대화」 is a store action, not a page-local reset.** `AskStore.newChat()` empties `turns`, the
+   write-through empties the stored thread with it (a 새 대화 that left the turns in `sessionStorage`
+   would restore them on the next reload — the history §2.7b forbids), and it aborts a turn still in
+   flight the way 중지 does. What it deliberately does **not** touch: the 범위 and the `session_hash`.
+   Minting a second handle would fork the 대화 로그's own grouping, which is a storage decision this
+   control was never given (「스레드를 비우는 동작만」). Frames that arrive for the emptied turn hit
+   `patchTurn`'s no-op, so nothing is resurrected. Covered by a test.
+2. **The page's two states are told apart by `state.turns.length`, and nothing else.** Start screen ↔
+   대화 상태; 「새 대화」 and the sticky bar exist only in the second (「시작 화면에는 그리지 않는다 —
+   비울 것이 없다」). SSR renders the start screen because the server snapshot has no turns, and a
+   stored thread swaps in after `hydrate()` — the same shape this page always had, so no new
+   hydration seam.
+3. **One `Composer`, two placements, one flag.** `plain` is the page's placement (`.apage .acom`:
+   `border-top: 0; padding-inline: 0`); the widget's R14 geometry is untouched and there is no second
+   composer. **Known consequence:** moving from the start screen to the 대화 상태 remounts the
+   component, so text typed *but not sent* while pressing a card is lost. Deliberate — the
+   alternative is lifting the composer's text into the store, which no signed element asks for.
+4. **`text-align` inherits into the field.** The centred start block would otherwise centre the
+   reader's own question as they type it, so `.startComposer input { text-align: left }` carries
+   `r16-ask.css`'s `.astart .ain{text-align:left}` (「입력 텍스트와 카드 안의 질문만 왼쪽 정렬」);
+   the cards carry their own `text-align: left`.
+5. **`.atop` is a *sibling* of the column, not a child** — the record gives it its own
+   `max-width: 760px; margin-inline: auto`, which only works outside the column, and that is what
+   keeps it at the same place while the thread scrolls under it.
+6. **The footer's 갈 곳 링크 inherited 다시 질문's right end.** R14 gave that end to `.areask`'s own
+   `margin-left: auto`; retiring the button without moving the margin would have pulled 이벤트 상세
+   next to the KST stamp, against §2.7b's 「이벤트 상세(오른쪽 끝)」. Hence `.footerLinks`.
+7. **Six constants left `components/ask/copy.ts`, not three.** The plan names `ANONYMITY_KO`,
+   `VERIFIED_ONLY_KO` and `REASK_KO`; `scopeLabel()` and `SCOPE_ALL_KO` are the retired chip's own
+   copy (폐기 ①) and had **no call site left** once the header and the rail chips were removed, so
+   they went with it. Untouched on purpose: the **server's** `conversationstore.SCOPE_ALL_KO`
+   (「전체 공시」 — a different string, stored on every turn) and the store's `scope` itself.
+8. **`AskPageScope` stays, and only its docstring changed.** It feeds the widget's 범위, which
+   §4 check 19 still requires (opening the widget on an event detail asks in that filing's 범위 and
+   shows that filing's 프리셋 스트립). That *is* 「`scope` 상태 자체는 제거하지 않아도 되지만 표면에
+   그리지 않는다」.
+9. **The `/ask` page's R14 프리셋 스트립 is gone** (→ `## Operator Questions`). §2.7b enumerates this
+   page's structure and gives the strip to the **widget** opened from event detail and the **cards**
+   to the start screen; keeping both would put two chip sets on one empty page. A reading, not a
+   settled line — so it is catalogued rather than treated as decided.
+10. **The widget's intro block still renders in every state**, above the thread, as R6/R14 drew it.
+    Only the 익명 줄 left it — nothing in R16 supersedes where the intro sits, and dropping an
+    approved element on a guess is exactly what the standing constraint forbids.
+11. **What was verified, and how.** `typecheck` · `smoke` (22 cases) · `build` · the Python suite ·
+    `validate`, plus a **static harness** in the app's own **cosmos** scope (`class="cosmos"` — the
+    light `:root` has no `--live-solid` at all, so a harness without it silently draws the wrong
+    surface) at 1440 and at a 390-equivalent: the column measures 760 and centres, the start screen
+    centres with 2-column cards, ≤767 gives 1 column · `--text-xl` · 44px targets, and the footer's
+    이벤트 상세 holds the right end (wrapping under the facts at phone width, which is R14's own
+    `flex-wrap`). **Caveat for anyone repeating this:** headless Chrome clamps the window to a 500px
+    minimum, so a true 390 viewport cannot be screenshot that way — the ≤767 branch is the same one,
+    but the pixel width is not. No Operator Runtime pass here; `P9.S11` owns §4's 26 checks.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -2193,6 +2255,11 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S8`) `frontend` — `components/ask/copy.ts` holds R16 §0 verbatim: `CALC_VERIFIED`/`CALC_EXPR` · `TAG_CALC`/`TAG_UNVERIFIED`/`TAG_INPUT` · `CALC_RESULT`/`CALC_RUNNING` · `calcError` · `DATA_HEADING` · `SHOW_ALL`/`FOLD` · `DETAIL` · `trace(tools, events)` · `START_HEADING_KO` · `NEW_CHAT_KO` · `START_CHIPS_KO` (**4 cards**, no meta card) — and **`AGENT_INTRO_KO` is now D1** (「주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다.」), superseding R6's three sentences on both surfaces. **No status strings**: the 진행 표시 sentence is composed server-side and rendered verbatim. `ANONYMITY_KO` · `VERIFIED_ONLY_KO` · `REASK_KO` are retired copy still in the file — `P9.S10` deletes them with their call sites.
 - (`P9.S9`) `frontend` — R16's five elements are drawn, by **one** renderer for both views: `Answer.tsx` now lays an answer out in §2.8's child order (도구 흐름 → 구조화 블록(서버 순서) → 프로즈 → 링크 → 진행 표시/끝맺음 → 푸터, single 12px gap, blocks always full width) computed from the store's arrival order (`components/ask/render.ts`), with new `StatusLine` (2px **dashed** border, `role="status"`, **no animation**), `ToolTrace` (flat ≤3 rows or while live, folded to 「도구 N번 · 공시 M건 읽음」 + 자세히 at ≥4 once settled, fold never stored), `DataBlock`/`DataRowLine` (three columns `minmax(0,40%) minmax(0,1fr) auto` — 36% ≤767 — value-cell-only scroll, fixed third column, 6-row fold, `margin-inline:-12px` ≤767), `CalcBlock` (`--border-strong`, `--live` mode word + name, DataRow inputs, 식 줄, one slot for 계산 중/결과/오류 with **no alert colour**) and the marker family `계산`·`미확인` as siblings of 추정 — all three wearing `EstimateMarker`'s own tag class, colour per family, `kind` with no default. CSS is `Blocks.module.css`, ported from `output/r16-ask.css` (tokens only, zero new tokens, numbers exact).
 - (`P9.S9`) `frontend` — 소진 and 연결 끊김 are now drawn differently on the same `aborted` status: `AskTurn.reason` (budget → dimmed prose + folded 도구 흐름 and **nothing else**, R16 §2.7; anything else → R14's 「연결이 끊겼습니다」 inset + 재시도). The 인용 칩 gains its two new **places** (데이터 행 값 · 계산 입력) as the same component with a `place="row"` placement: the chip holds the fixed third column and its 인용 블록 opens **under the row across the block**, because a panel measured inside that column collapses the value column to zero (measured). 근거 N건 stays the chip count and a calculation's **result** is never counted.
+- (`P9.S10`) `frontend` — `/ask` is **one 760 column** (R16 §2.7b): the 340 rail and R14 f9's two-column grid are retired, an empty page is the **start screen** (`안녕하세요!` → D1 → a composer with no wrapping frame and no divider → **4** question cards, 2 columns and 1 at ≤767, pressing one sends the card's own sentence verbatim), a thread turns the page into 스레드 + 하단 sticky 컴포저 with 「새 대화」 sticky at the column's top right, and the empty state is vertically centred (560px, 420 at ≤767).
+- (`P9.S10`) `frontend` — the three retirements landed with their call sites: the **범위 칩 and its ×** (the widget header keeps ↗ and × only; the store's `scope` stays and still scopes a widget opened from an event detail — it is simply never drawn), the **익명 줄** on both surfaces, and **「다시 질문」** (a completed footer now ends at 이벤트 상세, held at the right end the button used to hold; 재시도 stays on interrupted turns alone). `ANONYMITY_KO` · `VERIFIED_ONLY_KO` · `REASK_KO` · `scopeLabel()` · `SCOPE_ALL_KO` are deleted from `components/ask/copy.ts`.
+- (`P9.S10`) `frontend` — the ask store gains **`newChat()`**: it empties the thread **and** the `sessionStorage` copy of it, aborts a turn in flight, and keeps the 범위 and the `session_hash` — no history list, no titles, no restore (R6's ban stands, R16 §2.7b).
+- (`P9.S10`) `qa` — headline checks for the regression list: `/ask` 빈 상태 = 시작 화면 (질문 카드 4장 · 익명 줄 0 · 컴포저 이중 테두리 0 · 스레드 구분선 0), 1440에서 오른쪽 열 없이 760 가운데, 「새 대화」는 스레드만 비우고 저장된 대화 목록을 만들지 않으며 시작 화면에는 없다, 완료 푸터에 「다시 질문」 없음, 헤더 어디에도 「범위:」 칩 없음.
+
 
 ## Operator Questions
 
@@ -2353,6 +2420,26 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   draws it immediately **after** the trace (visible in both states, still keyed on the tool's own `ok`).
   Confirm that placement, or say where it belongs — it is the only R6 element §2.8 does not name.
 
+
+- **(`P9.S10`) Should the `/ask` page keep R14's 프리셋 스트립 in the 대화 상태?** R14 drew the strip
+  on this page whenever the 범위 was an event and that event had presets; R16 §2.7b re-cuts the page's
+  structure and names only 스레드 + 하단 sticky 컴포저 for the 대화 상태, giving the strip to the
+  **widget** opened from an event detail (check 19) and the **cards** to the start screen. `P9.S10`
+  read that as "the strip is not part of this page any more" and removed it — keeping it would also
+  have put two chip sets on one empty page. Confirm that reading, or say the strip should come back
+  in the 대화 상태 (it would sit between the last turn and the sticky bar, where it used to).
+
+- **(`P9.S10`) The 범위 is now invisible on both surfaces, but it still rides the next turn.** 폐기 ①
+  retires the chip and its × and says 「`scope` 상태 자체는 … 제거하지 않아도 되지만 표면에 그리지
+  않는다」 — and the same block also says 「턴은 항상 전체 공시를 범위로 시작한다」. Those two pull
+  apart in one concrete path: a reader opens the widget on an event detail (범위 = that filing, which
+  check 19 requires), walks to `/ask`, presses 「새 대화」, and then presses a start card — whose
+  sentence names a **different** company — while that filing is still the turn's 범위, with nothing on
+  screen saying so and no × left to clear it. `P9.S10` changed nothing here (the record keeps the
+  state; inventing a clear-on-navigate rule would be a behaviour nobody signed). Options: (a) leave
+  it — the model reads the company out of the question anyway; (b) `/ask` starts every turn 전체
+  공시; (c) 「새 대화」 releases the 범위 with the thread. Worth pressing during the acceptance
+  walkthrough: open the widget from an event, go to `/ask`, press a card that names another company.
 
 ## Constraints
 

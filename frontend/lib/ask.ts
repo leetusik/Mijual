@@ -249,7 +249,10 @@ export type AskStore = {
   setPageScope: (scope: AskScope | null) => void;
   /** The reader's (or the 질문 스트립's) own choice. */
   setScope: (scope: AskScope | null) => void;
-  /** The chip's × → 전체 공시. */
+  /** 전체 공시로 해제. **R16 retired the chip and its ×** (§0 폐기 ①), so no
+   * surface calls this today — the 범위 state itself stays (「`scope` 상태 자체는
+   * 서버·스토어에서 제거하지 않아도 되지만 표면에 그리지 않는다」) and so does the
+   * one door that releases it. */
   clearScope: () => void;
   /** Ask, and stream the answer into a new turn. */
   ask: (question: string) => void;
@@ -257,6 +260,21 @@ export type AskStore = {
   stop: () => void;
   /** 재시도 — run the same question again, in place of the turn that broke. */
   retry: (turnId: string) => void;
+  /**
+   * 「새 대화」 — **empty the thread, and nothing else** (R16 §2.7b).
+   *
+   * > 스레드를 비우는 동작만 — 이력 목록·제목·복원을 만들지 않는다 (R6 금지 유지).
+   *
+   * So this clears `turns` (the write-through clears the stored thread with it)
+   * and leaves the 범위 and the session handle where they are: the reader is the
+   * same anonymous session asking a new question, and minting a second
+   * `session_hash` would fork the 대화 로그's own grouping — a storage decision
+   * this control was never given. A turn still in flight is aborted first, the
+   * same way 중지 does it: without that, frames would keep arriving for a turn
+   * that no longer exists (harmless — `patchTurn` no-ops — but the fetch would
+   * run on for a conversation the reader has already left).
+   */
+  newChat: () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -810,6 +828,13 @@ export function createAskStore(): AskStore {
     start(turn.id, turn.question, turn.scope);
   }
 
+  /** 「새 대화」 (R16 §2.7b) — the thread, emptied. See `AskStore.newChat`. */
+  function newChat(): void {
+    stopping = true;
+    controller?.abort();
+    patch({ turns: [] });
+  }
+
   return {
     subscribe,
     getSnapshot: () => state,
@@ -829,6 +854,7 @@ export function createAskStore(): AskStore {
       controller?.abort();
     },
     retry,
+    newChat,
   };
 }
 

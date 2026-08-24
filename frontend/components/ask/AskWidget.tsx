@@ -5,14 +5,7 @@ import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
 import { Answer } from "./Answer";
 import { Composer, type ComposerState } from "./Composer";
-import {
-  AGENT_INTRO_KO,
-  ANONYMITY_KO,
-  ASK_LABEL_KO,
-  ASK_PAGE_LINK_KO,
-  CLOSE_GLYPH,
-  scopeLabel,
-} from "./copy";
+import { AGENT_INTRO_KO, ASK_LABEL_KO, ASK_PAGE_LINK_KO, CLOSE_GLYPH } from "./copy";
 import { QuestionStrip } from "./QuestionStrip";
 import { useAskState, useAskStore } from "./useAsk";
 import { useScopePresets } from "./useScopePresets";
@@ -38,6 +31,14 @@ import styles from "./Ask.module.css";
  * intro (finding 8) — the same chips the detail page shows, without the free-input
  * chip, because the composer is right below. A 전체 공시 widget's empty middle
  * stays empty: that **is** the state, and the round minted no empty-state copy.
+ *
+ * **R16 took two things out of this panel and added none** (§0 폐기, `P9.S10`).
+ * The header's 범위 chip and its × are gone — 「`AskWidget` 헤더에는 ↗·× 두
+ * 아이콘만 남는다」 — and so is the 익명 줄 under the intro, because R6-5 is kept
+ * **as a property** (no login, no history, no quota) rather than declared as a
+ * sentence. The 범위 *state* is untouched: a widget opened from an event detail
+ * still asks in that filing's 범위 and still shows its 질문 스트립 (회귀 19), it
+ * simply no longer says so on screen. Everything else here is R14's, unchanged.
  */
 export function AskWidget() {
   const store = useAskStore();
@@ -65,19 +66,10 @@ export function AskWidget() {
     // The panel's accessible name is the surface's own signed one — no new copy,
     // and nothing rendered that the design does not draw.
     <section className={styles.widget} aria-label={ASK_LABEL_KO}>
+      {/* R16 §0 폐기 ①: 「범위: …」 칩과 그 ×는 헤더에서 제거되고 **↗·× 두
+          아이콘만 남는다**. 범위 자체는 스토어에 그대로 있고(이벤트 상세에서 연
+          위젯은 여전히 그 공시를 범위로 묻는다 — 회귀 19) 표면에 그리지 않을 뿐이다. */}
       <header className={styles.header}>
-        {/* 범위 모델: 「헤더 칩 `범위: {종목} · {rcept_no}` + ×로 전체 공시로 해제」.
-            The change applies from the next question — an answer already on the
-            screen was given in its own 범위 and never moves (기존 답변 불변). */}
-        <span className={styles.scope}>
-          <span className={styles.scopeText}>{scopeLabel(state.scope)}</span>
-          {state.scope ? (
-            <button type="button" className={styles.scopeClear} onClick={store.clearScope}>
-              {CLOSE_GLYPH}
-            </button>
-          ) : null}
-        </span>
-
         <span className={styles.actions}>
           <button
             type="button"
@@ -99,9 +91,10 @@ export function AskWidget() {
       </header>
 
       <div className={styles.thread} ref={thread}>
+        {/* 빈 스레드의 인트로 = D1 한 줄. 익명 줄은 폐기 ⓐ로 사라졌다 — R6-5는
+            기능으로 지켜지므로(로그인·이력·quota 없음) 표면이 선언하지 않는다. */}
         <div className={styles.intro}>
           <p className={styles.introText}>{AGENT_INTRO_KO}</p>
-          <p className={styles.anonymity}>{ANONYMITY_KO}</p>
         </div>
 
         {/* finding 8 — 빈 스레드 · 범위 = 이벤트: the preset row is what the middle
@@ -120,11 +113,7 @@ export function AskWidget() {
                 says 답변 준비 중…, and an empty bubble would be a placeholder for a
                 state that has produced nothing. */}
             {turn.blocks.length > 0 || turn.status === "aborted" || turn.status === "error" ? (
-              <Answer
-                turn={turn}
-                onRetry={() => store.retry(turn.id)}
-                onReask={() => input.current?.focus()}
-              />
+              <Answer turn={turn} onRetry={() => store.retry(turn.id)} />
             ) : null}
           </div>
         ))}

@@ -29,8 +29,13 @@ import { useAskStore } from "./useAsk";
  *   calls `setScope`, which is a choice. This component therefore cannot change a
  *   conversation that is already scoped, and calls nothing on the running turn.
  *
- * It renders nothing: the 범위 it states is shown by the widget's header chip and
- * by the page's rail, which are the surfaces the design draws it on.
+ * It renders nothing — and since **R16 no surface draws the 범위 at all** (§0
+ * 폐기 ①: the header chip, its × and the page's rail are retired), what it states
+ * is now visible only in what the widget *does*: opening it on an event detail
+ * asks in that filing's 범위 and shows that filing's 질문 스트립 (회귀 19). The
+ * state stays deliberately — 「`scope` 상태 자체는 서버·스토어에서 제거하지 않아도
+ * 되지만 표면에 그리지 않는다」 — so this component is unchanged by that
+ * retirement.
  */
 export function AskPageScope({ scope }: { scope: AskScope }) {
   const store = useAskStore();
