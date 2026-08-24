@@ -430,6 +430,24 @@ the same data-gap reason → **Q46**.
   `ASK_SUBMIT_KO` use). Token delta none. Launcher untouched — only its existence boundary.
 - `P8.S15` builds from `build-prompt.md` §1–§5 and verifies §6 items 1–20 in the operator runtime.
 
+### R15 walk — surface 8 (운영 관제 /ops), 2026-08-24 — SSR + code + R7 record (browser bridge down; authenticated tabs unwalked)
+
+- Provenance: the Chrome bridge disconnected and the ops door takes **separate operator
+  credentials the orchestrator does not hold and may not type** — so the walk is the live SSR of
+  the door at `127.0.0.1:3000/ops` (signed Access surface renders), the complete
+  `components/ops/*` + `app/ops/*` source, and the R7 landed record + `admin/*.html` cards. The
+  operator sees the authenticated tabs in the design session and at the acceptance gate;
+  `P8.S17` verifies in the real runtime.
+- Handoff: `docs/reference/design/rounds/15-admin/handoff.md` (pushed `9b74ec3`) — **13
+  findings**, §2b **Q-A–Q-G**; cards under **`⏳ P8.S16 · Admin`**; R7 §6.1–§6.6 restated;
+  desktop-only stands unless the operator re-opens it.
+- Headlines: the **live-data era is undrawn** (P6 now stores real conversations; vocky is wired
+  `ok` — R7 drew composition examples and `0건` states) (Q-A → Q59); the 로그→사용자 cross-link
+  is **not the signed 양방향** (bare tab link, no 그 행 targeting) (Q-B → Q60); 「API shape 확정
+  대기」 lags its own surface (Q-C → Q61); 샘플 로드 여부 has no backing fact (Q-D → Q62);
+  focus/hover predate R12/R14 one-rules (Q-E → Q63); a local Overview is a wall of alert
+  「실행 기록 없음」 rows (Q-F → Q64); favicon 404 parked here from R14 (Q-G → Q65).
+
 ## Findings & Notes
 
 ### `t1` root cause — verified read-only at decomposition (2026-08-23)
@@ -1964,6 +1982,20 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   accessible name. (a) keep the record as signed (default); (b) drop the `aria-label` and keep only
   `title`, so the accessible name returns to the visible label and the sentence stays a tooltip;
   (c) make the accessible name contain both (「{label} — {question}」), which no round has signed.
+- **Q59 (R15 Q-A) — draw the live-data era?** 대화 로그 replay / 익명 세션 / save_feedback queue
+  were designed on composition examples; real rows now exist. Redraw vs sign deltas only. R15 session.
+- **Q60 (R15 Q-B) — 로그→사용자 「그 행」.** The signed 양방향 is unimplemented in one direction
+  (bare users-tab link). What does 그 행 mean concretely — filter, anchor, highlight? R15 session.
+- **Q61 (R15 Q-C) — 「API shape 확정 대기」** waits for a credential, not a shape, since `P5.S18`.
+  Re-sign or keep. R15 session.
+- **Q62 (R15 Q-D) — 샘플 로드 여부 backing fact** (carried from P5): build it (a new behavioural
+  fact about readers), drop the column from the drawing, or keep data-driven-and-absent. R15 session.
+- **Q63 (R15 Q-E) — ops focus/hover one-rule** (R12/R14 precedent) or browser defaults as part of
+  the counter-back idiom. R15 session.
+- **Q64 (R15 Q-F) — a long run of 「실행 기록 없음」 alert rows** (local reality): row-per-miss
+  stays, or a signed collapse. R15 session.
+- **Q65 (R15 Q-G) — favicon**: ship it this round (asset exists in `assets/`) or explicitly defer
+  past P8. R15 session.
 
 ## Constraints
 

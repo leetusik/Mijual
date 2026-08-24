@@ -8,9 +8,9 @@
 - Current phase: `P8`
 - Current slice: `P8.S16`
 - Next slice: `P8.S17`
-- Waiting on operator: `none`
+- Waiting on operator: `P8.S16`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-24T22:57:40+09:00`
+- Rebuilt at: `2026-08-24T23:02:03+09:00`
 
 ## Active Phases
 
@@ -149,7 +149,7 @@
 | [x] `P8.S13` | `done` | Apply R13 — 내 포트폴리오 + 알림 설정 | `implementation` | `works/phases/active/P8/slices/P8.S13` |
 | [x] `P8.S14` | `done` | R14 폴리시 라운드 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `co-work` | `works/phases/active/P8/slices/P8.S14` |
 | [x] `P8.S15` | `done` | Apply R14 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `implementation` | `works/phases/active/P8/slices/P8.S15` |
-| [ ] `P8.S16` | `todo` | R15 폴리시 라운드 — 운영 관제 admin /ops | `co-work` | `works/phases/active/P8/slices/P8.S16` |
+| [~] `P8.S16` | `pending` | R15 폴리시 라운드 — 운영 관제 admin /ops | `co-work` | `works/phases/active/P8/slices/P8.S16` |
 | [ ] `P8.S17` | `todo` | Apply R15 — 운영 관제 admin /ops | `implementation` | `works/phases/active/P8/slices/P8.S17` |
 | [ ] `P8.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P8/slices/P8.REVIEW` |
 
