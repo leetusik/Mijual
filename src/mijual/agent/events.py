@@ -3,7 +3,7 @@
 A turn is an **iterator of these**, not a string. That is what lets the transport
 be a thin adapter (`P6.S4`: one SSE frame per event) and the surface a renderer
 (`P6.S5`: one component per event kind), while the decisions that matter — which
-tool ran, which sentence passed the citation gate, which refusal family was
+tool ran, what the citation gate stripped from a sentence, which refusal family was
 selected — stay in one module with tests that need no HTTP.
 
 **Four properties this vocabulary is shaped by.**
@@ -178,23 +178,26 @@ class CitationEvent(AgentEvent):
 
 @dataclass(frozen=True)
 class TextEvent(AgentEvent):
-    """One **verified** sentence of the answer, with the chip numbers it rests on.
+    """One **stripped** sentence of the answer, with the chip numbers it rests on.
 
-    Nothing reaches this event that has not passed the generation-boundary gate
-    (:mod:`mijual.agent.citations`): the markers resolved to real citations, the
-    numbers traced to tool values, and any quoted span was verbatim. A sentence
-    that failed is not emitted at all — there is no "blocked" event, because a
-    blocked claim must not exist on the stream in any form.
+    Every sentence the model completes reaches this event (R16 §2.5: strip,
+    don't drop) — what does not reach it is anything unverifiable *inside* the
+    sentence. The generation-boundary gate (:mod:`mijual.agent.citations`) removed
+    every ``[[cite:…]]`` marker, kept the chips whose ids the tools actually
+    returned, and took the quotation marks off a 「…」 span that occurs verbatim in
+    nothing a tool returned. The sentence itself is never withheld: a greeting has
+    nothing to cite and must still be answered.
 
     ``citations`` are display numbers whose :class:`CitationEvent` definitions
     were emitted immediately before this event.
 
-    ``unverified`` is R16 §2.5 / Q-B: character offsets, **within this sentence**,
-    of a filing-specific figure no tool returned. The surface draws the 「미확인」
-    marker on exactly those spans; the sentence itself stands (strip-don't-drop —
-    the turn is never replaced by a fixed one). The field exists here from `P9.S3`
-    so the vocabulary is one contract; `P9.S4` is what fills it, and until then it
-    is always empty and therefore never on the wire.
+    ``unverified`` is R16 §2.5 / Q-B: character offsets, **within this sentence's
+    ``text``**, of a filing-specific figure no tool returned — an amount, a share
+    count, a rate, a date, a 접수번호, with its unit inside the span so the surface
+    marks one value rather than splitting it. The surface draws the 「미확인」 marker
+    on exactly those spans; the sentence and the turn both stand (Q-B is claim
+    level — no turn is replaced by a fixed one). It rides the wire only when it is
+    non-empty, so a turn with nothing to hedge is byte-identical to a pre-R16 one.
     """
 
     EVENT: ClassVar[str] = "text"

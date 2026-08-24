@@ -20,11 +20,13 @@ What the loop owns instead is everything that must not be left to a model:
 * **the fact rows** — 도구 호출은 숨기지 않고 사실 행으로 표시 (R6), emitted as the
   tool runs, from the tool's own signed string;
 * **the citation gate** — the model's prose does not reach the reader, it reaches
-  :class:`~mijual.agent.citations.CitationGate`, and only verified sentences leave
-  (see that module: this is R6's 「생성 단계에서 차단」);
-* **the refusal families** — the five signed sentences are recognised, not
-  generated, and the loop states the 검증 미통과 폴백 itself when a turn produced
-  nothing verifiable;
+  :class:`~mijual.agent.citations.CitationGate`, which strips what cannot be
+  verified and releases the prose (R16 §2.5: strip, don't drop). The gate no
+  longer judges, so the loop has no unverified-turn state to state;
+* **the refusal families** — the live signed sentences are recognised, never
+  generated. The loop selects **no** family of its own since `P9.S4`: 검증 미통과
+  폴백 was the one it could, and R16 retired it with the sentence-dropping gate
+  that made it true;
 * **the 갈 곳 links and the 답변 푸터** — composed from the turn's own tool results
   as *data*, so the model never writes a URL or points at a filing it did not read;
 * **the 진행 표시 line** — R16 D5's five signed phrases, one alive at a time,
@@ -77,7 +79,6 @@ from mijual.agent.events import (
     DataRow,
     FooterEvent,
     LinksEvent,
-    RefusalEvent,
     StatusEvent,
     ToolRowEvent,
     TurnEnd,
@@ -326,48 +327,48 @@ def _execute(
 
 
 def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[AgentEvent]:
-    """Close the turn: the fallback family if needed, the links, the footer, the end."""
+    """Close the turn: the 의견 confirmation if that is all it was, links, footer, end.
+
+    **No fallback family (`P9.S4`).** 「이 데이터는 검증을 통과하지 못했습니다」 was
+    the honest reading of a turn whose every sentence the gate had dropped — and
+    under strip-don't-drop no sentence is dropped, so a turn that releases nothing
+    released nothing *because the model said nothing*. Stating a refusal about
+    data would be inventing a fact about a silent turn, and R16 retires both the
+    family and `REFUSAL_FALLBACK` with the gate that produced them (result.md §5).
+    A silent turn is now an ordinary empty answer, and the loop selects no family
+    at all: every refusal the reader reads is one the model stated in signed words.
+    """
     gate = turn.gate
 
-    if turn.status == "done" and not gate.released:
-        if _feedback_only(turn.results):
-            # 의견 저장 is the one turn whose **answer is not prose**: R6 §의견
-            # signs 「자동 저장 + 확인 한 줄」 and 「실패 시에만 재시도 행」, and the
-            # confirmation belongs to the surface (`mijual.agent.copy`:
-            # 「the surface renders it … the agent never writes it as prose」). So
-            # nothing citable is expected here, and the 폴백 family — a statement
-            # about *data* that failed verification — would contradict a save that
-            # succeeded (measured in `P6.S7`: the reader saw 「의견을
-            # 저장했습니다」 and 「이 데이터는 검증을 통과하지 못했습니다」 together).
-            # No event is emitted: the confirmation is already on the screen,
-            # under the tool's own row. It is recorded as the turn's answer so the
-            # 대화 로그 replays what the reader read (`P6.S4`'s rule).
-            gate.released.append(ko.FEEDBACK_SAVED_KO)
-        else:
-            # Everything the model produced was dropped at the gate (or it produced
-            # nothing at all). 「이 데이터는 검증을 통과하지 못했습니다」 is the family the
-            # record signs for exactly that, and it is the one family the *loop* may
-            # select on its own, because it is a statement about the data rather than
-            # about the reader's question.
-            family = ko.REFUSAL_FALLBACK
-            sentence = ko.REFUSAL_SENTENCES[family]
-            gate.family = family
-            gate.released.append(sentence)
-            yield RefusalEvent(family=family, text=sentence)
+    if turn.status == "done" and not gate.released and _feedback_only(turn.results):
+        # 의견 저장 is the one turn whose **answer is not prose**: R6 §의견 signs
+        # 「자동 저장 + 확인 한 줄」 and the confirmation belongs to the surface
+        # (`mijual.agent.copy`: 「the surface renders it … the agent never writes it
+        # as prose」). Nothing citable is expected, so a model that says nothing at
+        # all here still has an answer to replay: the confirmation is recorded as
+        # the turn's answer so the 대화 로그 shows what the reader read (`P6.S4`).
+        # No event is emitted — it is already on the screen, under the tool's row.
+        gate.released.append(ko.FEEDBACK_SAVED_KO)
 
     links = _links(turn.results)
     if turn.status == "done":
         if gate.family is not None:
             # ③ 갈 곳 링크 — the third move of R6's refusal, as data.
             yield LinksEvent(links=links)
-        # 완료 → 푸터. A 중단/오류 turn gets none: R6 gives that state its own
-        # signed inset row and 재시도, and a footer under a half-answer would read
-        # as a finished one.
-        yield FooterEvent(
-            evidence=gate.evidence,
-            generated_at=clock.iso(now or clock.now()),
-            links=links,
-        )
+        # 완료 → 푸터, **when the turn read something**. A 중단/오류 turn gets none
+        # (R6 gives that state its own signed inset row and 재시도, and a footer
+        # under a half-answer would read as a finished one) — and neither does a
+        # turn that called no tool at all: 「근거 N건 · 생성시각」 is a statement
+        # about what the answer rests on, and a greeting rests on nothing. R16 §4
+        # check 1 says it plainly: 「안녕」 → 도구 행 0 · 칩 0 · **푸터 없음**. A turn
+        # that *did* read and then cited nothing still gets one — 근거 0건 is then
+        # a true reading, and the 관제 현황판 pointer of a 0건 search rides in it.
+        if turn.results:
+            yield FooterEvent(
+                evidence=gate.evidence,
+                generated_at=clock.iso(now or clock.now()),
+                links=links,
+            )
 
     refusal = gate.family
     yield TurnEnd(
@@ -378,7 +379,7 @@ def _finish(ctx: ToolContext, turn: _Turn, *, now: datetime | None) -> Iterator[
         scope_rcept_no=ctx.scope_rcept_no,
         evidence=gate.evidence,
         quotes=gate.quotes,
-        blocked=len(gate.blocked),
+        blocked=gate.blocked,  # 제거된 마커 수 (R16 §1), not dropped sentences
         filings=_filings_read(turn.results),
         rounds=turn.rounds,
         tool_calls=turn.tool_calls,
@@ -409,8 +410,9 @@ def _filings_read(results: Sequence[ToolResult]) -> int:
 def _feedback_only(results: Sequence[ToolResult]) -> bool:
     """Did this turn do nothing but save an 의견, successfully?
 
-    Narrow on purpose. A turn that also read an event and then said nothing
-    verifiable *has* failed to verify something, and keeps the 폴백 family.
+    Narrow on purpose, and now only about **what to replay**: a turn that also
+    read a filing and then said nothing has no confirmation to stand in for its
+    prose, so it is stored as the empty answer it was.
     """
     return bool(results) and all(
         result.tool == "save_feedback" and result.ok for result in results

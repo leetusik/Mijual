@@ -35,12 +35,14 @@ __all__ = [
     "FEEDBACK_RETRY_ROW",
     "FEEDBACK_ROW",
     "FEEDBACK_SAVED_KO",
+    "LIVE_REFUSAL_SENTENCES",
     "NOT_FOUND_KO",
     "PORTFOLIO_ROW",
     "PORTFOLIO_SAMPLE_LABEL_KO",
     "PORTFOLIO_SAMPLE_ROW",
     "REFUSAL_FALLBACK",
     "REFUSAL_SENTENCES",
+    "RETIRED_FAMILIES",
     "RIGHTS_TOOL_LABEL_KO",
     "SEARCH_ITEM",
     "SEARCH_ROW",
@@ -116,7 +118,10 @@ AGENT_INTRO_KO = (
 #:   ordinary prose path, and the surface gives them body ink, no alert colour and
 #:   no icon;
 #: * **the loop selects a family by recognising its sentence**, so a paraphrase is
-#:   not a softer refusal — it is prose with no citation, and the gate drops it.
+#:   not a softer refusal — under strip-don't-drop it is simply prose, and it
+#:   reaches the reader as prose (uncited, and stored as an answer rather than as
+#:   a refusal). Recognition runs over :data:`LIVE_REFUSAL_SENTENCES`, not over
+#:   this mapping: two of these five are retired and may not be newly recorded.
 REFUSAL_SENTENCES: dict[str, str] = {
     "철회": "철회된 공시는 해설하지 않습니다.",
     "확정 전": "확정 전 금액은 해설하지 않습니다.",
@@ -127,10 +132,33 @@ REFUSAL_SENTENCES: dict[str, str] = {
     ),
 }
 
-#: The family a turn falls to when nothing it generated could be verified — the
-#: one family the *loop* may select on its own, because it is a statement about
-#: the data rather than about the reader's question.
+#: The family a turn used to fall to when nothing it generated could be verified.
+#: **Retired by R16** (result.md §5: strip-don't-drop supersedes it). `P9.S4`
+#: deleted its producer in :func:`mijual.agent.loop._finish`, so nothing selects
+#: it any more; the constant itself goes with `P9.S7`'s copy pass (build-prompt §0:
+#: 「REFUSAL_FALLBACK 삭제」), which is also what retires 계산 요청.
 REFUSAL_FALLBACK = "검증 미통과 폴백"
+
+#: Families that stay in the **stored** vocabulary for past rows and are never
+#: newly written (R16 §0: 「은퇴: … 새로 기록하지 않음」). The whitelist that a row
+#: is validated against is :data:`mijual.web.conversationstore.REFUSAL_FAMILIES`
+#: and it keeps all six — this is the producer side of the same decision, and the
+#: two are different by design: a turn recorded in 2026-08 must still be findable
+#: by a family the product no longer states.
+#:
+#: `P9.S7` adds 계산 요청 here when the calculator replaces it in the prompt.
+RETIRED_FAMILIES: frozenset[str] = frozenset({REFUSAL_FALLBACK})
+
+#: The families a turn may still **state** — the mapping every recogniser reads.
+#: A retired sentence arriving from the model is therefore not a refusal at all:
+#: it is ordinary prose, and under strip-don't-drop ordinary prose ships (which is
+#: the honest outcome — the alternative would be writing a retired family to the
+#: 대화 로그 the moment the model happens to type its words).
+LIVE_REFUSAL_SENTENCES: dict[str, str] = {
+    family: sentence
+    for family, sentence in REFUSAL_SENTENCES.items()
+    if family not in RETIRED_FAMILIES
+}
 
 
 # ---------------------------------------------------------------------------
@@ -161,11 +189,18 @@ def family_of(sentence: str) -> str | None:
     """Which signed family this sentence **is**, or ``None``.
 
     Exact match only: a family is selected by the record's own words arriving
-    verbatim, never by a keyword in something that resembles them.
+    verbatim, never by a keyword in something that resembles them — and only a
+    **live** family is selectable (:data:`RETIRED_FAMILIES`), because recognising
+    a retired sentence would newly record a family R16 retired.
     """
     text = sentence.strip()
     return next(
-        (family for family, signed in REFUSAL_SENTENCES.items() if signed == text), None
+        (
+            family
+            for family, signed in LIVE_REFUSAL_SENTENCES.items()
+            if signed == text
+        ),
+        None,
     )
 
 # ---------------------------------------------------------------------------

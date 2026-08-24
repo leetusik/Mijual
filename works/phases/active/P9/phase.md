@@ -1617,6 +1617,83 @@ a data row must not open a second one), and `agent/tools.py` gained `ValueRow` +
 `STATUS_PHASE` (payload-shape knowledge belongs beside `citations_in`, and keeping it out of
 `loop.py` is what preserves 「no tool name in the control flow」).
 
+### P9.S4 — strip, don't drop landed (2026-08-25)
+
+**What the gate does now**, in one line per rule (`agent/citations.py::CitationGate._release`):
+markers are removed (resolvable ones become chips) · an uncited sentence ships · an untraceable
+공시 figure becomes a `TextEvent.unverified` span · a fabricated 「…」 loses its **quotation marks**.
+Nothing is dropped, no turn is replaced, and `loop._finish` selects no refusal family at all.
+
+**Decisions this slice made, and why — later slices inherit every one of them.**
+
+1. **`blocked` counts a marker the gate could not honour**, not every marker it removed. Every
+   marker leaves the prose (the reader sees chips, never syntax), so counting all of them would
+   count the *successful* citations too. What rides `TurnEnd.blocked` is: an id no tool returned, a
+   malformed marker, and half a marker left by a dying stream — a signal about the model's citing.
+   R16 §1's 「제거된 마커 수」 read literally, minus the honoured ones.
+2. **`_ANY_MARKER` became total**: `[ \t]*\[\[[^\[\]]*\]{0,2}`. It eats the whitespace that
+   introduced the marker (§4 check 3: 선행 공백도 함께 정리된다) and it closes at `]]`, at a typo's
+   single `]`, **or at the end of the piece**. That last case is new and load-bearing: the old gate
+   dropped a sentence ending in `[[cite:c` as `uncited`, and strip-don't-drop would have shipped the
+   debris to the reader. Covered by a test.
+3. **「미확인」 marks a 공시 figure, not a digit** (`_FILING_FIGURE`). Q-B says 공시 **특정** 수치, so
+   the pattern is the shapes this product's prose writes: an ISO or Korean date (matched **whole**,
+   so one date draws one marker), a 접수번호-length run, a number carrying 원·주·%·배 (with a
+   만/억/조 scale), a thousands-grouped number, a decimal. 「3가지」 and a bare 「2026년」 are not
+   figures — marking them would put a hedge in the middle of a greeting (§4 check 1). The span
+   includes the **unit**, so the surface marks 「3,200원」 as one value instead of splitting it.
+4. **A figure the *reader* typed is not traced, and is therefore marked.** Only `learn()`'s tool
+   values count. Echoing 「1,000주」 back unmarked would launder the reader's own premise into
+   product prose, which is exactly what §2.5's 「마커도 칩도 없는 숫자는 존재해서는 안 된다」 forbids.
+   **`P9.S5` resolves this by construction**: the calculator returns its inputs in the payload, so a
+   number that went through it is traced and the marker disappears where it should.
+5. **Known honest limit — 오늘(KST).** The instruction hands the model today's date; no tool
+   returns it, so 「오늘은 2026년 8월 25일입니다」 gets a 「미확인」 span. That reading is defensible
+   (the prompt already says never state a date you did not read from a tool) and cheap to revisit —
+   but `P9.S7`, which rewrites the scope/date paragraph, should decide it deliberately rather than
+   discover it in the flesh at `P9.S11`.
+6. **인용문 재구성 금지 (not superseded) = de-quoting.** A 「…」 span occurring verbatim in nothing a
+   tool returned is released **without its marks**; the words stay as the assistant's own prose and
+   their figures are then traced like any other. This is the marker rule applied to quotation: what
+   must not reach the reader is the *claim of being 원문*, so the claim is what is removed, and the
+   sentence survives (strip-don't-drop). No new Korean, no new event field, no counter — the effect
+   is visible in the stored answer itself. Rejected alternatives, for the record: dropping the
+   sentence (superseded), and marking the quote 「미확인」 (§2.5 signs that marker for **수치**, and a
+   marked quote still reads as a quote).
+7. **Retired families are not *recognised*, only stored.** `copy.RETIRED_FAMILIES` +
+   `copy.LIVE_REFUSAL_SENTENCES` split the producer side from the whitelist: `family_of`,
+   `citations._family_at_head` and `citations._is_family_prefix` now read the **live** mapping, so a
+   model typing 「이 데이터는 검증을 통과하지 못했습니다…」 produces prose, not a stored 검증 미통과
+   폴백 row (R16 §0 「새로 기록하지 않음」). `conversationstore.REFUSAL_FAMILIES` still holds all six —
+   past rows must stay findable. **`P9.S7` adds 계산 요청 to `RETIRED_FAMILIES`** when it retires
+   that family from the prompt, and deletes `REFUSAL_FALLBACK` itself.
+8. **푸터 없음 for a turn that called no tool.** §4 check 1 requires 「도구 행 0 · 칩 0 · 푸터 없음」,
+   and the loop emitted a footer on every `done` turn, so a greeting would have rendered
+   「근거 0건 · 생성시각」. `_finish` now emits `FooterEvent` only when `turn.results` is non-empty.
+   Deliberately keyed on *tools ran*, not on *chips exist*: a 0건 검색 turn cites nothing but must
+   keep its footer, because the 관제 현황판 pointer (P8) travels in its links. `P9.S9`/`P9.S10`
+   should **not** re-derive footer suppression client-side — the server already guarantees it.
+9. **`_feedback_only` survives, narrowed to "what to replay".** It no longer avoids a 폴백 refusal
+   (there is none); it exists so a save turn whose model says nothing at all still stores the signed
+   confirmation. When the model does say something, that prose is now the answer.
+10. **Nothing else in the gate moved.** Kept exactly as they were: the closed citation space
+    (`learn`), `_number_for`/`cite()` (같은 근거 = 같은 번호, and `P9.S3`'s shared numbering seam),
+    chip-arrives-with-its-claim, the sentence cut (`_cut`/`_SENTENCE_END`) and therefore **per-
+    sentence `TextEvent.citations`** — S1's 「keep the cut, delete the judgement」, a deliberate
+    compatibility choice so `Answer.tsx` keeps working, **not** where the event is heading — and P8
+    (a tool's own signed string reaches the reader byte for byte, unrespelled and unmarked).
+11. **Interim mismatch `P9.S7` closes.** `instructions._CITATIONS` still tells the model that an
+    uncited sentence is 「discarded before the reader sees it」, `_NEVER_COMPUTE` still says a
+    number not in a tool result is 「discarded with its sentence」, and `_refusal_block()` still
+    lists five families including the two retired ones. All three are build-prompt §3.1–3.4, i.e.
+    `P9.S7`'s to rewrite. Until then the prompt is **more conservative than the gate**, which is the
+    safe direction — but §4 check 1's live behaviour (「안녕」 actually answered by the real model)
+    cannot be claimed before `P9.S7` lands; this slice makes it structurally possible, and
+    `P9.S11` is where it is seen.
+12. **The wire stayed additive.** `unverified` rides only when non-empty (asserted in
+    `tests/test_web_ask.py`), so today's `lib/ask.ts` and both views render a turn exactly as
+    before. The 「미확인」 marker itself is `P9.S9`'s to draw; until then the span is data.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -1632,6 +1709,9 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S3`) `api` — the SSE vocabulary landed: every event carries `block_id`/`persistent` (same id = in-place replacement; absent id = today's append), new `status` (transient, phase + its signed sentence) and `data` (rows `{label, value, citation?, reader_input?}`) frames, `text.unverified` spans (field only), `done` gains `filings` (공시 M건 읽음, server-known).
 - (`P9.S3`) `architecture` — `record_turn` stores structured blocks **verbatim as the frames sent** in a new nullable `conversation_turn.blocks` column (landed via `schema_sync.ensure_columns`, no Alembic); `_Released.absorb` is generic over any persistent block keyed by `block_id`, so `P9.S5`'s calc blocks need no second storage change; the transient status line is never stored.
 - (`P9.S3`) `decisions` — refusal vocabulary is now **six values** (`보안` added as a contract before `P9.S6` emits it; `계산 요청`·`검증 미통과 폴백` kept **read-only for past rows**), mirrored in `frontend/components/ops/copy.ts::REFUSAL_CATEGORIES_KO`; the ops panel's row shape is unchanged (blocks are stored, not served — see the `P9.DECOMP2` Operator Question).
+- (`P9.S4`) `backend` — the citation gate **strips instead of dropping**: markers are removed (resolvable ones become chips), an uncited sentence ships, an untraceable 공시 figure becomes a 「미확인」 span, a quote no tool returned loses its quotation marks (인용문 재구성 금지, not superseded), `CitationGate.blocked` is a **count of unhonoured markers**, and `loop._finish` no longer states 검증 미통과 폴백 — the loop now selects no refusal family at all.
+- (`P9.S4`) `api` — `text.unverified` now **rides the wire** (character offsets within the sentence, unit included; absent when empty) and `done.blocked` carries removed-marker counts; a `done` turn that called **no tool** emits **no `footer` frame** (R16 §4 check 1).
+- (`P9.S4`) `decisions` — R6's generation-boundary *judgement* is superseded by R16 strip-don't-drop (the boundary itself stays); 검증 미통과 폴백 is retired as a **producer** (`copy.RETIRED_FAMILIES` splits the producer side from the six-value stored whitelist, which keeps all six for past rows); 「미확인」 is claim-level (Q-B), marks 공시 figure shapes only, and a reader-typed figure is deliberately untraced until the calculator returns it.
 
 ## Operator Questions
 
@@ -1711,6 +1791,16 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   panel so 품질 점검 can actually read a calculation; or (c) a later design round for the 대화 로그
   surface? Only the operator can weigh 품질 점검 value against putting undesigned UI in front of
   themselves.
+
+- **(`P9.S4`) Should the 대화 로그 keep the 「미확인」 hedge?** The gate now marks a 공시 figure no tool
+  returned with a `TextEvent.unverified` span, and the reader sees the marker — but the **stored**
+  turn keeps only the prose (`TurnEnd.answer`), so a replayed row in 운영 대화 로그 shows
+  「총 조달금액은 1,234,567원입니다」 with no sign that the figure was hedged on screen. Storing the
+  spans means giving `TextEvent` a `block_id` and thus a stored block (`P9.S3` note 9 warns that this
+  is a storage decision, never a side effect), and *showing* them is the same un-designed-UI question
+  the `P9.DECOMP2` entry above already asks about data and calculation blocks. Is 품질 점검 fine with
+  「the answer as prose」 (today), or does an unverified claim need to be reviewable as such? Only the
+  operator can weigh it — the same trade as (a)/(b)/(c) above, and answerable together with it.
 
 ## Constraints
 

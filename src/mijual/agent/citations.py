@@ -1,32 +1,42 @@
-"""인용 강제 — as a **gate on the generation boundary**, not a check after the fact.
+"""인용 강제 — **strip, don't drop** (R16 §2.5, Q-B).
 
-R6 is unambiguous about where this lives: 「검증된 span 없는 주장은 생성 단계에서
-차단 (스트림에 나올 수 없음)」. A post-processor that scrubs a finished answer would
-already have failed, because on an SSE surface the claim reached the reader the
-moment it was generated. So the model's text does not stream to the reader at all:
-it streams *into here*, and only what passes leaves.
+R6 put this gate on the generation boundary and had it *judge*: a sentence whose
+markers did not resolve, or that cited nothing, or that stated a number no tool
+returned, was discarded before the reader could see it. R16 supersedes the
+judgement and keeps the boundary. The model's text still does not stream to the
+reader — it streams *into here* — but what leaves is now the prose the model
+wrote, with everything unverifiable **taken out of it** rather than the sentence
+taken away:
 
-**How a sentence earns its way out.** Every tool result the turn executes is
-:meth:`CitationGate.learn`-ed: its :class:`~mijual.agent.tools.Citation` objects
-get short reference ids (``c1``, ``c2``, …) that travel back to the model inside
-the function response, and its payload's strings and numbers become the two
-vocabularies below. The system instruction then requires an inline
-``[[cite:c1]]`` marker on every factual sentence. This gate buffers the stream,
-cuts it into sentences, and for each one:
-
-1. **resolves the markers.** Every id must name a citation the tools actually
-   returned. One unknown id blocks the sentence — a fabricated citation is worse
-   than a missing one, because it *looks* verified.
-2. **requires a citation at all.** A sentence with no resolving marker is
-   released only when it is verbatim a string a tool returned (the signed 0건
-   sentence, a 잠긴 notice, a 본문 quote) — that is a *verified value being
-   stated*, not a model claim. Everything else is dropped.
-3. **traces every number** (the never-compute rule, R6 §3.6 + Hard rules). Each
-   numeric token in the sentence must appear among the values the tools returned.
-   A sum, a ratio, a 환산 or a 원 amount the model worked out itself is not in
-   that set, so it cannot be released. Its honest limits are recorded below.
-4. **requires quotes to be verbatim** (「인용문 재구성·요약 금지」). Any 「…」 or
-   "…" span in the prose must occur verbatim in something a tool returned.
+1. **markers leave.** Every ``[[cite:…]]`` is removed from the prose (the reader
+   sees numbered chips, never marker syntax). One that names a citation the tools
+   actually returned becomes that chip; one naming an id nothing returned, or one
+   that is malformed or still half-arrived, is simply gone — 「인식되지 않는
+   마커는 제거되고 문장은 남는다」 (build-prompt §3.1). The horizontal whitespace
+   that introduced it goes with it, so 「…입니다 [[cite:c1]].」 reads
+   「…입니다.」 and not 「…입니다 .」 (§4 check 3).
+2. **an uncited sentence ships.** A greeting, a short confirmation, a meta answer
+   about 미주얼 — none of them has anything to cite, and dropping them is the
+   defect this phase exists to fix (「안녕」 must not return a refusal). A sentence
+   that is verbatim a string a tool returned still travels as **copy**: it leaves
+   byte for byte as the payload wrote it and borrows that result's 근거 (`P8` —
+   the signed 0건 sentence and the 철회 notice reach the reader unparaphrased).
+3. **an untraceable figure is marked, not deleted.** Every 공시-shaped figure in
+   the prose — an amount, a share count, a rate, a date, a 접수번호 — is looked up
+   in the values the turn's tools returned (:meth:`CitationGate.learn`). One that
+   is in none of them is reported as an :attr:`~mijual.agent.events.TextEvent.
+   unverified` span, which the surface draws as the 「미확인」 marker (R16 D6).
+   The sentence stands and the turn stands: Q-B is **claim level**, never a
+   turn-replacing gate. §2.5's bar is 마커도 칩도 없는 숫자는 존재해서는 안 된다,
+   so the check runs on cited sentences too — a chip says *this filing*, it does
+   not say *this number came from it*.
+4. **a fabricated quote loses its quotation marks, not its sentence.**
+   「인용문 재구성 금지」 is explicitly **not** superseded by R16 (result.md §5), and
+   the strip-era reading of it is the same move as stripping a marker: a 「…」 span
+   that occurs verbatim in nothing a tool returned is released **without the
+   marks**. The words survive as the assistant's own prose (and their figures are
+   then traced like any other), and what does not survive is the *claim of being
+   원문* — which is the whole of what that rule protects.
 
 **What a released sentence is respelled to.** Once a sentence has passed, its raw
 figures are written the way the rest of the product writes them — ``3200원`` →
@@ -36,33 +46,37 @@ that is itself a tool's own string: verbatim stays verbatim, and the number a
 sentence states never changes. The reader's form is what
 :attr:`CitationGate.released` keeps, so the 대화 로그 stores what was read.
 
-**What a blocked sentence does.** It is dropped — never emitted, never marked on
-the stream (a visible hole would be a placeholder, and R6 forbids those). The
-count rides the terminal event so the rate is observable. If a turn ends with
-*nothing* released, the loop states the 검증 미통과 폴백 family: the honest reading
-of "the model produced only unverifiable prose" is that this data did not pass
-verification, and that is the family the record signs for it.
+**What :attr:`CitationGate.blocked` counts.** Removed markers, not dropped
+sentences (R16 §1: 「삭제된 문장 수가 아니라 제거된 마커 수」) — and only the ones
+that were removed *without being honoured*: an id no tool returned, a malformed
+marker, a marker cut in half by the end of the stream. It rides
+:class:`~mijual.agent.events.TurnEnd` so an operator can watch the model's citing
+rather than infer it; nothing the reader saw is missing because of it.
 
 **Same 근거 = same 번호** (R6-4). Two id spaces, on purpose: the model cites
 ``c7`` (assigned when the tool ran), the reader sees chip ``1`` (assigned when the
 answer first rests on it). The reader's numbering is therefore in reading order
 and stable for the whole answer, without the model having to know or manage it.
 
-**Honest limits of the number check.** It is *membership*, not semantics: a token
-that appears anywhere in a tool payload passes, so a small integer (1, 2, 3 — or a
-year) is effectively always allowed, and a value quoted in the wrong unit or about
-the wrong field would pass too. What it catches is the failure that matters and
-the one this product cannot ship: a number that exists **nowhere upstream**, which
-is exactly the shape of every computed, converted or invented figure. The
-structural half of the promise is upstream anyway — a 확정 전 won amount is
-*unconstructable* (`P6` Finding 6), so it cannot be in the set to begin with.
+**Honest limits of the figure check.** It is *membership*, not semantics: a token
+that appears anywhere in a tool payload passes, so a value quoted in the wrong
+unit or about the wrong field passes too, and a turn that read a filing has a
+large set. What it catches is the failure that matters: a figure that exists
+**nowhere upstream**, which is the shape of every computed, converted or invented
+one. The structural half of the promise is upstream anyway — a 확정 전 won amount
+is *unconstructable* (`P6` Finding 6), so it cannot be in the set to begin with.
+Two deliberate readings ride on top of it: a figure the **reader** typed is not
+traced (nothing verified it, and echoing it back unmarked would be the laundering
+§2.5 forbids — the calculator tool returns its inputs, which is what makes a
+reader's number traceable once `P9.S5` lands), and a number carrying none of the
+product's figure shapes (「3가지」, 「2026년」) is not a 공시 수치 at all and is never
+marked. Q-B is about 공시 특정 수치, not about digits.
 """
 
 from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -71,13 +85,18 @@ from mijual.agent import figures
 from mijual.agent.events import AgentEvent, CitationEvent, RefusalEvent, TextEvent
 from mijual.agent.tools import Citation, ToolResult
 
-__all__ = ["Blocked", "CitationGate"]
+__all__ = ["CitationGate"]
 
 #: The marker the system instruction requires: ``[[cite:c1]]`` / ``[[cite:c1,c4]]``.
 _MARKER = re.compile(r"\[\[\s*cite\s*:\s*([^\]]*?)\s*\]\]", re.IGNORECASE)
-#: Anything marker-shaped, so a malformed one is stripped from the prose rather
-#: than shown to the reader — and takes its sentence down with it (rule 2).
-_ANY_MARKER = re.compile(r"\[\[[^\[\]]*\]\]")
+#: Anything marker-shaped, so a malformed one leaves the prose rather than being
+#: shown to the reader — **without** taking its sentence with it. Deliberately
+#: total: it opens at ``[[`` and closes at ``]]``, at the two brackets a typo left,
+#: or at the end of the piece (a marker cut in half by a dying stream). Marker
+#: debris on the reader's screen is the one thing stripping exists to prevent.
+#: The leading ``[ \t]*`` is the space that introduced the marker — it goes with it
+#: (build-prompt §4 check 3: 선행 공백도 함께 정리된다).
+_ANY_MARKER = re.compile(r"[ \t]*\[\[[^\[\]]*\]{0,2}")
 #: A numeric token as either side writes it: ``13,220`` · ``15.22`` · ``2026``.
 _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 #: A quoted span in Korean prose, in the three forms the record and the model use.
@@ -95,20 +114,33 @@ _SENTENCE_END = re.compile(r"[.!?…](?=\s|\[\[)|\n")
 _TRAILING_MARKER = re.compile(r"\A[ \t]*\[\[[^\[\]]*\]\]")
 #: …and a marker that is still streaming means the sentence is not finished.
 _PARTIAL_MARKER = re.compile(r"\A[ \t]*\[\[?[^\]]*\Z")
-#: A full stop left floating by a removed marker. End of sentence only.
+#: A full stop left floating by a removed marker. End of sentence only, and the
+#: backstop for the whitespace :data:`_ANY_MARKER` cannot eat (a line break).
 _LOOSE_STOP = re.compile(r"\s+([.!?…])\s*\Z")
 
-
-@dataclass(frozen=True)
-class Blocked:
-    """A sentence that did not reach the reader, and why. Never an event."""
-
-    text: str
-    reason: str
+#: A **공시 figure as this product's prose writes one** — the shapes Q-B is about
+#: (도구가 반환하지 않은 공시 특정 수치), and nothing else. A bare number is not one:
+#: 「3가지」 and 「2026년」 are readings, not 공시 수치, and marking them would put a
+#: 「미확인」 marker in the middle of ordinary conversation (build-prompt §4 check 1:
+#: 「안녕」 is a greeting, not a hedged one). A date is matched **whole** so one date
+#: draws one marker rather than three, and the span the surface marks includes the
+#: unit — 「3,200원」 reads as one value and the marker follows it, never splits it.
+_FILING_FIGURE = re.compile(
+    r"""
+      \d{4}-\d{2}-\d{2}                              # 2026-08-30
+    | \d{4}년\s*\d{1,2}월(?:\s*\d{1,2}일)?           # 2026년 8월 30일 · 2026년 8월
+    | \d{1,2}월\s*\d{1,2}일                          # 8월 30일
+    | \d{14}                                         # 접수번호 꼴
+    | \d[\d,]*(?:\.\d+)?\s*[만억조]?\s*(?:원|주|%|배)   # 3,200원 · 1,000주 · 15.22% · 2배
+    | \d{1,3}(?:,\d{3})+(?:\.\d+)?                   # 13,220 — 자릿점이 곧 금액 꼴
+    | \d+\.\d+                                      # 15.22 — 소수점이 곧 비율 꼴
+    """,
+    re.VERBOSE,
+)
 
 
 class CitationGate:
-    """One turn's citation forcing: learn from tools, release verified prose."""
+    """One turn's citation forcing: learn from tools, release stripped prose."""
 
     def __init__(self) -> None:
         self._by_ref: dict[str, Citation] = {}
@@ -125,8 +157,9 @@ class CitationGate:
         self.chips: list[CitationEvent] = []
         #: Every sentence released, in order — the answer as the reader read it.
         self.released: list[str] = []
-        #: Every sentence the gate refused, with its reason.
-        self.blocked: list[Blocked] = []
+        #: How many markers were removed without being honoured (R16 §1). A count,
+        #: not a list of losses: nothing is dropped any more.
+        self.blocked: int = 0
         #: The refusal family this turn selected, if the model stated one.
         self.family: str | None = None
 
@@ -165,12 +198,12 @@ class CitationGate:
 
     # -- streaming --------------------------------------------------------
     def feed(self, text: str) -> list[AgentEvent]:
-        """Take streamed model text; give back whatever passed the gate."""
+        """Take streamed model text; give back the sentences it completed."""
         self._buffer += text
         return self._drain(final=False)
 
     def flush(self) -> list[AgentEvent]:
-        """End of a model round: release or drop whatever is left in the buffer."""
+        """End of a model round: release whatever is left in the buffer."""
         return self._drain(final=True)
 
     def _drain(self, *, final: bool) -> list[AgentEvent]:
@@ -182,7 +215,7 @@ class CitationGate:
 
             family = self._family_at_head()
             if family is not None:
-                sentence = ko.REFUSAL_SENTENCES[family]
+                sentence = ko.LIVE_REFUSAL_SENTENCES[family]
                 self._buffer = self._buffer[len(sentence) :]
                 self.family = self.family or family
                 self.released.append(sentence)
@@ -194,8 +227,8 @@ class CitationGate:
                 break
             piece, rest = cut
             # A sentence that is the *start* of a signed family sentence waits for
-            # the rest of it — 폴백 is two sentences, and half of it is neither a
-            # refusal nor a citable claim.
+            # the rest of it — a family sentence may carry an internal full stop,
+            # and half of one is neither a refusal nor prose worth releasing.
             if not final and _is_family_prefix(piece):
                 break
             self._buffer = rest
@@ -203,8 +236,16 @@ class CitationGate:
         return events
 
     def _family_at_head(self) -> str | None:
+        """The signed sentence the buffer starts with, if it is a **live** family.
+
+        Exact string match, longest first. A **retired** family (R16 §0: 계산 요청
+        and 검증 미통과 폴백 are read-only, for past rows) is deliberately not
+        recognised here: recognising one would newly record it the moment the
+        model happened to type its words. Those sentences release as ordinary
+        prose instead, which is what strip-don't-drop does with any prose.
+        """
         for family, sentence in sorted(
-            ko.REFUSAL_SENTENCES.items(), key=lambda item: -len(item[1])
+            ko.LIVE_REFUSAL_SENTENCES.items(), key=lambda item: -len(item[1])
         ):
             if self._buffer.startswith(sentence):
                 return family
@@ -227,50 +268,41 @@ class CitationGate:
 
     # -- the gate itself --------------------------------------------------
     def _release(self, piece: str) -> list[AgentEvent]:
-        refs: list[str] = []
-        for marker in _MARKER.finditer(piece):
-            refs += [ref.strip() for ref in marker.group(1).split(",") if ref.strip()]
-        # Stripping a marker can leave the space that stood before it hanging in
-        # front of the full stop (「…입니다 [[cite:c1]].」 → 「…입니다 .」 — measured,
-        # 2026-08-22). Closed at the end of the sentence only, so nothing inside a
-        # 「verbatim」 span is ever touched.
-        text = _LOOSE_STOP.sub(r"\1", _ANY_MARKER.sub("", piece).strip())
+        """Strip, don't drop: markers out, chips resolved, the prose released."""
+        stripped, markers = _strip_markers(piece)
+        # A marker is *honoured* when every id it named exists; anything else —
+        # an invented id, a malformed marker, half of one — was removed for
+        # nothing, and that is what the terminal's count is about.
+        self.blocked += sum(
+            1
+            for marker in markers
+            if not marker or any(ref not in self._by_ref for ref in marker)
+        )
+        text = _LOOSE_STOP.sub(r"\1", stripped.strip())
         if not text:
-            return []  # a marker alone is not a sentence, and not a block either
+            return []  # a marker alone is not a sentence
 
-        unknown = [ref for ref in refs if ref not in self._by_ref]
-        if unknown:
-            return self._block(text, "unresolved_citation")
-
-        cited = _unique([self._by_ref[ref] for ref in refs])
-        # A sentence released because it *is* a tool's own string (a locked
-        # notice, the signed 0건 sentence) is copy, not prose — it leaves exactly
-        # as the payload wrote it.
-        verbatim_value = False
-        if not cited:
-            lends = self._verified.get(_norm(text))
-            if lends is None:
-                return self._block(text, "uncited")
+        cited = _unique(
+            self._by_ref[ref]
+            for marker in markers
+            for ref in marker
+            if ref in self._by_ref
+        )
+        # A sentence that *is* a tool's own string (a locked notice, the signed
+        # 0건 sentence) is copy, not prose (`P8`): it leaves exactly as the payload
+        # wrote it — unrespelled, unmarked — and borrows that result's 근거.
+        lends = None if cited else self._verified.get(_norm(text))
+        unverified: tuple[tuple[int, int], ...] = ()
+        if lends is not None:
             cited = _unique(lends)
-            verbatim_value = True
-
-        # Never-compute, and it runs on what the model wrote: separators are
-        # normalized away on both sides (:func:`_decimal`), so 3,200 and 3200 are
-        # the same member. Grouping is presentation and cannot add a number to
-        # this set or take one out of it.
-        loose = [token for token in _NUMBER.findall(text) if _decimal(token) not in self._values]
-        if loose:
-            return self._block(text, "untraceable_number")
-
-        for quoted in _quoted_spans(text):
-            if not any(quoted in source for source in self._verbatim):
-                return self._block(text, "reconstructed_quote")
-
-        if not verbatim_value:
-            # 3,200원 like every other surface (`P6.F1`). Verified first, respelled
-            # second, and only the turn's own figures outside a quoted span —
-            # the numbers are unchanged, only the way they are written.
-            text = figures.regroup(text, self._grouping)
+        else:
+            # 「인용문 재구성 금지」 first (a fabricated quote must not reach the
+            # reader **as a quote**), then 3,200원 like every other surface
+            # (`P6.F1`) — only this turn's own figures, only outside a quoted
+            # span — and last the 미확인 spans, whose offsets are into the text
+            # the reader will actually receive.
+            text = figures.regroup(self._dequote(text), self._grouping)
+            unverified = self._unverified(text)
 
         events: list[AgentEvent] = []
         numbers: list[int] = []
@@ -280,12 +312,51 @@ class CitationGate:
             if chip is not None:
                 events.append(chip)
         self.released.append(text)
-        events.append(TextEvent(text=text, citations=tuple(dict.fromkeys(numbers))))
+        events.append(
+            TextEvent(
+                text=text,
+                citations=tuple(dict.fromkeys(numbers)),
+                unverified=unverified,
+            )
+        )
         return events
 
-    def _block(self, text: str, reason: str) -> list[AgentEvent]:
-        self.blocked.append(Blocked(text=text, reason=reason))
-        return []
+    def _dequote(self, text: str) -> str:
+        """A 「…」 span nothing returned loses its **marks**, never its sentence.
+
+        R16 does not supersede 「인용문 재구성 금지」 (result.md §5), and under
+        strip-don't-drop the honest reading of it is the marker rule applied to
+        quotation: what must not reach the reader is the *claim* that these are
+        공시 원문, so the claim is what is removed. The words stay as the
+        assistant's own prose and their figures are traced like any others.
+        """
+
+        def unmark(match: re.Match[str]) -> str:
+            inner = next((group for group in match.groups() if group is not None), "")
+            verbatim = inner.strip()
+            if not verbatim or any(verbatim in source for source in self._verbatim):
+                return match.group(0)
+            return inner
+
+        return _QUOTED.sub(unmark, text)
+
+    def _unverified(self, text: str) -> tuple[tuple[int, int], ...]:
+        """「미확인」 — the 공시 figures in this sentence that no tool returned.
+
+        Character offsets **within the sentence** (R16 §1), over the figure as the
+        reader reads it, unit included. A verified 「…」 span is skipped: it is the
+        filing's own words, and its numbers are the payload's by construction.
+        """
+        protected = [match.span() for match in _QUOTED.finditer(text)]
+        spans: list[tuple[int, int]] = []
+        for match in _FILING_FIGURE.finditer(text):
+            if any(start <= match.start() < end for start, end in protected):
+                continue
+            tokens = _NUMBER.findall(match.group(0))
+            if all(_decimal(token) in self._values for token in tokens):
+                continue
+            spans.append((match.start(), match.end()))
+        return tuple(spans)
 
     def cite(self, citation: Citation) -> tuple[int, CitationEvent | None]:
         """This 근거's chip number, and its **definition** the first time only.
@@ -357,18 +428,41 @@ def _norm(text: str) -> str:
 
 
 def _is_family_prefix(piece: str) -> bool:
+    """Is this cut the *beginning* of a live family sentence, still arriving?
+
+    Live only, for :meth:`CitationGate._family_at_head`'s reason. It stays
+    load-bearing because a signed family sentence can carry an internal full stop
+    — R16's 보안 sentence is two of them (`P9.S6`) — and half of one is neither a
+    refusal nor prose the reader should see arrive on its own.
+    """
     text = piece.strip()
     return bool(text) and any(
         sentence.startswith(text) and sentence != text
-        for sentence in ko.REFUSAL_SENTENCES.values()
+        for sentence in ko.LIVE_REFUSAL_SENTENCES.values()
     )
 
 
-def _quoted_spans(text: str) -> list[str]:
-    spans: list[str] = []
-    for match in _QUOTED.finditer(text):
-        spans += [group.strip() for group in match.groups() if group and group.strip()]
-    return spans
+def _strip_markers(piece: str) -> tuple[str, list[list[str]]]:
+    """The prose without its markers, and the ids each removed marker named.
+
+    Every marker leaves — the reader sees chips, never marker syntax — so what
+    comes back is one list per removed marker: the reference ids it named, or an
+    empty list when it named none the protocol could read (a malformed marker, or
+    one the end of the stream cut in half). The caller resolves the ids it knows
+    and counts the markers it could not honour.
+    """
+    markers: list[list[str]] = []
+
+    def take(match: re.Match[str]) -> str:
+        cite = _MARKER.fullmatch(match.group(0).strip())
+        markers.append(
+            [ref.strip() for ref in cite.group(1).split(",") if ref.strip()]
+            if cite is not None
+            else []
+        )
+        return ""
+
+    return _ANY_MARKER.sub(take, piece), markers
 
 
 def _decimal(token: str) -> Decimal | None:

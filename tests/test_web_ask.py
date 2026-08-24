@@ -123,6 +123,9 @@ def test_the_handle_arrives_first_and_the_turn_lands_as_one_row(ask) -> None:
     assert citation["number"] == 1 and citation["quote"] == QUOTE
     assert data["rows"][0]["citation"] == 1 and data["persistent"] is True
     assert text["citations"] == [1] and QUOTE in text["text"]
+    # 추가만 한다 (R16 §1): 미확인 spans ride only when there are any, so a turn
+    # with nothing to hedge sends the pre-R16 payload byte for byte.
+    assert "unverified" not in text
     # 진행 표시: one line, replaced in place (one id), and never persisted.
     statuses = [payload for name, payload in sent if name == "status"]
     assert {payload["block_id"] for payload in statuses} == {"status"}

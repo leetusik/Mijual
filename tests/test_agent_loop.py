@@ -173,8 +173,15 @@ def test_the_status_line_narrates_the_turn_and_the_data_block_carries_its_근거
     assert len(of(events, CitationEvent)) == 1
 
 
-def test_an_unverified_claim_cannot_enter_the_stream(ctx) -> None:
-    """R6: 인용 없는 주장은 생성 단계에서 차단 — and the four ways to fail it."""
+def test_an_unverified_claim_is_stripped_and_marked_never_dropped(ctx) -> None:
+    """R16 §2.5: 문장은 남고, 검증되지 않은 것만 문장에서 빠진다 — the four ways.
+
+    One turn covers the whole of `P9.S4`: a sentence with nothing to cite ships,
+    an unresolvable marker is removed (and counted) while its sentence stands, a
+    figure no tool returned becomes a 「미확인」 span instead of a deletion, and a
+    quote the filing never contained loses its **quotation marks** rather than its
+    words (「인용문 재구성 금지」 is not superseded — result.md §5).
+    """
     model = ScriptedModel(
         calls("get_event", rcept_no=R1_RCEPT),
         says(
@@ -182,16 +189,36 @@ def test_an_unverified_claim_cannot_enter_the_stream(ctx) -> None:
             "증자 규모는 확정되었습니다[[cite:c99]]. "  # an id no tool returned
             "총 조달금액은 1,234,567원입니다[[cite:c2]]. "  # a number from nowhere
             "공시는 「신주인수권증서 매매기간」이라고 적었습니다[[cite:c2]]. "  # not verbatim
-            f"공시 원문은 「{QUOTE}」입니다[[cite:c2]]."  # the one that survives
+            f"공시 원문은 「{QUOTE}」입니다[[cite:c2]]."  # verbatim, and cited
         ),
     )
     events = list(run_turn(ctx, "얼마나 조달하나요?", client=model))
 
     texts = of(events, TextEvent)
-    assert len(texts) == 1 and texts[0].text.endswith(f"「{QUOTE}」입니다.")
+    assert [text.text for text in texts] == [
+        "계양전기는 자금 사정이 어렵습니다.",
+        "증자 규모는 확정되었습니다.",  # 마커만 사라지고 문장은 남는다 (§4 check 3)
+        "총 조달금액은 1,234,567원입니다.",
+        "공시는 신주인수권증서 매매기간이라고 적었습니다.",  # 「…」만 벗겨진다
+        f"공시 원문은 「{QUOTE}」입니다.",  # verbatim → 그대로
+    ]
+    # 미확인: the span covers the figure **with its unit**, so the surface marks
+    # one value rather than splitting it — and only that sentence carries one.
+    marked = texts[2]
+    assert [marked.text[start:end] for start, end in marked.unverified] == ["1,234,567원"]
+    assert all(not text.unverified for text in texts if text is not marked)
+
     end = events[-1]
-    assert end.blocked == 4 and end.kind == "answer"
-    assert "1,234,567" not in end.answer and "어렵습니다" not in end.answer
+    # blocked = **제거된 마커 수** (R16 §1): only `c99`, which named nothing.
+    assert end.blocked == 1 and end.kind == "answer" and end.refusal_category is None
+    assert "1,234,567원입니다" in end.answer  # 저장도 읽힌 그대로
+
+    # A stream that dies mid-marker leaves no debris on the reader's screen: half
+    # a marker is removed like any other, and the prose in front of it stands.
+    cut = ScriptedModel(says("공시를 읽었습니다[[cite:c"))
+    events = list(run_turn(ctx, "읽었어요?", client=cut))
+    assert [text.text for text in of(events, TextEvent)] == ["공시를 읽었습니다"]
+    assert events[-1].blocked == 1
 
 
 def test_the_five_families_are_selected_by_their_signed_sentences(ctx) -> None:
@@ -270,13 +297,33 @@ def test_a_figure_reaches_the_reader_grouped_and_a_quote_reaches_it_verbatim(ctx
     assert said == ["전환가액은 1,591원입니다.", "원문 표기는 「1591」입니다."]
 
 
-def test_a_turn_that_verifies_nothing_falls_back_and_a_budget_ends_it_honestly(ctx) -> None:
-    """Degrade rules: 폴백 when nothing survived, `aborted` when a ceiling trips."""
-    nothing = ScriptedModel(says("잘 모르겠지만 아마 괜찮을 겁니다."))
-    events = list(run_turn(ctx, "괜찮나요?", client=nothing))
-    assert of(events, RefusalEvent)[0].family == "검증 미통과 폴백"
-    assert events[-1].kind == "refusal" and events[-1].blocked == 1
-    assert events[-1].answer.startswith("이 데이터는 검증을 통과하지 못했습니다.")
+def test_a_greeting_is_answered_and_a_budget_ends_a_turn_honestly(ctx) -> None:
+    """Degrade rules: nothing to cite is not a refusal, `aborted` when a ceiling trips.
+
+    `P9.S4` retires the 검증 미통과 폴백 producer: the family said 「이 데이터는
+    검증을 통과하지 못했습니다」 about a turn whose every sentence the gate had
+    dropped, and nothing is dropped any more. Build-prompt §4 check 1 is the bar —
+    도구 행 0 · 칩 0 · 푸터 없음 · **거절 아님**.
+    """
+    hello = ScriptedModel(says("안녕하세요. 무엇을 도와드릴까요?"))
+    events = list(run_turn(ctx, "안녕", client=hello))
+    assert of(events, RefusalEvent) == [] and of(events, ToolRowEvent) == []
+    assert of(events, CitationEvent) == [] and of(events, FooterEvent) == []
+    assert [event.text for event in of(events, TextEvent)] == [
+        "안녕하세요.",
+        "무엇을 도와드릴까요?",
+    ]
+    end = events[-1]
+    assert end.kind == "answer" and end.refusal_category is None and end.blocked == 0
+
+    # A retired family arriving **as words** is prose, not a stored family: nothing
+    # newly records 검증 미통과 폴백 (R16 §0 「새로 기록하지 않음」).
+    retired = ScriptedModel(
+        says("이 데이터는 검증을 통과하지 못했습니다. 검증되지 않은 내용은 해설하지 않습니다.")
+    )
+    events = list(run_turn(ctx, "괜찮나요?", client=retired))
+    assert of(events, RefusalEvent) == []
+    assert events[-1].kind == "answer" and events[-1].refusal_category is None
 
     # A model that never stops asking for tools is stopped by the round ceiling —
     # and the partial output above it stands (nothing is retracted).
@@ -315,13 +362,18 @@ def test_a_turn_that_verifies_nothing_falls_back_and_a_budget_ends_it_honestly(c
 def test_a_saved_의견_is_confirmed_and_never_refused(ctx) -> None:
     """R6 §의견 signs 「자동 저장 + 확인 한 줄」 — and no refusal (`P6.S7`).
 
-    Nothing citable is expected from a feedback turn, so the 폴백 family (a claim
-    about *data* that failed verification) would contradict the confirmation the
-    surface prints under the tool's own row.
+    The confirmation is what the 대화 로그 replays when the model says nothing at
+    all; when it does say something, strip-don't-drop ships that instead. Either
+    way the turn is an answer — the 폴백 family that once contradicted the save is
+    gone with the gate that produced it (`P9.S4`).
     """
     saved = ScriptedModel(calls("save_feedback", text="인용이 좋네요"), says("저장했습니다."))
     events = list(run_turn(ctx, "의견 남길게요", client=saved))
     assert of(events, ToolRowEvent)[0].ok is True
     assert of(events, RefusalEvent) == []
-    assert events[-1].kind == "answer"
+    assert events[-1].kind == "answer" and events[-1].answer == "저장했습니다."
+
+    silent = ScriptedModel(calls("save_feedback", text="인용이 좋네요"), [TextChunk("")])
+    events = list(run_turn(ctx, "의견 남길게요", client=silent))
+    assert of(events, RefusalEvent) == []
     assert events[-1].answer == "의견을 저장했습니다 — 운영자가 확인합니다."
