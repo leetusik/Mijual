@@ -102,56 +102,62 @@ export function AddHolding({
   };
 
   return (
-    <CraftPanel className={styles.add}>
-      <h2 className={styles.addTitle}>{ADD_SECTION_KO}</h2>
+    <section className={styles.section}>
+      {/* R13 renders the panel's name as this surface's own `// ` eyebrow, the
+          same section title 다가오는 마감 and 지나간 마감 wear — the round's Home
+          card puts 종목 추가 in exactly that slot, and the page still has no
+          대제목 (R5 개정 ③). No copy moves: it is `ADD_SECTION_KO`. */}
+      <h2 className={styles.eyebrow}>{`// ${ADD_SECTION_KO}`}</h2>
 
-      <div className={styles.search}>
-        <input
-          className={styles.searchInput}
-          type="text"
-          value={query}
-          placeholder={SEARCH_PLACEHOLDER_KO}
-          autoComplete="off"
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              void resolve();
-            }
-          }}
-        />
-        <button
-          type="button"
-          className={styles.searchSubmit}
-          disabled={resolving}
-          onClick={() => void resolve()}
-        >
-          {SEARCH_SUBMIT_KO}
-        </button>
-      </div>
-
-      {missed !== null ? <p className={styles.noMatch}>{noMatchKo(missed)}</p> : null}
-
-      {stock ? (
-        <>
-          <p className={styles.addStock}>{stock.corp_name ?? stock.corp_code}</p>
-          <SharesInput
-            id="add-shares"
-            digits={digits}
-            disabled={busy}
-            onChange={setDigits}
-            onSubmit={submit}
+      <CraftPanel className={styles.add}>
+        <div className={styles.search}>
+          <input
+            className={styles.searchInput}
+            type="text"
+            value={query}
+            placeholder={SEARCH_PLACEHOLDER_KO}
+            autoComplete="off"
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void resolve();
+              }
+            }}
           />
           <button
             type="button"
-            className={styles.primary}
-            disabled={busy || parseShares(digits) === null}
-            onClick={submit}
+            className={styles.searchSubmit}
+            disabled={resolving}
+            onClick={() => void resolve()}
           >
-            {KEEP_KO}
+            {SEARCH_SUBMIT_KO}
           </button>
-        </>
-      ) : null}
-    </CraftPanel>
+        </div>
+
+        {missed !== null ? <p className={styles.noMatch}>{noMatchKo(missed)}</p> : null}
+
+        {stock ? (
+          <>
+            <p className={styles.addStock}>{stock.corp_name ?? stock.corp_code}</p>
+            <SharesInput
+              id="add-shares"
+              digits={digits}
+              disabled={busy}
+              onChange={setDigits}
+              onSubmit={submit}
+            />
+            <button
+              type="button"
+              className={styles.primary}
+              disabled={busy || parseShares(digits) === null}
+              onClick={submit}
+            >
+              {KEEP_KO}
+            </button>
+          </>
+        ) : null}
+      </CraftPanel>
+    </section>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CraftPanel } from "@/components";
+import { ConversionOffer } from "@/components/auth";
 import {
   addHolding,
   deleteHolding,
@@ -314,10 +316,12 @@ export function Portfolio({
       ) : null}
 
       {holdings.length === 0 ? (
-        <div className={styles.empty}>
-          <p className={styles.emptyTitle}>{EMPTY_TITLE_KO}</p>
-          <p className={styles.emptyBody}>{EMPTY_BODY_KO}</p>
-        </div>
+        <CraftPanel>
+          <div className={styles.empty}>
+            <p className={styles.emptyTitle}>{EMPTY_TITLE_KO}</p>
+            <p className={styles.emptyBody}>{EMPTY_BODY_KO}</p>
+          </div>
+        </CraftPanel>
       ) : (
         <Holdings
           rows={holdings}
@@ -352,6 +356,17 @@ export function Portfolio({
         claimCaption={mode === "sample" ? "local" : "account"}
         busy={busy}
       />
+
+      {/* R13 §4 (Q-E) — the product's one conversion offer, on the surface that
+          had none: R12's band, **after 지나간 마감** so it never stands above a
+          number, at R12's own tier (inset, no brackets, dismissible, once per
+          session, anonymous only — the band probes the session itself). It
+          renders **without R12's lead line**, because 「이 보유량은 탭을 닫으면
+          사라집니다」 is false here: a sample's edits live in `localStorage` and
+          survive the tab (R5-4; Q-D accepted that permanence and withdrew 종료).
+          `ready` is R12's own condition — "a per-holding value has rendered" —
+          which on this surface is simply: there are holdings to talk about. */}
+      {mode === "sample" ? <ConversionOffer ready={holdings.length > 0} lead={false} /> : null}
     </div>
   );
 }

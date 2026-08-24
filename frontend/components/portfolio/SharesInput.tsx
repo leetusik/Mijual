@@ -12,12 +12,19 @@ import styles from "./Portfolio.module.css";
  * > 그룹, 프리셋 칩 100/500/1,000주. **저장 위치 캡션만 교체**: "계정에 저장 ·
  * > 마감 알림의 기준".
  *
- * So this is `components/lookup/HoldingStrip.tsx`'s field, in the two places R5
- * puts it — a row's inline 수정 and the 종목 추가 panel — with the sentence that
+ * So this is `components/lookup/HoldingStrip.tsx`'s field, with the sentence that
  * states where the number lives replaced, because on this surface it goes to the
  * account (or, in 샘플 모드, to this browser) rather than to the tab's session.
  * Everything else about it is R4's: digits only, comma-grouped on display, no
  * slider (holdings are exact integers, decision R4-2), no debounce.
+ *
+ * **R13 §2 leaves it in one of R5's two places — 종목 추가.** A row's inline 수정
+ * is now the 보유량 cell's own 36px field (`Holdings.tsx`, canon `.penum`): the
+ * label, the 주 suffix and the preset chips are for stating a count the first
+ * time, and inside a 132px table cell they were the reason that cell could not
+ * hold a track. The behaviour they carried is unchanged there — same digits, same
+ * comma grouping, same Enter — and `HOLDING_LABEL_KO` survives as that field's
+ * `aria-label`.
  *
  * It is a controlled field over **bare digits**: the commas are display, and
  * `lib/holding.ts`'s `parseShares` is what turns them back into a count.

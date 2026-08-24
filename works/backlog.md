@@ -6,11 +6,11 @@
 ## Pointer
 
 - Current phase: `P8`
-- Current slice: `P8.S13`
-- Next slice: `P8.S14`
+- Current slice: `P8.S14`
+- Next slice: `P8.S15`
 - Waiting on operator: `none`
 - Open deferred jobs: `3`
-- Rebuilt at: `2026-08-24T12:04:56+09:00`
+- Rebuilt at: `2026-08-24T12:46:41+09:00`
 
 ## Active Phases
 
@@ -22,7 +22,7 @@
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
 | [x] `P7` | `done` | `pass` | 실서비스 정상화 fix pass | `none` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
-| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S13` | `works/phases/active/P8` |
+| [ ] `P8` | `planned` | `pending` | Design polish pass — audit & polish every surface | `P8.S14` | `works/phases/active/P8` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -146,7 +146,7 @@
 | [x] `P8.S10` | `done` | R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정) | `co-work` | `works/phases/active/P8/slices/P8.S10` |
 | [x] `P8.S11` | `done` | Apply R12 — auth (로그인 · 비밀번호 재설정) | `implementation` | `works/phases/active/P8/slices/P8.S11` |
 | [x] `P8.S12` | `done` | R13 폴리시 라운드 — 내 포트폴리오 + 알림 설정 | `co-work` | `works/phases/active/P8/slices/P8.S12` |
-| [ ] `P8.S13` | `todo` | Apply R13 — 내 포트폴리오 + 알림 설정 | `implementation` | `works/phases/active/P8/slices/P8.S13` |
+| [x] `P8.S13` | `done` | Apply R13 — 내 포트폴리오 + 알림 설정 | `implementation` | `works/phases/active/P8/slices/P8.S13` |
 | [ ] `P8.S14` | `todo` | R14 폴리시 라운드 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `co-work` | `works/phases/active/P8/slices/P8.S14` |
 | [ ] `P8.S15` | `todo` | Apply R14 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `implementation` | `works/phases/active/P8/slices/P8.S15` |
 | [ ] `P8.S16` | `todo` | R15 폴리시 라운드 — 운영 관제 admin /ops | `co-work` | `works/phases/active/P8/slices/P8.S16` |

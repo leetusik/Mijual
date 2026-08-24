@@ -402,3 +402,57 @@ inset 밴드이고 마지막 데이터 섹션 **뒤**, 집계 범위 **앞**에 
 
 **Not changed by this round** — `COVERAGE_BOUNDARY_KO`는 R12의 Offers 카드에서만
 지워졌고 조회 표면에는 그대로 렌더된다 (R11 기록이 유효; P8 Q39 기본값 (a)).
+
+## R13 additions — 보유 종목 + 알림 설정 (hand-registered, `P8.S13`)
+
+<!-- HAND-WRITTEN, like the sections above. **A regeneration of this file drops
+     it; re-append it.** -->
+
+R13 (`rounds/13-portfolio`, signed 2026-08-24) mints **신규 한국어 0건**. Two R5
+strings are **revised by the operator** in the round's session, two existing
+constants are **composed** into places they did not stand before, and two R5
+clauses are **withdrawn**. Everything else 보유 종목 and 알림 설정 render is
+`components/portfolio/copy.ts` exactly as R5/R5-3…R5-8 signed it.
+
+**Revised — 운영자 개정, 2026-08-24 (build-prompt §4b)**: 독자 표면에서
+**「포트폴리오」를 쓰지 않는다** — 층 이름은 **보유 종목** (R8 nav slot). 코드
+경로·라우트·컴포넌트 이름은 그대로다.
+
+| 상수 | 이전 | 이후 |
+|---|---|---|
+| `EMPTY_TITLE_KO` | 포트폴리오가 비어 있습니다 | **보유 종목이 비어 있습니다** |
+| `SAMPLE_BANNER_KO` | **샘플 포트폴리오** — 구성 예시입니다. 종목·공시·마감은 실제, 계정·보유량은 예시입니다. | **샘플 보유 종목** — 구성 예시입니다. 종목·공시·마감은 실제, 계정·보유량은 예시입니다. |
+
+**Composed, not written** (기존 서명 상수 두 개가 새 자리에 선다 — R12의 레일과 같은
+등급의 조합):
+
+| 자리 | 조합 | 비고 |
+|---|---|---|
+| 알림 설정 레일 | `← ` + `HOLDINGS_LABEL_KO`「보유 종목」 | finding 12. 다른 표면의 크럼(`AuthRail` · `LookupRail` · 이벤트 상세)과 같은 화살표 + 서명된 층 이름. **R5의 `PORTFOLIO_LABEL_KO`「내 포트폴리오」가 아니다** — §4b가 독자 표면에서 그 낱말을 회수했고, R8이 이미 같은 목적지에 서명한 낱말을 갖고 있다. `PORTFOLIO_LABEL_KO`는 크롬에 그대로 남되 이 표면은 더 이상 재수출하지 않는다 |
+| 지나간 ① 소멸 금액 캡션 | `perHoldingCaption` (「배정 {k}주 × 「추정」{unit}원」) | R4가 서명한 조회 breakdown의 캡션 그대로, 같은 세 조각·같은 두 상류 값. 카드가 한 행에서 이 캡션을 비운 것은 walk의 payload에 그 행의 factors가 없었기 때문이고(read-back 관찰), 제품은 서버가 주는 두 행 모두에 렌더한다 |
+
+**Withdrawn — R5 조항 2건 (문자열은 그대로, 자리가 회수된다)**:
+
+| 조항 | 무엇이 회수되었나 |
+|---|---|
+| R5-4 「종료: 샘플·브라우저 저장분 삭제 후 로드 전 상태 복귀」 | **Q-D, 운영자 결정**: 리셋/종료 컨트롤은 돌아오지 않는다. R8이 크롬에서 칩과 종료를 없앤 뒤 이 조항은 집이 없었고, 이제 공식 회수된다. `clearSample()`은 **계정 이전에서만** 실행된다. 결과는 사실대로 남는다 — 샘플에서 지운 행은 그 브라우저에서 복구되지 않는다. 새 문장으로 위장하지 않는다 |
+| R5-7 계정 삭제 문장의 **상시 노출** | `DELETE_ACCOUNT_NOTE_KO`「계정을 삭제하면 이메일 주소를 즉시 지웁니다 — 남는 것이 없습니다.」는 문자열 그대로이되 **무장 상태에서만** 렌더된다 (이번 세션 개정). 지울 생각이 없는 독자가 상시로 삭제의 결과를 읽을 이유가 없고, 무장한 독자는 돌이킬 수 없는 두 번째 누름 **전에** 이것을 읽는다 |
+
+**Moved, not changed** — `MISSED_DETAIL_KO`「놓친 돈 상세 →」는 **금액 줄 안**(라벨·
+기준 뒤)으로 옮기고, **체크된 행에는 렌더되지 않는다**(해제 시 복귀, Q-B 세션 개정).
+문구도, 목적지(`/stocks/{corp_code}`)도 그대로다.
+
+**Superseded (R5 §들, `SIGNOFF.md` R13 우선순위)** — 문자열이 아니라 **배치·기하**가
+바뀐 것들: D-day 행의 `space-between` 행 머리가 **내용과 무관한 네 트랙**으로
+대체된다(열 머리글·세로선 없음); 앵커 「기준 … (KST)」는 섹션이 아니라 **블록에 한 번**;
+지나간 행의 칩+날짜는 **한 줄**; 빈 진행 중인 권리 셀은 **파선 하이라인**(문장·상자·`—`
+금지); 알림 설정의 `h2`가 **`h1`**이 되고 열의 첫 행에 레일이 선다; 로그아웃·계정
+삭제·취소는 **같은 상자 크기**(104px); R5의 **480px 브레이크포인트 2개 은퇴**(경계는
+767px 하나); 행 편집의 보유량 칸은 R4 프리미티브 전체가 아니라 **셀 자신의 36px 입력**
+(라벨은 `aria-label`로 남고, 프리셋 칩은 종목 추가 패널의 것).
+
+**Not changed by this round** — 로그인 페이지의 「가입 없이, **실제 공시 4건**으로
+구성된 예시 포트폴리오를 엽니다 — 클릭 한 번.」은 그대로다 (§6 회귀 13: 4는 **공시
+건수**이고 사실이다 — 그 4건이 다가오는 2 + 지나간 3 = 5행을 만든다). 같은 문장의
+「예시 **포트폴리오**」는 R12의 서명된 auth 카피이므로 이 라운드가 건드리지 않는다 —
+§4b의 낱말 규칙과 부딪히는 유일한 자리이며 **Q47**로 올린다.

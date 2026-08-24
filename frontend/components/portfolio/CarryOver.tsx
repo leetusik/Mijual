@@ -71,7 +71,7 @@ export function CarryOver({
       <div className={styles.carryActions}>
         <button
           type="button"
-          className={styles.action}
+          className={`${styles.action} ${styles.actionPrimary}`}
           disabled={busy}
           onClick={() => onKeep(entries)}
         >

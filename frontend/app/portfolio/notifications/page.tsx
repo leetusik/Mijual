@@ -39,7 +39,11 @@ export default async function NotificationsPage() {
   if (notifications === null) redirect(ROUTES.login);
 
   return (
-    <main className={`content ${styles.page}`}>
+    // R13 §3's column is the canon's narrower one (620px), stated at a
+    // specificity the shared `content` width cannot outrank in either bundle
+    // order (`P8.S9`'s lesson). The rail and the `h1` are the view's own — they
+    // are the column's first row and its title, not page chrome.
+    <main className={`content ${styles.page} ${styles.narrow}`}>
       <NotificationsView notifications={notifications} />
     </main>
   );

@@ -57,6 +57,19 @@ import styles from "./Auth.module.css";
  * offer; at the very end of the page it would take the provenance's own place and
  * read as a footer banner.
  *
+ * ## R13: one surface where the lead line would be false (Q-E)
+ *
+ * 보유 종목's **anonymous 샘플 mode** renders this same band after 지나간 마감 —
+ * the round decided the sample surface should carry the product's one conversion
+ * offer, under R12's own ladder rules (inset, one tier below the data, never
+ * above the numbers, dismissible, once per session). It renders it **without the
+ * lead line**: 「이 보유량은 탭을 닫으면 사라집니다」 is true of 조회's
+ * `sessionStorage` holding and *false* of a sample, whose edits persist in
+ * `localStorage` (R5-4, and Q-D accepted that permanence). So `lead` is a prop
+ * rather than a second component: with it, `/stocks` renders exactly what R12
+ * signed; without it, the body takes the head row beside 닫기 and the band is
+ * body + CTA + 닫기. **No new copy either way.**
+ *
  * ## What it never does
  *
  * It never covers the results: it is a block in normal flow, with nothing
@@ -65,7 +78,15 @@ import styles from "./Auth.module.css";
  * dismissed or never shown — and the nav's 로그인 slot stays exactly as R8 signed
  * it, unhighlighted (`AccountSlot.tsx` is untouched).
  */
-export function ConversionOffer({ ready }: { ready: boolean }) {
+export function ConversionOffer({
+  ready,
+  lead = true,
+}: {
+  ready: boolean;
+  /** R13 Q-E — `false` on 보유 종목's 샘플 surface, where R12's session line is
+   * not true. Defaults to R12's signed band. */
+  lead?: boolean;
+}) {
   const [eligible, setEligible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const auth = useAuthState(ready && !dismissed);
@@ -78,20 +99,31 @@ export function ConversionOffer({ ready }: { ready: boolean }) {
 
   if (!eligible || !ready || dismissed) return null;
 
+  const dismiss = (
+    <button className={styles.dismiss} type="button" onClick={() => setDismissed(true)}>
+      {DISMISS_KO}
+    </button>
+  );
+
   return (
     <div className={styles.offer}>
-      <div className={styles.offerHead}>
-        <p className={styles.offerLead}>{CONVERT_SESSION_KO}</p>
-        <button
-          className={styles.dismiss}
-          type="button"
-          onClick={() => setDismissed(true)}
-        >
-          {DISMISS_KO}
-        </button>
-      </div>
+      {lead ? (
+        <>
+          <div className={styles.offerHead}>
+            <p className={styles.offerLead}>{CONVERT_SESSION_KO}</p>
+            {dismiss}
+          </div>
 
-      <p className={styles.offerBody}>{CONVERT_BODY_KO}</p>
+          <p className={styles.offerBody}>{CONVERT_BODY_KO}</p>
+        </>
+      ) : (
+        // Without the lead, the body stands in the head row beside 닫기 — the
+        // band keeps its three-part shape rather than growing a blank first row.
+        <div className={styles.offerHead}>
+          <p className={styles.offerBody}>{CONVERT_BODY_KO}</p>
+          {dismiss}
+        </div>
+      )}
 
       {/* Every login lands on 보유 종목; the origin is not carried and the copy
           names no destination (R12 Q-B). */}

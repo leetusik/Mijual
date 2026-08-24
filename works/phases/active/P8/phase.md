@@ -1163,6 +1163,18 @@ in parallel mode, so consolidation happens at the review)._
   - `- [ ] 전환 밴드: on an anonymous /stocks/{corp} with a holding, the band is an inset block (no brackets) after 놓친 돈 and before 집계 범위, with no closing reassurance line; 닫기 leaves nothing and the same session does not ask again; signed in it never renders (P8)`
   - `- [ ] 전환 서열: DeadlineOffer renders nothing until /api/auth/me answers, then 「이 마감 알림 받기 →」 anonymous / 「보유 종목에 담기 →」 signed in, and every login lands on /portfolio (P8)`
 - `P8.S11`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R12's four new strings (`PASSWORD_RULE_KO` · `ERR_FIELDS_REQUIRED_KO` · `ERR_INVALID_EMAIL_KO` · `ERR_RESET_TOKEN_KO`), three deletions (`PII_RECEIVES_KO` · `PII_NOT_STORED_KO` · `CONVERT_STAY_KO`), the shortened `CONVERT_BODY_KO`, the two `authErrorKo` closures with the two that stay unmapped, the reused-not-new list (`BOARD_LABEL_KO` on the rail · `LOGIN_KO` on the expired row · `LOGOUT_DONE_KO` moved not reworded) and the supersessions. `COVERAGE_BOUNDARY_KO` and every lookup string are explicitly **unchanged** (Q39 default (a)).
+- `P8.S13`: **frontend** — R13 supersedes R5's geometry for 보유 종목 + 알림 설정. `Portfolio.module.css` is the round's canon ported declaration-for-declaration with **exactly one** media query (`max-width: 767px`) — R5's **two** 480px blocks are deleted. The D-day row is **four content-independent tracks** (`84px · minmax(0,1fr) · 212px · 208px`, gap `4px 16px`, `align-items: baseline`), no column headers and no vertical rules, with the row body on `grid-column: 2/-1` and the money line re-using `minmax(0,1fr) 208px` so 금액's right edge **is** the countdown's; the anchor 「기준 … (KST)」 is rendered **once for the block**, outside both sections; a 지나간 row's chip + date are one line. Holdings rows and the header are **one grid class** (`minmax(0,1.15fr) 132px minmax(0,1.5fr) 152px`) and the rights cell has its own `52px minmax(0,1fr) auto`; an empty rights cell is a **56px dashed hairline**, `aria-hidden`. The inline edit is the cell's own 36px field (`.holdingEdit`/`.holdingInput`), not the full R4 primitive — `HOLDING_LABEL_KO` survives as its `aria-label`, and `SharesInput` now has exactly one caller (종목 추가). `.lapsedLine` carries `min-height: 32px` (44 ≤767) so the link's departure moves 0px. `/portfolio/notifications` gains a frame: `.notifyColumn` (620px, stated `.narrow.narrow`), a rail 「← 보유 종목」, `h2` → **`h1`**, rows on `104px minmax(0,1fr) auto`, the error line **inside** its row, chips on `[aria-pressed]` (`.chipOn` retired), and 로그아웃·계정 삭제·취소 in equal `.wide` 104px boxes. `ConversionOffer` takes an optional **`lead`** prop (default `true`, so `/stocks` is byte-identical). `.page` gains `word-break: keep-all` (per-surface, `P8.S11` note 4). Two `class="undefined"` attributes are fixed (`styles.holdingStock` / `styles.holdingShares` were referenced and never defined). Add supersession rows for R5 §Portfolio · §D-day 목록 · §알림 · §Mobile.
+- `P8.S13`: **product** — the layer is called **보유 종목** on every reader surface (「포트폴리오」 0건 on `/portfolio` and `/portfolio/notifications`). The anonymous **샘플 surface now carries the product's one conversion offer** (R12's band, after 지나간 마감, no lead line — the lead is false there because sample edits persist in `localStorage`), so 「the offer lives only under 조회 results」 is no longer true. **No sample reset exists and none is coming** — R5-4's 종료 clause is officially withdrawn (Q-D); `clearSample()` runs only on 계정 이전, and a row deleted from a sample does not return in that browser. 계정 삭제 states its consequence **only while armed** (R5-7's 상시 clause withdrawn).
+- `P8.S13`: **experience** — the 보유 종목 section: 「놓친 돈 상세 →」 stands **inside** the money line and is **absent** on a checked row (returning on uncheck) with a **measured 0px** shift, the 본인 표시 caption is unconditional, an empty 진행 중인 권리 cell is a dashed rule rather than a sentence, the two D-day sections share one set of four edges and one anchor, and the delete confirm is still an in-place column swap with an 8-second inset undo row. 알림 설정 is no longer a frameless page: it has a way out and a title.
+- `P8.S13`: **qa** — `## Regression Checklist` gains R13's boxes (below). No count moves: `pytest` **142**, `npm run smoke` **16/16**, `npm run build` green.
+  - `- [ ] D-day 기하: at 1440 every row of 다가오는 마감 and 지나간 마감 shares one chip/종목/라벨/카운트다운 edge set, the 소멸 금액's right edge equals the countdown's, and the anchor 「기준 … (KST)」 renders exactly once outside both sections (P8)`
+  - `- [ ] 챙겼습니다: checking a 지나간 ① row flips 놓친 돈 → 챙긴 돈 and alert → live, keeps the amount and 「추정」, removes 「놓친 돈 상세 →」 from the money line, and moves nothing (measured 0px, desktop and 390); unchecking restores the link (P8)`
+  - `- [ ] 보유 종목 표: the header labels sit over the cells they name, an empty 진행 중인 권리 cell is a 56px dashed rule (no sentence, no box, no —), and 수정 opens only the 보유량 cell with 저장·취소 swapping horizontally (P8)`
+  - `- [ ] 알림 설정 프레임: the page has one h1 (마감 임박 이메일) and a 「← 보유 종목」 rail as the column's first row; 변경·로그아웃·계정 삭제 share one right edge; 로그아웃/계정 삭제/취소 are the same box size (P8)`
+  - `- [ ] 계정 삭제 문장: 「계정을 삭제하면 …」 is absent until 계정 삭제 is pressed once, present while armed, and gone again after 취소 (P8)`
+  - `- [ ] 샘플 전환 밴드: on an anonymous /portfolio the R12 band renders after 지나간 마감 without its lead line, once per session, and 닫기 leaves nothing; signed in it never renders (P8)`
+  - `- [ ] 480 은퇴: Portfolio.module.css has exactly one media query (max-width 767px) and no built CSS rule under any 480px query carries a Portfolio-module class; at 390/767 every 보유 종목 control is ≥44px (P8)`
+- `P8.S13`: **copy** (`docs/reference/design/grounding/copy-inventory.md`, hand-registered tail — **not** a versioned doc) — R13's tail: **신규 0건**; two operator revisions (`EMPTY_TITLE_KO` → 「보유 종목이 비어 있습니다」, `SAMPLE_BANNER_KO` → 「샘플 보유 종목 — …」); two compositions of existing signed constants (the rail `← ` + **`HOLDINGS_LABEL_KO`**, and `perHoldingCaption` 「배정 {k}주 × 「추정」{unit}원」 on the 소멸 금액); two withdrawn R5 clauses (R5-4's 종료, R5-7's 상시 delete sentence); `MISSED_DETAIL_KO` moved not reworded; the superseded R5 geometry; and the note that the login page's 「실제 공시 4건」 is untouched while its 「예시 포트폴리오」 collides with §4b (Q47).
 
 ### R11 walk — surface 4 (내 종목 조회 + 놓친 돈 조회기), 2026-08-24, operator runtime
 
@@ -1459,6 +1471,79 @@ in dev and production, which is `P8.S9`'s lesson applied rather than re-learned.
 `## Regression Checklist` re-run, not only R12's lines.
 
 
+### `P8.S13` — R13 applied: what 보유 종목 and 알림 설정 are now, and what the review inherits (2026-08-24)
+
+Full record in `slices/P8.S13/result.md`. Twelve files changed, none added or deleted. **No
+departures from the record**; three deltas between the record and the product are catalogued as
+**Q47–Q49** above rather than resolved in an executor.
+
+**The surface.** `Portfolio.module.css` is R13's `r13-portfolio.css` ported declaration-for-
+declaration onto the module's class names, with **exactly one media query — `max-width: 767px`**
+(R5's *two* 480px blocks are retired, and with them the 481–767 window that used to get a four-column
+table on a 600px screen). The D-day list is the round's headline: **four content-independent tracks**
+shared by every row of both sections, no column headers, no vertical rules, the row body on
+`grid-column: 2/-1` and the money line re-using the last track — measured at 1440, all five rows share
+chip **285** / 종목 **385** / 라벨 **719** / countdown **1155**, and the 소멸 금액's right edge is
+**1155** too. P7's 144.7px ragged left edge and 584.6–761.3px empty middle are **0**. 알림 설정 has a
+frame for the first time: a rail, one `h1`, a 104px label track, and three equal 104px action boxes.
+
+**Six things later work inherits.**
+
+1. **A surface can have a designed grammar the product cannot reach with a wrap.** The canon defines
+   `.pdcells` (R10 §2's instrument cells) for the ①/② row bodies, and the product renders 조회's own
+   `Conversion` / `Dilution` inside a placement wrapper instead — the plan's instruction, and the
+   thing that keeps 「수치 불일치 금지」 structural. The gap is **Q48**, and it has a cheap half
+   (`ConversionChain` already renders exactly those cells off the same `convert()`) and an expensive
+   half (② has no cell rendering for this surface at all). Any later slice reaching for it should read
+   `Dilution`'s own docstring first: R11 re-cut ② on 조회 **only**, deliberately.
+2. **A composition already signed on another surface is not new copy — look before cataloguing a
+   gap.** The round's cards draw a 「배정 {k}주 × 「추정」{unit}원」 caption under the 소멸 금액 that
+   `copy.ts` does not define; `components/lookup/copy.ts`'s **`perHoldingCaption`** is exactly it, R4-
+   signed and already rendered by 조회's breakdown. Rendering it here is 0 new Korean *and* makes the
+   two surfaces print the same caption for the same holding. The first reading of this slice was
+   「no constant exists → catalogue it」, which would have shipped a missing caption for no reason.
+3. **`PORTFOLIO_LABEL_KO` ≠ 「보유 종목」.** R5's constant is 「내 포트폴리오」 (the account-menu label
+   R8 stopped rendering); R8's `HOLDINGS_LABEL_KO` is the nav word 「보유 종목」. The round's §4b and
+   `P8.S13`'s plan both say the rail composes `← ` + `PORTFOLIO_LABEL_KO` 「(already 보유 종목)」 — it
+   is not, and the rail renders `HOLDINGS_LABEL_KO`. `components/portfolio/copy.ts` now re-exports the
+   R8 constant and no longer the R5 one. Any later surface naming this layer should reach for
+   `HOLDINGS_LABEL_KO`.
+4. **Two `class="undefined"` attributes were shipping.** `Holdings.tsx` referenced
+   `styles.holdingStock` and `styles.holdingShares`; `Portfolio.module.css` defined neither, so both
+   cells rendered with a literal `undefined` class and no styling at all. CSS-module misses are
+   silent in TypeScript (`styles` is an index signature) — a cheap grep of `styles.X` against the
+   module's `.X` selectors catches them, and it is worth running at the end of every apply slice.
+5. **A design record can be right about the interaction and optimistic about the geometry.** The
+   canon's inline-edit comment says 「보유량 셀만 바뀌고 행은 안 움직인다」, but its own `.pedit`
+   stacks the 36px field over the account caption inside an `align-items: center` row — the row grows
+   **64 → 97px** while editing, in the cards as much as in the product. Faithful is faithful: the
+   growth ships, and the delta is recorded rather than "fixed" against the record.
+6. **A signed-in walk still costs exactly one temporary account, and the scripted version costs
+   three.** `p8s13-temp@`, `p8s13-prod@` and `p8s13-shot@` were each created through the product's
+   own 계정 만들기 and removed through its own 계정 삭제; `account` / `auth_session` / `holding` /
+   `lapse_claim` / `notification_pref` were re-counted after each removal and are at their exact
+   pre-slice values (**2 / 3 / 1 / 0 / 0**). The operator's session was never touched.
+
+**How the browser work was done, since P8.S12 could not do it.** The R13 walk had no browser (the
+Chrome bridge was down three times) and read every account-mode state from source. This slice drove
+the operator's own Chrome (**151.0.7922.174**) headless over the DevTools protocol from an isolated
+profile — a ~90-line CDP client on Node 24's global `WebSocket`, `Emulation.setDeviceMetricsOverride`
+for each width, `Runtime.evaluate` for `getBoundingClientRect` / `getComputedStyle` probes,
+`Network.enable` to prove 익명 쓰기 0건, and `Page.captureScreenshot` for the fresh-eyes look. Same
+Blink, same CSS engine, and it makes claims like 「체크 시 이동 0px」 a *number* (0.00px, three states,
+two widths, two modes) instead of an impression. Later fidelity slices can do the same rather than
+waiting on a bridge.
+
+**Verified** at `http://127.0.0.1:3000` **and** `http://100.77.164.42:3000` in `next dev`, and again
+against a **production build** on `:3100`, at 1440 / 1280 / 768 / 767 / 600 / 390 — build-prompt §6
+items **1–13 all green**, `overflowX` 0 everywhere, zero console errors, zero `position: fixed` and
+zero dialogs inside `<main>`. The doubled-class widths (`.page.page` 960, `.narrow.narrow` 620) held
+identically in dev and production, which is `P8.S9`'s lesson applied rather than re-learned.
+
+**Gates:** `npm run typecheck` clean · `npm run smoke` 16/16 · `npm run build` green (scratch copy —
+`next-env.d.ts` untouched) · `pytest` **142** · `workflow validate` clean.
+
+
 ## Operator Questions
 
 _Questions only the operator can answer; every entry is routed at the review -- folded into the acceptance walkthrough (`accept-gate --open`) or filed with `defer-job`. An unrouted entry is a review finding._
@@ -1680,6 +1765,44 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   rendering the served `stock_code` at the `.phmeta` tier. (a) keep rendering (default); (b) drop
   it. Confirmable at signoff.
 
+
+- **Q47 (`P8.S13`) — the auth surface still says 「포트폴리오」, and R13 §4b says reader surfaces do
+  not.** R13 revised this round's two strings and the layer is now 보유 종목 everywhere on
+  `/portfolio` and `/portfolio/notifications` (measured: 0건). Two **R12-signed** strings on the
+  로그인 page are the only reader-visible survivors: `SAMPLE_ENTRY_KO`「샘플 **포트폴리오**로
+  둘러보기」 and `SAMPLE_ENTRY_SUB_KO`「가입 없이, 실제 공시 4건으로 구성된 예시 **포트폴리오**를
+  엽니다 — 클릭 한 번.」 They are outside R13's surfaces and outside this slice's scope (the plan
+  forbids touching auth copy), so they stand. (a) leave them — R12 signed them and 포트폴리오 is
+  acceptable on the entry to a *sample* (default); (b) revise both in a later round/slice so the
+  word rule is product-wide; (c) fold into the next auth round. `HOLDINGS_COUNT_KO`「포트폴리오 종목
+  개수」 in the ops console is an operator surface and is not in question.
+
+- **Q48 (`P8.S13`) — the ①/② row bodies do not use the canon's `.pdcells` grammar.** The R13 canon
+  defines `.pdcells`/`.pdcell`/`.pdclab`/`.pdcval`/`.pdpend` — a bordered `--surface-raised` strip of
+  label-over-value cells with dashed separators — and the Home/Mobile cards render ① as four cells
+  (보유 · 배정비율 · 배정 신주 · 환산액) and ② as three. The product renders **조회's own components**
+  `Conversion` / `Dilution` instead, wrapped only for the column placement, because `P8.S13`'s plan
+  says so explicitly (「one composition — do not fork them; wrap for the column placement only」) and
+  because forking them would create the second composition site two rounds were spent removing. The
+  measured geometry the round asked for (four shared edges, money edge = countdown edge) is
+  **unaffected**; what differs is the body's *shape* and, for ①, which facts it shows. Closing the
+  gap is not a wrap: ① could switch to the already-exported **`ConversionChain`** (R11 §4 — the same
+  `convert()`, rendered as exactly these instrument cells, so still one composition), but ② has no
+  cell rendering for this surface (`Dilution`'s own docstring says R11 re-cut ② on 조회 only), so it
+  would need a new one. (a) leave as built — the plan's wrap, R4's factor lines (default);
+  (b) switch ① to `ConversionChain` now and leave ② as lines; (c) cut a `fix` slice that brings both
+  bodies onto the canon's cells. Worth a look at the running product before deciding.
+
+- **Q49 (`P8.S13`) — a backend defect this slice's scripted walk uncovered: two concurrent
+  `PUT /portfolio/notifications` → 500.** `notification_pref` has a unique constraint on
+  `account_id` and the save path is read-then-insert, so two saves in flight at once both miss the
+  row and the second `INSERT` raises `UniqueViolation` (measured: 500, traceback in
+  `var/stack/api.log`, `uq_notification_pref_account`). **Not reachable by a human hand today** —
+  the chip handler disables every chip while a request is in flight, so a person cannot fire two
+  within one tick; the script clicked two disabled-a-tick-later buttons synchronously. It is also
+  **not this slice's** (no backend file was touched, and `NotificationsView`'s handler is unchanged
+  since `P5.S8`). (a) file it as a deferred job (「make the notification_pref save an upsert」) —
+  suggested; (b) fix it now in a small `fix` slice; (c) accept it as unreachable and record it only.
 ## Constraints
 
 - **No new features.** Polish only — every round's handoff says so, and an apply slice that finds

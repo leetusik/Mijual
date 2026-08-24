@@ -61,11 +61,19 @@ export { SHARES_UNIT_KO, STEP_DEPENDENCY_KO } from "@/components/event/copy";
  *
  * **R8 retired R5-4's 「샘플」 chip and 샘플 종료** (SIGNOFF), which used to be
  * re-exported here too: the chrome says nothing about the sample any more, so the
- * only thing that does is this surface's own `SampleBanner`. */
+ * only thing that does is this surface's own `SampleBanner`.
+ *
+ * **R13 §4b — the layer's name on a reader surface is 「보유 종목」**, so the label
+ * this module re-exports is R8's own `HOLDINGS_LABEL_KO` (the nav slot's word) and
+ * no longer R5's `PORTFOLIO_LABEL_KO` (「내 포트폴리오」), which the chrome already
+ * renders nowhere. 알림 설정's rail composes `← ` + that label — the same
+ * composition `AuthRail` and `LookupRail` make, and no new Korean. R5's constant
+ * stays exported from the chrome for the record; this surface simply never says
+ * 포트폴리오. */
 export {
+  HOLDINGS_LABEL_KO,
   LOGOUT_KO,
   NOTIFICATIONS_LABEL_KO,
-  PORTFOLIO_LABEL_KO,
 } from "@/components/chrome/copy";
 
 // ---------------------------------------------------------------------------
@@ -119,8 +127,14 @@ export const DISCARD_KO = "담지 않기";
 // ---------------------------------------------------------------------------
 
 /** result.md §Proposed copy, Portfolio: "포트폴리오가 비어 있습니다" · "종목과
- * 보유량을 등록하면, 진행 중인 권리와 마감을 여기서 지켜보고 이메일로 알립니다." */
-export const EMPTY_TITLE_KO = "포트폴리오가 비어 있습니다";
+ * 보유량을 등록하면, 진행 중인 권리와 마감을 여기서 지켜보고 이메일로 알립니다."
+ *
+ * **The title is the operator's R13 revision of that R5 string** (2026-08-24,
+ * build-prompt §4b): 독자 표면에서 「포트폴리오」를 쓰지 않는다 — 층 이름은
+ * **보유 종목** (R8's nav slot word). Same sentence, the layer's own name in it;
+ * the body is untouched, and the route, the paths and the component names are
+ * unchanged. */
+export const EMPTY_TITLE_KO = "보유 종목이 비어 있습니다";
 export const EMPTY_BODY_KO =
   "종목과 보유량을 등록하면, 진행 중인 권리와 마감을 여기서 지켜보고 이메일로 알립니다.";
 
@@ -161,7 +175,14 @@ export const pastNoticeChipKo = (dday: string) => `통지 마감 지남 · ${dda
 
 /** "① 소멸 행은 500주 기준 「추정」 금액 + **'놓친 돈 상세 →'** 링크(조회
  * breakdown으로)". The link goes to `/stocks/{corp_code}` — 조회's own stable
- * handle, where the same offering's breakdown row lives. */
+ * handle, where the same offering's breakdown row lives.
+ *
+ * **R13 Q-B (session revision) moved where it stands, not what it says**: it
+ * renders **inside the 금액 줄**, right after the label and the basis, and a row
+ * the reader has checked renders it **not at all** — that row is saying it is no
+ * longer 놓친 돈, so a link calling 놓친 돈 has no place on it. Unchecking brings it
+ * back. The line keeps the control's height either way (`Portfolio.module.css`
+ * `.lapsedLine`), so the swap moves 0px. */
 export const MISSED_DETAIL_KO = "놓친 돈 상세 →";
 
 // ---------------------------------------------------------------------------
@@ -239,7 +260,13 @@ export const KAKAO_NOTE_KO = "준비되면 이 자리에서 켤 수 있습니다
  * result.md's sentence: "계정을 삭제하면 이메일 주소를 즉시 지웁니다 — 남는 것이
  * 없습니다." It is true by construction: `DELETE /auth/account` removes the row
  * and the cascade takes sessions, holdings, claims and preferences with it
- * (`P5.S7` note 11, `P5.S8`). */
+ * (`P5.S7` note 11, `P5.S8`).
+ *
+ * **R13 (session revision) withdraws R5's 상시 placement of the sentence**: it is
+ * rendered **only while the control is armed** — a reader with no intention of
+ * deleting has no reason to read the consequence of deleting on every visit, and
+ * the reader who armed it reads this *before* the irreversible second press. The
+ * string itself is untouched. */
 export const DELETE_ACCOUNT_KO = "계정 삭제";
 export const DELETE_ACCOUNT_NOTE_KO =
   "계정을 삭제하면 이메일 주소를 즉시 지웁니다 — 남는 것이 없습니다.";
@@ -251,8 +278,13 @@ export const DELETE_ACCOUNT_NOTE_KO =
 /** result.md §Proposed copy, Sample — the banner, verbatim: "샘플 포트폴리오 —
  * 구성 예시입니다. 종목·공시·마감은 실제, 계정·보유량은 예시입니다."
  *
+ * **The first two words are the operator's R13 revision** (2026-08-24,
+ * build-prompt §4b — the same revision `EMPTY_TITLE_KO` carries): 독자 표면에서
+ * 「포트폴리오」를 쓰지 않는다, so the banner names the layer 보유 종목. Nothing
+ * else about the sentence moves.
+ *
  * It is exactly true of what is rendered: the rows are live corpus events for
  * four pinned filings and every number on them is the server's, while the
- * portfolio itself — the issuers and their 보유량 — is the card's example. */
+ * holdings themselves — the issuers and their 보유량 — are the card's example. */
 export const SAMPLE_BANNER_KO =
-  "샘플 포트폴리오 — 구성 예시입니다. 종목·공시·마감은 실제, 계정·보유량은 예시입니다.";
+  "샘플 보유 종목 — 구성 예시입니다. 종목·공시·마감은 실제, 계정·보유량은 예시입니다.";
