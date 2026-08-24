@@ -382,3 +382,24 @@
 {"ts": "2026-08-24T23:15:16+09:00", "type": "slice_status_changed", "slice": "P8.S16", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-24T23:15:16+09:00", "type": "slice_status_changed", "slice": "P8.S17", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-24T23:15:16+09:00", "type": "slice_status_changed", "slice": "P8.S17", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-24T23:16:25+09:00", "type": "slice_status_changed", "slice": "P8.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-24T23:43:49+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "api", "version": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "architecture", "version": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "security", "version": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "data", "version": "v0006_p8_design_polish_pass_the_vocky_env_row_covers_read_and_capture_the_path_writes_no_row_on_this_side", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:10+09:00", "type": "doc_version_created", "doc": "product", "version": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:16+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:44:16+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D7", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D8", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D9", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D10", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D11", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D12", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D13", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D14", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D15", "source": "P8.REVIEW"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "phase_status_changed", "phase": "P8", "old_status": "planned", "new_status": "pending"}
+{"ts": "2026-08-24T23:58:15+09:00", "type": "acceptance_opened", "phase": "P8"}

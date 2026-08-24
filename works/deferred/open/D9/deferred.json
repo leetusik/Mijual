@@ -1,0 +1,11 @@
+{
+  "id": "D9",
+  "title": "Carry the ③ 반대의사 통지 procedure fields onto GET /stocks/{corp_code} (Q30b)",
+  "status": "deferred",
+  "source": "P8.REVIEW",
+  "reason": "The only ③ in the corpus arrives with empty fields on the stock route while the same filing carries them on the event route — 조회 shows two dashed 「현재 버전 공시에 없음」 chips where 상세 shows dates. The dated form is already browser-verified via a read-only stub.",
+  "trigger": "When 조회 and 상세 disagreeing about the same filing becomes a reported problem",
+  "created_at": "2026-08-24T23:58:15+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

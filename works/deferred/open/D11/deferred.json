@@ -1,0 +1,11 @@
+{
+  "id": "D11",
+  "title": "Serve the 집계 범위 dates on a stockless read (Q32b)",
+  "status": "deferred",
+  "source": "P8.REVIEW",
+  "reason": "lapse.coverage rides GET /stocks/{corp_code} only, so /stocks with no query states the boundary sentence with no dated rows under it.",
+  "trigger": "When the entry page should date its own boundary",
+  "created_at": "2026-08-24T23:58:15+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

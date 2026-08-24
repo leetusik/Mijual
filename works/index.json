@@ -76,7 +76,7 @@
       "id": "P8",
       "name": "Design polish pass — audit & polish every surface",
       "objective": "Audit and polish the whole 미주알 product surface by surface — no new features. For each surface: the orchestrator walks it in the operator's runtime, reports what is dead/confusing/off, and asks the operator what's wrong; the operator answers how it should be fixed; a Claude Design round (design-cowork, one handoff + pending gate per surface) polishes it; an apply slice implements that signed round faithfully (RESPECT THE DESIGN) and verifies it in the operator's runtime — then the next surface. Opens with a small fix slice for the AskWidget t1 duplicate-key bug.",
-      "status": "planned",
+      "status": "pending",
       "order": 3.8,
       "path": "works/phases/active/P8",
       "review_status": "pending",
@@ -97,8 +97,8 @@
       "done_slice_count": 0
     }
   ],
-  "deferred_open_count": 4,
+  "deferred_open_count": 13,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-24T23:15:16+09:00"
+  "last_rebuilt_at": "2026-08-24T23:58:15+09:00"
 }

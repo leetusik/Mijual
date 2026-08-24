@@ -1,0 +1,11 @@
+{
+  "id": "D13",
+  "title": "Regenerate board-snapshot.md with the top 진행 중 rows and every 추후결정 name (Q13)",
+  "status": "deferred",
+  "source": "P8.REVIEW",
+  "reason": "R9 could draw only the events the grounding pack names — 13 of 15 ranked rows, 1 of 4 추후결정, 4 진행 중 — so later rounds render strips against partial data. Housekeeping, no design consequence.",
+  "trigger": "Before the next design round that needs the board strips",
+  "created_at": "2026-08-24T23:58:15+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

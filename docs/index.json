@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing",
+      "latest": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -59,11 +59,19 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: the nav is two slots (내 종목 조회 lives on the landing hero), the board is read 30 rows at a time, and the search offers candidates while the reader types without the resolver ever guessing",
           "previous": "v0006_p6.f1_the_agent_speaks_the_product_s_numerals_the_raw-numeral_operator_call_closed_one_agent-surface_call_a_refusal_s_footer_still_open"
+        },
+        {
+          "id": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page",
+          "path": "docs/versions/product/v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — the layer is 보유 종목 not 포트폴리오, the board is 15 rows and keeps itself current, the last English screen is gone, /portfolio answers anonymously with the sample, and 481-767 gets the full-width AI 질문 page",
+          "previous": "v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing"
         }
       ]
     },
     "experience": {
-      "latest": "v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product",
+      "latest": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -113,11 +121,19 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: the two-slot nav, the board's 30-row window, candidates while typing (the miss rule split from the typing rule), the 조회 caption's narrower stated promise, and the 챙긴 돈 flip measured on the running product",
           "previous": "v0005_p6.f1_the_agent_s_answers_print_the_product_s_numerals_3_200_the_raw-numeral_catalogue_item_closed_by_operator_disposition_verbatim_quotes_still_byte-exact"
+        },
+        {
+          "id": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer",
+          "path": "docs/versions/experience/v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer.md",
+          "created_at": "2026-08-24T23:44:16+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — every reader surface re-cut, from the two-slot chrome to the 보내기 composer",
+          "previous": "v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product"
         }
       ]
     },
     "architecture": {
-      "latest": "v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route",
+      "latest": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -167,11 +183,19 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: the suite baseline moves to 139 and mijual.web gains one read-only route",
           "previous": "v0005_p6.f1_the_agent_package_gains_figures.py_presentation-only_thousands_grouping_and_the_suite_baseline_moves_to_138"
+        },
+        {
+          "id": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142",
+          "path": "docs/versions/architecture/v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — mijual.web's outbound row is one vocky read plus one vocky capture, still in the single module the AST scan allows; suite baseline 142",
+          "previous": "v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route"
         }
       ]
     },
     "frontend": {
-      "latest": "v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor",
+      "latest": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -213,6 +237,14 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: the dev-origin seam and the inverted browser-check rule, the StrictMode module-store trap, the two-slot nav, the 30-row board window, the shared SearchRow combobox, the focus split off text fields, and the verification floor",
           "previous": "v0004_p6_apply_phase_the_ai_surfaces_a_module-scoped_conversation_store_outside_react_the_first_streaming_client_the_saturn_launcher_the_440x620_widget_the_frameless_ask_page_and_the_preset_strip"
+        },
+        {
+          "id": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam",
+          "path": "docs/versions/frontend/v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam.md",
+          "created_at": "2026-08-24T23:44:16+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — R8-R14 supersede every reader surface: one 767 breakpoint, the overlay Citation, the 미주알 404, the 의견 surface replacing the vocky seam",
+          "previous": "v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor"
         }
       ]
     },
@@ -263,7 +295,7 @@
       ]
     },
     "data": {
-      "latest": "v0005_p6_apply_phase_the_two_anonymous_conversation_tables_no_account_email_ip_ua_column_no_foreign_key_in_either_direction_a_randomly_minted_session_handle_and_rows_that_are_not_re-collectable",
+      "latest": "v0006_p8_design_polish_pass_the_vocky_env_row_covers_read_and_capture_the_path_writes_no_row_on_this_side",
       "current_path": "docs/current/data.md",
       "versions": [
         {
@@ -305,11 +337,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the two anonymous conversation tables — no account/email/IP/UA column, no foreign key in either direction, a randomly minted session handle, and rows that are not re-collectable",
           "previous": "v0004_p5_apply_phase_identity-scoped_pairing_the_first_stored_label_field_multi-part_citations_and_the_serving_reader_tables"
+        },
+        {
+          "id": "v0006_p8_design_polish_pass_the_vocky_env_row_covers_read_and_capture_the_path_writes_no_row_on_this_side",
+          "path": "docs/versions/data/v0006_p8_design_polish_pass_the_vocky_env_row_covers_read_and_capture_the_path_writes_no_row_on_this_side.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — the vocky env row covers read and capture; the 의견 path writes no row on this side",
+          "previous": "v0005_p6_apply_phase_the_two_anonymous_conversation_tables_no_account_email_ip_ua_column_no_foreign_key_in_either_direction_a_randomly_minted_session_handle_and_rows_that_are_not_re-collectable"
         }
       ]
     },
     "api": {
-      "latest": "v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses",
+      "latest": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -343,11 +383,19 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: GET /stocks/suggest — the reader's own candidate list before the submit, declared before the handle route; the 내 종목 조회 miss rule restated (the resolver still never guesses)",
           "previous": "v0003_p6_apply_phase_post_ask_the_first_streaming_endpoint_its_sse_frame_vocabulary_session-first_handle_no-transform_header_and_pre-stream_envelope_plus_the_three_ops_conversation_tabs_now_serving_real_rows"
+        },
+        {
+          "id": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary",
+          "path": "docs/versions/api/v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — POST /feedback (write-only, outward) and next_lapse.tie_count on GET /board/summary",
+          "previous": "v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses"
         }
       ]
     },
     "operations": {
-      "latest": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture",
+      "latest": "v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -413,11 +461,19 @@
           "source": "P8",
           "summary": "seed ## Operator Runtime manifest (operator-confirmed at P8 intent capture)",
           "previous": "v0007_p7_fix_pass_mijual_dev_origins_in_the_environment_table_and_the_makefile_dev_stack_as_the_supported_way_to_run_the_local_product"
+        },
+        {
+          "id": "v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read",
+          "path": "docs/versions/operations/v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — the vocky env row serves a reader-facing send as well as the ops read, NEXT_PUBLIC_VOCKY_SRC retired, and the Cloudflare User-Agent requirement that had been silently breaking the observation read",
+          "previous": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture"
         }
       ]
     },
     "security": {
-      "latest": "v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence",
+      "latest": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -451,11 +507,19 @@
           "source": "P6.REVIEW",
           "summary": "P6 apply phase: the anonymity promise implemented and asserted — minted-not-derived session handles, an identity-free rate limiter, the honest-unset operator contact, and sessionStorage-only client persistence",
           "previous": "v0003_p5_apply_phase_the_auth_model_implemented_session-as-a-row_scrypt_service-wide_csrf_the_uniform_ops_door_the_measured_no-join_promise_and_the_vocky_key_boundary"
+        },
+        {
+          "id": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands",
+          "path": "docs/versions/security/v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands.md",
+          "created_at": "2026-08-24T23:44:10+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — the vocky key boundary now covers a capture path, a reader's free text leaves the system by design with no contact field, and the PII inset is deleted from the auth screen while the structural guarantee stands",
+          "previous": "v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence"
         }
       ]
     },
     "qa": {
-      "latest": "v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build",
+      "latest": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -505,6 +569,14 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: the suite at 139, the browser-check origin rule inverted, the dev+prod verification floor and its functional dimension, and the SSE contract captured from a browser on the production build",
           "previous": "v0005_p6.f1_the_suite_at_138_one_scripted_turn_covering_the_whole_figure-grouping_rule_grouped_in_prose_verbatim_inside_a_span_identifiers_and_dates_untouched"
+        },
+        {
+          "id": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist",
+          "path": "docs/versions/qa/v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist.md",
+          "created_at": "2026-08-24T23:43:49+09:00",
+          "source": "P8.REVIEW",
+          "summary": "P8 design polish pass — the suite at 142 / smoke 16-16, and the phase's eight surface regression blocks (chrome, 관제 현황판, 상세, 조회, 인증, 보유 종목, AI 질문) appended to the cumulative checklist",
+          "previous": "v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build"
         }
       ]
     },
@@ -579,5 +651,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-23T13:23:42+09:00"
+  "last_rebuilt_at": "2026-08-24T23:50:55+09:00"
 }

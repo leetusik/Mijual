@@ -1,0 +1,11 @@
+{
+  "id": "D12",
+  "title": "Density round for the ② row and the 놓친 돈 breakdown at 390 (Q34b)",
+  "status": "deferred",
+  "source": "P8.REVIEW",
+  "reason": "Built pages measure 1,572 / 1,754px at 390 against the record ≈1,250 / ≈1,150. Real reductions of 8.8% / 15.5%, but the residual is the signed geometry: the canon own .ctrow is 252px where the product is 273px. Not a fidelity defect — a design one.",
+  "trigger": "When mobile scroll length on 조회 becomes a complaint",
+  "created_at": "2026-08-24T23:58:15+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

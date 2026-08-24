@@ -1141,6 +1141,53 @@ Two operating notes for whoever verifies next:
   invalid") and the build dies with a panic log.
 - The production copy's server takes `MIJUAL_API_ORIGIN`, which is how the stubbed ② above was run.
 
+### `P8.REVIEW` — what the gated review measured, and what it leaves behind (2026-08-24)
+
+Verdict **pass**. Full record in `slices/P8.REVIEW/result.md`. Durable notes for whatever comes after
+P8 (P4 Ship & Submit is next, and D6 whenever the operator wants `/ops` polished):
+
+1. **The corpus moved under the phase, and two "unreachable" states are now reachable.** ② past-open
+   「진행 중」 renders from live data today — `/board`'s `open_now` carries **60** `window_state: open`
+   R2 events (e.g. 트리니티항공 `20250808000003`, D+2), where `P8.S7` measured 386/386 `upcoming` on
+   the same date and had to verify through a scratch proxy. Anything that says "this branch cannot be
+   seen with today's corpus" needs re-checking against the corpus rather than quoting an earlier
+   slice. Multi-part citations (`parts`) are still **0/386** and remain the one genuinely unseeable
+   branch (Q22).
+2. **`scheduler once --offline` refreshes `as_of` — running the regression checklist changes what the
+   landing says about itself.** Before it, the landing carried 「기준 2026-08-23 21:38 KST · 25시간 전
+   데이터」 and the stale banner; after it, 「기준 2026-08-24 23:32 KST」 and no banner. Same corpus,
+   same numbers. If a walk needs to *see* the stale state, look before running the pipeline stages;
+   if it needs fresh data, run them first.
+3. **The board's auto-refresh cannot be fully verified without a moving `as_of`.** Watched over three
+   intervals: `/api/board` at 57 / 76 / 136 / 180 s, and the page correctly did **nothing** each time
+   because the served `as_of` had not moved (no chip, no fade, no layout shift, row count and first-row
+   `top` byte-identical). The 갱신됨 + `--live` edge branch needs the pipeline to write a newer
+   `as_of` while the tab is open — that is an operator/walkthrough check, not a scripted one. Note the
+   intervals are not evenly spaced under `next dev` (Fast Refresh remounts the component); in a
+   production build the timer is the only source.
+4. **A temporary account costs exactly one create + one delete, and the counts must be re-read.**
+   `p8review-temp@example.com` through the product's own 계정 만들기 → carry-over 담기 → 알림 설정 →
+   로그아웃 → log back in → 계정 삭제. `account` / `auth_session` / `holding` / `lapse_claim` /
+   `notification_pref` are back at **2 / 3 / 1 / 0 / 0**. Note the carry-over panel appears whenever
+   the same browser profile has touched the anonymous sample first — that is R5 behaviour, not a bug,
+   and it is the cheapest way to give a fresh account real rows.
+5. **The `/ops` door prints four R7 implementation rules as visible 11px text**, in the production
+   build, under the login button — two of them describe the security posture (uniform + constant-time
+   failure, credential rotation). Pre-existing (R7 + P5/P7), untouched by P8, and inside the surface
+   the operator cancelled. Routed to the walkthrough and proposed as a deferred job; **do not fix it
+   inside D6 silently** — it is a copy decision on a signed round.
+6. **Scratch production builds need `cp -Rc` for `node_modules`, not a symlink.** `P8.S7`'s note is
+   still exactly right and this review re-learned it in one wasted build: a symlinked `node_modules`
+   pointing outside the project root makes Turbopack emit a module-not-found flood and exit 0.
+7. **Two doc summaries were too long for the filesystem.** `doc-new-version` builds the filename from
+   the summary and macOS caps a path component at 255 bytes — Korean in a summary spends 3 bytes a
+   character, so a summary that reads fine can still raise `OSError: [Errno 63]`. Keep review
+   summaries to roughly one line; the failure is clean (nothing is written) but it costs a retry.
+8. **This phase's regression surface is now 72 boxes** (14 cumulative + 58 P8 lines) in
+   `docs/current/qa.md`. Re-running the *whole* list is no longer a five-minute job — budget for it,
+   and prefer a scripted CDP sweep over clicking, which is how every geometry number in this review
+   was produced.
+
 ## Doc impact
 
 _Running list — one line per durable-truth change, consolidated into doc versions by `P8.REVIEW` (not
@@ -1692,7 +1739,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   operator decisions unanswered (table above). This decomposition assumes **each surface's design
   slice hands the operator its inherited items together with the walk's own findings**, so they are
   decided where they are visible. If the operator would rather settle some of them before any round
-  starts (Q3's board window is one constant; Q13 is housekeeping), say so at the first `pending`.
+  starts (Q3's board window is one constant; Q13 is housekeeping), say so at the first `pending`. _**Routed at `P8.REVIEW` → closed**, no operator action._ Every round handed the operator its inherited P7 items with that surface's own walk findings; nothing is left unhanded.
 - **Q2 — 의견 (vocky) still has nothing to bind to.** _Answered at the R8 gate (see §R8 interview)._ `NEXT_PUBLIC_VOCKY_SRC` is unset and vocky ships
   no embeddable script, so all three signed chrome triggers are dead controls. R8's walk will meet
   them, and **no slice may invent a URL**: the operator must supply the script/capture path, or decide
@@ -1713,31 +1760,31 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   then `P8.S3` deletes the markup but may keep the constants (build-prompt §4 note).
 - **Q6 — identicon seed: hashed email or a stored per-account seed?** Visual identical; data choice for
   `P8.S3` (default: hashed email unless the operator prefers a stored seed). _`P8.S3` shipped the default — the mark is derived from the account email (`seed.trim().toLowerCase()`); a stored per-account seed would change nothing visible. Still the operator's to confirm._
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q7 — does the 의견 textarea wear the focus ring, or the P7 field hairline?** R8's build-prompt §6
   gives the textarea 「포커스 2px `--focus-ring`」, while §9 lists 「P7 포커스 분리」 among the round's
   invariants — and P7's operator override is exactly that text-entry controls do **not** wear the
   ring. Both cannot hold on a `<textarea>`. `P8.S3` kept the invariant (`outline: none` + the field's
   own brightened hairline, like every other field in the product) and did not restyle it. If the
-  operator wants the ring on this one field, it is one rule. (Same family as P7 Q2/Q10, still open.)
+  operator wants the ring on this one field, it is one rule. (Same family as P7 Q2/Q10, still open.) _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q8 — should the account menu close when one of its rows navigates?** Click 알림 설정 and the menu
   is still open on the new page (Esc or a click outside closes it). This is R5 behaviour that R8 did
   not change: §2 lists the closes as 「Esc / 외부 클릭」 only, while the mobile sheet beside it gets an
   explicit 「경로 변경 닫힘」. Left as the record has it rather than invented; it is one effect if the
-  operator wants the sheet's behaviour here too.
+  operator wants the sheet's behaviour here too. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q9 — delete `P8.S3`'s three test rows from vocky?** Verifying the 의견 send end to end put three
   clearly-marked rows (`P8.S3 검증 …`) into the operator's real vocky project, which had none. They
   are visible on `/ops/feedback`. Removing a row from vocky is an outward write no design or plan
   sanctioned, so they were left in place — the operator can delete them there, or keep them as the
   first proof the path works.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q10 — board auto-refresh interval.** R9 designed the visible contract and left the value to apply with a
   stated assumption of **60 s** (기준시각 is minute-granular). `P8.S5` will use 60 s unless the operator names
-  another value or wants it tied to the backend's actual refresh cadence.
+  another value or wants it tied to the backend's actual refresh cadence. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ 60 s is in the product and was measured at the review (`/api/board` at 57/76/136/180 s).
 - **Q11 — 동시 마감 tie count needs an API field.** R9's 소멸주의보 / countdown caption say 「N개 종목」 when
   several ① events share the earliest 청약 마감. `/board/summary` does not carry that count today;
   `P8.S5` adds `next_lapse.tie_count` (or renders the corp name until it exists — the design forbids guessing).
-  Operator to confirm the API addition is acceptable in a polish phase (it is derived from data already served).
+  Operator to confirm the API addition is acceptable in a polish phase (it is derived from data already served). _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ `tie_count` ships and reads **3**; the 소멸주의보 and `/board/summary` agree (measured at the review).
 - **Q12 — 「의견 보내기」 row in the account menu (operator instruction given inside the R9 design session).**
   Not in R9's apply scope by the session's own note (`build-prompt.md` §12). Needs a home: a small `fix`/
   implementation slice in P8 after `P8.S5` (one menu row wired to the existing Feedback panel), or a deferred
@@ -1748,14 +1795,14 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   ranked rows, 1 of 4 추후결정, 4 진행 중). The session asks that the next `board-snapshot.md` regeneration
   include the top 진행 중 rows and all 추후결정 names so later rounds render the strips with real data.
   Housekeeping for the operator / a later slice; no design consequence.
-
+ _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._
 - **Q14 — the countdown card's caption and label.** R9's `Anchors.html` draws 「가장 빠른 소멸까지」 above the
   countdown and 「청약 마감 2026-09-04 (KST) · 3개 종목」 under it, and §6 says the tie rule applies to that
   caption too — but the product's countdown has **never** had either string, §6 also says 「카운트다운 자체
   불변」, and neither string is among §9's fourteen. `P8.S5` therefore built the tie rule where a corp is
   actually printed (소멸주의보) and **did not mint the caption**. The operator (or a later round) decides:
   add the label + caption as new copy, or leave the countdown wordless as it is today.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ The review's fresh-eyes walk raised the same thing independently: the anchor card is a wordless red timer at 1440 **and** at 390.
 - **Q15 — _(answered in the R10 session, 2026-08-24 — see §"R10 landed spec")_ — the event 404 surface (R10, finding 15).** Non-exposable rcepts render Next.js' English default page by
   R3's deliberate "no 404 copy" choice. Keep the framework page, or design a Korean Mijual not-found that still
   says **no reason why** (D-14)? Orchestrator default: design it in R10.
@@ -1772,7 +1819,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   third without saying anything about mutual exclusion, so nothing was invented. Default if unanswered:
   leave it — a later chrome round decides whether opening one 의견 진입점 closes the others (it is the same
   question for the ≤480 sheet row, and the fix would be one shared owner in the chrome, not three local ones).
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q20 — should the 열림 header be the same height as the other three, or is the floor enough?**
   R10 §1 says the four states 「같은 높이를 차지한다」 and gives `min-height:136px` (≤767px `248px`) —
   a **floor**, which is what the round's own stylesheet contains. Measured after the build: 닫힘 ·
@@ -1780,20 +1827,20 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   because that state alone renders the 담기 line (its gate is `days >= 0`, R5-2's, unchanged). `P8.S7`
   built the record literally — a fixed height would have to either clip the 담기 line or bake 20px of
   empty space into the other four. Operator's call: (a) leave it (the floor is the rule, current), or
-  (b) make 136/248 a fixed height with the 담기 line inside it, which a later round would draw.
+  (b) make 136/248 a fixed height with the 담기 line inside it, which a later round would draw. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q21 — the `//` eyebrow leaks into the accessible name on the other surfaces.** R10 §12 requires the
   eyebrow's `//` to be CSS-drawn so the accessible name is 「일정」, and `P8.S7` did that for the detail
   surface (Chrome puts `::before` content into the name, so the headings now carry an `aria-label`).
   But 조회 and 보유 종목 print `// {title}` as **literal text** (`// 진행 중인 권리`, `// 2026년 놓친 돈`),
   from earlier rounds, so a screen reader reads the slashes there. Fixing it is a two-line change per
   surface — but those eyebrows belong to signed rounds, so: fold it into each surface's own R11+ round
-  (default), or file it as one small cross-surface job now?
+  (default), or file it as one small cross-surface job now? _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ Confirmed live at the review: 조회 draws it with `.eyebrow::before`, **보유 종목 prints it as literal text** (`// 다가오는 마감`, `// 지나간 마감`, `// 종목 추가`), so the two surfaces need different fixes.
 - **Q22 — two states cannot be seen in the product with today's corpus.** ②'s past-open 「진행 중」
   (**386/386** R2 events are `upcoming` on 2026-08-24) and multi-part citations (**0/386** figures carry
   `parts`). `P8.S7` verified the first in a real browser against a scratch proxy and the second by code
   reading; neither can be checked on the acceptance walkthrough. Does the operator want a seeded
   fixture (a corpus row or a dev-only payload switch) so trust-critical states like 「종료 금지」 can be
-  *seen*, or is a stubbed verification recorded in `result.md` enough (default)?
+  *seen*, or is a stubbed verification recorded in `result.md` enough (default)? _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ **Half of this resolved itself:** ② past-open 「진행 중」 is reachable in the product today (60 `open` R2 events; verified live on 트리니티항공 `20250808000003`). Only multi-part citations (0/386) remain unseeable.
 - **Q23 (R11 Q-A) — empty `/stocks`.** With no query the page is title + search + provenance and
   nothing else. (a) keep it bare, (b) give it the already-signed context (감시 대상 3종 · 감시 중 count ·
   coverage boundary panel — no new copy), (c) redirect to the landing hero. Default **(b)**. Taken at
@@ -1824,27 +1871,27 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   일반공모 window, and `offering.subscription` is typed `unknown` and read by no surface. The apply
   slice **omitted the line** (the signed read-back says "rendered from served fields only … no new
   payload"). (a) leave it omitted and drop `.rowline` from the record at the next round; (b) extend
-  `GET /stocks/{corp_code}` in a later phase so the designed line can render. Default **(a)**.
+  `GET /stocks/{corp_code}` in a later phase so the designed line can render. Default **(a)**. _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ (option (b) only; default (a) stands meanwhile.) Note from the review: the 청약 취급처 table **does** render in full on the event route — the gap is the stock route, not the corpus.
 - **Q30 (`P8.S9`) — ③ step windows are `fields: {}` on this route.** 아시아나's 2단계 절차 renders
   with two dashed 「현재 버전 공시에 없음」 chips, because the only ③ in the corpus arrives with no
   fields on `/stocks/{corp_code}` (the same filing **does** carry them on the event detail route).
   (a) accept the dashed form as the honest state here; (b) file a job to carry the ③ procedure
   fields onto the stock route so 조회 and 상세 agree. The dated form is browser-verified via a
-  read-only stub, so (b) is presentation-ready. Default **(a)** + a deferred job for (b).
+  read-only stub, so (b) is presentation-ready. Default **(a)** + a deferred job for (b). _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ (option (b) only; default (a) stands meanwhile.)
 - **Q31 (`P8.S9`) — `.bofftitle` has no 결의일 to print.** The card prints 「2026-03-26 결정
   유상증자」; `_lapse_row` composes no 결의일, and reintroducing the corp name is exactly the
   repetition R11 §5 removed. Rendered as 「유상증자」 alone. (a) keep it; (b) carry the 결의일 onto the
-  lapse row later so the designed title can render in full. Default **(a)**.
+  lapse row later so the designed title can render in full. Default **(a)**. _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ (option (b) only; default (a) stands meanwhile.)
 - **Q32 (`P8.S9`) — 집계 범위 on the entry page has no dates to state.** `lapse.coverage` rides
   `GET /stocks/{corp_code}` only and `/board/summary` carries none, so `/stocks` renders the
   boundary **sentence** with no dated rows. (a) keep the undated sentence; (b) serve the coverage
-  dates on a stockless read so the entry page can date its own boundary. Default **(a)**.
+  dates on a stockless read so the entry page can date its own boundary. Default **(a)**. _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ (option (b) only; default (a) stands meanwhile.)
 - **Q33 (`P8.S9`) — the label-tier R11 strings, registered under the Q28 precedent.** 보유 · 배정비율
   (1주당) · 초과청약 비율 · 공시 · 소멸 계산 (시장 전체) · 종목코드 · 고유번호 · 접수 appear in
   build-prompt §2/§4/§5 and in the landed cards, but the round's `result.md` §4 lists only the prompt
   sentence as new copy. They were registered in `copy.ts` + the `copy-inventory.md` R11 tail on the
   same reasoning that answered Q28 (the gate signed the cards **as landed**). Confirm that reading,
-  or name any label to be reworded. Default: **confirm**.
+  or name any label to be reworded. Default: **confirm**. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q34 (`P8.S9`) — 390px heights fall short of the record's targets, and the canon is why.** R11
   targets ≈1,250 (한화) / ≈1,150 (풍전); the built pages measure 1,572 / 1,754 — real reductions of
   8.8% / 15.5%, but not the numbers. Measured against the canon itself in a `file://` harness, the
@@ -1852,7 +1899,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   `.ctwhen`-above-`.ctfiled` stagger — i.e. the shortfall is the signed geometry's own height, not a
   fidelity defect. (a) accept the built heights as faithful; (b) open a follow-up density round for
   the ② row and the 놓친 돈 breakdown at 390. Default **(a)** + a deferred job for (b).
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ for (a) accept, and _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ for (b) the density round.
 - **Q35 (R12 Q-A) — _(answered in the R12 session, 2026-08-24 — see §"R12 landed spec")_ — the English validation bubble (P7 Q12).** **Taken: (b), two lines** (empty vs malformed; default (c) rejected — `invalid_email` has no signed Korean). (a) keep the browser's native messages,
   (b) `noValidate` + one Korean line in the error slot (dated exception), (c) `noValidate` and let the
   existing Korean API errors answer. Default **(c)** if the session agrees they cover it; else (b).
@@ -1869,7 +1916,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   R11's record and `lookup/r11-parts.jsx` — say so and it moves." (a) keep the caption on the lookup
   surface (R11 record stands); (b) strike it product-wide (update R11's record + `copy.ts` +
   the lookup views in a fix slice). Default **(a)** until the operator says otherwise.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Live at the review: the caption still renders on `/stocks` and `/stocks/{corp}` (default (a) in force).
 - **Q40 (`P8.S11`) — an auth field answers a keyboard focus and a mouse click differently, and both
   are signed.** R12 §1 gives the inputs `outline: 2px --focus-ring; outline-offset: -1px` on
   **`:focus-visible`** (the module states it at (0,2,0), so it wins wherever it applies). P7's focus
@@ -1881,7 +1928,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   product-wide in a later round, since P7 Q2/Q10 (「how far no-selected-focus goes」, 「focused
   hairline vs. panel edge」) are the same question and are still open. Default **(a)** until the
   operator says otherwise.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._
 - **Q41 (R13 Q-A / P7 Q4) — a 챙겼습니다 row: stays in 지나간 마감 re-labelled (signed R5-8) or
   disappears?** Default **stays**. _Answered in the R13 session (2026-08-24): **stays** (default)._
 - **Q42 (R13 Q-B / P7 Q8-D) — 「놓친 돈 상세 →」 on a checked row:** keep (default) or change/remove.
@@ -1905,7 +1952,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   rendering the served `stock_code` at the `.phmeta` tier. (a) keep rendering (default); (b) drop
   it. Confirmable at signoff.
 
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Live at the review: `stock_code` renders at the `.phmeta` tier (012200 / 008830 / 009830 / 002420).
 - **Q47 (`P8.S13`) — the auth surface still says 「포트폴리오」, and R13 §4b says reader surfaces do
   not.** R13 revised this round's two strings and the layer is now 보유 종목 everywhere on
   `/portfolio` and `/portfolio/notifications` (measured: 0건). Two **R12-signed** strings on the
@@ -1916,7 +1963,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   acceptable on the entry to a *sample* (default); (b) revise both in a later round/slice so the
   word rule is product-wide; (c) fold into the next auth round. `HOLDINGS_COUNT_KO`「포트폴리오 종목
   개수」 in the ops console is an operator surface and is not in question.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Live at the review: 「샘플 포트폴리오로 둘러보기」 and 「…예시 포트폴리오를 엽니다」 are the only two 「포트폴리오」 a reader can meet (0건 everywhere else).
 - **Q48 (`P8.S13`) — the ①/② row bodies do not use the canon's `.pdcells` grammar.** The R13 canon
   defines `.pdcells`/`.pdcell`/`.pdclab`/`.pdcval`/`.pdpend` — a bordered `--surface-raised` strip of
   label-over-value cells with dashed separators — and the Home/Mobile cards render ① as four cells
@@ -1932,7 +1979,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   would need a new one. (a) leave as built — the plan's wrap, R4's factor lines (default);
   (b) switch ① to `ConversionChain` now and leave ② as lines; (c) cut a `fix` slice that brings both
   bodies onto the canon's cells. Worth a look at the running product before deciding.
-
+ _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ ("worth a look at the running product" — that is exactly what the gate walk is for.)
 - **Q49 (`P8.S13`) — a backend defect this slice's scripted walk uncovered: two concurrent
   `PUT /portfolio/notifications` → 500.** `notification_pref` has a unique constraint on
   `account_id` and the save path is read-then-insert, so two saves in flight at once both miss the
@@ -1942,7 +1989,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   within one tick; the script clicked two disabled-a-tick-later buttons synchronously. It is also
   **not this slice's** (no backend file was touched, and `NotificationsView`'s handler is unchanged
   since `P5.S8`). (a) file it as a deferred job (「make the notification_pref save an upsert」) —
-  suggested; (b) fix it now in a small `fix` slice; (c) accept it as unreachable and record it only.
+  suggested; (b) fix it now in a small `fix` slice; (c) accept it as unreachable and record it only. _**Routed at `P8.REVIEW` → deferred job** (listed for the orchestrator to file)._ Option (a), as the entry itself suggests.
 - **Q50 (R14 Q-A) — the ask surface's breakpoint.** `Ask.module.css:421` / `AskPage.module.css:64` /
   `DESKTOP_QUERY` all draw 480/481 while R10 §0 standardized one 767px line; here it decides where
   the widget/launcher **exist**. (a) migrate to 767 (481–767 gets the full-width page, no widget) or
@@ -1970,7 +2017,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   its box then intersects that dev badge — **in dev only**. (a) accept it as dev tooling, invisible
   to any reader (suggested); (b) move or disable it in `next.config.ts` (`devIndicators` —
   `bottom-right` would collide with the launcher instead, so effectively "off"); (c) something else.
-  Worth 10 seconds in the operator's own browser before deciding.
+  Worth 10 seconds in the operator's own browser before deciding. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Confirmed at the review: **0** `nextjs-portal` in the production build; the badge exists under `next dev` only.
 - **Q57 (`P8.S15`) — the `/ask` desktop bundle cannot reach the signed 1124/760 inside R2's page
   shell.** R14 f9 signs a `minmax(0,760px) 340px` pair centred at `max-width: 1124px`; the rule is in
   `AskPage.module.css` exactly as signed, but `main.content` (R2's shell, `--bp-lg` **1120** + 2×24
@@ -1979,7 +2026,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   centred, rail sticky, bar under the last element), so nothing is broken — but the record's numbers
   are not the screen's. (a) accept 1072/708, the shell being the product's own decision (default);
   (b) let `/ask` opt out of the 1120 shell so the signed 1124/760 is reachable — a one-route
-  exception to a chrome-wide constant, which is why it is not this slice's call.
+  exception to a chrome-wide constant, which is why it is not this slice's call. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Re-measured at the review: **1072 / 708 / rail 340**, centred and sticky, in dev *and* production.
 - **Q58 (`P8.S15`) — a preset chip's accessible name is now its sentence, and its visible label is
   not contained in it.** build-prompt §3 signs 「칩의 `title`/접근명은 보내는 문장이다(라벨은 눈에
   보이는 텍스트)」, so each chip carries `title` = `aria-label` = e.g. 「신주인수권증서는 언제부터
@@ -1988,7 +2035,7 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   Name」 does not hold**: a voice-control user saying the words they can see does not match the
   accessible name. (a) keep the record as signed (default); (b) drop the `aria-label` and keep only
   `title`, so the accessible name returns to the visible label and the sentence stays a tooltip;
-  (c) make the accessible name contain both (「{label} — {question}」), which no round has signed.
+  (c) make the accessible name contain both (「{label} — {question}」), which no round has signed. _**Routed at `P8.REVIEW` → acceptance walkthrough** (operator decides while walking)._ Confirmed live: `title` = `aria-label` = the signed sentence on all five chips of an ① page.
 - **Q59 (R15 Q-A) — draw the live-data era?** 대화 로그 replay / 익명 세션 / save_feedback queue
   were designed on composition examples; real rows now exist. Redraw vs sign deltas only. R15 session. **Routed to deferred job D6 (round cancelled by operator).**
 - **Q60 (R15 Q-B) — 로그→사용자 「그 행」.** The signed 양방향 is unimplemented in one direction

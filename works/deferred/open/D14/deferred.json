@@ -1,0 +1,11 @@
+{
+  "id": "D14",
+  "title": "Teach export_design_grounding.py to read the frontend copy.ts, or protect the hand-written tails",
+  "status": "deferred",
+  "source": "P8.REVIEW",
+  "reason": "copy-inventory.md is generated from the Python side only and now carries hand-appended tails (R8, R9, R11, R12, R13, R14). A regeneration silently drops all of them; the file says so in a comment, which is not a guarantee.",
+  "trigger": "Before anyone regenerates the grounding pack",
+  "created_at": "2026-08-24T23:58:15+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}
