@@ -163,7 +163,9 @@ select:focus {
  * The convention every later slice uses, so nobody re-invents one:
  *
  *   data-motion="tick"    a repeating animation that must FREEZE where it is —
- *                         the countdown colon blink, star twinkle, the orbit.
+ *                         star twinkle, the orbit, the answer caret. (The
+ *                         countdown colon blink was the first of them and is
+ *                         gone — the operator removed the blink itself.)
  *   data-motion="ambient" a decorative layer that must HIDE — shooting stars.
  *
  * Anything not carrying an attribute is a fade, and a fade becomes a cut. The

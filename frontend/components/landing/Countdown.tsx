@@ -13,6 +13,10 @@ import styles from "./Countdown.module.css";
  * > backend as an absolute KST timestamp; **the browser only diffs against it —
  * > it never derives dates.**
  *
+ * **The blink is removed by operator decision.** Everything else in that
+ * paragraph stands; the colons are plain punctuation, and what says the figure is
+ * live is the seconds moving.
+ *
  * That last rule is the whole design of this component. `target` is
  * `/board/summary`'s `next_lapse.target`, an absolute `+09:00` instant the server
  * computed (end of the 청약 day, behind `MIJUAL_COUNTDOWN_CUTOFF_TIME` —
@@ -20,9 +24,9 @@ import styles from "./Countdown.module.css";
  * remainder; it parses no calendar, applies no timezone and would render the
  * same difference in Seoul and in Los Angeles.
  *
- * **Reduced motion stops the interval, not just the animation.** CSS can freeze
- * the colon blink (`data-motion="tick"`), but "static value" means the seconds
- * must not advance either, and CSS cannot stop a `setInterval` — which is why
+ * **Reduced motion stops the interval.** With the blink gone there is no
+ * animation left for `app/shell.css` to freeze, and the round's "static value" is
+ * entirely this file's job: CSS cannot stop a `setInterval`, which is why
  * `useReducedMotion()` exists (`P5.S10` note 6).
  *
  * The first render happens on the server and the first client render happens a
@@ -52,13 +56,9 @@ export function Countdown({ target }: { target: string }) {
   return (
     <p className={styles.countdown}>
       <span suppressHydrationWarning>{head}</span>
-      <span aria-hidden="true" className={styles.colon} data-motion="tick">
-        :
-      </span>
+      <span aria-hidden="true">:</span>
       <span suppressHydrationWarning>{minutes}</span>
-      <span aria-hidden="true" className={styles.colon} data-motion="tick">
-        :
-      </span>
+      <span aria-hidden="true">:</span>
       <span suppressHydrationWarning>{pad(seconds % 60)}</span>
     </p>
   );

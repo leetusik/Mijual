@@ -1,7 +1,11 @@
-/* R2 §Countdown: mono 28px/600 --alert, colons blinking 1s step-end. The blink
- * freezes under reduced motion through `data-motion="tick"` (app/shell.css), and
- * the tick itself stops in JS — a frozen colon over advancing seconds would not
- * be the "static value" the round asks for. */
+/* R2 §Countdown: mono 28px/600 --alert.
+ *
+ * The round drew the colons blinking (`animation: blink 1s step-end infinite`)
+ * and the **operator removed the blink**: a separator that disappears twice a
+ * second on a figure the reader is trying to read is noise, not liveness — the
+ * seconds advancing are the liveness. The colons are now plain punctuation, and
+ * the seconds still stop dead under reduced motion, in JS (`Countdown.tsx`),
+ * because CSS cannot stop a `setInterval`. */
 
 .countdown {
   display: flex;
@@ -13,19 +17,4 @@
   line-height: var(--leading-tight);
   font-variant-numeric: tabular-nums;
   color: var(--alert);
-}
-
-.colon {
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0;
-  }
 }
