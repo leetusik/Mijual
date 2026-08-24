@@ -1,0 +1,30 @@
+{
+  "phase_id": "P8",
+  "archived_at": "2026-08-25T00:07:53+09:00",
+  "archive_reason": "phase_review_passed",
+  "review_verdict": "pass",
+  "source_path": "works/phases/active/P8",
+  "archive_path": "works/phases/archived/20260825_000753_P8_design_polish_pass_audit_polish_every_surface",
+  "slices": [
+    "P8.DECOMP",
+    "P8.S1",
+    "P8.S2",
+    "P8.S3",
+    "P8.S4",
+    "P8.S5",
+    "P8.S5.5",
+    "P8.S6",
+    "P8.S7",
+    "P8.S8",
+    "P8.S9",
+    "P8.S10",
+    "P8.S11",
+    "P8.S12",
+    "P8.S13",
+    "P8.S14",
+    "P8.S15",
+    "P8.S16",
+    "P8.S17",
+    "P8.REVIEW"
+  ]
+}

@@ -403,3 +403,8 @@
 {"ts": "2026-08-24T23:58:15+09:00", "type": "deferred_created", "deferred": "D15", "source": "P8.REVIEW"}
 {"ts": "2026-08-24T23:58:15+09:00", "type": "phase_status_changed", "phase": "P8", "old_status": "planned", "new_status": "pending"}
 {"ts": "2026-08-24T23:58:15+09:00", "type": "acceptance_opened", "phase": "P8"}
+{"ts": "2026-08-25T00:07:53+09:00", "type": "phase_status_changed", "phase": "P8", "old_status": "pending", "new_status": "in_progress"}
+{"ts": "2026-08-25T00:07:53+09:00", "type": "acceptance_cleared", "phase": "P8"}
+{"ts": "2026-08-25T00:07:53+09:00", "type": "slice_status_changed", "slice": "P8.REVIEW", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-25T00:07:53+09:00", "type": "phase_reviewed", "phase": "P8", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-08-25T00:07:53+09:00", "type": "phase_archived", "phase": "P8", "archive_path": "works/phases/archived/20260825_000753_P8_design_polish_pass_audit_polish_every_surface"}

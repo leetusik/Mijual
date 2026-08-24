@@ -5,12 +5,12 @@
 
 ## Pointer
 
-- Current phase: `P8`
-- Current slice: `none`
-- Next slice: `none`
-- Waiting on operator: `P8`
+- Current phase: `P4`
+- Current slice: `P4.DECOMP`
+- Next slice: `P4.REVIEW`
+- Waiting on operator: `none`
 - Open deferred jobs: `13`
-- Rebuilt at: `2026-08-24T23:58:15+09:00`
+- Rebuilt at: `2026-08-25T00:07:53+09:00`
 
 ## Active Phases
 
@@ -22,7 +22,6 @@
 | [x] `P5` | `done` | `pass` | Apply — build the signed design | `none` | `works/phases/active/P5` |
 | [x] `P7` | `done` | `pass` | 실서비스 정상화 fix pass | `none` | `works/phases/active/P7` |
 | [x] `P6` | `done` | `pass` | Apply — AI 질문 agent | `none` | `works/phases/active/P6` |
-| [~] `P8` | `pending` | `pending` | Design polish pass — audit & polish every surface | `P8.REVIEW` | `works/phases/active/P8` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P1: Foundation Spike & Confirmations
@@ -127,31 +126,6 @@
 | [x] `P6.S7` | `done` | Design-fidelity verification in a real browser (RESPECT THE DESIGN) | `implementation` | `works/phases/active/P6/slices/P6.S7` |
 | [x] `P6.F1` | `done` | Thousands-grouped numerals in agent prose (3,200원) | `fix` | `works/phases/active/P6/slices/P6.F1` |
 | [x] `P6.REVIEW` | `done` | phase review | `review` | `works/phases/active/P6/slices/P6.REVIEW` |
-
-## Phase P8: Design polish pass — audit & polish every surface
-
-| Slice | Status | Name | Kind | Path |
-|---|---|---|---|---|
-| [x] `P8.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P8/slices/P8.DECOMP` |
-| [x] `P8.S1` | `done` | AskWidget t1 중복 키 — collision-free turn ids after a restored thread | `fix` | `works/phases/active/P8/slices/P8.S1` |
-| [x] `P8.S2` | `done` | R8 폴리시 라운드 — foundations/tokens + global chrome (nav · footer · vocky) | `co-work` | `works/phases/active/P8/slices/P8.S2` |
-| [x] `P8.S3` | `done` | Apply R8 — foundations/tokens + global chrome | `implementation` | `works/phases/active/P8/slices/P8.S3` |
-| [x] `P8.S4` | `done` | R9 폴리시 라운드 — landing 관제 현황판 + board | `co-work` | `works/phases/active/P8/slices/P8.S4` |
-| [x] `P8.S5` | `done` | Apply R9 — landing 관제 현황판 + board | `implementation` | `works/phases/active/P8/slices/P8.S5` |
-| [x] `P8.S5.5` | `done` | Account-menu 「의견 보내기」 row (R9 session instruction, Q12) | `implementation` | `works/phases/active/P8/slices/P8.S5.5` |
-| [x] `P8.S6` | `done` | R10 폴리시 라운드 — event detail ①②③ + trust states | `co-work` | `works/phases/active/P8/slices/P8.S6` |
-| [x] `P8.S7` | `done` | Apply R10 — event detail ①②③ + trust states | `implementation` | `works/phases/active/P8/slices/P8.S7` |
-| [x] `P8.S8` | `done` | R11 폴리시 라운드 — 내 종목 조회 + 놓친 돈 조회기 | `co-work` | `works/phases/active/P8/slices/P8.S8` |
-| [x] `P8.S9` | `done` | Apply R11 — 내 종목 조회 + 놓친 돈 조회기 | `implementation` | `works/phases/active/P8/slices/P8.S9` |
-| [x] `P8.S10` | `done` | R12 폴리시 라운드 — auth (로그인 · 비밀번호 재설정) | `co-work` | `works/phases/active/P8/slices/P8.S10` |
-| [x] `P8.S11` | `done` | Apply R12 — auth (로그인 · 비밀번호 재설정) | `implementation` | `works/phases/active/P8/slices/P8.S11` |
-| [x] `P8.S12` | `done` | R13 폴리시 라운드 — 내 포트폴리오 + 알림 설정 | `co-work` | `works/phases/active/P8/slices/P8.S12` |
-| [x] `P8.S13` | `done` | Apply R13 — 내 포트폴리오 + 알림 설정 | `implementation` | `works/phases/active/P8/slices/P8.S13` |
-| [x] `P8.S14` | `done` | R14 폴리시 라운드 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `co-work` | `works/phases/active/P8/slices/P8.S14` |
-| [x] `P8.S15` | `done` | Apply R14 — AI 질문 (런처 · 위젯 · /ask · 질문 스트립) | `implementation` | `works/phases/active/P8/slices/P8.S15` |
-| [x] `P8.S16` | `done` | R15 폴리시 라운드 — 운영 관제 admin /ops | `co-work` | `works/phases/active/P8/slices/P8.S16` |
-| [x] `P8.S17` | `done` | Apply R15 — 운영 관제 admin /ops | `implementation` | `works/phases/active/P8/slices/P8.S17` |
-| [ ] `P8.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P8/slices/P8.REVIEW` |
 
 ## Phase P4: Ship & Submit
 
