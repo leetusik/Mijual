@@ -1,0 +1,363 @@
+/* R16 §2.1–2.5 — 스마트 어시스턴트의 구조화 표면 (진행 표시 · 도구 흐름 · 데이터
+ * 행 · 계산 블록 · 마커 가족), ported declaration by declaration from the round's
+ * own CSS: `docs/reference/design/rounds/16-smart-assistant/output/r16-ask.css`.
+ *
+ * The round wrote that file 「토큰만 사용 — 신규 토큰 0건」 and this port keeps that
+ * property: every literal here is either a token or one of the record's own two
+ * hairline widths (2px borders). **The numbers transfer exactly**; only the class
+ * names change, into this repo's CSS Module convention (build-prompt §2: 「클래스
+ * 이름은 참조용이고, 제품에서는 기존 CSS Module 관례를 따른다」).
+ *
+ * R14's canon (`Ask.module.css`) is untouched — 440×620, the 도구 행's one
+ * scrolling line, the 10px 인용 칩, the 7×15 캐럿, the 767 boundary. This file
+ * only *adds*, which is why the two live side by side rather than merging.
+ *
+ * ## What is deliberately not ported
+ *
+ * - `.m390 …` — the round's device mirror for the design canvas, which cannot use
+ *   media queries. The product has the real `@media (max-width: 767px)` below,
+ *   exactly as `Ask.module.css` does.
+ * - `.apagec/.acol1/.atop/.astart/.acards/…` — §2.7b's page structure, which is
+ *   `P9.S10`'s slice, not this one.
+ *
+ * ## Motion
+ *
+ * **None.** R6's 스피너·타이핑 점 금지 is not superseded (§2.1), and §4 check 17
+ * asks that `prefers-reduced-motion` change nothing about these elements — which
+ * is only true if there is nothing to reduce. The only animation on this surface
+ * is R14's caret, and it lives in `Ask.module.css`.
+ */
+
+/* --- 진행 표시 (transient, §2.1) ---------------------------------------- */
+
+/* 도구 행의 형제지만 테두리가 **점선**이다: 실선 = 남는 사실, 점선 = 지나가는
+   상태. One line, replaced in place as the phase changes, gone at the first
+   sentence — and never animated. */
+.status {
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px dashed var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.status::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- 도구 흐름 (§2.2) ---------------------------------------------------- */
+
+/* The rows themselves stay `Ask.module.css`'s `.toolRow` — 오늘의 도구 행 스타일
+   그대로. What is new is the container and the fold. */
+.trace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  /* 블록은 답변 상자(.answer, flex column)의 전폭 자식이다. `width: 100%`를 쓰면
+     ≤767의 전폭 규칙(margin-inline 음수)이 폭을 늘리지 못하고 블록만 왼쪽으로
+     밀린다 (§2.3, r16-ask.css 「블록의 자리」). */
+  align-self: stretch;
+}
+
+/* 요약 줄 왼쪽 테두리 2px **solid** — 도구 행과 같다. 접힌 흐름도 사실이다. */
+.traceSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+}
+
+/* 펼쳤을 때 각 행 앞의 순서 번호. */
+.traceNumber {
+  margin-right: var(--space-2);
+  color: var(--ink-3);
+}
+
+.traceToggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.traceToggle:hover {
+  color: var(--ink-1);
+}
+
+/* --- 데이터 행 (§2.3) ---------------------------------------------------- */
+
+/* 도구 행이 「무엇을 했는지」라면 이 블록은 「공시가 무엇이라 적었는지」다. */
+.data {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-soft);
+  min-width: 0;
+  align-self: stretch;
+}
+
+.dataHeading {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px dashed var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+/* 세 칸: 라벨 · 값(넘치면 이 칸만 스크롤) · 마커/칩(고정).
+   인용 칩은 절대 스크롤 밖으로 밀리지 않는다 — 보이지 않는 근거는 근거가 아니다. */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr) auto;
+  column-gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  min-width: 0;
+  align-items: baseline;
+}
+
+.row + .row {
+  border-top: 1px dashed var(--border-soft);
+}
+
+.rowLabel {
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+  min-width: 0;
+  word-break: keep-all;
+}
+
+/* 값 = mono tabular ink-1, `nowrap` + **값 칸만** 가로 스크롤 (도구 행과 같은
+   관례). 블록은 넓어지지 않고 값이 그 안에서 움직인다. */
+.rowValue {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-1);
+  min-width: 0;
+  white-space: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.rowValue::-webkit-scrollbar {
+  display: none;
+}
+
+/* 셋째 칸 — 고정, `nowrap`: 「입력」 마커와/또는 인용 칩. */
+.rowMark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+/* 「입력」 = 마커 가족의 기하에 ink-3. 값이 없는 마커이므로 태그만 그린다
+   (`EstimateMarker`의 `.tag`와 함께 붙고, 색만 여기서 이긴다 — 선택자 두 개는
+   한 개를 이긴다). */
+.rowMark .inputTag {
+  color: var(--ink-3);
+}
+
+/* 6행을 넘는 블록의 접힘 토글. */
+.more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin: 0 var(--space-3) var(--space-2);
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--live);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.more:hover {
+  color: var(--ink-1);
+}
+
+/* --- 계산 블록 (§2.4) ---------------------------------------------------- */
+
+/* P7: 계산은 유틸리티가 아니라 감사 가능한 중심 요소다. 입력 → 식 → 결과가 한
+   블록에 있고 입력마다 자기 인용 칩을 단다. 테두리는 데이터 행보다 한 단 무겁다. */
+.calc {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  min-width: 0;
+  align-self: stretch;
+}
+
+/* 머리말 = `--live` 색 단어(검증된 계산 | 식 계산) + ink-3 이름. 두 단어가 같게
+   렌더되면 산술이 제품의 검증된 계산으로 세탁된다 (result.md §3-7). */
+.calcHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px dashed var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.calcKind {
+  color: var(--live);
+}
+
+/* 식 줄 — `state=error`면 그리지 않는다. */
+.calcExpr {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px dashed var(--border-soft);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.calcExpr::-webkit-scrollbar {
+  display: none;
+}
+
+/* 진행 중 = 결과 행의 **자리에** 같은 한 줄. 완료되면 그 자리에서 교체된다
+   (블록이 뛰지 않는다 — §4 check 5). 실패는 alert 색이 아니라 안내 문장이다. */
+.calcPending {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-base);
+  color: var(--ink-3);
+}
+
+.calcError {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-soft);
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+/* The round's CSS carries this rule for an emphasised reason inside the error
+   sentence; `copy.calcError` composes one signed string, so nothing renders a
+   `<b>` today. Ported rather than dropped — the day the reason is emphasised it
+   is already the record's. */
+.calcError b {
+  color: var(--ink-1);
+  font-weight: 600;
+}
+
+.calcResult {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-soft);
+  background: var(--live-tint);
+}
+
+.calcResultLabel {
+  font-size: var(--text-sm);
+  line-height: var(--leading-base);
+  color: var(--ink-2);
+}
+
+.calcResultValue {
+  font-size: var(--text-md);
+}
+
+/* --- 마커 가족 (§2.5, 배타적 3종) --------------------------------------- */
+
+/* 「추정」(기존) · 「계산」(신규) · 「미확인」(신규). **기하는 셋 다
+   `EstimateMarker` 그대로**이므로 태그는 그 컴포넌트의 CSS Module 클래스를 그대로
+   쓰고(`components/EstimateMarker.module.css` → `.tag`), 여기서는 색만 가족별로
+   이긴다. 색이 아니라 **단어**가 구분한다. */
+.marker {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.marker[data-kind="calc"] {
+  color: var(--live);
+}
+
+.marker[data-kind="unverified"] {
+  color: var(--ink-2);
+}
+
+/* `EstimateMarker`'s own tag pins `color: var(--live)`; a two-selector rule is
+   what lets the sibling markers take the family colour without depending on
+   which module's stylesheet the bundler ordered first. */
+.marker[data-kind="calc"] .tag {
+  color: var(--live);
+}
+
+.marker[data-kind="unverified"] .tag {
+  color: var(--ink-2);
+}
+
+/* --- ≤767 (§2.3 · §4 checks 8b · 14) ------------------------------------ */
+
+@media (max-width: 767px) {
+  /* 타깃 44px — 자세히/접기와 모두 보기. */
+  .traceToggle,
+  .more {
+    min-height: 44px;
+  }
+
+  /* 블록은 답변 상자의 패딩을 밀고 나가 좌·우 끝까지 닿는다 (R6 §Mobile
+     「인용 블록 전폭」과 같은 규칙). */
+  .data,
+  .calc {
+    margin-inline: calc(-1 * var(--space-3));
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 36%) minmax(0, 1fr) auto;
+  }
+}

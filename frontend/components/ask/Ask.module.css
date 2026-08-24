@@ -370,6 +370,36 @@
   margin-top: 0;
 }
 
+/* R16 §2.6 — 같은 칩, 새로운 **자리**: 데이터 행의 값과 계산 입력.
+ *
+ * §2.3 fixes that third column as 고정 and `nowrap`, and says why: 「칩은 값과
+ * 함께 스크롤되지 않는다 — 390에서 긴 값이 있을 때 칩이 화면 밖으로 밀리면 근거가
+ * 사라진 것과 같다」. A column that narrow cannot also *measure* the 인용 블록:
+ * with the panel inside it the `auto` track grows toward the quote's max-content
+ * and the `minmax(0,1fr)` value column collapses to zero (measured in Chrome —
+ * the value disappeared entirely, closed panel included).
+ *
+ * So in a row the chip and its block are grid items of **the row**: the chip
+ * keeps the fixed third column and the block opens under the row across the
+ * whole block. That is the same relationship prose has — 제자리, under the thing
+ * it belongs to, at the width of its container — and it is the row-scale reading
+ * of R6 §Mobile's 「인용 블록 전폭」. The component itself is unchanged (§2.6
+ * 「변경 없음」); this is placement only. */
+.citationRow {
+  display: contents;
+}
+
+.citationRow > .chip {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.citationRow > .quoteWrap {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
 /* --- 푸터 · 갈 곳 · 중단 행 --------------------------------------------- */
 
 /* 완료 → 「푸터 페이드 인, --dur-base」. Under reduced motion `app/shell.css`

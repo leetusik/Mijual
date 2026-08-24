@@ -35,13 +35,38 @@ import styles from "./Ask.module.css";
  *
  * `span` is carried on the payload and deliberately **not rendered**: an offset
  * is internal, exactly as the primitive records.
+ *
+ * ## R16 §2.6 — the same chip, in two more **places**
+ *
+ * 「**변경 없음** … 새로운 것은 칩이 붙는 **자리**뿐이다: 프로즈 + 데이터 행 값 +
+ * 계산 입력.」 So this component is unchanged and gains one prop that says which
+ * place it is in, because the two places lay their contents out differently:
+ *
+ * - `"prose"` (default) — inside the sentence, where the 인용 블록 opens under it
+ *   across the paragraph, exactly as R6-4 signed it;
+ * - `"row"` — the fixed **셋째 칸** of a 데이터 행 / 계산 입력 (§2.3), whose width
+ *   *is* the chip's and which never scrolls away with the value. The panel cannot
+ *   be measured inside that column: a `grid-template-columns: minmax(0,40%)
+ *   minmax(0,1fr) auto` track sized by a quote's max-content squeezes the value
+ *   column to **zero** (measured in Chrome before this prop existed — the value
+ *   simply vanished). So in a row the two halves are grid items of the row
+ *   itself: the chip stays in the third column and the block opens **under the
+ *   row, across the block** — the same 제자리 relationship the prose has to its
+ *   sentence, and R6 §Mobile's 「인용 블록 전폭」 read at row scale. `Ask.module.css`
+ *   holds the three placement rules; nothing about the chip or the panel changes.
  */
-export function InlineCitation({ chip }: { chip: AskChip }) {
+export function InlineCitation({
+  chip,
+  place = "prose",
+}: {
+  chip: AskChip;
+  place?: "prose" | "row";
+}) {
   const panelId = useId();
   const [open, setOpen] = useState(false);
 
   return (
-    <span>
+    <span className={place === "row" ? styles.citationRow : undefined}>
       <button
         type="button"
         className={styles.chip}

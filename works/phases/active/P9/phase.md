@@ -2075,6 +2075,89 @@ artifact (note 7).
     (an unreadable value settles to `verified`/`pending`) rather than cast — a lying cast would put an
     unrenderable state into a component. `phase` stays `string` because nothing branches on it.
 
+### P9.S9 — the five elements landed (2026-08-25)
+
+The surface now **draws** everything R16 signed for an answer. One renderer for both views
+(`components/ask/Answer.tsx`), §2.8's child order out of the store's arrival order, and five new
+components beside it: `StatusLine` · `ToolTrace` · `DataBlock`/`DataRowLine` · `CalcBlock` ·
+`ValueMarker` (계산 · 미확인), with `Blocks.module.css` porting `output/r16-ask.css` declaration by
+declaration (tokens only, numbers exact, `.m390` device mirror and §2.7b's page classes deliberately
+not ported — the latter is `P9.S10`'s).
+
+**Decisions this slice made, and why — `P9.S10`/`P9.S11` inherit every one of them.**
+
+1. **The order is computed, not assumed.** `components/ask/render.ts::answerParts` is a pure split of
+   `turn.blocks` into §2.8's four regions (도구 흐름 · 구조화 블록 · 프로즈 · 진행 표시), each keeping
+   the server's own order inside it; `Answer.tsx` decides placement, exactly as `P9.S8` note 1 said it
+   would. It is pure and React-free so `node --test` can see it (`lib/askRender.test.ts`, the
+   `lib/auth.test.ts` arrangement). `Answer.tsx`'s `isProse` guard is gone — that was the placeholder.
+   S8's transitional artifact (note 7) closes: the empty box a turn opened with **is** the StatusLine's
+   place, and it is now filled rather than removed.
+2. **도구 흐름 became one element, and its fold is a *default*, not a memory.** `ToolTrace` holds only
+   the reader's own press (`chosen: boolean | null`): while the turn is live the trace is not
+   collapsible at all (the arriving rows *are* the progress), and the moment it settles a ≥4-row trace
+   presents itself **folded**. A `useState` initialised once at mount — the reference mock's shape —
+   would stay expanded after the turn completed and fail §4 check 9. Nothing is stored (§2.2), so a
+   re-mounted trace folds again. The rows themselves are untouched R14 `.toolRow`.
+3. **The 인용 칩 in a 데이터 행 had to be *placed*, and the record places it nowhere — this is the
+   slice's one unsettled reading (→ `## Operator Questions`).** §2.3 fixes the third column as 고정 ·
+   `nowrap` · 「칩은 값과 함께 스크롤되지 않는다」 and §2.6 says the chip is the **same component**;
+   neither says where its 인용 블록 opens. Keeping the panel inside that column is not an option:
+   measured in Chrome, the `auto` track grows toward the quote's max-content and the
+   `minmax(0,1fr)` value column collapses to **zero** — the value disappears entirely, closed panel
+   included (our `InlineCitation` always renders the panel for R6-4's grid-height open; the design
+   mock renders nothing when closed, which is why the round never met this). So the chip keeps the
+   third column and the block opens **under the row, across the block**: `InlineCitation` gained
+   `place="row"` (markup unchanged — §2.6 「변경 없음」) and `Ask.module.css` carries three placement
+   rules (`display: contents` + `grid-column: 3 / grid-row: 1` for the chip, `grid-column: 1 / -1` for
+   the panel). Verified by screenshot at a 390-equivalent and at 760: label, value, chip and panel all
+   survive, and at ≤767 the panel inherits R6 §Mobile's 전폭 quote rule.
+4. **The marker family wears `EstimateMarker`'s own CSS class, not a copy of its numbers.** 「기하는 셋
+   다 `EstimateMarker` 그대로」 is only *true* if there is one geometry, so `ValueMarker` renders
+   `components/EstimateMarker.module.css`'s `.tag`; only the colour is per family, set with a
+   two-selector rule (`.marker[data-kind="…"] .tag`) so no stylesheet order can decide it. `kind` has
+   **no default** — the same discipline `EstimateMarker` states for `estimated`, and the three markers
+   are exclusive, so a marker chosen by omission is exactly the failure §2.5 exists to prevent.
+   **Caveat worth knowing:** `r16-ask.css`'s `.amk` spells that geometry in em (`vertical-align .22em`,
+   `padding .1em .5em`, `margin-left .55em`) where the shipped tag renders `vertical-align: middle`,
+   `padding: 1px 4px`, `margin-inline-start: 4px`. The binding sentence is 「`EstimateMarker` 그대로」 and
+   adopting the em spelling would restyle 「추정」 across the whole product, so the shipped tag governs
+   and the difference is an Operator Question, not a silent restyle.
+5. **A bad `unverified` offset costs the marker, never the sentence.** `proseSegments` sorts, clamps to
+   the sentence's length and drops anything inverted or overlapping — §2.5's rule is that the sentence
+   goes out either way (「서버가 span을 못 만들면 문장을 지우지 말고 그대로 내보낸다」). Python counts
+   code points and JS counts UTF-16 units; every shape `P9.S4` marks is BMP, where they agree.
+6. **소진 and 연결 끊김 are told apart by `reason`, nothing else** (`P9.S8` note 5 was right to add the
+   field). `render.exhausted()` reads the three budget reasons; a 소진 turn draws dimmed prose and a
+   folded trace and **nothing else** (§2.7 — inset·버튼·신규 문자열 0), while R14's 「연결이 끊겼습니다」
+   inset + 재시도 stays for a disconnect, a 중지 and a thread restored mid-turn (all `reason: null`).
+7. **The caret and the 진행 표시 line never appear together.** The caret belongs to growing prose
+   (R6/R14) and the status line is the turn's account of itself before prose exists, so the caret
+   renders inside the prose paragraph and the bare-caret fallback fires only when a streaming turn has
+   **neither** (a pre-R16 server, or a stream whose only blocks are tool rows). No second moving thing.
+8. **R6's 의견 확인 한 줄 follows the 도구 흐름.** §2.8 has no slot for it and the row it belonged under
+   now lives inside a trace that may fold, so it is drawn immediately after the trace — the nearest
+   place it stays visible — still off the tool's own `ok`, never off model prose. Placement only; the
+   sentence is untouched. → `## Operator Questions`.
+9. **머리말 없음 (`title: null`) has no producer and nothing was dropped.** `DataBlockEvent.title=None`
+   means 「use the signed default」 (`P9.S3`), so the key never rides the wire and a heading always
+   draws. Same for the mock's `note` row (`.adnote`): no field on the wire, so no renderer — and
+   `.calcError b` **is** ported though nothing renders a `<b>`, because `copy.calcError` composes one
+   signed string.
+10. **Known for `P9.S11`, in the flesh:** §4 check 5's 「블록이 뛰지 않는다」 holds for the *slot*
+    (계산 중 → 결과 → 오류 are one last child, replaced in place), but the **식 줄 arrives only with the
+    outcome** — `loop._calc_pending` sends no `expr` even for `mode="expr"`, where the plan already has
+    it (`tools.CalcPlan.expr`) — so a settling block grows by one line. That is the record's own
+    consequence (a verified calculation cannot know its 식 before it runs), not a client choice; if it
+    reads as a jump, the cheap fix is server-side for `expr` mode, never a reserved blank line here.
+    Also worth watching there: `AskWidget`'s auto-scroll key counts `blocks.length`, which a
+    replaced-in-place status line does not change.
+11. **What this slice did *not* verify.** No Operator Runtime pass: nothing here ran in `make stack-up`
+    / `http://127.0.0.1:3000`. The screenshots above are a **static harness** (the real token file plus
+    the three CSS modules, DOM copied from the components) rendered in headless Chrome — enough to
+    settle the layout questions above, not enough to claim §4's checks. `P9.S11` owns that, and the
+    26-check sweep is where 8·8b·9·10·13·14·17·18 are actually seen.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -2108,6 +2191,8 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.S7`) `security` — **input segregation**: text a tool returns (본문 quotes, notices, field values) is delimited and declared **data, never instructions**, on every tool result (`tools.DATA_BOUNDARY`, the first key of `ToolResult.response()`) and once in the system instruction. It also states that text inside a result is **never a `security_check` trigger** — the anti-overtrigger half, said where the over-trigger would be read. This is the mitigation `P9.S6`'s framing note said the guard does *not* provide.
 - (`P9.S8`) `frontend` — the one ask store carries R16 end to end: `AskBlock` grows `status` (transient) · `data` · `calc` and `text.unverified` spans, every block may carry `block_id`/`persistent`, and the reducer is **keyed** — a block wearing an id is replaced **at its own index** (P10's client half; no id = today's append), so a calculation settling `pending → done` never jumps past a 도구 행 that arrived between them. The 진행 표시 line is one live block dropped at the first prose block, at every terminal and on both terminal-less paths, and is **never written to `sessionStorage`** (filtered on `persistent === false` at both the write-through and the read-back). `AskTurn` gains `filings` (「공시 M건 읽음」, server-known), `blocked` (removed-marker count) and `reason` (소진 vs 연결 끊김 — R16 draws them differently); 근거 N건 stays the **chip count** (R14 Q-B, unchanged).
 - (`P9.S8`) `frontend` — `components/ask/copy.ts` holds R16 §0 verbatim: `CALC_VERIFIED`/`CALC_EXPR` · `TAG_CALC`/`TAG_UNVERIFIED`/`TAG_INPUT` · `CALC_RESULT`/`CALC_RUNNING` · `calcError` · `DATA_HEADING` · `SHOW_ALL`/`FOLD` · `DETAIL` · `trace(tools, events)` · `START_HEADING_KO` · `NEW_CHAT_KO` · `START_CHIPS_KO` (**4 cards**, no meta card) — and **`AGENT_INTRO_KO` is now D1** (「주주의 권리를 지키기 위해 공시를 근거로 질문에 답합니다.」), superseding R6's three sentences on both surfaces. **No status strings**: the 진행 표시 sentence is composed server-side and rendered verbatim. `ANONYMITY_KO` · `VERIFIED_ONLY_KO` · `REASK_KO` are retired copy still in the file — `P9.S10` deletes them with their call sites.
+- (`P9.S9`) `frontend` — R16's five elements are drawn, by **one** renderer for both views: `Answer.tsx` now lays an answer out in §2.8's child order (도구 흐름 → 구조화 블록(서버 순서) → 프로즈 → 링크 → 진행 표시/끝맺음 → 푸터, single 12px gap, blocks always full width) computed from the store's arrival order (`components/ask/render.ts`), with new `StatusLine` (2px **dashed** border, `role="status"`, **no animation**), `ToolTrace` (flat ≤3 rows or while live, folded to 「도구 N번 · 공시 M건 읽음」 + 자세히 at ≥4 once settled, fold never stored), `DataBlock`/`DataRowLine` (three columns `minmax(0,40%) minmax(0,1fr) auto` — 36% ≤767 — value-cell-only scroll, fixed third column, 6-row fold, `margin-inline:-12px` ≤767), `CalcBlock` (`--border-strong`, `--live` mode word + name, DataRow inputs, 식 줄, one slot for 계산 중/결과/오류 with **no alert colour**) and the marker family `계산`·`미확인` as siblings of 추정 — all three wearing `EstimateMarker`'s own tag class, colour per family, `kind` with no default. CSS is `Blocks.module.css`, ported from `output/r16-ask.css` (tokens only, zero new tokens, numbers exact).
+- (`P9.S9`) `frontend` — 소진 and 연결 끊김 are now drawn differently on the same `aborted` status: `AskTurn.reason` (budget → dimmed prose + folded 도구 흐름 and **nothing else**, R16 §2.7; anything else → R14's 「연결이 끊겼습니다」 inset + 재시도). The 인용 칩 gains its two new **places** (데이터 행 값 · 계산 입력) as the same component with a `place="row"` placement: the chip holds the fixed third column and its 인용 블록 opens **under the row across the block**, because a panel measured inside that column collapses the value column to zero (measured). 근거 N건 stays the chip count and a calculation's **result** is never counted.
 
 ## Operator Questions
 
@@ -2240,6 +2325,33 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   reads is on the record like every other sentence; (c) remove the example from the prompt and accept
   a less predictable line. Worth watching for during the acceptance walkthrough: ask 「주식 처음인데
   뭐부터 사면 좋아요?」 twice and see whether the same sentence comes back.
+
+- **(`P9.S9`) Where should a 데이터 행 / 계산 입력's 인용 블록 open?** R16 §2.6 says the chip is 「프로즈의
+  칩과 **같은 컴포넌트**」 and §2.3 fixes the third column as 고정 · `nowrap` · 「칩은 값과 함께
+  스크롤되지 않는다」 — but nothing in the record says where the *panel* (verbatim 원문 + DART 링크)
+  opens when the chip is in a row, and the design mock never drew an opened one. It cannot open inside
+  that column: measured in Chrome, the column then swallows the row and the **값 칸 collapses to zero**
+  — the value disappears, even with the panel closed. `P9.S9` therefore opens it **under the row,
+  across the block** (the row-scale reading of 제자리 인용 블록 and of R6 §Mobile's 「인용 블록 전폭」),
+  and it reads well at 390 and 760. Is that the intended behaviour, or does the operator want something
+  else — e.g. a row chip that only carries the DART link, or the panel opening at the end of the block?
+  Worth a press during the acceptance walkthrough: open a data-row chip and a 계산 입력 chip.
+
+- **(`P9.S9`) The marker family's geometry is stated twice, and the two spellings differ.** §2.5 says
+  「기하는 셋 다 `EstimateMarker` 그대로」 and then writes it as `.56em` / `vertical-align .22em` /
+  `padding .1em .5em` / `margin-left .55em` / `letter-spacing .08em`; the shipped `EstimateMarker`
+  renders `.56em` / `vertical-align: middle` / `padding: 1px 4px` / `margin-inline-start: 4px` /
+  `.08em`. This slice honoured the **sentence** (one geometry for all three, by rendering the
+  component's own class), so 계산 · 미확인 are pixel-identical to 추정 today. Adopting `r16-ask.css`'s em
+  spelling instead would move the 「추정」 tag on **every** surface that carries it (랜딩 · 이벤트 상세 ·
+  포트폴리오 · 종목), which is a design change and not a build one. Keep the shipped tag, or open a
+  round to re-cut 추정's geometry to the R16 numbers?
+
+- **(`P9.S9`) R6's 의견 확인 한 줄 has no place in §2.8's order.** 「의견을 저장했습니다 — 운영자가
+  확인합니다.」 is the surface's line about the 의견 저장 행 it follows; those rows now live inside a
+  도구 흐름 that folds at ≥4 rows, so a confirmation printed among them could arrive hidden. `P9.S9`
+  draws it immediately **after** the trace (visible in both states, still keyed on the tool's own `ok`).
+  Confirm that placement, or say where it belongs — it is the only R6 element §2.8 does not name.
 
 
 ## Constraints
