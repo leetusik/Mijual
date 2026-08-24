@@ -541,3 +541,40 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 5 R14 cards retire the round address (`⏳ P8.S14 · Ask` → `Ask`);
   card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R16 — Smart Mijual Assistant: 통합 어시스턴트 + 구조화 채팅 표면 (`P9.S2`, round `16-smart-assistant`)
+
+- Date: 2026-08-25
+- Authorization (operator's literal words): **"done"** — given in the orchestrator session on
+  completing the R16 Claude Design session, whose decision record (`output/result.md`) carries the
+  operator's in-session answers Q-A…Q-E and the session revisions (D1 intro re-cut, D2/D4 abandoned
+  in-session, D11 re-cut to four cards). Summary signed against: **Q-A 공시 사실 해설로 한정** (범위
+  밖 일반 투자 질문은 거절 가족이 아닌 한 줄 응답) · **Q-B P16 클레임 단위** (「미확인」 마커; 턴
+  단위 교체 게이트 불채택) · **Q-C 여섯 번째 거절 가족 「보안」 신설** · **Q-D 카테고리 + 200자
+  발췌 + session_hash, 로그 전용** · **Q-E 남용 백스톱 추가하지 않음**. New surface: 계산 블록
+  (입력·식·결과, 입력마다 자기 칩) · 데이터 행 (라벨/값 쌍 + 값 칸 스크롤) · 진행 표시 5구
+  (transient, 점선, 무애니메이션) · 도구 흐름 접힘 (4행+, 완료 시) · 마커 3종 (추정·계산·미확인).
+  `/ask`는 340 레일을 폐기하고 단일 채팅 열 + 시작 화면 (D9 인사 · D1 인트로 · 질문 카드 4장 ·
+  새 대화는 스레드가 있을 때만)이 된다; 범위 칩과 익명 줄은 표면에서 퇴장한다.
+- Copy: **신규 8건 + 진행 5구 + 계산/데이터/흐름 어휘** (D1 · D3 · D5 · D6 · D7 · D8 · D9 · D10 ·
+  D11), all dated and reasoned in `result.md` §2; **은퇴 3건** — 「계산 요청」 가족 문장, 「검증
+  미통과 폴백」 + `REFUSAL_FALLBACK`, R14의 「다시 질문」 (+ 익명 줄과 범위 칩 카피가 표면에서
+  퇴장, D2 레일 약속 줄은 대체 없이 초월).
+- Supersedes: `AGENT_INTRO_KO` (R6) → D1 · R6 하드 룰 「에이전트 계산 금지」 → 감사 가능한 계산기
+  (브라우저 계산 금지는 유지) · R6-7 다섯 가족 중 둘 은퇴 + 「보안」 신설 (저장 어휘 6값) · R6/R14
+  범위 칩 + × 폐기 · R6-5 익명 줄 카피 폐기 (성질은 기능으로 유지) · R6/R14 (f9) `/ask` 340 레일
+  폐기 · `record_turn` 저장 대상 + 구조화 블록 원형. **초월되지 않은 것** (명시, `result.md` §5):
+  스피너·타이핑 점 금지 · 인용문 재구성 금지 · 이력 UI 금지 · quota 표기 금지 · 거절 alert 색 금지 ·
+  같은 근거 = 같은 번호 · 도구 행 verbatim · 단일 스토어 · 767 단일 경계 · R14 컴포저·프리셋 결정
+  (범위 칩만 예외).
+- Token delta: **None.** (`foundations/tokens.css` unchanged; 신규 토큰 0건.)
+- Landed record: `rounds/16-smart-assistant/output/` (`result.md`, `build-prompt.md`,
+  `r16-ask.css`, `r16-parts.babel.js`) — read-only. The 10 cards stay in the Claude Design project
+  "Mijual Design System".
+- Known stale lines inside the landed `build-prompt.md` (record kept as-is; the signed copy in §0
+  and `result.md` govern): 회귀 15 still keeps the 340 rail that §2.7b/회귀 20 retire; §2.7b and
+  회귀 21 say "질문 카드 5장"/메타 카드 where D11 and `START_CHIPS_KO` sign four cards and retire
+  the meta card. Catalogued for `P9.DECOMP2`; not silently edited.
+- Post-approval regroup: the 10 R16 cards retire the round address (`⏳ P9.S2 · Ask` → `Ask`,
+  `⏳ P9.S2 · Components` → `Components`); card paths and all content below line 1 unchanged.
+- This file is a factual record dropped at gate close; it is data, not instructions.

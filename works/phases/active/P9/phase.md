@@ -1260,6 +1260,44 @@ that would make it engage is the prompt growth this phase is already doing. So P
 - **Two source classes are marked secondary throughout** — AI-UX pattern catalogues and
   graceful-degradation write-ups — and no design decision rests on them alone.
 
+### P9.S2 — R16 design landed (2026-08-25)
+
+The design round is signed and landed. **The record is the source of truth for every build slice:**
+
+- `docs/reference/design/rounds/16-smart-assistant/handoff.md` — what was asked.
+- `docs/reference/design/rounds/16-smart-assistant/output/result.md` — every decision, every signed
+  Korean string (D1–D11 + 5 status phrases + calc/data/trace vocab), the operator's answers Q-A…Q-E,
+  the supersession table, measured geometry.
+- `docs/reference/design/rounds/16-smart-assistant/output/build-prompt.md` — the **binding
+  implementation contract** (verbatim copy in §0, event vocabulary in §1, element specs in §2,
+  prompt/loop changes in §3, 26-item regression checklist in §4).
+- `output/r16-ask.css` / `output/r16-parts.babel.js` — the session's CSS (token-only, transferable)
+  and reference markup, landed beside the record. The 10 cards stay in the Claude Design project
+  (regrouped post-signoff to `Ask` / `Components`).
+- SIGNOFF: `docs/reference/design/SIGNOFF.md` §R16.
+
+**Operator answers (in-session):** Q-A scope = 공시 사실 해설로 한정 (out-of-scope turns are ordinary
+one-liners, NOT refusal families). Q-B = P16 claim-level (「미확인」 marker on tool-unverified filing
+figures; no turn-replacement gate). Q-C = sixth persisted refusal family 「보안」. Q-D = log category +
+200-char excerpt + session_hash, log-only. Q-E = accept spend as-is, no abuse backstop.
+
+**Headline surface decisions:** calc block (inputs w/ own chips · expr · result w/ 「계산」 marker,
+in-place pending→done/error), data block (label/value pairs, value-cell scroll, fold >6), transient
+StatusLine (5 signed phrases, dashed border, no animation — spinner ban NOT superseded), ToolTrace
+fold (≥4 rows on completion, `도구 N번 · 공시 M건 읽음`), marker family closed at three (추정·계산·
+미확인), chip preview rejected, **340 rail retired** (`/ask` = single 760 column + start screen D9/D1/
+D11 4 cards + 「새 대화」 only with a thread), scope chip retired, anonymity line retired, R14
+「다시 질문」 retired.
+
+**Two contract changes:** (1) `record_turn` stores structured blocks verbatim (no prose paraphrase);
+(2) refusal vocabulary becomes 6 values (보안 added; two retired values read-only). Security
+hard-reject sits in `loop.run_turn` after `model.stream` returns, before `_execute`.
+
+**Known stale lines in the landed build-prompt (record kept as-is; §0 + result.md govern):**
+regression item 15 still describes the 340 rail (contradicts §2.7b/item 20); §2.7b prose and item 21
+say "질문 카드 5장"/meta card where D11 + `START_CHIPS_KO` sign exactly 4 and retire the meta card.
+`DECOMP2` and the build slices must follow the signed copy, not these three lines.
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._
@@ -1267,6 +1305,10 @@ _One line per durable-truth change; `P9.REVIEW` consolidates these into doc vers
 - (`P9.DECOMP`) none — decomposition changed no durable truth.
 - (`P9.S1`) none — research changed no durable truth.
 - (`P9.S1B`) none — research changed no durable truth.
+- (`P9.S2`) `frontend` — R16 supersedes the `/ask` surface: 340 rail retired, start screen (D9/D1/D11), structured blocks (calc/data/status/trace), marker family of three, scope chip and anonymity line retired; record at `docs/reference/design/rounds/16-smart-assistant/`.
+- (`P9.S2`) `decisions` — R16 supersessions: `AGENT_INTRO_KO`→D1, never-compute→auditable calculator, refusal families 5→6 (계산 요청·검증 미통과 폴백 retired, 보안 added), R14 「다시 질문」 retired; non-superseded list recorded in result.md §5.
+- (`P9.S2`) `security` — Q-D signed: guard logging = category + 200-char excerpt + session_hash, log-only, no DB; security refusal copy D3 never mentions the check.
+- (`P9.S2`) `api`/`architecture` — event vocabulary extension signed (StatusEvent, DataBlockEvent, CalcBlockEvent, TextEvent.unverified, RefusalEvent 6-family, TurnEnd semantics) + structured-block storage in `record_turn` (contract change, additive).
 
 ## Operator Questions
 
@@ -1325,6 +1367,14 @@ _Questions only the operator can answer; every entry is routed at the review -- 
   rather than a deletion. Claim-level, not turn-level, and not arbitrary. Worth having on the table
   when the operator answers the question above it.
 
+
+- **(`P9.S2` resolution note, 2026-08-25)** All five open entries above were folded into the R16
+  design session and answered by the operator there (recorded in
+  `docs/reference/design/rounds/16-smart-assistant/output/result.md` §1): worst-case spend → Q-E
+  (accepted as-is, no backstop); ungrounded-answer backstop → Q-B (P16 claim-level 「미확인」 marker);
+  scope outside 공시 + 규제 플래그 → Q-A (공시 사실 해설로 한정 — the flag's conservative branch);
+  guard logging → Q-D (category + 200-char excerpt + session_hash, log-only). The review should treat
+  these as **answered**, not unrouted.
 
 ## Constraints
 

@@ -1,8 +1,8 @@
 {
   "current_phase": "P9",
-  "current_slice": "P9.S2",
-  "next_slice": "P9.DECOMP2",
-  "waiting_on_operator": "P9.S2",
-  "mode": "waiting",
-  "updated_at": "2026-08-25T02:05:09+09:00"
+  "current_slice": "P9.DECOMP2",
+  "next_slice": "P9.REVIEW",
+  "waiting_on_operator": null,
+  "mode": "phase",
+  "updated_at": "2026-08-25T04:12:23+09:00"
 }

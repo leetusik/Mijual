@@ -1,0 +1,115 @@
+/* R16 — 스마트 어시스턴트의 구조화 표면 (P9.S2). r14-ask.css 다음에 로드된다.
+   이 파일이 더하는 것만 있다: 데이터 행 · 계산 블록 · 진행 표시 · 도구 흐름 ·
+   마커 가족(계산 / 미확인 / 추정). R14의 기하(440×620 · 도구 행 한 줄 · 칩 10px ·
+   캐럿 7×15 · 340 레일 · 767 경계)는 하나도 건드리지 않는다.
+   토큰만 사용 — R8 동결분 그대로, 신규 토큰 0건. */
+
+/* ── 마커 가족 ────────────────────────────────────────────────────────
+   `EstimateMarker`의 기하를 그대로 쓴다 (0.56em · vertical-align .22em ·
+   border color-mix 42% · letter-spacing .08em). 「추정」은 추정치 전용이므로
+   계산된 수와 미확인 수는 형제 마커를 갖는다. 색이 아니라 단어가 구분한다. */
+.aval{font-family:var(--font-mono);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.aval[data-kind="calc"]{color:var(--live)}
+.aval[data-kind="unverified"]{color:var(--ink-2)}
+.amk{font-family:var(--font-sans);font-size:.56em;font-weight:600;vertical-align:.22em;margin-left:.55em;padding:.1em .5em;border:1px solid color-mix(in srgb,currentColor 42%,transparent);letter-spacing:.08em;white-space:nowrap}
+
+/* ── 진행 표시 (transient) ────────────────────────────────────────────
+   도구 행의 형제지만 테두리가 점선이다: 실선 = 남는 사실, 점선 = 지나가는 상태.
+   스피너·타이핑 점 없음 (R6 금지 유지) · 애니메이션 없음 · 대화 로그에 남지 않음. */
+.astat{margin:0;padding-left:var(--space-2);border-left:2px dashed var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:var(--leading-base);color:var(--ink-3);white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.astat::-webkit-scrollbar{display:none}
+
+/* ── 도구 흐름 ────────────────────────────────────────────────────────
+   3행까지는 오늘처럼 평평하게. 4행 이상은 완료 시 한 줄 요약으로 접힌다
+   (스트리밍 중에는 항상 펼쳐져 있다 — 그때는 그것이 진행 상황이다). */
+.atrace{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.atsum{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-2);margin:0;padding-left:var(--space-2);border-left:2px solid var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:var(--leading-base);color:var(--ink-3)}
+.atn{color:var(--ink-3);margin-right:var(--space-2)}
+.atx{display:inline-flex;align-items:center;min-height:32px;padding:0;background:none;border:0;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.atx:hover{color:var(--ink-1)}
+
+/* ── 데이터 행 ────────────────────────────────────────────────────────
+   도구 행이 「무엇을 했는지」라면 이 블록은 「공시가 무엇이라 적었는지」다.
+   라벨 = sans ink-2 · 값 = mono tabular ink-1 · 칩은 값에 붙는다.
+   넓은 값은 블록을 넓히지 않고 값 칸 안에서 가로로 스크롤된다 (도구 행과 같은 관례). */
+.adata{display:flex;flex-direction:column;border:1px solid var(--border-soft);min-width:0}
+.adatah{margin:0;padding:var(--space-2) var(--space-3);border-bottom:1px dashed var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.4;color:var(--ink-3)}
+/* 세 칸: 라벨 · 값(넘치면 이 칸만 스크롤) · 마커/칩(고정).
+   인용 칩은 절대 스크롤 밖으로 밀리지 않는다 — 보이지 않는 근거는 근거가 아니다. */
+.adr{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr) auto;column-gap:var(--space-2);padding:var(--space-2) var(--space-3);min-width:0;align-items:baseline}
+.adc{display:flex;align-items:baseline;gap:var(--space-1);white-space:nowrap}
+.adr+.adr{border-top:1px dashed var(--border-soft)}
+.adk{font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2);min-width:0;word-break:keep-all}
+.adv{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-1);min-width:0;white-space:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+.adv::-webkit-scrollbar{display:none}
+.adv .achip{vertical-align:baseline}
+.adnote{margin:0;padding:var(--space-2) var(--space-3);border-top:1px dashed var(--border-soft);font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+.amore{display:inline-flex;align-items:center;min-height:32px;margin:0 var(--space-3) var(--space-2);padding:0;background:none;border:0;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--live);text-decoration:underline;text-underline-offset:3px;cursor:pointer;align-self:flex-start}
+.amore:hover{color:var(--ink-1)}
+
+/* ── 계산 블록 ────────────────────────────────────────────────────────
+   P7: 계산은 유틸리티가 아니라 감사 가능한 중심 요소다. 입력 → 식 → 결과가
+   한 블록에 있고 입력마다 자기 인용 칩을 단다. 헤더가 「검증된 계산」(제품의
+   금액 산식)과 「식 계산」(일반 식 평가)을 구분한다. */
+.acalc{display:flex;flex-direction:column;border:1px solid var(--border-strong);min-width:0}
+.acalch{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-2);margin:0;padding:var(--space-2) var(--space-3);border-bottom:1px dashed var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.4;color:var(--ink-3)}
+.acalck{color:var(--live)}
+.acalcx{margin:0;padding:var(--space-2) var(--space-3);border-top:1px dashed var(--border-soft);font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2);white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.acalcx::-webkit-scrollbar{display:none}
+.acalcr{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-3);margin:0;padding:var(--space-2) var(--space-3);border-top:1px solid var(--border-soft);background:var(--live-tint)}
+.acalcrk{font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+.acalcrv{font-size:var(--text-md)}
+/* 진행 중 = 결과 행의 자리에 같은 높이의 한 줄. 완료되면 그 자리에서 교체된다
+   (블록이 뛰지 않는다). 실패는 alert 색이 아니라 안내 문장이다. */
+.acalcp{margin:0;padding:var(--space-2) var(--space-3);border-top:1px solid var(--border-soft);font-family:var(--font-mono);font-size:var(--text-xs);line-height:var(--leading-base);color:var(--ink-3)}
+.acalce{margin:0;padding:var(--space-2) var(--space-3);border-top:1px solid var(--border-soft);font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+.acalce b{color:var(--ink-1);font-weight:600}
+
+/* ── 블록의 자리 ─────────────────────────────────────────────────────
+   구조화 블록은 답변 상자(.aa)의 전폭 자식이고 서로 옆에 놓이지 않는다.
+   .aa의 gap(space-3)이 유일한 간격이다. .aa는 flex column이므로 stretch가
+   이미 폭을 준다 — width:100%를 쓰면 ≤767의 전폭(margin-inline 음수) 규칙이
+   폭을 늘리지 못하고 블록만 왼쪽으로 밀린다. */
+.aa>.adata,.aa>.acalc,.aa>.atrace{align-self:stretch;min-width:0}
+
+/* ── ≤767 / 390 미러 ────────────────────────────────────────────────
+   블록은 답변 상자의 패딩을 밀고 나간다 (R6 §Mobile 「인용 블록 전폭」과 같은 규칙). */
+@media (max-width:767px){
+.atx,.amore{min-height:44px}
+.aa>.adata,.aa>.acalc{margin-inline:calc(-1 * var(--space-3))}
+.adr{grid-template-columns:minmax(0,36%) minmax(0,1fr) auto}
+}
+.m390 .atx,.m390 .amore{min-height:44px}
+.m390 .aa>.adata,.m390 .aa>.acalc{margin-inline:calc(-1 * var(--space-3))}
+.m390 .adr{grid-template-columns:minmax(0,36%) minmax(0,1fr) auto}
+
+/* ── /ask 시작 화면 · 단일 열 (R16: 340 레일 폐기) ────────────────────
+   페이지는 채팅 표면 하나다. 빈 상태에서 컴포저는 화면 가운데에 서고, 위에 짧은
+   인사와 약속, 아래에 시작용 칩이 있다. */
+.apagec{display:flex;flex-direction:column;justify-content:center;min-height:560px;width:100%}
+.acol1{display:flex;flex-direction:column;gap:var(--space-5);width:100%;max-width:760px;min-width:0;margin-inline:auto}
+/* 새 대화의 자리 — 스레드가 있을 때만 그려지고(시작 화면에는 비울 것이 없다), 열의 오른쪽 위에
+   sticky로 붙는다. 스레드가 길어져도 같은 자리에 남고, 배경은 --paper (컴포저 .abar와 같은 관례). */
+.atop{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-end;width:100%;max-width:760px;margin-inline:auto;padding-block:var(--space-2);background:var(--paper)}
+.anew{display:inline-flex;align-items:center;min-height:32px;padding:0;background:none;border:0;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.anew:hover{color:var(--ink-1)}
+/* 시작 화면은 가운데 정렬이다 — 첫 화면에는 왼쪽 정렬을 붙잡아 줄 스레드가 아직 없다.
+   카드 안의 질문만 왼쪽 정렬(두 줄이 되는 질문이 있다). */
+.astart{display:flex;flex-direction:column;gap:var(--space-4);width:100%;max-width:640px;min-width:0;margin-inline:auto;text-align:center}
+.astart .ain{text-align:left}
+.astarth{margin:0;font-size:var(--text-2xl);line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);color:var(--ink-1)}
+.astartp{margin:0;font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-2)}
+/* 컴포저는 자기 테두리(입력창)만 갖는다 — 감싸는 틀을 더하면 이중 프레임이 된다.
+   페이지에서는 컴포저와 스레드 사이의 구분선도 없다 (R14 위젯의 border-top은 위젯 전용). */
+.astartc{display:flex;flex-direction:column}
+.apage .acom{border-top:0;padding-inline:0}
+/* 시작용 질문은 칩이 아니라 카드다 — 질문이 길고, 첫 화면에서는 그것이 본문이다. */
+.acards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2);min-width:0}
+.acard{display:flex;align-items:center;min-height:56px;padding:var(--space-3);background:var(--surface-raised);border:1px solid var(--border-soft);font-family:var(--font-sans);font-size:var(--text-sm);line-height:var(--leading-base);color:var(--ink-1);text-align:left;word-break:keep-all;text-wrap:pretty;cursor:pointer;transition:border-color var(--dur-fast) var(--ease)}
+.acard:hover{border-color:var(--live)}
+@media (max-width:767px){.anew{min-height:44px}.acards{grid-template-columns:minmax(0,1fr)}.astarth{font-size:var(--text-xl)}.apagec{min-height:420px}}
+.m390 .anew{min-height:44px}
+.m390 .acards{grid-template-columns:minmax(0,1fr)}
+.m390 .astarth{font-size:var(--text-xl)}
+.m390 .apagec{min-height:420px}
+.m390 .acol1,.m390 .atop,.m390 .astart{max-width:100%}
