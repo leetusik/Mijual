@@ -414,3 +414,10 @@
 {"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P5", "archive_path": "works/phases/archived/20260825_001209_P5_apply_build_the_signed_design"}
 {"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P7", "archive_path": "works/phases/archived/20260825_001209_P7_fix_pass"}
 {"ts": "2026-08-25T00:12:09+09:00", "type": "phase_archived", "phase": "P6", "archive_path": "works/phases/archived/20260825_001209_P6_apply_ai_agent"}
+{"ts": "2026-08-25T01:02:49+09:00", "type": "phase_created", "phase": "P9"}
+{"ts": "2026-08-25T01:15:10+09:00", "type": "slice_status_changed", "slice": "P9.DECOMP", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-25T01:15:50+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S1"}
+{"ts": "2026-08-25T01:15:52+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.S2"}
+{"ts": "2026-08-25T01:15:55+09:00", "type": "slice_created", "phase": "P9", "slice": "P9.DECOMP2"}
+{"ts": "2026-08-25T01:18:30+09:00", "type": "slice_status_changed", "slice": "P9.DECOMP", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-25T01:18:30+09:00", "type": "acceptance_required", "phase": "P9"}
