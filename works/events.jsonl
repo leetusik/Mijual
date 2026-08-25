@@ -459,3 +459,20 @@
 {"ts": "2026-08-25T07:17:56+09:00", "type": "slice_status_changed", "slice": "P9.S10", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-25T07:19:34+09:00", "type": "slice_status_changed", "slice": "P9.S11", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-25T08:27:48+09:00", "type": "slice_status_changed", "slice": "P9.S11", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-25T08:29:15+09:00", "type": "slice_status_changed", "slice": "P9.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-25T08:52:44+09:00", "type": "doc_version_created", "doc": "api", "version": "v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:53:37+09:00", "type": "doc_version_created", "doc": "architecture", "version": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:54:47+09:00", "type": "doc_version_created", "doc": "backend", "version": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:55:46+09:00", "type": "doc_version_created", "doc": "security", "version": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:56:31+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:57:45+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T08:58:40+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D16", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D17", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D18", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D19", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D20", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D21", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:04:49+09:00", "type": "deferred_created", "deferred": "D22", "source": "P9.REVIEW"}
+{"ts": "2026-08-25T09:05:16+09:00", "type": "phase_status_changed", "phase": "P9", "old_status": "planned", "new_status": "pending"}
+{"ts": "2026-08-25T09:05:16+09:00", "type": "acceptance_opened", "phase": "P9"}

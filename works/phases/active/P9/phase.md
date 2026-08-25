@@ -2300,6 +2300,55 @@ non-PASS clauses are not implementation defects, and four new `## Operator Quest
     solved). `/ask`'s start screen renders `.centered > .start` and has **no** `.column` element —
     that only exists in the 대화 상태.
 
+### P9.REVIEW — the phase review (2026-08-25)
+
+**Verdict: `pass`**, with the acceptance gate's walkthrough returned to the orchestrator. Full record
+in `slices/P9.REVIEW/result.md`.
+
+1. **Validation, re-run on the final tree, all green.** `npm run typecheck` · `npm run smoke`
+   (**22/22**) · `npm run build` (15 routes) · `.venv/bin/pytest -q` (**154 passed**) ·
+   `workflow validate`. Nothing red anywhere in the phase.
+2. **All eight intent points are met, each with live evidence** — thinking `MEDIUM` on the wire,
+   「안녕」 answered (the operator's own 검증 미통과 sentence is gone), two chained calculation blocks
+   with inputs/식/결과, ceilings `20/30/22`, an injection attempt ending on the 보안 sentence alone
+   with the incident log line, four live refusal families, and the structured surface drawn by one
+   renderer in both views.
+3. **The review opened the running product itself** (`make stack-up` → dev on `127.0.0.1:3000`, real
+   Chrome over CDP at 1440 and a true 390 emulation, **and** the production build): ~8 live turns,
+   spot-checking every headline claim rather than trusting the slices' reports. Everything held.
+4. **One evidence gap in `P9.S11`, closed here, not a defect.** S11 reported "P8 surface blocks — all
+   **35** re-run"; the cumulative checklist carries **58** P8 lines, and ~21 were not reported —
+   including the six AI 질문 lines P9 touches most (한 단락 · 근거 N건 · 인용 블록 · 컴포저 · 도구 행 ·
+   480 은퇴) plus 프리셋 칩 and AI 질문 경계. **This review re-ran every one of them and they all
+   pass** (the numbers are in `result.md` §5). No code change was warranted; the gap was in the
+   report, not the product. Anyone repeating a full checklist pass should count the boxes.
+5. **The 480 은퇴 (AI 질문) checklist line was stale and is corrected in the `qa` version**: it expected
+   the grep to return the verbatim R6 §Mobile quote in `AskPage.tsx`, which left with `P9.S10`'s page
+   re-cut. The grep now returns **nothing at all**, which is stricter than the line asked for.
+6. **Two fresh-eyes findings that are pre-existing signed behaviour, not P9 regressions** (verified
+   against `git diff e3c4cbd..HEAD`): `/ask` has **no auto-scroll** (a deliberate R1 anti-ambient-motion
+   decision, pre-dating P9 — but P9's much longer turns push a second answer well below the fold), and
+   a 인용 칩's zero-height panel is a grid box, so **every chip forces a line break** and a sentence's
+   second chip lands alone on its own line. Both are in the walkthrough for the operator to judge;
+   neither was silently fixed.
+7. **Blast radius, for whoever audits this phase later:** `src/mijual/agent/*`,
+   `src/mijual/db/models.py`, `src/mijual/web/{ask,conversationstore}.py`,
+   `frontend/components/ask/*`, `frontend/lib/ask*.ts`, `frontend/components/ops/copy.ts`, and tests.
+   **Nothing** in landing, board, stocks, portfolio, auth or events changed.
+8. **All 15 open `## Operator Questions` entries are routed** — 8 into the acceptance walkthrough as
+   decisions the operator takes while walking, 7 listed for the orchestrator to file with `defer-job`.
+   (The five pre-`P9.S2` entries were already answered by the R16 session's Q-A…Q-E; verified against
+   `SIGNOFF.md` §R16 and the round's `output/result.md`.) The routing table is in `result.md` §6.
+9. **Doc consolidation landed: seven versions**, one per affected doc — `api` v0006 · `architecture`
+   v0008 · `backend` v0006 · `decisions` v0009 (new **D-27** + the D-4 MID amendment + six
+   supersession bullets) · `frontend` v0007 · `qa` v0008 (counts **142→154** / **16/16→22/22**, the
+   restated unmarked-numeral invariant, 18 P9 regression boxes, three fragile-area rows) · `security`
+   v0006 (the guard framed honestly as a behavioural layer, per S6/S1B).
+10. **Bookkeeping the orchestrator owns, noted not touched:** `phase.json` still reads
+    `status: planned` with `started_at: null` although every middle slice is `done`. `validate` does
+    not object and the review transitions no state.
+
+
 ### Doc impact
 
 _One line per durable-truth change; `P9.REVIEW` consolidates these into doc versions on a pass._

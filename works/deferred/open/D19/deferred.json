@@ -1,0 +1,11 @@
+{
+  "id": "D19",
+  "title": "보안 가드 로그의 보관·마스킹 정책을 정한다",
+  "status": "deferred",
+  "source": "P9.REVIEW",
+  "reason": "Q-D signed what is logged but not the sink; the 200-character excerpt is the reader's own words, in the API process log with no documented retention, and it is the only place a firing is visible (OWASP asks for rate-drift monitoring).",
+  "trigger": "Before deploy (P4), or the first time the guard fires in production.",
+  "created_at": "2026-08-25T09:04:49+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

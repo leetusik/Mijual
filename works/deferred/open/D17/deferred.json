@@ -1,0 +1,11 @@
+{
+  "id": "D17",
+  "title": "대화 로그가 「미확인」 hedge를 보존해야 하는지 결정",
+  "status": "deferred",
+  "source": "P9.REVIEW",
+  "reason": "The reader sees the marker but the stored row keeps prose only, so a replayed row shows a hedged figure as if it were plain. Answerable together with the stored-blocks question.",
+  "trigger": "Same as the stored-blocks decision: 품질 점검 need or a 대화 로그 design round.",
+  "created_at": "2026-08-25T09:04:49+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

@@ -1,0 +1,11 @@
+{
+  "id": "D21",
+  "title": "계산 error 블록이 실제로는 도달 불가능한 문제",
+  "status": "deferred",
+  "source": "P9.REVIEW",
+  "reason": "The model states the 미공시 fact and refuses with 확정 전 before calling calculate, so the signed error element is drawn by nothing and its guidance sentence never reaches a reader.",
+  "trigger": "If a reader reports a stuck calculation, or when the prompt is next revised.",
+  "created_at": "2026-08-25T09:04:49+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

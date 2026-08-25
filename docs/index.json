@@ -133,7 +133,7 @@
       ]
     },
     "architecture": {
-      "latest": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142",
+      "latest": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -191,11 +191,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — mijual.web's outbound row is one vocky read plus one vocky capture, still in the single module the AST scan allows; suite baseline 142",
           "previous": "v0006_p7_fix_pass_the_suite_baseline_moves_to_139_and_mijual.web_gains_one_read-only_route"
+        },
+        {
+          "id": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix",
+          "path": "docs/versions/architecture/v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix.md",
+          "created_at": "2026-08-25T08:53:37+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 smart assistant — structured-block storage on the conversation row, the calculator and the security guard as the agent's sixth and seventh tools, ceilings 20/30/22, a static cache prefix",
+          "previous": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142"
         }
       ]
     },
     "frontend": {
-      "latest": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam",
+      "latest": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -245,11 +253,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — R8-R14 supersede every reader surface: one 767 breakpoint, the overlay Citation, the 미주알 404, the 의견 surface replacing the vocky seam",
           "previous": "v0005_p7_fix_pass_the_dev-origin_seam_and_the_inverted_browser-check_rule_the_strictmode_module-store_trap_the_two-slot_nav_the_30-row_board_window_the_shared_searchrow_combobox_the_focus_split_off_text_fields_and_the_verification_floor"
+        },
+        {
+          "id": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements",
+          "path": "docs/versions/frontend/v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements.md",
+          "created_at": "2026-08-25T08:57:45+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 / R16 — the /ask re-cut to one column with a start screen, five new answer elements drawn by one renderer, a keyed block store, and three retirements",
+          "previous": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam"
         }
       ]
     },
     "backend": {
-      "latest": "v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable",
+      "latest": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -291,6 +307,14 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: reads.suggest_corps beside resolve_corp and find_corps, and the route-order rule that keeps GET /stocks/suggest reachable",
           "previous": "v0004_p6.f1_agent_prose_speaks_the_product_s_numerals_mijual.agent.figures_value_display_beside_every_contract_figure_and_the_citation_gate_s_release-time_respelling_outside_verbatim_spans"
+        },
+        {
+          "id": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted",
+          "path": "docs/versions/backend/v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted.md",
+          "created_at": "2026-08-25T08:54:47+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 smart assistant — the citation gate strips instead of dropping: markers out, prose survives, untraced 공시 figures marked 미확인, quotes de-quoted, blocked recounted",
+          "previous": "v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable"
         }
       ]
     },
@@ -349,7 +373,7 @@
       ]
     },
     "api": {
-      "latest": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary",
+      "latest": "v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -391,6 +415,14 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — POST /feedback (write-only, outward) and next_lapse.tie_count on GET /board/summary",
           "previous": "v0004_p7_fix_pass_get_stocks_suggest_the_reader_s_own_candidate_list_before_the_submit_declared_before_the_handle_route_the_miss_rule_restated_the_resolver_still_never_guesses"
+        },
+        {
+          "id": "v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules",
+          "path": "docs/versions/api/v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules.md",
+          "created_at": "2026-08-25T08:52:44+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 smart assistant — the R16 SSE vocabulary: block_id/persistent with in-place replacement, the transient status frame, data and calc blocks, text.unverified spans, done.filings, and the footer/links suppression rules",
+          "previous": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary"
         }
       ]
     },
@@ -473,7 +505,7 @@
       ]
     },
     "security": {
-      "latest": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands",
+      "latest": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -515,11 +547,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — the vocky key boundary now covers a capture path, a reader's free text leaves the system by design with no contact field, and the PII inset is deleted from the auth screen while the structural guarantee stands",
           "previous": "v0004_p6_apply_phase_the_anonymity_promise_implemented_and_asserted_minted-not-derived_session_handles_an_identity-free_rate_limiter_the_honest-unset_operator_contact_and_sessionstorage-only_client_persistence"
+        },
+        {
+          "id": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only",
+          "path": "docs/versions/security/v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only.md",
+          "created_at": "2026-08-25T08:55:46+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 — the security_check guard is a behavioural layer, not injection protection; OWASP input segregation on every tool result; the calculator's AST whitelist; guard logging is category + 200 chars + session_hash, log-only",
+          "previous": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands"
         }
       ]
     },
     "qa": {
-      "latest": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist",
+      "latest": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -577,11 +617,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — the suite at 142 / smoke 16-16, and the phase's eight surface regression blocks (chrome, 관제 현황판, 상세, 조회, 인증, 보유 종목, AI 질문) appended to the cumulative checklist",
           "previous": "v0006_p7_fix_pass_the_suite_at_139_the_browser-check_origin_rule_inverted_the_dev_prod_verification_floor_and_its_functional_dimension_and_the_sse_contract_captured_from_a_browser_on_the_production_build"
+        },
+        {
+          "id": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist",
+          "path": "docs/versions/qa/v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist.md",
+          "created_at": "2026-08-25T08:58:40+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 smart assistant — the suite at 154 / smoke 22-22, the unmarked-numeral invariant restated under strip-don't-drop, and P9's headline checks appended to the cumulative checklist",
+          "previous": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist"
         }
       ]
     },
     "decisions": {
-      "latest": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing",
+      "latest": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -647,9 +695,17 @@
           "source": "P7.REVIEW",
           "summary": "P7 fix pass: D-24 the board's 30-row display window, D-25 the hero ring clip on .orbits, D-26 focus indication split off text fields; the six design-collision readings; and the 13 operator calls the phase routed instead of inventing",
           "previous": "v0007_p6.f1_d-23_agent_prose_prints_the_product_s_numerals_3_200_operator_disposition_2026-08-23_the_p6_reading_that_the_agent_quotes_numerals_as-given_is_superseded"
+        },
+        {
+          "id": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut",
+          "path": "docs/versions/decisions/v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut.md",
+          "created_at": "2026-08-25T08:56:31+09:00",
+          "source": "P9.REVIEW",
+          "summary": "P9 / R16 supersessions — thinking MID, strip-don't-drop, the auditable calculator replacing never-compute, six-value refusal vocabulary with two producers retired, and the /ask re-cut",
+          "previous": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-25T01:05:33+09:00"
+  "last_rebuilt_at": "2026-08-25T08:59:55+09:00"
 }

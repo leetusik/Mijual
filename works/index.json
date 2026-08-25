@@ -4,7 +4,7 @@
       "id": "P9",
       "name": "Smart Mijual Assistant",
       "objective": "Rebuild the AI 질문 agent from rigid grounded bot into a unified smart assistant modeled on changple5's 일반 대화 agent: gemini-3.7-flash at thinking MID, strip-don't-drop citations, a calculator tool with free prose arithmetic, generous turn ceilings, a security_check prompt-injection guard, naturally conversational behavior, and a chat surface that renders structured content (data rows, calculation results) in the conversation — research changple5 first, then a design round, then DECOMP2 cuts the build.",
-      "status": "planned",
+      "status": "pending",
       "order": 3.5,
       "path": "works/phases/active/P9",
       "review_status": "pending",
@@ -25,8 +25,8 @@
       "done_slice_count": 0
     }
   ],
-  "deferred_open_count": 13,
+  "deferred_open_count": 20,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-25T08:27:48+09:00"
+  "last_rebuilt_at": "2026-08-25T09:05:16+09:00"
 }
