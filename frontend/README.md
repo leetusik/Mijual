@@ -1,4 +1,4 @@
-# frontend — 미주알's Next.js app
+# frontend — the 주주의관제탑 Next.js app
 
 Built from the **signed** P3 design record. Read `docs/current/frontend.md` (the
 supersession table) *before* any `docs/reference/design/rounds/*/output/build-prompt.md`,
@@ -84,7 +84,7 @@ the full email + `Identicon` + frame).
 | `NEXT_PUBLIC_API_BASE_URL` | overrides the client's base; normally unset, so calls stay same-origin |
 
 **`NEXT_PUBLIC_VOCKY_SRC` is retired** (R8 / `P8.S3`): vocky ships no embeddable widget, so
-미주알 owns the 의견 screen and the browser posts to `/api/feedback` on this origin. The
+주주의관제탑 owns the 의견 screen and the browser posts to `/api/feedback` on this origin. The
 credential stays server-side in `MIJUAL_VOCKY_API_BASE` / `MIJUAL_VOCKY_API_KEY` — **no vocky
 value is ever inlined into this bundle**.
 

@@ -3,12 +3,12 @@
   "phase_id": "P10",
   "name": "docs and repo-visible prose: in-scope product-name occurrences only",
   "kind": "docs",
-  "status": "todo",
+  "status": "done",
   "order": 4,
   "depends_on": [],
   "created_at": "2026-08-30T01:04:51+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-30T02:09:36+09:00",
+  "completed_at": "2026-08-30T02:20:25+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Renamed 4 repo-prose sites; built the line-level ledger P10.REVIEW executes over 6 docs; nothing under docs/ touched",
   "validation": {
     "required": [],
     "last_run": null,

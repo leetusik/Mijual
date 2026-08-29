@@ -2,7 +2,7 @@
   "name": "mijual-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "미주알 Next.js frontend — built from the signed P3 design record (docs/reference/design/). RESPECT THE DESIGN.",
+  "description": "주주의관제탑 Next.js frontend — built from the signed P3 design record (docs/reference/design/). RESPECT THE DESIGN.",
   "type": "module",
   "scripts": {
     "dev": "next dev",
