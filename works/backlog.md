@@ -5,9 +5,9 @@
 
 ## Pointer
 
-- Current phase: `P4`
-- Current slice: `P4.DECOMP`
-- Next slice: `P4.REVIEW`
+- Current phase: `P10`
+- Current slice: `P10.DECOMP`
+- Next slice: `P10.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `20`
 
@@ -16,6 +16,7 @@
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
+| [ ] `P10` | `planned` | `pending` | Rebrand to 주주의관제탑 | `P10.DECOMP` | `works/phases/active/P10` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -37,6 +38,13 @@
 | [x] `P9.S10` | `done` | /ask re-cut: rail retired, start screen, 새 대화, and the three retirements | `implementation` | `works/phases/active/P9/slices/P9.S10` |
 | [x] `P9.S11` | `done` | R16 fidelity and functional sweep in the operator runtime | `implementation` | `works/phases/active/P9/slices/P9.S11` |
 | [x] `P9.REVIEW` | `done` | phase review | `review` | `works/phases/active/P9/slices/P9.REVIEW` |
+
+## Phase P10: Rebrand to 주주의관제탑
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P10.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P10/slices/P10.DECOMP` |
+| [ ] `P10.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

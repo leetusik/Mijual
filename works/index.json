@@ -13,6 +13,18 @@
       "done_slice_count": 15
     },
     {
+      "id": "P10",
+      "name": "Rebrand to 주주의관제탑",
+      "objective": "Replace the product's user-facing identity — name 미주알 → 주주의관제탑 (uniformly unspaced, no latin mark) and the MIJUAL wordmark → the operator's supplied logo plus a derived white variant for the cosmos-dark chrome — across every operator-visible surface: brand binaries, favicon, document title, chrome and ops copy, the signed Korean strings that name the product, and user-visible docs. Code identifiers (src/mijual, MIJUAL_* env vars, X-Mijual-CSRF) are explicitly out of scope. Lands before P4 so the deck, demo video and submission carry the new name.",
+      "status": "planned",
+      "order": 3.9,
+      "path": "works/phases/active/P10",
+      "review_status": "pending",
+      "current_slice": "P10.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
+    },
+    {
       "id": "P4",
       "name": "Ship & Submit",
       "objective": "Notifications (email first), production deploy to ssh h, smoke tests, presentation deck (주최사별 효용 매핑, AI-role architecture, 소멸 총액 opening number), demo video, and daker.ai submission before 2026-09-07 10:00.",
@@ -28,5 +40,5 @@
   "deferred_open_count": 20,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-29T13:42:51+09:00"
+  "last_rebuilt_at": "2026-08-30T00:57:28+09:00"
 }

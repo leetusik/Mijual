@@ -1,0 +1,32 @@
+{
+  "id": "P10.DECOMP",
+  "phase_id": "P10",
+  "name": "decompose phase",
+  "kind": "decomposition",
+  "status": "todo",
+  "order": 0,
+  "depends_on": [],
+  "created_at": "2026-08-30T00:53:42+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "new_phase",
+    "id": "P10"
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": null,
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}
