@@ -3,12 +3,12 @@
   "phase_id": "P10",
   "name": "decompose phase",
   "kind": "decomposition",
-  "status": "todo",
+  "status": "done",
   "order": 0,
   "depends_on": [],
   "created_at": "2026-08-30T00:53:42+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-30T00:59:07+09:00",
+  "completed_at": "2026-08-30T01:10:54+09:00",
   "risk": "high",
   "source": {
     "type": "new_phase",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Cut five high-risk middle slices as bare folders (S1 binaries → S2 chrome/identity → S3 Korean copy → S4 docs → S5 runtime sweep); seeded phase.md with scope, five decisions and four operator questions",
   "validation": {
     "required": [],
     "last_run": null,
