@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `20`
+- Open: `23`
 - Promoted: `2`
 - Dropped: `0`
 
@@ -26,6 +26,9 @@
 | `D20` | `deferred` | 마커 기하 두 표기의 불일치를 정리한다 | P9.REVIEW | A design round that touches the 추정 tag. | `works/deferred/open/D20` |
 | `D21` | `deferred` | 계산 error 블록이 실제로는 도달 불가능한 문제 | P9.REVIEW | If a reader reports a stuck calculation, or when the prompt is next revised. | `works/deferred/open/D21` |
 | `D22` | `deferred` | 암시적 프롬프트 캐시가 한 번도 적립되지 않는 이유를 조사 | P9.REVIEW | When per-turn cost matters, or before deploy. | `works/deferred/open/D22` |
+| `D23` | `deferred` | P4 mail subject still carries the retired name [미주알] | P10.DECOMP | When P4 implements the 마감 임박 mail, before the first send | `works/deferred/open/D23` |
+| `D24` | `deferred` | /ops has no 390px layout — the whole bar stacks, not just the mark | P10.S5 | Next ops design pass, or the first time /ops is needed from a phone | `works/deferred/open/D24` |
+| `D25` | `deferred` | Code comments and dev-tooling banners still name the retired product | P10.REVIEW | Next time a slice edits those files anyway, or if the identifier rename is ever taken on | `works/deferred/open/D25` |
 | `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |

@@ -499,3 +499,20 @@
 {"ts": "2026-08-30T02:20:25+09:00", "type": "slice_status_changed", "slice": "P10.S4", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-30T02:21:01+09:00", "type": "slice_status_changed", "slice": "P10.S5", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-30T02:50:49+09:00", "type": "slice_status_changed", "slice": "P10.S5", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-30T02:51:10+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-30T03:12:00+09:00", "type": "doc_version_created", "doc": "product", "version": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:12:27+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:13:33+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:13:56+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0010_p10_rebrand_the_screen_s_owner_is_named_and_make_stack-up_cannot_bind_host_5433_when_another_project_holds_it", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:14:21+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:14:54+09:00", "type": "doc_version_created", "doc": "security", "version": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:15:10+09:00", "type": "doc_version_created", "doc": "api", "version": "v0007_p10_rebrand_the_served_openapi_title_is_api_so_docs_and_openapi.json_carry_the_new_name", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:15:22+09:00", "type": "doc_version_created", "doc": "backend", "version": "v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:15:35+09:00", "type": "doc_version_created", "doc": "architecture", "version": "v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:15:47+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon", "source": "P10.REVIEW"}
+{"ts": "2026-08-30T03:25:54+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "planned", "new_status": "in_progress"}
+{"ts": "2026-08-30T03:25:54+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-08-30T03:25:54+09:00", "type": "acceptance_opened", "phase": "P10"}
+{"ts": "2026-08-30T03:26:05+09:00", "type": "deferred_created", "deferred": "D23", "source": "P10.DECOMP"}
+{"ts": "2026-08-30T03:26:05+09:00", "type": "deferred_created", "deferred": "D24", "source": "P10.S5"}
+{"ts": "2026-08-30T03:26:05+09:00", "type": "deferred_created", "deferred": "D25", "source": "P10.REVIEW"}

@@ -6,17 +6,17 @@
 ## Pointer
 
 - Current phase: `P10`
-- Current slice: `P10.REVIEW`
+- Current slice: `none`
 - Next slice: `none`
-- Waiting on operator: `none`
-- Open deferred jobs: `20`
+- Waiting on operator: `P10`
+- Open deferred jobs: `23`
 
 ## Active Phases
 
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
-| [ ] `P10` | `planned` | `pending` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
+| [~] `P10` | `pending` | `pending` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -49,7 +49,7 @@
 | [x] `P10.S3` | `done` | Korean copy sweep: every rendered string naming the product (name swap only) | `implementation` | `works/phases/active/P10/slices/P10.S3` |
 | [x] `P10.S4` | `done` | docs and repo-visible prose: in-scope product-name occurrences only | `docs` | `works/phases/active/P10/slices/P10.S4` |
 | [x] `P10.S5` | `done` | fidelity sweep in the operator runtime: dev and production, desktop and mobile | `qa` | `works/phases/active/P10/slices/P10.S5` |
-| [ ] `P10.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
+| [ ] `P10.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

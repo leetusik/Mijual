@@ -1,0 +1,11 @@
+{
+  "id": "D25",
+  "title": "Code comments and dev-tooling banners still name the retired product",
+  "status": "deferred",
+  "source": "P10.REVIEW",
+  "reason": "chrome/Footer.tsx:15 and lib/api.ts:2 describe rendered output the rebrand changed; Makefile:1,110 and compose.yaml:1 print '── mijual dev stack ───' to the operator's own terminal. Left unchanged because the operator scoped P10 to user-facing only, and renaming the banners alone would make the terminal less consistent, not more — mijual-postgres, mijual:lock:pipeline, MIJUAL_* and both package name fields all deliberately stay.",
+  "trigger": "Next time a slice edits those files anyway, or if the identifier rename is ever taken on",
+  "created_at": "2026-08-30T03:26:05+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

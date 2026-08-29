@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page",
+      "latest": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -67,11 +67,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — the layer is 보유 종목 not 포트폴리오, the board is 15 rows and keeps itself current, the last English screen is gone, /portfolio answers anonymously with the sample, and 481-767 gets the full-width AI 질문 page",
           "previous": "v0007_p7_fix_pass_the_nav_is_two_slots_lives_on_the_landing_hero_the_board_is_read_30_rows_at_a_time_and_the_search_offers_candidates_while_the_reader_types_without_the_resolver_ever_guessing"
+        },
+        {
+          "id": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again",
+          "path": "docs/versions/product/v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again.md",
+          "created_at": "2026-08-30T03:12:00+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the product is 주주의관제탑; the symbol-mark / favicon gap R2 closed is open again",
+          "previous": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page"
         }
       ]
     },
     "experience": {
-      "latest": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer",
+      "latest": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -129,11 +137,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — every reader surface re-cut, from the two-slot chrome to the 보내기 composer",
           "previous": "v0006_p7_fix_pass_the_two-slot_nav_the_board_s_30-row_window_candidates_while_typing_the_miss_rule_split_from_the_typing_rule_the_caption_s_narrower_stated_promise_and_the_flip_measured_on_the_running_product"
+        },
+        {
+          "id": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name",
+          "path": "docs/versions/experience/v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name.md",
+          "created_at": "2026-08-30T03:13:33+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the chrome mark is the operator wordmark with no ring, and the 의견 screen is named without the retired product name",
+          "previous": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer"
         }
       ]
     },
     "architecture": {
-      "latest": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix",
+      "latest": "v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -199,11 +215,19 @@
           "source": "P9.REVIEW",
           "summary": "P9 smart assistant — structured-block storage on the conversation row, the calculator and the security guard as the agent's sixth and seventh tools, ceilings 20/30/22, a static cache prefix",
           "previous": "v0007_p8_design_polish_pass_mijual.web_s_outbound_row_is_one_vocky_read_plus_one_vocky_capture_still_in_the_single_module_the_ast_scan_allows_suite_baseline_142"
+        },
+        {
+          "id": "v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted",
+          "path": "docs/versions/architecture/v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted.md",
+          "created_at": "2026-08-30T03:15:35+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — renaming the product inside the system instruction invalidates the static cache prefix once, and that is accepted",
+          "previous": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix"
         }
       ]
     },
     "frontend": {
-      "latest": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements",
+      "latest": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -261,11 +285,19 @@
           "source": "P9.REVIEW",
           "summary": "P9 / R16 — the /ask re-cut to one column with a start screen, five new answer elements drawn by one renderer, a keyed block store, and three retirements",
           "previous": "v0006_p8_design_polish_pass_r8-r14_supersede_every_reader_surface_one_767_breakpoint_the_overlay_citation_the_404_the_surface_replacing_the_vocky_seam"
+        },
+        {
+          "id": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row",
+          "path": "docs/versions/frontend/v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row.md",
+          "created_at": "2026-08-30T03:12:27+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the chrome loads the operator mark through WORDMARK_WHITE, the ring vocabulary and the four mijual-*.png retire, and the favicon gap re-opens as a superseding row",
+          "previous": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements"
         }
       ]
     },
     "backend": {
-      "latest": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted",
+      "latest": "v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -315,6 +347,14 @@
           "source": "P9.REVIEW",
           "summary": "P9 smart assistant — the citation gate strips instead of dropping: markers out, prose survives, untraced 공시 figures marked 미확인, quotes de-quoted, blocked recounted",
           "previous": "v0005_p7_fix_pass_reads.suggest_corps_beside_resolve_corp_and_find_corps_and_the_route-order_rule_that_keeps_get_stocks_suggest_reachable"
+        },
+        {
+          "id": "v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized",
+          "path": "docs/versions/backend/v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized.md",
+          "created_at": "2026-08-30T03:15:22+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the agent's system instruction and tool descriptions name 주주의관제탑; the retired latin gloss is dropped rather than romanized",
+          "previous": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted"
         }
       ]
     },
@@ -373,7 +413,7 @@
       ]
     },
     "api": {
-      "latest": "v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules",
+      "latest": "v0007_p10_rebrand_the_served_openapi_title_is_api_so_docs_and_openapi.json_carry_the_new_name",
       "current_path": "docs/current/api.md",
       "versions": [
         {
@@ -423,11 +463,19 @@
           "source": "P9.REVIEW",
           "summary": "P9 smart assistant — the R16 SSE vocabulary: block_id/persistent with in-place replacement, the transient status frame, data and calc blocks, text.unverified spans, done.filings, and the footer/links suppression rules",
           "previous": "v0005_p8_design_polish_pass_post_feedback_write-only_outward_and_next_lapse.tie_count_on_get_board_summary"
+        },
+        {
+          "id": "v0007_p10_rebrand_the_served_openapi_title_is_api_so_docs_and_openapi.json_carry_the_new_name",
+          "path": "docs/versions/api/v0007_p10_rebrand_the_served_openapi_title_is_api_so_docs_and_openapi.json_carry_the_new_name.md",
+          "created_at": "2026-08-30T03:15:10+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the served OpenAPI title is 주주의관제탑 API, so /docs and /openapi.json carry the new name",
+          "previous": "v0006_p9_smart_assistant_the_r16_sse_vocabulary_block_id_persistent_with_in-place_replacement_the_transient_status_frame_data_and_calc_blocks_text.unverified_spans_done.filings_and_the_footer_links_suppression_rules"
         }
       ]
     },
     "operations": {
-      "latest": "v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read",
+      "latest": "v0010_p10_rebrand_the_screen_s_owner_is_named_and_make_stack-up_cannot_bind_host_5433_when_another_project_holds_it",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -501,11 +549,19 @@
           "source": "P8.REVIEW",
           "summary": "P8 design polish pass — the vocky env row serves a reader-facing send as well as the ops read, NEXT_PUBLIC_VOCKY_SRC retired, and the Cloudflare User-Agent requirement that had been silently breaking the observation read",
           "previous": "v0008_seed_operator_runtime_manifest_operator-confirmed_at_p8_intent_capture"
+        },
+        {
+          "id": "v0010_p10_rebrand_the_screen_s_owner_is_named_and_make_stack-up_cannot_bind_host_5433_when_another_project_holds_it",
+          "path": "docs/versions/operations/v0010_p10_rebrand_the_screen_s_owner_is_named_and_make_stack-up_cannot_bind_host_5433_when_another_project_holds_it.md",
+          "created_at": "2026-08-30T03:13:56+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the 의견 screen's owner is named 주주의관제탑, and make stack-up cannot bind host 5433 when another project holds it",
+          "previous": "v0009_p8_design_polish_pass_the_vocky_env_row_serves_a_reader-facing_send_as_well_as_the_ops_read_next_public_vocky_src_retired_and_the_cloudflare_user-agent_requirement_that_had_been_silently_breaking_the_observation_read"
         }
       ]
     },
     "security": {
-      "latest": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only",
+      "latest": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -555,11 +611,19 @@
           "source": "P9.REVIEW",
           "summary": "P9 — the security_check guard is a behavioural layer, not injection protection; OWASP input segregation on every tool result; the calculator's AST whitelist; guard logging is category + 200 chars + session_hash, log-only",
           "previous": "v0005_p8_design_polish_pass_the_vocky_key_boundary_now_covers_a_capture_path_a_reader_s_free_text_leaves_the_system_by_design_with_no_contact_field_and_the_pii_inset_is_deleted_from_the_auth_screen_while_the_structural_guarantee_stands"
+        },
+        {
+          "id": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side",
+          "path": "docs/versions/security/v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side.md",
+          "created_at": "2026-08-30T03:14:54+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the lethal-trifecta paragraph names 주주의관제탑, and the two Mijual-side clauses are reworded to the doc's own on this side",
+          "previous": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only"
         }
       ]
     },
     "qa": {
-      "latest": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist",
+      "latest": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -625,11 +689,19 @@
           "source": "P9.REVIEW",
           "summary": "P9 smart assistant — the suite at 154 / smoke 22-22, the unmarked-numeral invariant restated under strip-don't-drop, and P9's headline checks appended to the cumulative checklist",
           "previous": "v0007_p8_design_polish_pass_the_suite_at_142_smoke_16-16_and_the_phase_s_eight_surface_regression_blocks_chrome_ai_appended_to_the_cumulative_checklist"
+        },
+        {
+          "id": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon",
+          "path": "docs/versions/qa/v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon.md",
+          "created_at": "2026-08-30T03:15:47+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — five checklist lines guard the painted mark, both titles, the old-name sweep including the live agent, the retired binaries and the still-absent favicon",
+          "previous": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist"
         }
       ]
     },
     "decisions": {
-      "latest": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut",
+      "latest": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -703,9 +775,17 @@
           "source": "P9.REVIEW",
           "summary": "P9 / R16 supersessions — thinking MID, strip-don't-drop, the auditable calculator replacing never-compute, six-value refusal vocabulary with two producers retired, and the /ask re-cut",
           "previous": "v0008_p7_fix_pass_d-24_the_board_s_30-row_display_window_d-25_the_hero_ring_clip_on_.orbits_d-26_focus_indication_split_off_text_fields_the_six_design-collision_readings_and_the_13_operator_calls_the_phase_routed_instead_of_inventing"
+        },
+        {
+          "id": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history",
+          "path": "docs/versions/decisions/v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history.md",
+          "created_at": "2026-08-30T03:14:21+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 rebrand — the whole latin identity is superseded by 주주의관제탑 with no romanized replacement; the dated mijual domain fact sheet is preserved as history",
+          "previous": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-30T02:20:31+09:00"
+  "last_rebuilt_at": "2026-08-30T03:20:58+09:00"
 }
