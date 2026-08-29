@@ -101,7 +101,9 @@ export const LAPSE_VALUE_KO = "소멸가치";
 /** R2's own band wording for the lower edge ("밴드 하한"), and R3 §3's "하한". */
 export const LAPSE_FLOOR_KO = "하한";
 
-/** The 발행사 기재 불일치 sentences, R3 §State pages verbatim. The badge itself is
+/** The 발행사 기재 불일치 sentences, R3 §State pages verbatim except the
+ * product's own name: P10 swapped the record's 미주알 for 주주의관제탑 and changed
+ * nothing else in the sentence. The badge itself is
  * `StateBadge kind="mismatch"`, whose literal lives in `lib/copy.ts`.
  *
  * The footer is transcribed **as far as the record states it** — the build
@@ -111,7 +113,7 @@ export const LAPSE_FLOOR_KO = "하한";
  * transcription stops where the record does (`P5.S19` checks it against the
  * card). */
 export const MISMATCH_HEADER_KO =
-  "발행사의 공시가 실권주에 대해 서로 다른 두 값을 제시합니다 — 미주알은 어느 쪽도 고르지 않고 둘 다 보여드립니다";
+  "발행사의 공시가 실권주에 대해 서로 다른 두 값을 제시합니다 — 주주의관제탑은 어느 쪽도 고르지 않고 둘 다 보여드립니다";
 export const MISMATCH_FOOTER_KO = "소멸가치 합산에는 발행 − 청약 값을 사용합니다";
 /** The derived reading's own name, from that same footer sentence. The stated
  * reading carries the server's own `label` (신주인수권증서 청약 실권주). */

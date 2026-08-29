@@ -54,7 +54,7 @@ from mijual.web.routers import (
 
 __all__ = ["app", "create_app"]
 
-TITLE = "미주알 API"
+TITLE = "주주의관제탑 API"
 DESCRIPTION = (
     "HTTP layer over the persisted pipeline output. Everything the product "
     "shows is a read; the only writes are a reader's own account and holdings. "

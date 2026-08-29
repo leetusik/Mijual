@@ -3,12 +3,12 @@
   "phase_id": "P10",
   "name": "Korean copy sweep: every rendered string naming the product (name swap only)",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 3,
   "depends_on": [],
   "created_at": "2026-08-30T01:04:51+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-30T01:51:06+09:00",
+  "completed_at": "2026-08-30T02:08:32+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "15 live strings swapped incl. 13 agent prompt strings spelling the product 미주얼; live /ask confirms the assistant names 주주의관제탑",
   "validation": {
     "required": [],
     "last_run": null,

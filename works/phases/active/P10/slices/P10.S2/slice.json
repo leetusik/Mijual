@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": "Chrome repointed at juju-wordmark-white.png {1213,319} via WORDMARK_*, ring vocabulary gone, four mijual-*.png deleted, both titles + OPS_MARK + alt + © now 주주의관제탑; verified dev and production, no favicon created",
+  "outcome": "Chrome repointed at juju-wordmark-white.png, ring vocabulary gone, four mijual-*.png deleted, titles/OPS_MARK/alt/© swapped; verified dev + production",
   "validation": {
     "required": [],
     "last_run": null,

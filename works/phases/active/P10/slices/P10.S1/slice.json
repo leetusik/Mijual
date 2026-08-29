@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": "Landed juju-logo-source.png byte-exact plus juju-wordmark-{black,white}.png (1213x319, alpha-identical) and rewrote the assets README around three provenance classes; the four mijual-* binaries stay for S2",
+  "outcome": "Landed juju-logo-source.png byte-exact plus juju-wordmark-{black,white}.png (1213x319, alpha-identical); assets README rewritten",
   "validation": {
     "required": [],
     "last_run": null,

@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": "Cut five high-risk middle slices as bare folders (S1 binaries → S2 chrome/identity → S3 Korean copy → S4 docs → S5 runtime sweep); seeded phase.md with scope, five decisions and four operator questions",
+  "outcome": "Cut five high-risk slices as bare folders; seeded phase.md with scope, decisions and four operator questions",
   "validation": {
     "required": [],
     "last_run": null,
