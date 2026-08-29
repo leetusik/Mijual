@@ -1,14 +1,14 @@
 {
   "id": "P10.S1",
   "phase_id": "P10",
-  "name": "brand binaries: land the mark, derive the white variant, retire the mijual-* set, rewrite the assets README",
+  "name": "brand binaries: land the mark, derive the white variant, rewrite the assets README",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 1,
   "depends_on": [],
   "created_at": "2026-08-30T01:04:51+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-30T01:11:40+09:00",
+  "completed_at": "2026-08-30T01:25:24+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Landed juju-logo-source.png byte-exact plus juju-wordmark-{black,white}.png (1213x319, alpha-identical) and rewrote the assets README around three provenance classes; the four mijual-* binaries stay for S2",
   "validation": {
     "required": [],
     "last_run": null,

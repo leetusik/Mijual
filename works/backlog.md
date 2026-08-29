@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P10`
-- Current slice: `P10.S1`
-- Next slice: `P10.S2`
+- Current slice: `P10.S2`
+- Next slice: `P10.S3`
 - Waiting on operator: `none`
 - Open deferred jobs: `20`
 
@@ -16,7 +16,7 @@
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
-| [ ] `P10` | `planned` | `pending` | Rebrand to 주주의관제탑 | `P10.S1` | `works/phases/active/P10` |
+| [ ] `P10` | `planned` | `pending` | Rebrand to 주주의관제탑 | `P10.S2` | `works/phases/active/P10` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -44,8 +44,8 @@
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
 | [x] `P10.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P10/slices/P10.DECOMP` |
-| [ ] `P10.S1` | `todo` | brand binaries: land the mark, derive the white variant, retire the mijual-* set, rewrite the assets README | `implementation` | `works/phases/active/P10/slices/P10.S1` |
-| [ ] `P10.S2` | `todo` | chrome, ops and document identity: wordmark wiring, ring vocabulary, both titles, ops mark, favicon decision | `implementation` | `works/phases/active/P10/slices/P10.S2` |
+| [x] `P10.S1` | `done` | brand binaries: land the mark, derive the white variant, rewrite the assets README | `implementation` | `works/phases/active/P10/slices/P10.S1` |
+| [ ] `P10.S2` | `todo` | chrome, ops and document identity: wordmark rewiring, retire the mijual-* set, ring vocabulary, both titles, ops mark, favicon decision | `implementation` | `works/phases/active/P10/slices/P10.S2` |
 | [ ] `P10.S3` | `todo` | Korean copy sweep: every rendered string naming the product (name swap only) | `implementation` | `works/phases/active/P10/slices/P10.S3` |
 | [ ] `P10.S4` | `todo` | docs and repo-visible prose: in-scope product-name occurrences only | `docs` | `works/phases/active/P10/slices/P10.S4` |
 | [ ] `P10.S5` | `todo` | fidelity sweep in the operator runtime: dev and production, desktop and mobile | `qa` | `works/phases/active/P10/slices/P10.S5` |
