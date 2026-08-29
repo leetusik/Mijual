@@ -6,7 +6,7 @@ derivative gets treated as untouchable, or an untouchable export gets "regenerat
 
 | provenance class | what it means | files |
 |---|---|---|
-| **A — design-project export** | produced outside this repo, in the Claude Design project **"Mijual Design System"**, and **not regenerable here**. Copied in byte-for-byte. A diff is a design change. | `fonts/PretendardVariable.woff2`, and the four retired `mijual-*.png` |
+| **A — design-project export** | produced outside this repo, in the Claude Design project **"Mijual Design System"**, and **not regenerable here**. Copied in byte-for-byte. A diff is a design change. | `fonts/PretendardVariable.woff2` (the four `mijual-*.png` were class A too, and were deleted by `P10.S2` — see the retirement record below) |
 | **B — operator delivery** | handed over directly by the operator, outside the design project. Landed byte-exact and never re-encoded. Also not regenerable here. | `juju-logo-source.png` |
 | **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju-wordmark-black.png`, `juju-wordmark-white.png` |
 
@@ -148,22 +148,34 @@ Closing it needs an operator decision — ship no favicon, receive a square symb
 authorise cropping the sparkle cluster out as a symbol — and until then the rule below holds
 without exception.
 
-## The four `mijual-*` files are retired but still present
+## The four `mijual-*` files are retired and **deleted** (`P10.S2`, 2026-08-30)
 
-`mijual-wordmark-{charcoal,white}.png` and `mijual-logo-ring-{charcoal,white}.png` are the
+`mijual-wordmark-{charcoal,white}.png` and `mijual-logo-ring-{charcoal,white}.png` were the
 old English MIJUAL brand (class A, R1/R2 design-project exports, landed by `P5.S10`). They
-are **retired by the 주주의관제탑 rebrand** and are deleted by **`P10.S2`**, in the same commit
-that repoints `chrome/copy.ts` at the new mark — `RING_WORDMARK_WHITE` still resolves to
-`mijual-logo-ring-white.png` today, so deleting them any earlier leaves the nav and footer
-rendering a broken image on every page. Until that commit lands they stay, and this table
-stays with them:
+are **retired by the 주주의관제탑 rebrand** and `P10.S2` deleted them from this directory, in
+the same commit that repointed `chrome/copy.ts` at the new mark — the white ring was the one
+image the app still loaded, so deleting it any earlier would have left the nav and footer
+rendering a broken image on every page.
 
-| file | what it was | format |
+**They are gone from the working tree, on purpose.** Nothing loads them any more: no `src`,
+no `url()`, no template. Every remaining mention of a `mijual-*.png` filename in this
+repository is **historical prose** — this record, the geometry comparison above, the doc
+comment in `components/chrome/copy.ts` that says what the mark replaced, the generated
+`docs/current/frontend.md` snapshot, and the immutable design-round record under
+`docs/reference/design/` (R1, R8, R12), which is never edited. So a `grep` hit is expected
+and is never a live reference; a hit **inside a code path** would be the regression.
+
+Class A files are *not regenerable here*, so this is the only in-repo record of what they
+were. The bytes live on in git history (before `P10.S2`); this table is their identity:
+
+| file (deleted) | what it was | format |
 |---|---|---|
 | `mijual-wordmark-charcoal.png` | the English wordmark, brand charcoal `#1f2926` (R1 rev 3) | PNG 1788×324 RGBA, 42,403 b |
 | `mijual-wordmark-white.png` | the reversed white wordmark (R1 rev 1) — already unreferenced | PNG 1788×324 RGBA, 37,242 b |
 | `mijual-logo-ring-charcoal.png` | ring logo (R2 — closed R1's missing symbol-mark gap) | PNG 2178×346 RGBA, 76,558 b |
-| `mijual-logo-ring-white.png` | ring logo reversed — **the only image this app still loads** (R2) | PNG 2178×346 RGBA, 64,605 b |
+| `mijual-logo-ring-white.png` | ring logo reversed — the last image the app loaded (R2) | PNG 2178×346 RGBA, 64,605 b |
+
+sha256 as landed by `P5.S10`, so a restore from git history can be proven byte-exact:
 
 ```
 2119682f08054cc0fc83fbe57e82949c57b14ca4d02d767e8de924ad2fb3d25c  mijual-wordmark-charcoal.png

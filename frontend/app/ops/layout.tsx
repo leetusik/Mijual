@@ -30,8 +30,9 @@ import { getOpsLock } from "@/lib/api";
  */
 export const metadata = {
   // 운영자 전용: the panel says what it is, and the reader product's own title
-  // does not belong on it.
-  title: "MIJUAL OPS",
+  // does not belong on it. P10 retired the latin mark — same shape, the product
+  // name plus 운영, matching `OPS_MARK`.
+  title: "주주의관제탑 운영",
 };
 
 export default async function OpsLayout({ children }: { children: ReactNode }) {

@@ -28,8 +28,15 @@ import { OPS_ROUTES, type OpsRouteKey } from "./routes";
 // ---------------------------------------------------------------------------
 
 /** The bar's own mark. R7 result.md: "ops 크롬 (**MIJUAL OPS** 바 …)" and the
- * Access card's 「MIJUAL OPS 표기」 — an identifier, so it stays raw and mono. */
-export const OPS_MARK = "MIJUAL OPS";
+ * Access card's 「MIJUAL OPS 표기」 — an identifier, so it stays raw and mono.
+ *
+ * P10 retired the latin mark: the string is now `주주의관제탑 운영`, the same
+ * shape (product name + role) in the product's own language. R7's *treatment* is
+ * untouched on purpose — `Ops.module.css` `.mark`/`.doorMark` still set
+ * `--font-mono` + `0.08em`, which is signed styling, and IBM Plex Mono carries no
+ * Hangul. Changing that is a typography decision on a signed round and it is the
+ * operator's; P10 filed it as an open question rather than fixing it quietly. */
+export const OPS_MARK = "주주의관제탑 운영";
 
 /** Signed section labels (build-prompt §표면; result.md's copy list ends with
  * "섹션 라벨 (개요 · 게이트 대기열 · 정확도·비용 · 대화 로그 · 사용자 · 피드백)").

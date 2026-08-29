@@ -19,23 +19,31 @@ import { ROUTES } from "@/lib/routes";
 
 /** The wordmark the cosmos chrome uses.
  *
- * R2 §Page shell: "white ring wordmark PNG (h 19px)" in the nav, "(h 17)" in the
- * footer; R2.1: "Chrome cards (Nav/Footer/Feedback) re-cut on cosmos with the
- * white ring wordmark". The ring assets are R2's own addition (they close R1's
- * missing-symbol-mark gap — supersession table), and the delivered file is
- * `mijual-logo-ring-white.png` (2178×346, the MIJUAL wordmark with its orbital
- * ring). The charcoal pair is for light surfaces and never substitutes for it.
+ * R2 §Page shell sets the *placement*: "white … wordmark PNG (h 19px)" in the
+ * nav, "(h 17)" in the footer, and R2.1 re-cut the chrome cards on cosmos with
+ * the white mark. Those two numbers are still the signed ones. What R2's own
+ * asset was — `mijual-logo-ring-white.png`, the latin MIJUAL wordmark with its
+ * orbital ring — is **retired** by the 주주의관제탑 rebrand (P10); there is no
+ * ring in the new mark, so no name or comment here says "ring".
  *
- * The file is operator-exported design output: rendered at a constrained height
- * and **never re-encoded**, which is also why it is a plain `<img>` rather than
- * `next/image` (that would ship a re-compressed derivative). */
-export const RING_WORDMARK_WHITE = "/assets/mijual-logo-ring-white.png";
-export const RING_WORDMARK_NATURAL = { width: 2178, height: 346 } as const;
+ * The file is `juju-wordmark-white.png`: an alpha-preserving black→white recolor
+ * of the operator's own delivered PNG, generated **in this repo** and recorded
+ * with its exact command in `public/assets/README.md`. The black sibling is for
+ * light surfaces and never substitutes for it on cosmos.
+ *
+ * It is still **never re-encoded** — the reason is now provenance rather than
+ * byte-for-byte design-project output: the README proves this file by pixel
+ * signature, and any re-compression breaks that proof. Which is why the consumer
+ * is a plain `<img>` and not `next/image` (that would ship a re-compressed
+ * derivative). */
+export const WORDMARK_WHITE = "/assets/juju-wordmark-white.png";
+export const WORDMARK_NATURAL = { width: 1213, height: 319 } as const;
 
-/** The wordmark's text equivalent. The mark reads "MIJUAL"; the product's own
- * name in Korean is 미주알 (`docs/current/product.md`, and the disclaimer below
- * spells it). Not a new string — the name of the thing. */
-export const BRAND_ALT_KO = "미주알";
+/** The wordmark's text equivalent — the product's own name in Korean, unspaced
+ * (`docs/current/product.md`). Not a new string: it is the name of the thing,
+ * and it is what the mark itself spells. P10 replaced the retired 미주알 here
+ * when it replaced the mark; both are the same claim, so they change together. */
+export const BRAND_ALT_KO = "주주의관제탑";
 
 /** The surfaces the chrome names, and R8's two nav destinations.
  *
@@ -166,10 +174,11 @@ export const VOCKY_ROW_KO = "의견 보내기";
  * untouched.
  *
  * The record writes the symbol and no more, and the card that showed the line is
- * in the Claude Design project. `© 미주알` composes R2's own symbol with the
+ * in the Claude Design project. The line composes R2's own symbol with the
  * product's own name and invents no sentence and **no year** (a year would be a
- * fact nobody stated). Flagged for `P5.S19` to check against the card. */
-export const COPYRIGHT_KO = "© 미주알";
+ * fact nobody stated). P10 swapped the name only — the record's `© 미주알`
+ * became `© 주주의관제탑`, same shape, same symbol. */
+export const COPYRIGHT_KO = "© 주주의관제탑";
 
 /** The source line in the same row — R2's literal, and the product's one
  * provenance claim in the smallest possible form. */

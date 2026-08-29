@@ -17,10 +17,12 @@ import "./shell.css";
  * binary is still missing).
  */
 export const metadata: Metadata = {
-  // The product's own name (`docs/current/product.md`). No tagline, no
-  // description: the signed design writes no document-level copy, and inventing
-  // a Korean sentence would be a design change.
-  title: "미주알",
+  // The product's own name, unspaced (`docs/current/product.md`; P10 renamed it).
+  // No tagline, no description: the signed design writes no document-level copy,
+  // and inventing a Korean sentence would be a design change. No `icons` either
+  // — there is still no favicon-scale mark, and the assets README forbids
+  // generating or placeholding one (P10 filed it as an operator question).
+  title: "주주의관제탑",
 };
 
 export const viewport: Viewport = {
