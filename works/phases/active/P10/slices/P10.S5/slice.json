@@ -3,14 +3,14 @@
   "phase_id": "P10",
   "name": "fidelity sweep in the operator runtime: dev and production, desktop and mobile",
   "kind": "qa",
-  "status": "todo",
+  "status": "done",
   "order": 5,
   "depends_on": [
     "P10.S4"
   ],
   "created_at": "2026-08-30T01:04:51+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-30T02:21:01+09:00",
+  "completed_at": "2026-08-30T02:50:49+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Swept every rebrand surface in dev and production, desktop and 390px; all claims hold identically, 35 screenshots captured, one new report-only defect (/ops mark stacks at 390px)",
   "validation": {
     "required": [],
     "last_run": null,
