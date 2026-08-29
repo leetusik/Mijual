@@ -10,7 +10,6 @@
 - Next slice: `P4.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `20`
-- Rebuilt at: `2026-08-25T23:56:26+09:00`
 
 ## Active Phases
 

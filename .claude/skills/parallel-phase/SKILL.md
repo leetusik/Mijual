@@ -79,6 +79,12 @@ Commits land on the phase branch; do not merge or rebase against `main` mid-phas
 asks. Generated files (`works/state.json`, `works/index.json`, `works/backlog.md`,
 `works/deferred.md`, `docs/current/*.md`) are **regenerated, not merged** — never hand-fix them.
 
+**`phase.md` is not one of them.** The notebook is hand-written prose with one generated region
+inside it, so "take either side and regenerate" does not apply to the file: a conflict *inside* its
+`<!-- slices:begin -->` … `<!-- slices:end -->` block is resolved by taking either side and re-running
+`python3 scripts/workflow.py rebuild`, while the rest of the notebook — Decisions, Doc impact,
+Operator Questions, Notes, Now — is merged by hand like any other prose.
+
 ## 4. Review on the branch — with consolidation deferred
 
 Run the phase review exactly as `review-phase` describes, with **one** difference: a parallel phase's
@@ -145,9 +151,10 @@ closes the gate or turns a check red mid-sequence, STOP and report — never mer
    It refuses mid-merge (`MERGE_HEAD` present), regenerates every generated file from the merged
    folders, and lists the phases still owing doc consolidation with the exact commands. A merge
    conflict in a generated file is resolved by taking **either** side and re-running it. It makes no
-   commit.
+   commit. `phase.md` is **not** a generated file: only its `## Slices` marker block is, so a conflict
+   inside that block is fixed by re-running `rebuild`, and the rest of the notebook is merged by hand.
 7. **Consolidate the docs — serialized, on the default stream, one phase at a time.** Read the merged
-   `works/phases/active/<P>/phase.md` `## Doc Impact` section and, per named doc:
+   `works/phases/active/<P>/phase.md` `## Doc impact` section and, per named doc:
    ```sh
    python3 scripts/workflow.py doc-new-version --doc <doc> --summary "..." --source <P>.REVIEW
    # edit only the returned edit_path
