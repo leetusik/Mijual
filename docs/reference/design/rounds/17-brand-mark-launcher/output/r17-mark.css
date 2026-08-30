@@ -1,0 +1,82 @@
+/* R17 geometry canon — 주주의관제탑 워드마크 + 스파클 심볼.
+ * 모든 수치는 운영자 전달 PNG에서 실측: juju2.png trim 1292×371 · 글리프 밴드 1132×176(하단 flush) ·
+ * 스파클 165행(상단·우측 flush) · 사이 빈 밴드 30행 · 심볼 실잉크 222×165.
+ * 토큰 변경 없음 — --font-sans만 카드 안에서 Noto Sans KR로 덮는다 (Q6, P10.S7 이관 서체). */
+:root{--font-sans:"Noto Sans KR","Pretendard Variable",-apple-system,"Malgun Gothic",sans-serif}
+body{margin:0;font-family:var(--font-sans);color:var(--ink-1);background:radial-gradient(760px 320px at 18% -10%,rgba(95,208,165,.07),transparent),var(--paper);padding:24px;display:grid;gap:10px;align-content:start}
+a{color:var(--ink-2);text-decoration:none}a:hover{color:var(--ink-1)}
+.lab{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.note{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);line-height:1.75;max-width:1120px}
+.note b{color:var(--ink-2);font-weight:400}.note s{color:rgba(255,255,255,.22)}
+.n{color:var(--live)}
+.pick{border-left:2px solid var(--live);padding-left:10px}
+.drop{border-left:2px solid var(--alert);padding-left:10px}
+.gap{height:12px}
+/* ── 워드마크: 높이 구속 렌더 + 잉크 정렬 오프셋 ──
+ * 밴드 기하 중심은 박스 높이의 76.28% 지점 → 박스 중심 대비 0.2628·H 위. 그 값을 정수 px로 올린다. */
+.wm{display:block;width:auto}
+.wm27{height:27px;transform:translateY(-7px)}   /* nav 채택 — 폭 94px, 밴드 12.8px */
+.wm24{height:24px;transform:translateY(-6px)}   /* footer 채택 — 폭 84px, 밴드 11.4px */
+.wm19{height:19px}                              /* R2 서명값 (박스 중심) — 밴드 9.0px */
+.wm17{height:17px}                              /* R2 서명값 (박스 중심) — 밴드 8.1px */
+.wm27b{height:27px}.wm30{height:30px;transform:translateY(-8px)}
+/* ── 심볼: 아트워크 하나, 규칙 하나 — 정사각 박스 폭의 84%가 잉크 폭, 잉크 박스는 양축 중앙.
+ * <img>가 아니라 mask로 칠한다: 모양은 알파가, 색은 CSS가 가진다 (Q7 = 1급 심볼). */
+.sym{display:inline-block;background-color:currentColor;-webkit-mask:url(../assets/juju2-symbol-white.png) no-repeat 50% 50%;mask:url(../assets/juju2-symbol-white.png) no-repeat 50% 50%;-webkit-mask-size:84% auto;mask-size:84% auto}
+.tile{display:grid;place-items:center;background:var(--paper);color:#fff}
+/* ── nav (R2 §Page shell · R8 §1/§3) ── */
+.bar{position:relative;height:52px;display:flex;align-items:stretch;gap:var(--space-6);border-bottom:1px solid rgba(255,255,255,.12);padding:0 20px}
+.brand{display:inline-flex;align-items:center;flex:none}
+.links{display:flex;align-items:stretch;gap:var(--space-5)}
+.links a{display:inline-flex;align-items:center;font-size:var(--text-base);color:var(--ink-1);border-bottom:2px solid transparent}
+.links a:hover{color:var(--ink-2)}.links a.on{font-weight:600;border-bottom-color:#fff}
+.util{display:flex;align-items:center;gap:var(--space-4);margin-inline-start:auto;flex:none}
+.login{font-size:var(--text-base);color:rgba(255,255,255,.68)}
+.acct{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 8px 0 6px;background:none;border:1px solid var(--border-strong);color:rgba(255,255,255,.82);cursor:pointer}
+.acct .em{font-family:var(--font-mono);font-size:var(--text-sm)}.acct .cv{font-size:10px;color:var(--ink-3)}
+.idc{display:grid;grid-template-columns:repeat(5,1fr);width:20px;height:20px;background:rgba(255,255,255,.06);border:1px solid var(--border-soft);flex:none}.idc i{display:block}
+.menub{display:none;margin-inline-start:auto;align-self:center;min-width:44px;min-height:44px;align-items:center;justify-content:center;background:none;border:1px solid rgba(255,255,255,.3);color:var(--ink-1);font-family:var(--font-mono);font-size:var(--text-sm);cursor:pointer}
+.m390{width:390px;border:1px solid var(--border-soft)}.m390 .bar{padding:0 16px;gap:var(--space-4)}.m390 .links,.m390 .util{display:none}.m390 .menub{display:inline-flex}
+/* 광학 중심선 · 밴드 가이드 */
+.guide::after{content:"";position:absolute;left:0;width:132px;top:26px;height:1px;background:repeating-linear-gradient(90deg,rgba(224,87,63,.65) 0 4px,transparent 4px 8px);pointer-events:none}
+.zoom{transform:scale(3);transform-origin:0 0}
+.zwrap{width:1160px;height:156px;overflow:hidden;border:1px solid var(--border-soft)}
+/* ── footer (R2 §Page shell · R8 §4) ── */
+footer{border-top:1px solid rgba(255,255,255,.14);padding-block:var(--space-6);padding-inline:20px}
+.fin{display:flex;align-items:center;justify-content:space-between;gap:var(--space-6);flex-wrap:wrap;max-width:1120px;margin:0 auto}
+.fid{display:flex;align-items:center;gap:var(--space-3)}
+.src{margin:0;font-size:var(--text-sm);line-height:var(--leading-base);color:rgba(255,255,255,.45)}
+.acts{display:flex;align-items:center;gap:var(--space-6)}
+.acts a,.acts button{display:inline-flex;align-items:center;padding:0;background:none;border:0;color:rgba(255,255,255,.72);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--leading-base);cursor:pointer}
+.acts a:hover,.acts button:hover{color:var(--ink-1)}
+.above{padding:0 20px 20px;font-size:var(--text-sm);color:var(--ink-3)}
+.m390 footer{padding-inline:16px}.m390 .fin{display:grid;gap:var(--space-4)}.m390 .fid{flex-direction:column;align-items:flex-start;gap:10px}.m390 .acts a,.m390 .acts button{min-height:44px}
+/* ── 런처 (R6 §Surfaces 「런처 (클릭 전)」 · 개정 ⑧ 프레임/꼬리 유지, 마크 교체, 모션 폐기) ── */
+.stage{position:relative;height:220px;border:1px solid var(--border-soft);background:radial-gradient(520px 220px at 78% 120%,rgba(95,208,165,.06),transparent),var(--paper);overflow:hidden}
+.lch{position:absolute;right:var(--space-6);bottom:var(--space-6);display:grid;place-items:center;width:68px;height:50px;padding:0;background:#0e1a15;border:1px solid var(--border-strong);box-shadow:var(--panel-glow);cursor:pointer;transition:background var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
+.tail{position:absolute;right:12px;bottom:-6px;width:11px;height:11px;background:#0e1a15;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);transform:rotate(45deg);transition:background var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
+.mk{width:32px;height:32px;color:#eaf2ed;transition:transform var(--dur-base) var(--ease),color var(--dur-base) var(--ease),opacity var(--dur-base) var(--ease)}
+.lch:hover,.lch.hov{background:#122219;border-color:rgba(95,208,165,.7)}
+.lch:hover .tail,.lch.hov .tail{background:#122219;border-color:rgba(95,208,165,.7)}
+.lch:hover .mk,.lch.hov .mk{transform:scale(1.35);color:var(--live)}
+.lch:active .mk,.lch.act .mk{transform:scale(1.15);color:var(--live)}
+.lch:focus-visible,.lch.foc{outline:2px solid var(--focus-ring);outline-offset:2px}
+.lch.foc .mk{color:var(--live)}
+.xg{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);width:16px;height:16px;opacity:0;transition:opacity var(--dur-base) var(--ease)}
+.xg::before,.xg::after{content:"";position:absolute;top:calc(50% - .75px);left:0;width:16px;height:1.5px;background:#eaf2ed}
+.xg::before{transform:rotate(45deg)}.xg::after{transform:rotate(-45deg)}
+.lch.opn .mk{opacity:0}.lch.opn .xg{opacity:1}
+.lch.rm,.lch.rm .tail,.lch.rm .mk,.lch.rm .xg{transition:none}
+.lch.rm.hov .mk,.lch.rm.act .mk{transform:none}
+@media(prefers-reduced-motion:reduce){.lch,.tail,.mk,.xg{transition:none}.lch:hover .mk,.lch:active .mk,.lch.hov .mk,.lch.act .mk{transform:none}}
+/* 상태 타일 */
+.states{display:flex;gap:12px;flex-wrap:wrap}
+.st{position:relative;width:176px;height:132px;border:1px solid var(--border-soft);background:var(--paper);overflow:visible}
+.st .lch{right:20px;bottom:20px}
+.stl{font-family:var(--font-mono);font-size:10px;color:var(--ink-3);margin-top:8px}
+/* 심볼 카드 */
+.row{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap}
+.cell{display:grid;gap:8px;justify-items:center}
+.cap{font-family:var(--font-mono);font-size:10px;color:var(--ink-3)}
+.ico{background:#0a1310;display:grid;place-items:center;color:#fff}
+.ring{outline:1px dashed rgba(163,196,180,.35);outline-offset:0}

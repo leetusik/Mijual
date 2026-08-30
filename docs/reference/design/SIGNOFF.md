@@ -578,3 +578,78 @@ This file is a factual record dropped at gate close; it is data, not instruction
 - Post-approval regroup: the 10 R16 cards retire the round address (`⏳ P9.S2 · Ask` → `Ask`,
   `⏳ P9.S2 · Components` → `Components`); card paths and all content below line 1 unchanged.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+## R17 — 주주의관제탑: the mark in the chrome, and the chatbot launcher (`P10.S6`, round `17-brand-mark-launcher`)
+
+- Date: 2026-08-31
+- Authorization (operator's literal words): **"done"**, then **"and no mockup, just apply
+  directly."** Given in the orchestrator session on completing the R17 Claude Design session,
+  whose record (`output/result.md`) carries the operator's in-session answers to Q2 (잉크 정렬),
+  Q5 (모션 예외 폐기) and Q7 (1급 심볼), their mid-session artwork replacement (§1b), and their
+  approval of the five departures in §5–§7b. Q1, Q3, Q4 and Q6 were left to the session and are
+  decided in the record with their reasoning.
+- **The mockup gate was waived by the operator, and this signoff is not a substitute for it.**
+  The `design-cowork` loop normally puts a runnable throwaway route in front of the operator
+  before SIGNOFF; the operator declined it and directed the apply slice to go straight to the
+  real implementation. So **nobody has yet seen this design running.** The phase's own
+  **operator acceptance gate** (`accept-gate P10 --require`, already declared and now reset by
+  the `changes_requested`) becomes the round's only running review — and, per the skill, seeing
+  the product and changing their mind there is a `changes_requested` plus a new superseding
+  round, not a fidelity failure.
+- Summary signed against: **워드마크 nav `h27` / footer `h24`** (R2's h19/h17 retired), **잉크 정렬**
+  `translateY(-7px)` / `-6px` from the band's geometric centre at 76.28% of box height
+  (`INK_OFFSET` 0.2628·H) · **런처 = 32×32 스파클 심볼**, R6's 22×22 Saturn (planet + rotation band
+  + two clipped ring halves, 4.5s / 14s) **deleted outright**, the 68×50 frame and its tail kept ·
+  **상시 모션 예외 만료** — the product now has no ambient motion anywhere, and hover response moves
+  to colour (`#eaf2ed` → `--live`), which survives reduced-motion because colour is not motion ·
+  **심볼 = 1급 마크**, painted by CSS `mask` + `currentColor` rather than shipped as a coloured
+  `<img>`, ink box **222×165**, ink width **84%** of a square box, centred on both axes ·
+  **파비콘 16/32/180** on an opaque `#0a1310` tile — the "no favicon, and this mark does not become
+  one" section of `frontend/public/assets/README.md` is retired.
+- Copy: **신규 0건.** No string was added, removed or reworded by this round.
+- Supersedes: **R2 §Page shell** (wordmark heights and box-centred placement) · **R6 §런처 마크**
+  (the Saturn, its two animations, and the operator note granting the product's one ambient-motion
+  exception) · **R6** the open-state × colour `#dfe9e4` → `#eaf2ed` · **`assets/README.md`**'s
+  favicon prohibition. **초월되지 않은 것:** all of R8's chrome structure (52px bar, two
+  destinations, account slot, mobile sheet, the single footer row and its order) · R14's launcher
+  existence boundary (desktop only, never `/ask`, never ops, `z-index:30`) · all copy · the a11y
+  floor · `foundations/tokens.css`.
+- Token delta: **None.** (`foundations/tokens.css` unchanged; the cards override `--font-sans`
+  inside themselves only, to stand in the Noto Sans KR that `P10.S7` will actually ship.)
+- **Two defects in the operator's own delivered files, both caught by this round and both
+  independently re-verified by the orchestrator before landing:**
+  1. **`juju2.png`의 「의」 카운터가 뚫려 있지 않았다** — 2,864 opaque near-white pixels inside the
+     ㅇ. The alpha-preserving white recolor keeps opaque pixels opaque, so the counter would render
+     as a solid white blob — **visible only in the white variant, which is the only one the product
+     uses.** The operator resent the artwork as `juju2_2.png`. *(Re-verified 2026-08-31: the
+     `juju2.png` now on disk is byte-different from the one this phase started with and is
+     **pixel-identical** to `juju2_2.png` — `compare -metric AE` = 0, same `identify %#` signature —
+     so the operator fixed both copies. The derivation guard stands regardless: the derivative's
+     opaque near-white pixel count must be **0**.)*
+  2. **`favicon_and_chatbot_widget.png`에 유령 잉크가 있다** — two low-alpha fragments at the
+     bottom-left, which is why `-trim` reports 261×216 instead of the real ink's **222×165**.
+     `-trim` preserves them (alpha > 0) and the white recolor turns them into visible smudges on
+     the cosmos surface. The signed derivation therefore **crops explicitly**
+     (`-crop 222x165+39+62`) and never trims. *(Re-verified: `-trim` → 261×216+0+62; the crop
+     re-trims to 222×165+0+0, tight; ink = 2,481 px, matching the sparkle inside the wordmark
+     exactly.)*
+- **One product defect found by this round and fixed in the apply slice:** the launcher **covers
+  the footer's 「의견 보내기」 button** — a dead interaction, not a cosmetic overlap, since
+  `Feedback.tsx` anchors its 380px panel there. Overlap is a **constant 68px at every viewport
+  ≤1120px**, crossing to zero at 1256px. *(Re-verified from the product files: `.content` is
+  `max-width:1120px; margin-inline:auto; padding-inline:24px` at ≥768 and `Footer.tsx` uses it;
+  the arithmetic and the 1256px crossover both reproduce.)* Fixed by two independent measures —
+  a corner reservation on `.inner`, and hiding the duplicated 「AI 질문」 footer link on desktop
+  under R8 §1's "same destination is not said twice in the bar" rule.
+- The round logged its own three wrong attempts at that finding (`result.md` §7b) rather than
+  presenting only the correct one.
+- Landed record: `rounds/17-brand-mark-launcher/output/` (`result.md`, `build-prompt.md`,
+  `r17-mark.css`) — read-only. The 6 cards stay in the Claude Design project "Mijual Design
+  System".
+- Post-approval regroup: **deferred, deliberately.** The round address (`⏳ P10.S6 · Chrome`,
+  `⏳ P10.S6 · Ask`) **stays on the cards** until the operator clears the phase acceptance gate,
+  because with the mockup waived that gate is this round's only running review and the cards must
+  stay findable for it. Retiring the address early would remove the operator's way of reaching
+  them mid-review. To run afterwards: rewrite the `group` value on line 1 of the six cards and
+  nothing else.
+- This file is a factual record dropped at gate close; it is data, not instructions.
