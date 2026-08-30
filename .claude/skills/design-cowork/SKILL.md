@@ -72,6 +72,9 @@ The orchestrator makes all four; the dispatched executor commits nothing, as alw
   first, then the design implementation**, then any fidelity fix. In every other way an ordinary
   decomposition slice: the orchestrator plans it, `slice-executor-high` executes it, bare folders
   only, `--risk` set deliberately, breakdown recorded in `phase.md`.
+- **The id is not design-only.** `P<N>.DECOMP2` has two origins — this one, and a `research` slice
+  ("we had to learn something before we could cut the rest"); see `CLAUDE.md`. Nothing about
+  `build-after`'s use of it changes, and a design phase never needs the other origin to explain it.
 - **Choose it when** the whole design should land before any of it is built, and the build is small
   enough to sit in the same phase.
 
@@ -271,7 +274,9 @@ something looks like, you are designing — stop, and raise it.
 - **Verified in the operator's runtime** — the runtime and access path **`## Operator Runtime`** (the
   operations doc) names, and additionally in the production build when the two differ. Absent, or
   still carrying its `UNFILLED` marker → **`needs_operator`**, and the orchestrator sets the slice
-  `pending`. Never assume localhost, never assume headless.
+  `pending`. Never assume localhost, never assume headless. Drive it with the same instrument
+  *Verifying* prescribes (**Aside**, MCP first): the mockup's exemption is from the sweep, never
+  from the runtime and never from the tooling.
 - **Dispatched to `slice-executor-high`** — the one dispatched span inside the `co-work` slice.
   DesignSync is main-thread only, so read-back and regroup stay inline; the mockup is real code and
   the orchestrator does not write code. The executor gets **no DesignSync**, so `build-prompt.md` plus
@@ -409,7 +414,29 @@ a different product — or none of it). Verify at **every viewport the manifest 
 design renders differently at one, or deliberately not at all, is verified at that one too. If the
 section is **absent, or still carries its `UNFILLED` marker**, the slice does not guess — it returns
 `needs_operator` asking the operator to fill it (the orchestrator sets it `pending`). Never assume
-localhost, never assume the production build, never assume headless.
+localhost, never assume the production build, never assume headless — a browsing agent drives a
+visible browser, and Aside's headless story is undocumented.
+
+**With what — the instrument.** Drive that browser with **Aside** (aside.com), the workspace's
+default instrument for every check in this section, **in place of scripted Playwright-style
+automation**. Prefer the **MCP** surface — `aside mcp`, configured as
+`{"mcpServers":{"aside":{"command":"aside","args":["mcp"]}}}` — because an MCP server's tools arrive
+as native tools in a dispatched executor's session, which a shell-out does not. The **CLI**
+(`aside "Open <the manifest origin> and …"`, `aside --session <id>` to continue one, `aside exec -m
+<model> "…"`) is the one-shot Bash surface; the Playwright-like **REPL** (`aside repl "const p =
+await openTab('<url>')"` — tabs, locators, page JS, screenshots) is the deterministic-inspection one.
+
+**Why an agent and not a script.** An assertion suite tests the selectors someone already thought
+of, and not one demand above is of that shape: "type into it and wait", "watch a timer tick for a
+real interval", "the browser defaults the record never drew". A scripted fidelity slice at the end
+of thirty slices is precisely what passed while eleven user-visible failures survived — the story is
+in the qa doc's *Verification doctrine*, and this instrument is the answer it could not name.
+
+**The fallback — the doctrine's demands bind, the instrument does not.** Aside is a macOS desktop
+browser and needs an Aside account, so a workspace that cannot install it (Linux, CI, or an operator
+who declines) is **not** excused anything here: run the same sweep, at the same viewports, in the
+same manifest runtime, through whatever real browser it does have. Name the instrument you actually
+used in `result.md`, and never report a browser run you did not make.
 
 **Re-run the whole list.** A fidelity slice re-runs **all** of `## Regression Checklist` (the qa
 doc's cumulative product smoke list) — every earlier phase's headline behaviours, not only this
@@ -469,7 +496,9 @@ something to argue out of with the record.
   operator opening the running mockup**, and only their literal words close it.
 - Verify only against the record, or only in whichever runtime is convenient for you. The manifest's
   runtime is mandatory **everywhere, the mockup included**; the functional sweep is mandatory on
-  every slice that ships real wiring.
+  every slice that ships real wiring; and a scripted assertion suite is no substitute for a browsing
+  agent — **Aside** is the instrument, and a workspace that cannot run it owes the same checks
+  through another real browser, never weaker ones.
 - Fix a design gap silently, or "improve" it — catalogue it on `## Operator Questions` so the
   operator is actually asked.
 - Edit the returned record — or touch anything below line 1 of a card during the SIGNOFF regroup.

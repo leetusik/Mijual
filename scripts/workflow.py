@@ -35,7 +35,14 @@ REVIEW_VERDICTS = {"pass", "changes_requested", "blocked"}
 # on slices it cannot change. Note `--risk` next door is deliberately NOT validated:
 # unrecognized values route to the high tier, which is the safe direction -- do not
 # "fix" that asymmetry for symmetry's sake.
-SLICE_KINDS = {"implementation", "review", "decomposition", "fix", "docs", "qa", "co-work"}
+# Three kinds route to `slice-executor-high` by KIND, whatever `risk` says:
+# `decomposition`, `review`, and `research` (added in workspace v36). A `research`
+# slice is findings-only -- it writes no product code, and what it learned lands in
+# the phase notebook for the `DECOMP2` that usually follows -- so a weak read is
+# expensive and it must never be routable to the mid tier by a `low` rating. Set
+# `--risk high` on one so the recorded rating cannot contradict the routing; if the
+# two ever disagree, the kind wins.
+SLICE_KINDS = {"implementation", "review", "decomposition", "research", "fix", "docs", "qa", "co-work"}
 # Phase-notebook budget (workspace v35): (max lines, max bytes) -- both are measured and
 # either one over warns. A WARNING, never an error: a hard cap invites truncating exactly
 # the notes that matter, so the fix is always to rewrite (state stays in phase.md, detail
@@ -2151,8 +2158,8 @@ def main(argv=None) -> int:
     p.add_argument("--phase", required=True)
     p.add_argument("--slice", required=True)
     p.add_argument("--name", required=True)
-    p.add_argument("--kind", default="implementation", help="one of implementation, review, decomposition, fix, docs, qa, co-work (closed set; unknown kinds are rejected)")
-    p.add_argument("--risk", default="high", help="low (a one-line code edit or docs -> slice-executor-mid) or high (everything else -> slice-executor-high); unrecognized values route to high")
+    p.add_argument("--kind", default="implementation", help="one of implementation, review, decomposition, research, fix, docs, qa, co-work (closed set; unknown kinds are rejected). research is findings-only: no product code, findings land in phase.md, and it always routes to slice-executor-high")
+    p.add_argument("--risk", default="high", help="low (a one-line code edit or docs -> slice-executor-mid) or high (everything else -> slice-executor-high); unrecognized values route to high; kind decomposition, review and research route to high whatever this says")
     p.add_argument("--order", type=float)
     p.add_argument("--depends-on", action="append")
     p.set_defaults(func=new_slice)
@@ -2233,8 +2240,8 @@ def main(argv=None) -> int:
     p.add_argument("--phase", required=True)
     p.add_argument("--slice", required=True)
     p.add_argument("--name")
-    p.add_argument("--kind", default="implementation", help="one of implementation, review, decomposition, fix, docs, qa, co-work (closed set; unknown kinds are rejected)")
-    p.add_argument("--risk", default="high", help="low (a one-line code edit or docs -> slice-executor-mid) or high (everything else -> slice-executor-high); unrecognized values route to high")
+    p.add_argument("--kind", default="implementation", help="one of implementation, review, decomposition, research, fix, docs, qa, co-work (closed set; unknown kinds are rejected). research is findings-only: no product code, findings land in phase.md, and it always routes to slice-executor-high")
+    p.add_argument("--risk", default="high", help="low (a one-line code edit or docs -> slice-executor-mid) or high (everything else -> slice-executor-high); unrecognized values route to high; kind decomposition, review and research route to high whatever this says")
     p.add_argument("--order", type=float)
     p.add_argument("--depends-on", action="append")
     p.add_argument("--create-phase", action="store_true")
