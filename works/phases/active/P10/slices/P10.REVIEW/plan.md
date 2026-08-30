@@ -1,129 +1,126 @@
-# Plan — P10.REVIEW (phase review, gated)
+# Plan — P10.REVIEW · phase review (round 2)
 
-Read `works/phases/active/P10/phase.md` whole, `intent.md`, and each slice's `result.md`
-verdict block. `CLAUDE.md`'s review rules govern; this plan says what *this* phase needs.
+`kind: review` · `risk: high` · **this is a re-review.** The slice already ran once, passed, opened
+the acceptance gate — and the operator **did not clear it**. Round 2 then landed `P10.S6` (the R17
+design round) and `P10.S7` (the apply slice). Your `result.md` from round 1 is still on disk;
+**rewrite it for round 2**, keeping round 1's verdict legible as history.
 
-**This phase's acceptance gate is `required: true`.** So the review has gate stages on top of
-the usual ones, and the loop ends at a `pending` stop rather than at a recorded verdict.
+## What changed since your last pass
+
+- Round 1's ten doc versions are **already consolidated and must not be re-versioned.**
+- `P10.S6` — design round R17. Record: `docs/reference/design/rounds/17-brand-mark-launcher/output/`.
+  **The mockup was waived by the operator**, so nothing was ever put in front of them running;
+  `SIGNOFF.md` § R17 says so plainly and defers the card regroup to the acceptance gate. **Do not
+  perform the regroup** — it is the orchestrator's, and only after the gate clears.
+- `P10.S7` — applied R17 plus four operator-directed items in one slice, eight blocks.
+- **The runtime moved.** Commit `c8606d0` put the stack on **3010 / 8010 / 5434**, so `make stack-up`
+  now works and the old 5433 `!override` recipe is obsolete. Round 1's walkthrough (still on
+  `phase.json`) is stale — **your new walkthrough must not repeat it.**
 
 ## 1. Validate the phase as a whole
 
-Not slice-by-slice re-runs — the phase together:
+Every slice's validation together, not slice by slice: `npm run typecheck`, `npm run build`,
+`npm run smoke`, `pytest`, and `python3 scripts/workflow.py validate`. Then the phase's own gates as
+round 1 ran them (`gates run` twice byte-identical, `estimate report` twice byte-identical,
+`scheduler --offline`, `extract recheck`, `evalset refresh-recall`, the exposure invariant, the
+secret scan) — round 2 touched only the frontend and should not have moved any of them, which is
+exactly why re-running them is the check.
 
-- `.venv/bin/python -m pytest` (expect 154 passing)
-- `cd frontend && npm run build && npm run typecheck && npm run smoke` (expect 22/22)
-- `python3 scripts/workflow.py validate` (two pre-existing `P9.S1`/`P9.S1B` unknown-kind
-  warnings are history, not findings)
-- the **whole cumulative `## Regression Checklist`** in `docs/current/qa.md` (~130 lines) —
-  this is the review's own job and S5 deliberately did not duplicate it. It includes the four
-  AST import scans and the `gates run` byte-identical check; run them.
+## 2. Verify the two corrections `P10.S7` made to the signed record
 
-## 2. Open the product yourself — do not pass on other slices' reports
+`P10.S7` corrected R17 twice at apply time **without editing the record**, which is the right
+handling — but a slice correcting a signed value is precisely what a review exists to check.
 
-S5 swept 36 page-views and captured 35 screenshots under `var/p10s5/`. **That is evidence to
-check, not a substitute for looking.** Bring the stack up in the `## Operator Runtime` and
-spot-check this phase's headline claims with your own eyes:
+1. **The footer reservation shipped at 108px where R17's code block signed 84px.** R17 §1 states
+   *both* `92px` (prose) and `84px` (code). Confirm from the product files that `.inner` **is**
+   `.content` (`Footer.tsx` renders `className={`content ${styles.inner}`}`), so
+   `padding-inline-end` **replaces** `.content`'s 24px rather than adding to it, making the floor
+   `24 + 68 = 92` and not `68`. Then confirm in a browser that 의견 보내기 is actually clickable and
+   opens its panel at **768, 1024, 1120, 1255 and 1280** — hit-test the point, do not eyeball it.
+   *(The orchestrator independently reproduced this arithmetic; verify it in the running product.)*
+2. **The claim that R17's absolute nav numbers are 0.5px high** (border-box vs content-box) while
+   the *relationship* holds. Re-measure rather than accepting it.
 
-- both marks paint on the cosmos-dark chrome, dev **and** the production build;
-- both document titles;
-- the 실권주 disclaimer at one of its two render sites;
-- `/docs` carries `주주의관제탑 API`;
-- the assistant names itself 주주의관제탑 when asked a Korean meta question.
+## 3. Fidelity to R17 — RESPECT THE DESIGN
 
-**`make stack-up` fails** — host port 5433 is held by `changple_web_dev_postgres`, the
-operator's unrelated project. `slices/P10.S5/result.md` §0 has the recipe. Never stop the other
-project's container; restore whatever you touch.
+Against `output/build-prompt.md` and `output/result.md`, check that **nothing signed was dropped,
+simplified or "improved"**: the two wordmark heights and their ink offsets; the launcher's full
+state table (rest / hover / active / focus-visible / open / reduced-motion); **that the hover colour
+change deliberately survives `prefers-reduced-motion`** and was not "tidied" into that block; that
+no animation remains anywhere in the launcher; the symbol's 84% ink rule and its two colours; the
+favicon's opaque tile at all three sizes; and that the frozen `foundations/tokens.css` was **not**
+edited (the override belongs in `app/shell.css`).
 
-Then **walk it once with fresh eyes, as a first-time user**, and report everything dead,
-confusing or annoying — explicitly **not** judged against the design record. Those observations
-go into the walkthrough, never into silent fixes.
+Also verify the two class-C derivations by the README's own rule — **pixel signature, never file
+sha256** — and specifically that the wordmark derivative has **0 opaque near-white pixels** and the
+symbol derivative re-trims to exactly `222x165+0+0`. Those two guards exist because the operator's
+delivered files each carried a defect that is invisible except in the shipped variant.
 
-## 3. Route all six `## Operator Questions` — none may be left unrouted
+## 4. The gate stages — this phase's gate is `required: true`
 
-A review may not pass with an unrouted entry. Each of the six goes to exactly one of:
+**Open the running product yourself.** Do not pass on `P10.S5`'s or `P10.S7`'s reports, however
+thorough they read.
 
-- **the acceptance walkthrough**, as a decision the operator takes with the product in front of
-  them; or
-- **a deferred job** — you *list* them with a title, reason and trigger; **the orchestrator
-  files them** with `defer-job`. Do not run `defer-job` yourself.
+- **Runtime:** `docs/current/operations.md` § Operator Runtime. `make stack-up`, dev at
+  **`http://127.0.0.1:3010`**, API at **8010**; **and additionally the production build**
+  (`npm run build && npm run start`). Desktop **1280** and mobile **390**. `/ops` needs throwaway
+  `MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD` or you will only ever see the door — and **restore the
+  stack to how you found it** afterwards.
+- **Spot-check the phase's headline claims yourself:** the mark painted at its new size on both
+  chrome surfaces, both document titles, the favicon actually served (`link[rel*=icon]` present in
+  **both** runtimes — round 1 proved its absence the same way), the 실권주 line, `/docs`, the retired
+  binaries 404, no old name on any reader page, and the live agent naming itself correctly.
+- **The functional sweep — mandatory here, because `P10.S7` shipped real wiring.** Every visible
+  control does something observable; interaction states including browser defaults the record never
+  drew; liveness over time; and **type into it and wait** on anything implying live behaviour. The
+  launcher and the footer button are the obvious ones, but go control by control.
+- **Walk it once with fresh eyes as a first-time user** and report everything dead, confusing or
+  annoying — explicitly **not** judged against the design record. Those findings go into the
+  walkthrough, never into silent fixes.
+- **Re-run the whole cumulative `## Regression Checklist`** in the qa doc — every earlier phase's
+  headline behaviours, not just this phase's surfaces — then append this phase's lines. `P10.S7`
+  drafted them in `slices/P10.S7/result.md` §11.
+- Confirm **no orphaned design routes** exist. The mockup was waived, so there should be none at
+  all; if you find one, that is a finding.
 
-My read, which you should apply unless you disagree with a reason: the **heights**, the **ops
-mark's typography** and the **favicon** are live decisions for the walkthrough — each already
-carries a measured recommendation the operator can accept in one word. **P4's `[미주알]` mail
-subject** cannot be acted on in this phase and belongs in a deferred job that P4 will pick up.
-The **`/ops` 390px stacking** is pre-existing and wider than the mark — a deferred job, named in
-the walkthrough so the operator is not surprised by it. The **dev-tooling banners** are yours to
-route; say which and why.
+## 5. Route every `## Operator Questions` entry
 
-## 4. Consolidate the docs — on a pass, before the gate opens
+An unrouted entry blocks the pass. The notebook's list carries three **closed** by round 2, three
+**still routed to deferred jobs** (verify each is actually filed — `workflow.py deferred` reports 23
+open), and one **new**:
 
-This phase is **not** in parallel mode, so a passing review writes the new doc versions itself,
-in the pass path, *before* the gate opens.
+- **The Korean subset's Hangul coverage** — `P10.S7` adopted **(b) KS X 1001, 291,072 B** over
+  (a) 94,604 B (company names fall back to the OS face) and (c) the full block at 1,022,828 B. This
+  is a **deliberate adaptation away from changple_web**, whose product has no dynamic Korean. It is
+  a real decision with a real cost, so **fold it into the walkthrough as a decision for the
+  operator**, with the three numbers and the one-variable flip to (c).
 
-**The ledger already exists: `slices/P10.S4/result.md` §2**, line-level, covering six documents.
-S4 built it precisely so this step is mechanical rather than a fresh act of judgement. Apply it
-with `doc-new-version --doc <doc> --summary "..." --source P10.REVIEW`, plus `qa.md` from the
-five checklist lines S5 drafted in `slices/P10.S5/result.md` §6. Cross-check against
-`phase.md`'s `## Doc impact` list so nothing filed by S1–S5 is dropped.
+## 6. Docs — consolidate round 2 only, and only on a pass
 
-Four things in that ledger are **not** renames and must be handled as it says:
+`P10.S7` appended **eight** `## Doc impact` lines. Consolidate **those** into new doc versions with
+`doc-new-version --source P10.REVIEW`. **Round 1's fifteen lines are already versioned** — the
+notebook compresses them to a pointer saying so. Re-versioning them would be a real error.
 
-- the **latin mark as an English subject** (`security.md:151`, `:396`, `decisions.md:292`) —
-  reword, never substitute;
-- **content now false rather than stale** — the docs still describe a ring wordmark, "five
-  binary assets" where four remain, and a "never a local edit" rule the derived white variant
-  breaks;
-- **history that must not change** — `frontend.md:120`, `decisions.md:594` (a verbatim operator
-  quote), `:649–657`/`:665` (a dated domain fact sheet), `:674–675`. Renaming history is this
-  phase's worst available failure;
-- S4's two flagged judgement calls (`frontend.md:119` — add a superseding row rather than edit
-  an immutable one; `decisions.md:292` — prefer "this product" over stamping the 2026-08-30 name
-  onto a 2026-08-22 decision). Decide them, and say what you decided.
+Docs only, never source. Not in parallel mode, so consolidation happens here on a pass.
 
-Run `rebuild-docs` after, and confirm `docs/current/` regenerated cleanly.
+## 7. What you return
 
-**A non-passing verdict stops you before this step** — complete validation and judgement first,
-then return the verdict with numbered findings and proposed `fix` slices, and do no pass-only
-work.
+- `review_verdict`: `pass` | `changes_requested` | `blocked`, with numbered findings and proposed
+  fix slices if not a pass. **A non-pass stops you before §6** — complete validation and judgment
+  first so the orchestrator gets the whole picture in one cycle, then return without doing
+  pass-only work.
+- On a **pass**, a concrete **`walkthrough`**: the run command, the URLs, what to click, at which
+  viewports, in the operator's runtime — plus the live decisions listed above. Write it for someone
+  who has already been through one failed gate on this phase: say what is *new* since round 1 and
+  what you are *not* asking them to re-test.
+- `explain: not written — run /explain for this phase` — fixed pointer; explaining is separate.
 
-## 5. Judge against the objective
+**Do not** run `accept-gate`, `review-phase`, `finish-slice` or any commit. The orchestrator owns
+every state transition. **Do not** perform the R17 card regroup.
 
-`intent.md` is the confirmed intent. Check honestly:
+## A standing bias for this review
 
-- Is the name uniformly the unspaced `주주의관제탑`, with **no latin mark** left on any
-  user-facing surface?
-- Did anything **out of scope** get renamed — `src/mijual/`, `MIJUAL_*`, `X-Mijual-CSRF`, both
-  `name` fields, the DB credential, "Mijual Design System"? Any such change is a finding.
-- Did any **signed design value** change without the operator? The heights and
-  `Ops.module.css` must be untouched.
-- The phase widened twice past its decomposition — the 미주얼 agent prompts (S3) and the
-  impossible `docs/current/` assignment (S4). Confirm both were handled and recorded rather
-  than papered over.
-
-## 6. The walkthrough
-
-On a pass, return a **`walkthrough`** the operator can follow start to finish. It must open
-with the fact that **`make stack-up` does not work as written** and give the recipe, and note
-that `/ops` shows only the door without credentials in `.env`. Then: which URLs to open, at
-which viewports, what to look at, and the three live decisions stated as decisions — each with
-its measurement and its one-word-acceptable recommendation. Point at `var/p10s5/` screenshots
-by filename where they help. Name what is **not** being asked of them, so they do not re-test
-what is already proven.
-
-Write it in Korean or English as you judge best for this operator — the product surface is
-Korean-only, but the operator works in English and prior gates were written in Korean; match
-`P9`'s walkthrough register.
-
-## Constraints
-
-- No commits, no phase/slice status transitions, no `accept-gate` — all the orchestrator's.
-- Do not run `defer-job`; list them for me.
-- Do not fix findings; propose `fix` slices.
-- Do not write a phase explainer. Return the fixed pointer
-  `explain: not written — run /explain for this phase`.
-
-## Verdict
-
-Return `review_verdict` `pass` / `changes_requested` / `blocked`, numbered findings if any, the
-deferred jobs for me to file, the `walkthrough` on a pass, and the `explain` pointer. On a pass
-the phase does **not** become `done` here — I open the gate and stop, and the operator clears it.
+Two rounds of this phase have now shipped work that *looked* right and was not — a filled counter
+visible only in the variant the product uses, ghost ink `-trim` preserves, a dead button under the
+launcher, and a signed 84px that left 8px of that button still covered. Every one was caught by
+measuring in a browser rather than reading source. **Weight your effort accordingly.**

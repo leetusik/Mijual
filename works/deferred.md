@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `23`
+- Open: `25`
 - Promoted: `2`
 - Dropped: `0`
 
@@ -29,6 +29,8 @@
 | `D23` | `deferred` | P4 mail subject still carries the retired name [미주알] | P10.DECOMP | When P4 implements the 마감 임박 mail, before the first send | `works/deferred/open/D23` |
 | `D24` | `deferred` | /ops has no 390px layout — the whole bar stacks, not just the mark | P10.S5 | Next ops design pass, or the first time /ops is needed from a phone | `works/deferred/open/D24` |
 | `D25` | `deferred` | Code comments and dev-tooling banners still name the retired product | P10.REVIEW | Next time a slice edits those files anyway, or if the identifier rename is ever taken on | `works/deferred/open/D25` |
+| `D26` | `deferred` | The AI 질문 launcher's open state is covered by the widget and can never be seen | P10.REVIEW | The next design round that opens the AI 질문 surface, or the next time the launcher's state table is edited | `works/deferred/open/D26` |
+| `D27` | `deferred` | /ops/feedback overflows horizontally at 1280 — the desktop half of the ops layout gap | P10.REVIEW | Whenever D24 is picked up, or the first time the operator needs the feedback tab on a 1280 screen | `works/deferred/open/D27` |
 | `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |

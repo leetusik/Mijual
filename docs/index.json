@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again",
+      "latest": "v0010_p10_round_2_the_favicon-scale_symbol_gap_open_since_r1_is_closed_the_operator_supplied_a_square_symbol_export_so_the_mark_ships_at_16_32_180_with_nothing_cropped_or_invented",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -75,11 +75,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the product is 주주의관제탑; the symbol-mark / favicon gap R2 closed is open again",
           "previous": "v0008_p8_design_polish_pass_the_layer_is_not_the_board_is_15_rows_and_keeps_itself_current_the_last_english_screen_is_gone_portfolio_answers_anonymously_with_the_sample_and_481-767_gets_the_full-width_ai_page"
+        },
+        {
+          "id": "v0010_p10_round_2_the_favicon-scale_symbol_gap_open_since_r1_is_closed_the_operator_supplied_a_square_symbol_export_so_the_mark_ships_at_16_32_180_with_nothing_cropped_or_invented",
+          "path": "docs/versions/product/v0010_p10_round_2_the_favicon-scale_symbol_gap_open_since_r1_is_closed_the_operator_supplied_a_square_symbol_export_so_the_mark_ships_at_16_32_180_with_nothing_cropped_or_invented.md",
+          "created_at": "2026-08-31T04:35:03+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — the favicon-scale symbol gap open since R1 is closed: the operator supplied a square symbol export, so the mark ships at 16/32/180 with nothing cropped or invented",
+          "previous": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again"
         }
       ]
     },
     "experience": {
-      "latest": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name",
+      "latest": "v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -145,11 +153,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the chrome mark is the operator wordmark with no ring, and the 의견 screen is named without the retired product name",
           "previous": "v0007_p8_design_polish_pass_every_reader_surface_re-cut_from_the_two-slot_chrome_to_the_composer"
+        },
+        {
+          "id": "v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width",
+          "path": "docs/versions/experience/v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width.md",
+          "created_at": "2026-08-31T04:32:47+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — R6's launcher motion exception expired: the launcher is a 32px sparkle with zero animations and a colour hover that survives reduced motion, and the footer's corner reservation makes 의견 보내기 clickable at every desktop width",
+          "previous": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name"
         }
       ]
     },
     "architecture": {
-      "latest": "v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted",
+      "latest": "v0010_p10_round_2_the_web-font_payload_drops_2_057_688_to_330_480_bytes_a_self-hosted_noto_sans_kr_subset_plus_three_ibm_plex_mono_subsets_via_next_font_local_replacing_un-subset_pretendard_and_the_google_fonts_cdn",
       "current_path": "docs/current/architecture.md",
       "versions": [
         {
@@ -223,11 +239,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — renaming the product inside the system instruction invalidates the static cache prefix once, and that is accepted",
           "previous": "v0008_p9_smart_assistant_structured-block_storage_on_the_conversation_row_the_calculator_and_the_security_guard_as_the_agent_s_sixth_and_seventh_tools_ceilings_20_30_22_a_static_cache_prefix"
+        },
+        {
+          "id": "v0010_p10_round_2_the_web-font_payload_drops_2_057_688_to_330_480_bytes_a_self-hosted_noto_sans_kr_subset_plus_three_ibm_plex_mono_subsets_via_next_font_local_replacing_un-subset_pretendard_and_the_google_fonts_cdn",
+          "path": "docs/versions/architecture/v0010_p10_round_2_the_web-font_payload_drops_2_057_688_to_330_480_bytes_a_self-hosted_noto_sans_kr_subset_plus_three_ibm_plex_mono_subsets_via_next_font_local_replacing_un-subset_pretendard_and_the_google_fonts_cdn.md",
+          "created_at": "2026-08-31T04:30:43+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — the web-font payload drops 2,057,688 to 330,480 bytes: a self-hosted Noto Sans KR subset plus three IBM Plex Mono subsets via next/font/local, replacing un-subset Pretendard and the Google Fonts CDN",
+          "previous": "v0009_p10_rebrand_renaming_the_product_inside_the_system_instruction_invalidates_the_static_cache_prefix_once_and_that_is_accepted"
         }
       ]
     },
     "frontend": {
-      "latest": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row",
+      "latest": "v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -293,6 +317,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the chrome loads the operator mark through WORDMARK_WHITE, the ring vocabulary and the four mijual-*.png retire, and the favicon gap re-opens as a superseding row",
           "previous": "v0007_p9_r16_the_ask_re-cut_to_one_column_with_a_start_screen_five_new_answer_elements_drawn_by_one_renderer_a_keyed_block_store_and_three_retirements"
+        },
+        {
+          "id": "v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset",
+          "path": "docs/versions/frontend/v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset.md",
+          "created_at": "2026-08-31T04:28:49+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — R17 ships: nav h27 / footer h24 with the ink offset in the component, a 32px mask-painted launcher with zero animation, the footer corner reservation, the favicon at 16/32/180, and a self-hosted Noto Sans KR subset",
+          "previous": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row"
         }
       ]
     },
@@ -475,7 +507,7 @@
       ]
     },
     "operations": {
-      "latest": "v0011_operator-directed_port_move_the_dev_stack_runs_on_3010_8010_5434_so_it_never_collides_with_the_operator_s_other_project",
+      "latest": "v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -565,11 +597,19 @@
           "source": "operator",
           "summary": "operator-directed port move — the dev stack runs on 3010 / 8010 / 5434 so it never collides with the operator's other project",
           "previous": "v0010_p10_rebrand_the_screen_s_owner_is_named_and_make_stack-up_cannot_bind_host_5433_when_another_project_holds_it"
+        },
+        {
+          "id": "v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs",
+          "path": "docs/versions/operations/v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs.md",
+          "created_at": "2026-08-31T04:31:55+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — the web fonts are regenerated by three dev-only scripts from a pinned google/fonts commit, and the Operator Runtime carries the ops-credential step every gate walkthrough needs",
+          "previous": "v0011_operator-directed_port_move_the_dev_stack_runs_on_3010_8010_5434_so_it_never_collides_with_the_operator_s_other_project"
         }
       ]
     },
     "security": {
-      "latest": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side",
+      "latest": "v0008_p10_round_2_no_page_contacts_a_third-party_origin_any_more_the_google_fonts_stylesheet_and_its_gstatic_font_request_were_the_last_two_measured_0_across_five_routes_in_dev_and_production",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -627,11 +667,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the lethal-trifecta paragraph names 주주의관제탑, and the two Mijual-side clauses are reworded to the doc's own on this side",
           "previous": "v0006_p9_the_security_check_guard_is_a_behavioural_layer_not_injection_protection_owasp_input_segregation_on_every_tool_result_the_calculator_s_ast_whitelist_guard_logging_is_category_200_chars_session_hash_log-only"
+        },
+        {
+          "id": "v0008_p10_round_2_no_page_contacts_a_third-party_origin_any_more_the_google_fonts_stylesheet_and_its_gstatic_font_request_were_the_last_two_measured_0_across_five_routes_in_dev_and_production",
+          "path": "docs/versions/security/v0008_p10_round_2_no_page_contacts_a_third-party_origin_any_more_the_google_fonts_stylesheet_and_its_gstatic_font_request_were_the_last_two_measured_0_across_five_routes_in_dev_and_production.md",
+          "created_at": "2026-08-31T04:31:43+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — no page contacts a third-party origin any more: the Google Fonts stylesheet and its gstatic font request were the last two, measured 0 across five routes in dev and production",
+          "previous": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side"
         }
       ]
     },
     "qa": {
-      "latest": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon",
+      "latest": "v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -705,11 +753,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — five checklist lines guard the painted mark, both titles, the old-name sweep including the live agent, the retired binaries and the still-absent favicon",
           "previous": "v0008_p9_smart_assistant_the_suite_at_154_smoke_22-22_the_unmarked-numeral_invariant_restated_under_strip-don_t-drop_and_p9_s_headline_checks_appended_to_the_cumulative_checklist"
+        },
+        {
+          "id": "v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added",
+          "path": "docs/versions/qa/v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added.md",
+          "created_at": "2026-08-31T04:33:50+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — the rebrand block is corrected for the second mark and the shipped favicon, and six R17 lines are added",
+          "previous": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon"
         }
       ]
     },
     "decisions": {
-      "latest": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history",
+      "latest": "v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -791,9 +847,17 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the whole latin identity is superseded by 주주의관제탑 with no romanized replacement; the dated mijual domain fact sheet is preserved as history",
           "previous": "v0009_p9_r16_supersessions_thinking_mid_strip-don_t-drop_the_auditable_calculator_replacing_never-compute_six-value_refusal_vocabulary_with_two_producers_retired_and_the_ask_re-cut"
+        },
+        {
+          "id": "v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time",
+          "path": "docs/versions/decisions/v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time.md",
+          "created_at": "2026-08-31T04:33:00+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 2 — R17 signed and applied: the mark, the launcher and the favicon supersede R2/R6, the type moves to a self-hosted subset, and two record errors were corrected at apply time",
+          "previous": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-31T02:00:37+09:00"
+  "last_rebuilt_at": "2026-08-31T04:35:03+09:00"
 }
