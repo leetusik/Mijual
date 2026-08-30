@@ -3,14 +3,14 @@
   "phase_id": "P10",
   "name": "Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 7,
   "depends_on": [
     "P10.S6"
   ],
   "created_at": "2026-08-31T01:59:52+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-31T03:03:51+09:00",
+  "completed_at": "2026-08-31T03:48:58+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Applied R17 and all four directed items in one slice: nav h27/footer h24, the mask-painted zero-animation launcher, favicon 16/32/180, the footer dead-button fix, /ops mono drop, and changple_web's font pipeline (2,057,688 B -> 330,480 B, no third-party origin); corrected two arithmetic errors in the landed record",
   "validation": {
     "required": [],
     "last_run": null,

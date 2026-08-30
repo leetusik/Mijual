@@ -41,11 +41,23 @@
   background: var(--ops-panel);
 }
 
+/* 주주의관제탑 운영 — **Pretendard 600, not mono** (operator, at the P10 gate:
+   "Drop mono, use Pretendard 600.").
+
+   R7 wrote 「an identifier, so it stays raw and mono」 for the latin string
+   `MIJUAL OPS`, where every glyph was in the mono face. The rebrand made the mark
+   Korean, and a mono family covers **exactly one of its nine characters — the
+   space** — which is what produced the measured 2.84× fake double space and left
+   the other eight to whatever Korean face the OS happened to have. The string
+   itself is unchanged.
+
+   The weight survives the answer; the *family* underneath it does not. P10 also
+   replaces Pretendard with self-hosted Noto Sans KR (`app/fonts.ts`), so this
+   mark lands as **600 in the shipped Korean face** — the intended outcome of the
+   two instructions together, not a drift from either. */
 .mark {
-  font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.08em;
   color: var(--ink-1);
 }
 
@@ -434,11 +446,11 @@
   padding: var(--space-6);
 }
 
+/* The door says the same mark as the bar, so it takes the same treatment — see
+   `.mark` above for why the mono and the tracking left. */
 .doorMark {
-  font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.08em;
   color: var(--ink-1);
   margin-bottom: var(--space-6);
 }

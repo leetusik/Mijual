@@ -1,17 +1,38 @@
-/* 런처 (R6 §Surfaces 「런처 (클릭 전)」 + §런처 마크, 개정 ⑤/⑧).
+/* 런처 — R6 §Surfaces 「런처 (클릭 전)」, **마크와 모션은 R17 §3이 전면 교체한다.**
  *
- * Every number in this file is the record's own and is **literal**: 68×50 frame,
- * 11×11 tail at right 12 / bottom −6 rotated 45°, a 22×22 Saturn inside it, the
- * 4.5s band loop, the 14s ring drift, hover 1.35 / active 1.15 on the mark only.
- * The three colours the round writes as hex (`#0e1a15` frame, `#122219` hover,
- * `#dfe9e4` planet) and the two it writes as rgba (the ring's
- * `rgba(95,208,165,.9)`, the hover border's `rgba(95,208,165,.7)`) are literals
- * for the same reason: they are stated by the design, not derived from a token.
+ * What R6 still owns, literally: the 68×50 frame, the 11×11 tail at right 12 /
+ * bottom −6 rotated 45°, `#0e1a15` at rest and `#122219` on hover, the hover
+ * border `rgba(95,208,165,.7)`, hover 1.35 / active 1.15 on the mark only, the
+ * 16px ×, and `z-index: 30` in R14's corner. Those numbers are stated by the
+ * design and are not derived from a token, which is why they are hex here.
  *
- * **This is the product's one sanctioned motion exception** (operator note, R6
- * §런처 마크: 「R1의 "no spinners/no ambient motion"은 데이터 표면 규칙 — 브랜드
- * 런처 마크에만 예외 … 데이터 표면으로 번지지 말 것」). Nothing in here is reused
- * anywhere else, and the widget's own states are text replacement plus one caret.
+ * ## What R17 deleted, and why it matters beyond this file
+ *
+ * The 22×22 Saturn is gone — planet, rotation band, both clipped ring halves,
+ * `@keyframes bandspin` (4.5s), `@keyframes ringdrift` (14s) and the two
+ * `data-motion="tick"` hooks with them. **R6's operator note granting the brand
+ * launcher mark the product's one ambient-motion exception expires with it**
+ * (「R1의 "no spinners/no ambient motion"은 데이터 표면 규칙 — 브랜드 런처 마크에만
+ * 예외」). There is no animation left in this file at all.
+ *
+ * Because the motion is gone, **the hover response moves to colour**: the mark
+ * goes `#eaf2ed` → `var(--live)`, the same gesture the frame's border already
+ * made. And that colour change **deliberately survives `prefers-reduced-motion`**
+ * — colour is not motion, and with the ambient loop retired it is the only hover
+ * response left. Do not "tidy" it into the reduced-motion block.
+ *
+ * R17 also specifies `focus-visible`, which R6 had deferred to P7: the keyboard
+ * needs the same response the pointer now gets.
+ *
+ * ## The mark is painted, not placed
+ *
+ * The sparkle is a **first-class symbol** (R17 §2/Q7) and it is drawn with a CSS
+ * `mask` over `currentColor` rather than shipped as a coloured `<img>`: the shape
+ * comes from the PNG's alpha, the colour from CSS, so one asset serves every
+ * colour and the recolour is a `color:` change. `mask-size: 84% auto` is the
+ * symbol's one placement rule — ink width = 84% of the square box, centred on
+ * both axes — so the 32px box here carries 26.9×20.0 of ink, the same numbers
+ * the favicon uses. The wordmark stays an `<img>`; see `chrome/Wordmark.tsx`.
  */
 
 .launcher {
@@ -36,7 +57,12 @@
 /* 우하단 꼬리 11×11 (45° 회전, right 12 / bottom −6). It carries the frame's own
  * fill so it covers the bottom hairline where the two meet, and the frame's own
  * border on the two edges that stay outside — which is what makes the whole
- * thing read as one chat-message box rather than a box with a triangle. */
+ * thing read as one chat-message box rather than a box with a triangle.
+ *
+ * R17 keeps the frame **and** the tail deliberately (Q4): with the motion gone,
+ * the tail is now the only thing saying this corner is a conversation, and a
+ * lone static sparkle in a corner is decoration rather than an affordance. The
+ * frame also keeps the 32px hit floor for free. */
 .tail {
   position: absolute;
   right: 12px;
@@ -50,6 +76,22 @@
   transition:
     background var(--dur-base) var(--ease),
     border-color var(--dur-base) var(--ease);
+}
+
+/* 마크 = 32×32 심볼 박스, 잉크 26.9×20.0 (84% 규칙 — 파비콘과 같은 숫자). */
+.mark {
+  width: 32px;
+  height: 32px;
+  color: #eaf2ed;
+  background-color: currentColor;
+  -webkit-mask: url("/assets/juju2-symbol-white.png") no-repeat 50% 50%;
+  mask: url("/assets/juju2-symbol-white.png") no-repeat 50% 50%;
+  -webkit-mask-size: 84% auto;
+  mask-size: 84% auto;
+  transition:
+    transform var(--dur-base) var(--ease),
+    color var(--dur-base) var(--ease),
+    opacity var(--dur-base) var(--ease);
 }
 
 /* hover: 프레임은 고정, 마크만 확대 — the frame keeps its 68×50 and only changes
@@ -66,87 +108,23 @@
 
 .launcher:hover .mark {
   transform: scale(1.35);
+  color: var(--live);
 }
 
 .launcher:active .mark {
   transform: scale(1.15);
+  color: var(--live);
 }
 
-/* 마크 = 22×22 토성. */
-.mark {
-  position: relative;
-  width: 22px;
-  height: 22px;
-  transition:
-    transform var(--dur-base) var(--ease),
-    opacity var(--dur-base) var(--ease);
+/* R17 §8 — new. R6 left focus to P7; now that the hover response is a colour,
+ * the keyboard has to be given the same one. */
+.launcher:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
-/* 행성: 22px 원, `#dfe9e4`, overflow hidden so the band stays on the sphere. */
-.planet {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #dfe9e4;
-  border-radius: 50%;
-}
-
-/* 자전 밴드 — the record's gradient verbatim, looping one 14px tile over 4.5s. */
-.band {
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(30, 52, 42, 0.34) 0 2px,
-    transparent 2px 7px
-  );
-  background-size: 14px 100%;
-  animation: bandspin 4.5s linear infinite;
-}
-
-@keyframes bandspin {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: -14px 0;
-  }
-}
-
-/* 링은 **두 반쪽** (개정 ⑧). Two identical boxes sharing one `ringdrift`, one
- * clipped to the bottom half and painted in front of the planet (DOM 뒤), one
- * clipped to the top half and painted behind it (DOM 앞). A single ring laid on
- * one side of the planet reads as a flat sticker — the bug this round already
- * paid for, recorded in `phase.md` note 11. Do not "simplify" these into one. */
-.ring {
-  position: absolute;
-  left: -9px;
-  top: 5px;
-  width: 40px;
-  height: 13px;
-  border: 1.5px solid rgba(95, 208, 165, 0.9);
-  border-radius: 50%;
-  animation: ringdrift 14s ease-in-out infinite;
-}
-
-/* 뒤 (DOM 앞) — 위 절반. */
-.ringBehind {
-  clip-path: polygon(0 0, 100% 0, 100% 49%, 0 49%);
-}
-
-/* 앞 (DOM 뒤) — 아래 절반. */
-.ringFront {
-  clip-path: polygon(0 49%, 100% 49%, 100% 100%, 0 100%);
-}
-
-@keyframes ringdrift {
-  0%,
-  100% {
-    transform: rotate(-19deg) scaleX(0.94);
-  }
-  50% {
-    transform: rotate(-13deg) scaleX(0.94);
-  }
+.launcher:focus-visible .mark {
+  color: var(--live);
 }
 
 /* 열림 상태: 마크 페이드아웃 + × (16px, 1.5px 바 ±45°). The widget is opaque and
@@ -165,6 +143,8 @@
   transition: opacity var(--dur-base) var(--ease);
 }
 
+/* `#eaf2ed`, not R6's `#dfe9e4` (R17 §7): that white was the *planet's*, and the
+   planet is gone, so it had lost its reason. One corner, one white. */
 .close::before,
 .close::after {
   content: "";
@@ -173,7 +153,7 @@
   left: 0;
   width: 16px;
   height: 1.5px;
-  background: #dfe9e4;
+  background: #eaf2ed;
 }
 
 .close::before {
@@ -192,11 +172,13 @@
   opacity: 1;
 }
 
-/* 「prefers-reduced-motion: 밴드·드리프트·전환·hover 확대 전부 정지.」
+/* 「감축 모드 — transform·transition 정지. 색 변화는 남긴다」 (R17 §3).
  *
- * The band and the drift carry `data-motion="tick"`, which `app/shell.css`
- * already freezes app-wide; the two things that convention cannot express are a
- * *hover* transform and this element's own transitions, so they are stopped here. */
+ * There is no `data-motion` hook left in this component for `app/shell.css` to
+ * freeze, because there is no animation left to freeze; what remains to stop is
+ * this element's own transitions and the hover transform. **The colour change is
+ * kept on purpose** — colour is not motion, and it is the only hover response
+ * the launcher still has. */
 @media (prefers-reduced-motion: reduce) {
   .launcher,
   .tail,

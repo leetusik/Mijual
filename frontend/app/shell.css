@@ -46,6 +46,40 @@ html {
   color-scheme: dark;
 }
 
+/* ── The two type families, pointed at the self-hosted subsets (P10.S7) ───────
+ *
+ * `public/foundations/tokens.css` is **frozen** — R8 signed it byte-verbatim and
+ * R17 recorded `Token delta: None` — and it defines `--font-sans` as Pretendard
+ * and `--font-mono` as CDN IBM Plex Mono. Both of those are retired, so the two
+ * variables are overridden **here**, in application code, rather than by editing
+ * the vendored record. R17 did the same thing inside its own cards (standing up
+ * Noto Sans KR over `--font-sans`) and explicitly recorded the token as *not*
+ * superseded; this is that override, moved from a card into the product.
+ *
+ * `--font-noto-sans-kr` and `--font-plex-mono` are declared on `<html>` by
+ * `next/font/local` (`app/fonts.ts`, wired in `app/layout.tsx`). The OS stacks
+ * behind them are the fallbacks `next/font` cannot express through the variable
+ * alone: a syllable outside the subset resolves through them, **composed**,
+ * because the subset omits the conjoining-jamo block on purpose.
+ *
+ * The rule targets the document root rather than `.cosmos`, because the type
+ * families are true of every surface — `/ops` is not a cosmos page and reads the
+ * same two tokens.
+ *
+ * **`html:root`, and the extra specificity is load-bearing.** `tokens.css` is a
+ * plain `<link>` in the layout's `<head>`, and React places it *after* the CSS
+ * Next hoists for this bundle — verified in the served HTML, dev and production.
+ * So a bare `:root` here ties tokens.css's own `:root` on specificity and then
+ * **loses on source order**, silently leaving the product on Pretendard (which is
+ * no longer even downloadable). `html:root` is (0,1,1) against (0,1,0) and wins
+ * regardless of order. Do not "simplify" it back to `:root`. */
+html:root {
+  --font-sans: var(--font-noto-sans-kr), "Noto Sans KR", system-ui, -apple-system,
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Consolas, monospace;
+}
+
 body {
   background: var(--paper);
   font-family: var(--font-sans);

@@ -4,20 +4,19 @@ import { ASK_LABEL_KO } from "./copy";
 import styles from "./Launcher.module.css";
 
 /**
- * 우하단 고정 런처 — a 68×50 chat-message box with a 22px Saturn inside it.
+ * 우하단 고정 런처 — a 68×50 chat-message box with the 32×32 브랜드 스파클 inside it.
  *
- * The whole specification is R6 §Surfaces 「런처 (클릭 전)」 + §런처 마크 and it is
- * literal; `Launcher.module.css` carries the numbers and the reasons. What this
- * component owns is only the DOM order the mark depends on, which is not a style
- * choice but the fix the round paid for (개정 ⑧):
+ * The frame, the tail and the states are R6's, **the mark and the motion are
+ * R17's** (§3, signed 2026-08-31). `Launcher.module.css` carries every number and
+ * every reason; what this component owns is only the DOM.
  *
- * 1. the ring's **top** half, clipped — painted *behind* the planet, so it is
- *    first in the DOM;
- * 2. the planet, with its rotation band;
- * 3. the ring's **bottom** half, clipped — painted *in front*, so it is last.
- *
- * Two halves sharing one `ringdrift` read as a single ring the planet passes
- * through. One ring on one side reads as a flat sticker.
+ * And the DOM is now almost nothing. R6's mark needed four nested spans in a
+ * load-bearing order — the ring's top half behind the planet, the planet with its
+ * rotation band, the ring's bottom half in front — because two clipped halves
+ * sharing one drift were what made a flat sticker read as a ring the planet
+ * passes through. R17 deletes the Saturn outright, so **the mark is one span**,
+ * painted by a CSS `mask` over `currentColor`, and the three `data-motion="tick"`
+ * hooks are gone with the animations they froze.
  *
  * ## Where it renders, and where it must not
  *
@@ -25,8 +24,11 @@ import styles from "./Launcher.module.css";
  * R14 Q-A's boundary),
  * never on `/ask` (전용 페이지에는 런처 렌더 금지 — 중복 표면 금지), and never
  * inside the ops chrome (which `SiteChrome` never wraps in the reader tree at
- * all). The corner is R2's deliberately empty one and vocky's trigger is chrome-
- * level, so 「런처·위젯은 vocky 트리거와 모서리 충돌 금지」 holds by construction.
+ * all). That boundary is untouched by R17. The corner is R2's deliberately empty
+ * one and vocky's trigger is chrome-level, so 「런처·위젯은 vocky 트리거와 모서리
+ * 충돌 금지」 holds by construction — and R17 additionally reserves the footer's
+ * own right corner (`chrome/Footer.module.css`), because this launcher was
+ * covering the 의견 보내기 button underneath it.
  */
 export function AskLauncher({ open, onOpen }: { open: boolean; onOpen: () => void }) {
   return (
@@ -42,13 +44,7 @@ export function AskLauncher({ open, onOpen }: { open: boolean; onOpen: () => voi
       onClick={onOpen}
     >
       <span className={styles.tail} />
-      <span className={styles.mark}>
-        <span className={`${styles.ring} ${styles.ringBehind}`} data-motion="tick" />
-        <span className={styles.planet}>
-          <span className={styles.band} data-motion="tick" />
-        </span>
-        <span className={`${styles.ring} ${styles.ringFront}`} data-motion="tick" />
-      </span>
+      <span className={styles.mark} />
       <span className={styles.close} />
     </button>
   );

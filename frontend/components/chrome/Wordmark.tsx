@@ -3,10 +3,10 @@ import { BRAND_ALT_KO, WORDMARK_NATURAL, WORDMARK_WHITE } from "./copy";
 /**
  * The white 주주의관제탑 wordmark, rendered at a constrained height.
  *
- * R2 §Page shell puts a white wordmark in both chrome surfaces at two sizes —
- * nav **h 19px**, footer **h 17px** — and R2.1 re-cut the chrome cards "on
- * cosmos", which is why the white variant is what this dark chrome uses. The
- * placement is R2's; the artwork is P10's (the ring mark is retired).
+ * R2 §Page shell put a white wordmark in both chrome surfaces, and R2.1 re-cut
+ * the chrome cards "on cosmos", which is why the white variant is what this dark
+ * chrome uses. **R17 supersedes R2's two heights and its box-centred placement**
+ * (`docs/reference/design/rounds/17-brand-mark-launcher/`, signed 2026-08-31).
  *
  * Two rules still govern the file, and only one of them has the same reason it
  * used to:
@@ -19,24 +19,48 @@ import { BRAND_ALT_KO, WORDMARK_NATURAL, WORDMARK_WHITE } from "./copy";
  *   links it to the operator's file. So this stays a plain `<img>`: `next/image`
  *   would serve a re-compressed derivative, which is exactly what that proof
  *   forbids.
- * - **Height-constrained rendering only.** The intrinsic 1213×319 travels as the
+ * - **Height-constrained rendering only.** The intrinsic 1292×371 travels as the
  *   `width`/`height` attributes so the browser knows the ratio and reserves the
  *   right box before the PNG arrives (no layout shift in a 52px bar); CSS then
  *   sets the height and lets the width follow.
  *
- * One thing the new artwork changes that the numbers do not show: the mark is
- * 3.80:1 where the ring was 6.29:1, and only its **bottom half** is the Korean
- * wordmark (sparkle cluster above, 22-row gap between — see the README's
- * geometry table). At h19 that is a 72×19 box carrying a 9.7px glyph band, where
- * the ring put 14.4px of ink into the same 19px. The heights below are the
- * signed ones and stay signed; whether they are still the right ones is an open
- * question for the operator, filed in the P10 notebook.
+ * ## The two heights, and the offset that comes with them
+ *
+ * The box is **not** filled evenly: the sparkle cluster sits alone in the top
+ * (222×165, flush to the box's top and right), the Korean glyph band occupies
+ * the bottom (1132×176, flush to the bottom), and **30 empty rows** separate
+ * them. So box-centring the image sits the *legible* part below the optical
+ * centre of whatever row it is in, and a height-constrained placement gets a
+ * mark whose readable half is 47.44% of the declared height.
+ *
+ * R17 answers both halves of that (result.md §Q1/§Q2, `r17-mark.css` is the
+ * geometry canon):
+ *
+ * - **nav h27 / footer h24** — at h27 the glyph band is 12.81px against the
+ *   13.5px link type (0.95×, where R2's signed h19 gave 0.72× and the retired
+ *   ring gave 1.07×). h27 is also the ceiling the 52px bar allows under ink
+ *   alignment: h30 leaves only 3.0px above the box and the sparkle touches the
+ *   hairline.
+ * - **ink alignment, not box centring** — the band's geometric centre is at
+ *   76.28% of box height, i.e. `0.2628 × H` below the box centre, so the image
+ *   is lifted by that much, rounded to whole pixels: `translateY(-7px)` at h27,
+ *   `-6px` at h24. Rendered, that puts the h27 band centre at **26.10px** in a
+ *   52px bar whose optical centre is 26px.
+ *
+ * **The component carries the offset itself**, deliberately: it is not a value a
+ * caller can be trusted to remember, and a call site that forgot it would render
+ * a mark that is merely slightly low rather than visibly wrong.
+ *
+ * There is no viewport branch — h27 at 390px too (R17 §1).
  */
 export type WordmarkProps = {
-  /** 19 in the nav, 17 in the footer — R2's two numbers. */
-  height: 19 | 17;
+  /** 27 in the nav, 24 in the footer — R17's two numbers (R2's 19/17 retired). */
+  height: 27 | 24;
   className?: string;
 };
+
+/** `0.2628 × H` rounded to whole pixels — R17's `INK_OFFSET`, per height. */
+const INK_OFFSET_PX: Record<WordmarkProps["height"], number> = { 27: 7, 24: 6 };
 
 export function Wordmark({ height, className }: WordmarkProps) {
   return (
@@ -46,7 +70,11 @@ export function Wordmark({ height, className }: WordmarkProps) {
       width={WORDMARK_NATURAL.width}
       height={WORDMARK_NATURAL.height}
       className={className}
-      style={{ height: `${height}px`, width: "auto" }}
+      style={{
+        height: `${height}px`,
+        width: "auto",
+        transform: `translateY(-${INK_OFFSET_PX[height]}px)`,
+      }}
     />
   );
 }

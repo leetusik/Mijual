@@ -106,7 +106,7 @@ export function SiteNav() {
         {/* The mark is 관제 현황판's only entry from the chrome now (R8 §1), which
             is why the round removed the link that said the same thing twice. */}
         <Link href={ROUTES.board} className={styles.brand}>
-          <Wordmark height={19} />
+          <Wordmark height={27} />
         </Link>
 
         <nav className={styles.links}>

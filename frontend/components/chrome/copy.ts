@@ -19,25 +19,34 @@ import { ROUTES } from "@/lib/routes";
 
 /** The wordmark the cosmos chrome uses.
  *
- * R2 §Page shell sets the *placement*: "white … wordmark PNG (h 19px)" in the
- * nav, "(h 17)" in the footer, and R2.1 re-cut the chrome cards on cosmos with
- * the white mark. Those two numbers are still the signed ones. What R2's own
- * asset was — `mijual-logo-ring-white.png`, the latin MIJUAL wordmark with its
- * orbital ring — is **retired** by the 주주의관제탑 rebrand (P10); there is no
- * ring in the new mark, so no name or comment here says "ring".
+ * R2 §Page shell set the *placement* and R2.1 re-cut the chrome cards on cosmos
+ * with the white mark. **R17 supersedes R2's two heights** — nav h27 / footer
+ * h24, ink-aligned rather than box-centred — and `Wordmark.tsx` carries both
+ * numbers and the offset. What R2's own asset was — `mijual-logo-ring-white.png`,
+ * the latin MIJUAL wordmark with its orbital ring — is **retired** by the
+ * 주주의관제탑 rebrand (P10); there is no ring in the new mark, so no name or
+ * comment here says "ring".
  *
- * The file is `juju-wordmark-white.png`: an alpha-preserving black→white recolor
+ * The file is `juju2-wordmark-white.png`: an alpha-preserving black→white recolor
  * of the operator's own delivered PNG, generated **in this repo** and recorded
- * with its exact command in `public/assets/README.md`. The black sibling is for
- * light surfaces and never substitutes for it on cosmos.
+ * with its exact command in `public/assets/README.md`. It supersedes the thin
+ * first mark (`juju-wordmark-white.png`, 1213×319, landed by `P10.S1` and
+ * retired at the gate — "previous one was so thin"): the replacement carries
+ * **2.4× the ink** in its glyph band, which is why the fix was a new source file
+ * and not a larger placement.
+ *
+ * **There is no black sibling any more.** The first mark had one for light
+ * surfaces; nothing ever referenced it, R17 names no such variant, and the
+ * symbol — the one mark that does need to change colour — is painted with a CSS
+ * `mask` instead. See the assets README.
  *
  * It is still **never re-encoded** — the reason is now provenance rather than
  * byte-for-byte design-project output: the README proves this file by pixel
  * signature, and any re-compression breaks that proof. Which is why the consumer
  * is a plain `<img>` and not `next/image` (that would ship a re-compressed
  * derivative). */
-export const WORDMARK_WHITE = "/assets/juju-wordmark-white.png";
-export const WORDMARK_NATURAL = { width: 1213, height: 319 } as const;
+export const WORDMARK_WHITE = "/assets/juju2-wordmark-white.png";
+export const WORDMARK_NATURAL = { width: 1292, height: 371 } as const;
 
 /** The wordmark's text equivalent — the product's own name in Korean, unspaced
  * (`docs/current/product.md`). Not a new string: it is the name of the thing,

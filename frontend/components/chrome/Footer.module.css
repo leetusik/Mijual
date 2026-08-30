@@ -72,6 +72,84 @@
   color: var(--ink-1);
 }
 
+/* ── R17: the launcher was sitting on this row ────────────────────────────────
+ *
+ * A **dead interaction**, not a cosmetic overlap: `Feedback.tsx` anchors its
+ * 380px panel to the 의견 보내기 button, so a covered button is a control that
+ * cannot be reached. The arithmetic, read off `app/shell.css` (`.content` is
+ * `max-width: 1120px; margin-inline: auto; padding-inline: 24px` at ≥768, and
+ * `Footer.tsx` uses that class) and `Launcher.module.css` (68px wide, `right:
+ * var(--space-6)` = 24px):
+ *
+ *   launcher's left edge   = viewport − 92
+ *   footer content's right = (viewport + min(viewport, 1120)) / 2 − 24
+ *   → viewport ≤ 1120  : overlap **68px, constant**
+ *     1120 < v < 1256  : 628 − viewport/2
+ *     viewport ≥ 1256  : none
+ *
+ * Vertically there is no condition at all: the action row's line box sits at
+ * bottom 24–44.9px, entirely inside the launcher's 24–74px.
+ *
+ * **Measure ①, the corner reservation.** Whatever ends the row clears the
+ * launcher. This is not the backstop for measure ② below — `.inner` is
+ * `space-between`, so the last item is always flush to the content's right edge
+ * and hiding one item merely hands the covered position to the next one. That is
+ * the mistake R17 logged (result.md §7b ③) and it made things worse: it moved
+ * the covered element from 「AI 질문」 to 「의견 보내기」.
+ *
+ * **108px, and R17's own two numbers disagree here — one of them is wrong.**
+ * §1's prose opens with `padding-inline-end: 92px` ("런처 프레임 68 + 여백 24")
+ * and its code block then writes `84px` ("런처 폭 68 (하한) + 여백 16"). The
+ * second treats **68** as the floor, but the launcher is `right: var(--space-6)`,
+ * so from the viewport's right edge it occupies **24 + 68 = 92px** — which is
+ * what the prose's own decomposition says. Clearance is `P − 92`, so:
+ *
+ *   P =  84  ->  −8px   (still overlapping)
+ *   P =  92  ->   0px   (flush against the frame)
+ *   P = 108  ->  +16px  (the air the code block asked for)
+ *
+ * Measured in Chrome at 768 / 1024 / 1120 before this was corrected: `84px` left
+ * **exactly 8px** of the 의견 보내기 button under the launcher and every hit-test
+ * probe on the button still returned the launcher. The bug survived its own fix.
+ * So this takes the record's formula with the arithmetic corrected — 68 (frame)
+ * + 24 (its offset) + 16 (the stated air) — which is also the only value that
+ * satisfies what §5 signed: *「푸터 코너 예약 — 넣는다」*. Logged as an apply-time
+ * correction against the landed record; the record itself is read-only.
+ *
+ * Scoped to 768–1255 rather than applied flat, because above 1256 the viewport's
+ * own margin already clears the corner and a flat rule would pull the action row
+ * 84px inside the page's right alignment line, out of step with every other
+ * surface. ≤767px is untouched: the launcher does not render there (R14).
+ *
+ * **The `:global(.content)` in the selector is load-bearing, not decoration.**
+ * `Footer.tsx` puts both classes on this element, and `app/shell.css` gives the
+ * global one `padding-inline: var(--space-6)` — a *shorthand*, which sets the
+ * end padding too. A bare `.inner` here ties it on specificity (0,1,0) and then
+ * loses on source order, because `layout.tsx` imports the chrome before
+ * `./shell.css` and Next emits the bundles in that order. Measured: with a bare
+ * `.inner` the computed `padding-inline-end` stayed **24px** at every width and
+ * the launcher went on covering the button — the bug this rule exists to fix,
+ * still there and now invisible in the source. Naming both classes makes the
+ * selector (0,2,0) and states the actual condition: *this element is both.* */
+@media (min-width: 768px) and (max-width: 1255px) {
+  .inner:global(.content) {
+    padding-inline-end: 108px;
+  }
+}
+
+/* **Measure ②, the duplicate.** Independent of the geometry above: on desktop
+   this destination was said in three places — the nav link, this link, and the
+   launcher — and R8 §1's rule for cutting the 관제 현황판 nav link ("같은
+   목적지를 바에서 두 번 말하지 않는다") applies unchanged. **≤767px keeps the
+   link**, because the launcher does not render there and this is then the only
+   footer entry to 「AI 질문」. The element stays in the DOM at every width; only
+   its desktop visibility changes. */
+@media (min-width: 768px) {
+  .actionAsk {
+    display: none;
+  }
+}
+
 /* ≤480: 3단 스택 (워드마크 → 출처·© → 액션), each action ≥44px so nothing
    orphans onto a line of its own — the wrap R8's walk found at 390px. */
 @media (max-width: 480px) {
