@@ -27,9 +27,10 @@ __all__ = [
     "SPIKE_CACHE_DIR",
 ]
 
-#: Local docker Postgres from ``compose.yaml`` (host port 5433 keeps a system
-#: Postgres on 5432 out of the way).
-DEFAULT_DATABASE_URL = "postgresql+psycopg://mijual:mijual@localhost:5433/mijual"
+#: Local docker Postgres from ``compose.yaml`` (host port 5434 keeps other
+#: Postgres instances out of the way: 5432 is the system default and 5433 is
+#: held by another project of the operator's).
+DEFAULT_DATABASE_URL = "postgresql+psycopg://mijual:mijual@localhost:5434/mijual"
 #: Celery broker + result backend and the scheduler's run-lock store (P2.S6).
 #: Host port 6380 matches ``compose.yaml`` and keeps the machine's own
 #: redis-server (and another project's container) on 6379 out of the way.
@@ -114,7 +115,7 @@ class Settings:
     cookie_secure: bool = False
     #: ``MIJUAL_APP_BASE_URL`` — the origin the *frontend* is served from, used
     #: to build the password-reset link. The Next.js dev server's default.
-    app_base_url: str = "http://localhost:3000"
+    app_base_url: str = "http://localhost:3010"
 
     # -- the operator door (P5.S9, R7 §6.4). See ``mijual.web.ops``.
     #: ``MIJUAL_OPS_ID`` — the 운영자 ID. **A separate credential**, with no join
@@ -254,7 +255,7 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # `secure` on a plain-http dev server makes the cookie silently vanish.
         cookie_secure=(pick("MIJUAL_COOKIE_SECURE") or "").lower()
         in ("1", "true", "yes", "on"),
-        app_base_url=(pick("MIJUAL_APP_BASE_URL") or "http://localhost:3000").rstrip("/"),
+        app_base_url=(pick("MIJUAL_APP_BASE_URL") or "http://localhost:3010").rstrip("/"),
         # No default and no fallback: an operator door with a built-in credential
         # would be a back door. Unset simply never opens (`mijual.web.ops`).
         ops_id=pick("MIJUAL_OPS_ID"),

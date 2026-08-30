@@ -5,7 +5,7 @@
 #   make stack-status  what is running, and the URLs to open
 #
 # The frontend binds 0.0.0.0, so the app is reachable both at
-# http://127.0.0.1:3000 and over Tailscale at http://<tailscale-ip>:3000.
+# http://127.0.0.1:3010 and over Tailscale at http://<tailscale-ip>:3010.
 # Login works on both: MIJUAL_COOKIE_SECURE defaults off in dev, and the
 # session cookie is host-scoped while /api/* is same-origin via the Next
 # rewrite. The API itself stays on 127.0.0.1 — remote traffic reaches it
@@ -28,8 +28,8 @@ VENV  := .venv/bin
 STACK := var/stack
 
 API_HOST := 127.0.0.1
-API_PORT := 8000
-WEB_PORT := 3000
+API_PORT := 8010
+WEB_PORT := 3010
 
 # This machine's Tailscale IPv4, empty when the daemon is down. Used twice:
 # to print the remote URL, and to let `next dev` accept that origin (P7.S1).

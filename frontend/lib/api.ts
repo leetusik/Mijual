@@ -57,7 +57,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 /** Server components have no origin to be relative to — and no proxy to go
  * through, since they run beside the service. Same value `next.config.ts` uses. */
-const SERVER_ORIGIN = process.env.MIJUAL_API_ORIGIN ?? "http://localhost:8000";
+const SERVER_ORIGIN = process.env.MIJUAL_API_ORIGIN ?? "http://localhost:8010";
 
 /** `mijual.web.csrf.CSRF_HEADER`. Any non-empty value is accepted. */
 export const CSRF_HEADER = "X-Mijual-CSRF";

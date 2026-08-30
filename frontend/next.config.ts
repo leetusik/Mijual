@@ -21,7 +21,7 @@ import type { NextConfig } from "next";
  * `MIJUAL_API_ORIGIN` moves the upstream without a code change (P4 points it at
  * the deployed service, or replaces the rewrite with an edge route entirely).
  */
-const API_ORIGIN = process.env.MIJUAL_API_ORIGIN ?? "http://localhost:8000";
+const API_ORIGIN = process.env.MIJUAL_API_ORIGIN ?? "http://localhost:8010";
 
 /**
  * The dev-origin seam (`P7.S1`).

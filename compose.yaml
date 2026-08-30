@@ -24,7 +24,8 @@
 # no CORS and the session cookie stays same-origin. Run uvicorn first — with it
 # down, /api/* 502s while the app itself still serves.
 #
-# Host port 5433 keeps a system/other-project Postgres on 5432 out of the way.
+# Host port 5434 keeps a system/other-project Postgres out of the way: 5432 is the
+# system default and 5433 is held by another project of the operator's.
 # These credentials are local-dev only and are NOT secrets: real secrets
 # (DART_API_KEY, GEMINI_API_KEY) live in the gitignored repo-root .env.
 # `psql` is not on PATH on the dev machine — verify through SQLAlchemy.
@@ -38,7 +39,7 @@ services:
       POSTGRES_PASSWORD: mijual
       POSTGRES_DB: mijual
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - mijual-pgdata:/var/lib/postgresql/data
     healthcheck:

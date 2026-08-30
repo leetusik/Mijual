@@ -5,9 +5,9 @@
   "description": "주주의관제탑 Next.js frontend — built from the signed P3 design record (docs/reference/design/). RESPECT THE DESIGN.",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3010",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3010",
     "typecheck": "tsc --noEmit",
     "smoke": "node --test \"lib/*.test.ts\""
   },
