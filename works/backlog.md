@@ -8,7 +8,7 @@
 - Current phase: `P10`
 - Current slice: `P10.S6`
 - Next slice: `P10.S7`
-- Waiting on operator: `none`
+- Waiting on operator: `P10.S6`
 - Open deferred jobs: `23`
 
 ## Active Phases
@@ -49,7 +49,7 @@
 | [x] `P10.S3` | `done` | Korean copy sweep: every rendered string naming the product (name swap only) | `implementation` | `works/phases/active/P10/slices/P10.S3` |
 | [x] `P10.S4` | `done` | docs and repo-visible prose: in-scope product-name occurrences only | `docs` | `works/phases/active/P10/slices/P10.S4` |
 | [x] `P10.S5` | `done` | fidelity sweep in the operator runtime: dev and production, desktop and mobile | `qa` | `works/phases/active/P10/slices/P10.S5` |
-| [ ] `P10.S6` | `todo` | Design round — the mark in the chrome, and the chatbot launcher | `co-work` | `works/phases/active/P10/slices/P10.S6` |
+| [~] `P10.S6` | `pending` | Design round — the mark in the chrome, and the chatbot launcher | `co-work` | `works/phases/active/P10/slices/P10.S6` |
 | [ ] `P10.S7` | `todo` | Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font | `implementation` | `works/phases/active/P10/slices/P10.S7` |
 | [ ] `P10.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
