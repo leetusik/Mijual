@@ -169,8 +169,12 @@ four directed fixes plus a design round.
 ## Clarifications Resolved
 
 - Q: Should the design round cover only the nav/footer sizing, or the launcher mark too? —
-  A: **Both**, in one round. The agent lands the assets first so Claude Design reads the
-  real bold mark and the real symbol out of the repository.
+  A: **Both**, in one round.
+- Q: Should the agent land the new assets first, so Claude Design reads them out of the
+  repository? — A: **No — one design round, then everything else.** The operator's words:
+  *"just one design round and then do rest. you overcomplicating it."* The two PNGs go into
+  the session as **operator attachments**, which is the skill's own mechanism for exactly
+  this; a preparatory asset slice would buy nothing and cost a round-trip.
 - Q: Claude Design needs to see the new assets; that normally means pushing the branch. —
   A: **No push.** The operator connects Claude Design to this **local directory** instead,
   so the repository stays unpublished. The design slice therefore authorises no `git push`.
@@ -181,31 +185,30 @@ four directed fixes plus a design round.
 
 ## Design Style
 
-**`paired`** — one design round (`P10.S6`) followed immediately by its own apply slice
-(`P10.S7`), cut as a **bare folder** whose `plan.md` is written only when the round comes
-back. No `DECOMP2`: the round count (one) and the apply count (one) are both already known,
-which is exactly the condition `paired` is for. The phase's earlier slices are already
-decomposed and done, so no second decomposition pass is owed.
+**`paired`, one pair.** `P10.S6` is the design round; `P10.S7` applies it **and everything
+else in the same slice** — the bold mark and its white derivation, the favicon, the launcher
+asset, the `/ops` mono drop, and the Korean font pipeline. No `DECOMP2`, no preparatory
+fix slices. `P10.S7` is cut as a bare folder and its `plan.md` is written when the round
+comes back — that ban does not move.
 
 *Suggested by the agent; the operator should confirm or override before `P10.S6` starts.*
 
 ## Notes
 
-- **`P10.F3` is unusually cheap but not unusually safe.** It is a two-rule CSS edit, hence
-  `risk: low`, but it edits a **signed** R7 declaration. The authority is the operator's
-  literal "Drop mono, use Pretendard 600" at the gate — recorded here so the slice does not
-  have to re-derive it, and so the review can check it against an instruction rather than
-  against R7.
-- **"Pretendard 600" in that answer names a weight, not a promise about the family.**
-  Item 6 replaces the family underneath it in the same round; the operative part of the
-  answer is *drop the mono and the tracking*, and the weight (600) survives the swap.
-- **`P10.F4` supersedes a class-A design-project export.** `public/foundations/fonts.css`
-  is vendored byte-verbatim from R1 and is marked "do not edit". Retiring it — and the
-  2 MB `PretendardVariable.woff2` beside it — is a deliberate, operator-directed
-  supersession, and the assets README must record it the way it records the retired
-  `mijual-*` binaries: what the file was, its sha256, and why nothing loads it any more.
+- **The gate's Q2 answer names a weight, not a family.** "Pretendard 600" is operative on
+  *drop the mono and the tracking*; item 6 replaces the family underneath it in the same
+  slice, so the ops mark lands as **Noto Sans KR 600**.
+- **Two signed things are being superseded by operator instruction, not by an agent's
+  judgement**, and `P10.S7` must record both the way the assets README records the retired
+  `mijual-*` binaries — what it was, its sha256, why nothing loads it any more:
+  `public/foundations/fonts.css` (a class-A vendored R1 export marked *"do not edit"*) with
+  the 2,057,688-byte `PretendardVariable.woff2` beside it, and R7's mono declaration on
+  `.mark`/`.doorMark`.
 - **The retired thin mark gets the same treatment.** `juju-logo-source.png` and its two
-  derivatives were landed by `P10.S1` five days before this round; they are superseded, not
-  wrong, and the README's provenance table is the only in-repo record of what they were.
-- **The gate reopens after `P10.S7`.** `accept-gate P10 --require` still stands, and it now
-  additionally covers a mockup, so it could not be waived even if someone wanted to.
+  derivatives were landed by `P10.S1` five days earlier; they are superseded, not wrong.
+- **R6's animated launcher Saturn is `P10.S6`'s to retire and `P10.S7`'s to replace** — not
+  an agent's to decide. Its two-half ring is a bug the round already paid for.
+- **`P10.S7` is large by design.** If the round comes back and it will not fit one slice,
+  split it at fractional orders **then** — after the design has landed, never before.
+- **The gate reopens after `P10.S7`.** `accept-gate P10 --require` still stands and now
+  additionally covers a mockup, so it could not be waived.

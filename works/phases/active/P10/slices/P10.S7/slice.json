@@ -1,14 +1,14 @@
 {
   "id": "P10.S7",
   "phase_id": "P10",
-  "name": "Apply the signed round — mark sizes and the launcher, faithfully",
+  "name": "Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font",
   "kind": "implementation",
   "status": "todo",
-  "order": 11,
+  "order": 7,
   "depends_on": [
     "P10.S6"
   ],
-  "created_at": "2026-08-31T01:51:57+09:00",
+  "created_at": "2026-08-31T01:59:52+09:00",
   "started_at": null,
   "completed_at": null,
   "risk": "high",

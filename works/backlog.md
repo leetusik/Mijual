@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P10`
-- Current slice: `P10.F1`
-- Next slice: `P10.F2`
+- Current slice: `P10.S6`
+- Next slice: `P10.S7`
 - Waiting on operator: `none`
 - Open deferred jobs: `23`
 
@@ -16,7 +16,7 @@
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
-| [ ] `P10` | `in_progress` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.F1` | `works/phases/active/P10` |
+| [ ] `P10` | `in_progress` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.S6` | `works/phases/active/P10` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -49,12 +49,8 @@
 | [x] `P10.S3` | `done` | Korean copy sweep: every rendered string naming the product (name swap only) | `implementation` | `works/phases/active/P10/slices/P10.S3` |
 | [x] `P10.S4` | `done` | docs and repo-visible prose: in-scope product-name occurrences only | `docs` | `works/phases/active/P10/slices/P10.S4` |
 | [x] `P10.S5` | `done` | fidelity sweep in the operator runtime: dev and production, desktop and mobile | `qa` | `works/phases/active/P10/slices/P10.S5` |
-| [ ] `P10.F1` | `todo` | Brand mark v2 — land the bold logo, derive the white variant, repoint the chrome | `fix` | `works/phases/active/P10/slices/P10.F1` |
-| [ ] `P10.F2` | `todo` | Favicon + sparkle symbol — land the operator's square export and ship an icon at last | `fix` | `works/phases/active/P10/slices/P10.F2` |
-| [ ] `P10.F3` | `todo` | Ops mark font — drop --font-mono and the tracking from .mark / .doorMark | `fix` | `works/phases/active/P10/slices/P10.F3` |
-| [ ] `P10.F4` | `todo` | Korean font pipeline — adopt changple_web's self-hosted Noto Sans KR subset | `fix` | `works/phases/active/P10/slices/P10.F4` |
-| [ ] `P10.S6` | `todo` | Design round — nav/footer mark size and the chatbot launcher mark | `co-work` | `works/phases/active/P10/slices/P10.S6` |
-| [ ] `P10.S7` | `todo` | Apply the signed round — mark sizes and the launcher, faithfully | `implementation` | `works/phases/active/P10/slices/P10.S7` |
+| [ ] `P10.S6` | `todo` | Design round — the mark in the chrome, and the chatbot launcher | `co-work` | `works/phases/active/P10/slices/P10.S6` |
+| [ ] `P10.S7` | `todo` | Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font | `implementation` | `works/phases/active/P10/slices/P10.S7` |
 | [ ] `P10.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
 ## Phase P4: Ship & Submit

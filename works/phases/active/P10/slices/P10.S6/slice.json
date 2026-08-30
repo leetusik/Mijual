@@ -1,13 +1,11 @@
 {
   "id": "P10.S6",
   "phase_id": "P10",
-  "name": "Design round — nav/footer mark size and the chatbot launcher mark",
+  "name": "Design round — the mark in the chrome, and the chatbot launcher",
   "kind": "co-work",
   "status": "todo",
-  "order": 10,
-  "depends_on": [
-    "P10.F2"
-  ],
+  "order": 6,
+  "depends_on": [],
   "created_at": "2026-08-31T01:51:57+09:00",
   "started_at": null,
   "completed_at": null,
