@@ -1,18 +1,18 @@
 {
-  "id": "P10.REVIEW",
+  "id": "P10.F1",
   "phase_id": "P10",
-  "name": "phase review",
-  "kind": "review",
-  "status": "changes_requested",
-  "order": 9999,
+  "name": "Brand mark v2 — land the bold logo, derive the white variant, repoint the chrome",
+  "kind": "fix",
+  "status": "todo",
+  "order": 6,
   "depends_on": [],
-  "created_at": "2026-08-30T00:53:42+09:00",
-  "started_at": "2026-08-30T02:51:10+09:00",
+  "created_at": "2026-08-31T01:51:51+09:00",
+  "started_at": null,
   "completed_at": null,
   "risk": "high",
   "source": {
-    "type": "new_phase",
-    "id": "P10"
+    "type": "manual",
+    "id": null
   },
   "paths": {
     "plan": "plan.md",

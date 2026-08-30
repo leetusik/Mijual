@@ -517,3 +517,11 @@
 {"ts": "2026-08-30T03:26:05+09:00", "type": "deferred_created", "deferred": "D24", "source": "P10.S5"}
 {"ts": "2026-08-30T03:26:05+09:00", "type": "deferred_created", "deferred": "D25", "source": "P10.REVIEW"}
 {"ts": "2026-08-30T10:07:19+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0011_operator-directed_port_move_the_dev_stack_runs_on_3010_8010_5434_so_it_never_collides_with_the_operator_s_other_project", "source": "operator"}
+{"ts": "2026-08-31T01:51:45+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "in_progress", "new_status": "changes_requested"}
+{"ts": "2026-08-31T01:51:45+09:00", "type": "phase_reviewed", "phase": "P10", "verdict": "changes_requested", "reviewer": "operator"}
+{"ts": "2026-08-31T01:51:51+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F1"}
+{"ts": "2026-08-31T01:51:52+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F2"}
+{"ts": "2026-08-31T01:51:52+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F3"}
+{"ts": "2026-08-31T01:51:52+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F4"}
+{"ts": "2026-08-31T01:51:57+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.S6"}
+{"ts": "2026-08-31T01:51:57+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.S7"}
