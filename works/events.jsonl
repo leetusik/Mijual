@@ -545,3 +545,7 @@
 {"ts": "2026-08-31T04:43:46+09:00", "type": "deferred_created", "deferred": "D27", "source": "P10.REVIEW"}
 {"ts": "2026-08-31T04:43:51+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-31T04:43:51+09:00", "type": "acceptance_opened", "phase": "P10"}
+{"ts": "2026-08-31T09:23:27+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "in_progress", "new_status": "changes_requested"}
+{"ts": "2026-08-31T09:23:27+09:00", "type": "phase_reviewed", "phase": "P10", "verdict": "changes_requested", "reviewer": "operator"}
+{"ts": "2026-08-31T09:28:14+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F1"}
+{"ts": "2026-08-31T09:28:14+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F2"}

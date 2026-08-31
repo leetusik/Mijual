@@ -1,18 +1,18 @@
 {
-  "id": "P10.REVIEW",
+  "id": "P10.F2",
   "phase_id": "P10",
-  "name": "phase review",
-  "kind": "review",
-  "status": "changes_requested",
-  "order": 9999,
+  "name": "R18 ②②b — nav·/ops 활성 탭이 형제를 밀지 않게 (폭 예약)",
+  "kind": "fix",
+  "status": "todo",
+  "order": 8.5,
   "depends_on": [],
-  "created_at": "2026-08-30T00:53:42+09:00",
-  "started_at": "2026-08-30T02:51:10+09:00",
+  "created_at": "2026-08-31T09:28:14+09:00",
+  "started_at": null,
   "completed_at": null,
   "risk": "high",
   "source": {
-    "type": "new_phase",
-    "id": "P10"
+    "type": "manual",
+    "id": null
   },
   "paths": {
     "plan": "plan.md",

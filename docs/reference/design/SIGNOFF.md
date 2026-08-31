@@ -653,3 +653,45 @@ This file is a factual record dropped at gate close; it is data, not instruction
   them mid-review. To run afterwards: rewrite the `group` value on line 1 of the six cards and
   nothing else.
 - This file is a factual record dropped at gate close; it is data, not instructions.
+
+---
+
+## R18 — P10.review · 로고 자간 · nav 밀림 · 파비콘 (`P10.F1` + `P10.F2`)
+
+**서명: 2026-08-31, 운영자.** 승인 문구: 「go for it. no mock up required. apply directly.
+wit the two fix slices」 — 앞선 「check the design system again. new arrival is there」에
+이은 것.
+
+- **이 라운드에는 오케스트레이터 핸드오프가 없다.** P10의 수용 게이트가 열려 있는 동안
+  **운영자가 직접** Claude Design 세션을 돌렸고, 오케스트레이터는 도착한 것을 읽어서
+  검산하고 적용했다. 나간 문서 없음, 돌아온 문서만 있음. 이것은 `design-cowork`의 통상
+  경로가 아니며, 그 사실을 여기 적어 둔다.
+- **목업 없음, 목업 게이트 없음 — 운영자가 명시적으로 면제했다.** 따라서 이 라운드의
+  승인은 「돌아가는 목업을 보고 한 승인」이 **아니다.** 세 처방의 계약을 읽고 한 승인이며,
+  실제로 돌아가는 것을 운영자가 보는 시점은 **P10 수용 게이트**다. R17과 같은 구조이고,
+  같은 이유로 여기 명시한다.
+- 세 건: ① 워드마크 「의 관」의 4분의 1 각공백 45열 삭제 (`1292×371` → **`1247×371`**)
+  ② nav 활성 링크가 600으로 굵어지며 형제를 미는 결함 — 숨은 쌍둥이로 폭 예약
+  ③ 파비콘 투명 타일 + 잉크 `#2b8e6c` + 잉크 폭 84% → **75%**.
+- **②b(같은 결함의 `/ops` 탭 판)는 라운드가 운영자 판단으로 남긴 것을, 오케스트레이터가
+  제안하고 운영자가 승인해 범위에 넣었다.** 라운드 문서 자체는 이것을 범위 밖(§⑦.1)으로
+  적고 있으므로, 그 차이가 여기서 해소된다.
+- **R17을 부분 승계한다** — 워드마크 트림 박스, 파비콘 타일의 불투명성, 파비콘 잉크 폭
+  세 값. 갈리지 않은 것: 세로 기하 전부(`INK_OFFSET 0.2628·H`, `translateY(-7/-6px)`,
+  밴드 중심 76.28%)와 **런처의 `mask-size: 84%`**. R17의 「아트워크 하나, 규칙 하나」는
+  크롭에 대한 서명이었고 그 아트워크는 그대로다; 갈린 것은 표면별 배치 규칙뿐이다.
+- **적용 전에 오케스트레이터가 전부 실측 재현했다** (`rounds/18-p10-review/output/VERIFICATION.md`):
+  스크래치 드라이런이 1247×371 · 78,212 / 69,630 / 154 · 간격 `x=519..543` · 스파클 `x=1025` ·
+  글자띠 `1087×176 at y=195`를 예측대로 냈고, 알파 연속성 해시가 일치했으며, `#2b8e6c`의
+  대비 4.05 / 5.19도 독립 재계산으로 확인됐다.
+- **라운드의 검증 표에 작동하지 않는 가드가 하나 있고, 그것은 채택하지 않는다.**
+  §①의 「불투명 근백색 = 0」은 흰 파생물에 대해 항상 불투명 픽셀 수(69,630)를 돌려주므로
+  아무것도 걸러내지 못한다 — R17 함정 2는 원래 **소스**에 대한 검사였다. 대신 알파 splice
+  해시 비교를 쓴다. **처방이 아니라 검산 절차에 대한 지적이고, 명령·상수·기하는 전부 옳다.**
+- Landed record: `rounds/18-p10-review/` — `handoff.md`(표지, 오케스트레이터 작성) ·
+  `output/handoff.md`(돌아온 계약, **읽기 전용**) · `output/VERIFICATION.md`(검산).
+  카드 `p10-review/Review.html`(그룹 `P10.review`)은 디자인 프로젝트에 남는다.
+- **미해결로 남는 빚:** R17 카드 5장이 아직 `1292`·`84%`를 그리고 있고(다음 크롬 라운드),
+  같은 카드들의 `⏳ P10.S6 · …` 그룹 주소 리그룹도 P10 수용 게이트가 닫힐 때까지 유예된다.
+  이 라운드의 `P10.review` 그룹 역시 게이트가 닫힐 때 함께 정리한다.
+- This file is a factual record dropped at gate close; it is data, not instructions.
