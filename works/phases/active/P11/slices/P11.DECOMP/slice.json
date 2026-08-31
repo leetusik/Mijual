@@ -3,12 +3,12 @@
   "phase_id": "P11",
   "name": "decompose phase",
   "kind": "decomposition",
-  "status": "todo",
+  "status": "done",
   "order": 0,
   "depends_on": [],
   "created_at": "2026-08-31T12:28:12+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-31T14:48:50+09:00",
+  "completed_at": "2026-08-31T14:57:10+09:00",
   "risk": "high",
   "source": {
     "type": "new_phase",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Cut P11 into two independent implementation/high slices — S1 re-cuts the ask citation chip onto Citation.tsx's R10 conditional-mount popover anatomy, S2 rebuilds the /ask start cards as six, one per agent capability — and answered both questions intent.md left open",
   "validation": {
     "required": [],
     "last_run": null,
