@@ -53,7 +53,7 @@
 | [x] `P10.S7` | `done` | Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font | `implementation` | `works/phases/active/P10/slices/P10.S7` |
 | [x] `P10.F1` | `done` | R18 ①③ — 워드마크 45열 삭제 · 파비콘 투명 타일, 그리고 두 README | `fix` | `works/phases/active/P10/slices/P10.F1` |
 | [x] `P10.F2` | `done` | R18 ②②b — nav·/ops 활성 탭이 형제를 밀지 않게 (폭 예약) | `fix` | `works/phases/active/P10/slices/P10.F2` |
-| [ ] `P10.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
+| [ ] `P10.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

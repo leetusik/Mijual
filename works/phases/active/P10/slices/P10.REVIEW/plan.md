@@ -1,126 +1,136 @@
-# Plan — P10.REVIEW · phase review (round 2)
+# Plan — P10.REVIEW · phase review (round 3)
 
-`kind: review` · `risk: high` · **this is a re-review.** The slice already ran once, passed, opened
-the acceptance gate — and the operator **did not clear it**. Round 2 then landed `P10.S6` (the R17
-design round) and `P10.S7` (the apply slice). Your `result.md` from round 1 is still on disk;
-**rewrite it for round 2**, keeping round 1's verdict legible as history.
+`kind: review` · `risk: high` · **third pass.** Round 1 passed and the gate was cleared into round 2;
+round 2 passed and the operator **did not clear the gate** — they ran a design session instead.
+Round 3 applied what came back. Your `result.md` from round 2 is on disk; **rewrite it for round 3**,
+keeping the earlier verdicts legible as history.
 
 ## What changed since your last pass
 
-- Round 1's ten doc versions are **already consolidated and must not be re-versioned.**
-- `P10.S6` — design round R17. Record: `docs/reference/design/rounds/17-brand-mark-launcher/output/`.
-  **The mockup was waived by the operator**, so nothing was ever put in front of them running;
-  `SIGNOFF.md` § R17 says so plainly and defers the card regroup to the acceptance gate. **Do not
-  perform the regroup** — it is the orchestrator's, and only after the gate clears.
-- `P10.S7` — applied R17 plus four operator-directed items in one slice, eight blocks.
-- **The runtime moved.** Commit `c8606d0` put the stack on **3010 / 8010 / 5434**, so `make stack-up`
-  now works and the old 5433 `!override` recipe is obsolete. Round 1's walkthrough (still on
-  `phase.json`) is stale — **your new walkthrough must not repeat it.**
+- **R18 (`P10.review`) landed** — `docs/reference/design/rounds/18-p10-review/`. Read all three:
+  `handoff.md` (the orchestrator's cover note — what R18 supersedes from R17), `output/handoff.md`
+  (the returned contract, **read-only**), `output/VERIFICATION.md` (the orchestrator's pre-apply
+  re-measurement). **The operator ran this session themselves**, so there is no outgoing handoff, and
+  **the mockup was waived again** — nobody has seen R18 running except the two fix slices.
+- **`P10.F1`** applied §①③④ — the wordmark to 1247×371, three transparent `#2b8e6c` favicon tiles at
+  75%, seven README sections.
+- **`P10.F2`** applied §②②b — nav and `/ops` active tabs reserve their 600 width.
+- **Round 2's 8 doc versions are already consolidated and must not be re-versioned.** Round 1's ten
+  likewise. **Only round 3's four `## Doc impact` entries** are yours.
+- The gate is **reset** (`requested_at=none`), still `required: true`.
 
 ## 1. Validate the phase as a whole
 
-Every slice's validation together, not slice by slice: `npm run typecheck`, `npm run build`,
-`npm run smoke`, `pytest`, and `python3 scripts/workflow.py validate`. Then the phase's own gates as
-round 1 ran them (`gates run` twice byte-identical, `estimate report` twice byte-identical,
-`scheduler --offline`, `extract recheck`, `evalset refresh-recall`, the exposure invariant, the
-secret scan) — round 2 touched only the frontend and should not have moved any of them, which is
-exactly why re-running them is the check.
+Everything together, as in round 2: `npm run typecheck`, `npm run build`, `npm run smoke`, `pytest`,
+`python3 scripts/workflow.py validate`, then the phase gates (`gates run` twice byte-identical,
+`estimate report` twice, `scheduler --offline`, `extract recheck`, `evalset refresh-recall`, the
+exposure invariant, the secret scan). Round 3 touched only frontend chrome and two binaries, so none
+of them should have moved — which is exactly why you re-run them.
 
-## 2. Verify the two corrections `P10.S7` made to the signed record
+## 2. Five signed values in this phase turned out wrong. Check the corrections, not the claims.
 
-`P10.S7` corrected R17 twice at apply time **without editing the record**, which is the right
-handling — but a slice correcting a signed value is precisely what a review exists to check.
+R17 shipped three (a filled counter, ghost ink `-trim` preserves, an 84px reservation that left 8px
+of the button covered) and **R18 shipped three broken verification procedures** that `P10.F1` caught.
+That is the phase's defining pattern and it should shape where you spend effort.
 
-1. **The footer reservation shipped at 108px where R17's code block signed 84px.** R17 §1 states
-   *both* `92px` (prose) and `84px` (code). Confirm from the product files that `.inner` **is**
-   `.content` (`Footer.tsx` renders `className={`content ${styles.inner}`}`), so
-   `padding-inline-end` **replaces** `.content`'s 24px rather than adding to it, making the floor
-   `24 + 68 = 92` and not `68`. Then confirm in a browser that 의견 보내기 is actually clickable and
-   opens its panel at **768, 1024, 1120, 1255 and 1280** — hit-test the point, do not eyeball it.
-   *(The orchestrator independently reproduced this arithmetic; verify it in the running product.)*
-2. **The claim that R17's absolute nav numbers are 0.5px high** (border-box vs content-box) while
-   the *relationship* holds. Re-measure rather than accepting it.
+Re-measure, do not accept:
 
-## 3. Fidelity to R17 — RESPECT THE DESIGN
+1. **The wordmark.** 1247×371; ink statistics **78,212 / 69,630 / 154 unchanged** from the 1292 file;
+   the two counter islands `50×46+402+226` → 481 and `69×15+969+335` → 15; the alpha-splice hash.
+   **The 45 cut columns must have been dead** — verify the band `x=519..588` was zero-alpha over the
+   full height in the pre-change file (it is in git).
+2. **`P10.F1`'s correction of R18's aspect.** R18 signs `3.3603` and widths `90.7 / 80.6`; F1 wrote
+   **3.3612 / 90.75 / 80.67**. `1247/371` decides it. Confirm Chrome agrees in both runtimes.
+3. **`P10.F1`'s three replaced procedures actually work** — i.e. each can *fail*. Run the README's
+   new ink check against a deliberately wrong file and confirm it reports non-zero. A guard that
+   passes on bad input is the thing this phase keeps shipping.
+4. **The vertical geometry did not move.** `INK_OFFSET_PX`, both `translateY` values, band centre
+   **25.60** at h27. R18 changed only the horizontal.
+5. **`P10.F2`'s `left`-array equality**, and that it could have failed: the pre-change arrays
+   differed (279.484375 vs 278.78125). Re-measure after, on all five nav routes and all six `/ops`
+   tabs, dev **and** production.
+6. **`P10.F2`'s accessibility claim, independently.** Dump the AX tree: each nav link and each `/ops`
+   tab reads its label **once**. The twin is generated content, and `visibility: hidden` is the only
+   thing keeping it out — F2 proved that with an `opacity: 0` negative control. Reproduce it.
+7. **`P10.F2`'s one deviation** — `white-space: nowrap` is on the nav's `.link` but deliberately
+   **not** on `/ops`'s `.tab`. Verify at **390** that the `/ops` tab row still wraps and does not
+   overflow, and that its values are unchanged from before the slice.
 
-Against `output/build-prompt.md` and `output/result.md`, check that **nothing signed was dropped,
-simplified or "improved"**: the two wordmark heights and their ink offsets; the launcher's full
-state table (rest / hover / active / focus-visible / open / reduced-motion); **that the hover colour
-change deliberately survives `prefers-reduced-motion`** and was not "tidied" into that block; that
-no animation remains anywhere in the launcher; the symbol's 84% ink rule and its two colours; the
-favicon's opaque tile at all three sizes; and that the frozen `foundations/tokens.css` was **not**
-edited (the override belongs in `app/shell.css`).
+## 3. Fidelity to R18 — RESPECT THE DESIGN
 
-Also verify the two class-C derivations by the README's own rule — **pixel signature, never file
-sha256** — and specifically that the wordmark derivative has **0 opaque near-white pixels** and the
-symbol derivative re-trims to exactly `222x165+0+0`. Those two guards exist because the operator's
-delivered files each carried a defect that is invisible except in the shipped variant.
+Against `output/handoff.md`: every prescription present and nothing dropped, simplified or
+"improved". Specifically the **75% favicon / 84% launcher divergence is deliberate** — confirm the
+launcher still masks at 84% and was not "made consistent"; the **mobile sheet and the landing board
+are deliberately outside** F2's rule; `tokens.css` is untouched; **no new or deleted copy**; and the
+design records under `docs/reference/design/rounds/**` were **not edited** by either fix slice.
 
-## 4. The gate stages — this phase's gate is `required: true`
+Also confirm **no orphaned design routes** — R18's mockup was waived, so there should be none.
 
-**Open the running product yourself.** Do not pass on `P10.S5`'s or `P10.S7`'s reports, however
-thorough they read.
+## 4. The gate stages — `required: true`
 
-- **Runtime:** `docs/current/operations.md` § Operator Runtime. `make stack-up`, dev at
-  **`http://127.0.0.1:3010`**, API at **8010**; **and additionally the production build**
-  (`npm run build && npm run start`). Desktop **1280** and mobile **390**. `/ops` needs throwaway
-  `MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD` or you will only ever see the door — and **restore the
-  stack to how you found it** afterwards.
-- **Spot-check the phase's headline claims yourself:** the mark painted at its new size on both
-  chrome surfaces, both document titles, the favicon actually served (`link[rel*=icon]` present in
-  **both** runtimes — round 1 proved its absence the same way), the 실권주 line, `/docs`, the retired
-  binaries 404, no old name on any reader page, and the live agent naming itself correctly.
-- **The functional sweep — mandatory here, because `P10.S7` shipped real wiring.** Every visible
-  control does something observable; interaction states including browser defaults the record never
-  drew; liveness over time; and **type into it and wait** on anything implying live behaviour. The
-  launcher and the footer button are the obvious ones, but go control by control.
-- **Walk it once with fresh eyes as a first-time user** and report everything dead, confusing or
-  annoying — explicitly **not** judged against the design record. Those findings go into the
-  walkthrough, never into silent fixes.
-- **Re-run the whole cumulative `## Regression Checklist`** in the qa doc — every earlier phase's
-  headline behaviours, not just this phase's surfaces — then append this phase's lines. `P10.S7`
-  drafted them in `slices/P10.S7/result.md` §11.
-- Confirm **no orphaned design routes** exist. The mockup was waived, so there should be none at
-  all; if you find one, that is a finding.
+**Open the running product yourself.** Do not pass on F1's or F2's reports.
+
+- **Runtime:** `docs/current/operations.md` § Operator Runtime. `make stack-up`, dev
+  **`http://127.0.0.1:3010`**, **and the production build**. **1280** and **390**. `/ops` needs
+  throwaway `MIJUAL_OPS_ID` / `MIJUAL_OPS_PASSWORD` as environment variables on the API process —
+  **never open `.env`** — and **restore the stack afterwards**.
+- **Instrument:** Aside if it runs here; neither fix slice could, and both drove real Chrome over
+  CDP. Either is fine — **name what you actually used** and never claim a run you did not make.
+- **Spot-check the phase's headline claims yourself**, round 1's and round 2's included: both
+  document titles, no old name on any reader page, the 실권주 line, `/docs`, the live agent naming
+  itself, the favicon `<link>`s in both runtimes, the retired binaries 404, 의견 보내기 opening its
+  panel, and the mark now reading **joined** in nav and footer.
+- **The functional sweep — mandatory.** Every visible control does something observable; interaction
+  states including browser defaults; liveness over time; type into it and wait on anything implying
+  live behaviour. Round 2 swept 99 controls with zero dead; the surfaces changed since are the nav,
+  the `/ops` tab row and the two binaries, but sweep the product, not the diff.
+- **Walk it once with fresh eyes as a first-time user** — everything dead, confusing or annoying,
+  explicitly **not** judged against the design record. Round 2's nine findings are in your own
+  round-2 `result.md` §6; say which still stand, and add what is new.
+- **Re-run the whole cumulative `## Regression Checklist`** in the qa doc, then append round 3's
+  lines and **correct the ones round 3 falsified** (the checklist still quotes `1292x371` and the
+  opaque 84% tile — `P10.F1`'s doc-impact note names both).
 
 ## 5. Route every `## Operator Questions` entry
 
-An unrouted entry blocks the pass. The notebook's list carries three **closed** by round 2, three
-**still routed to deferred jobs** (verify each is actually filed — `workflow.py deferred` reports 23
-open), and one **new**:
+An unrouted entry blocks the pass. Three are new or changed since your last pass:
 
-- **The Korean subset's Hangul coverage** — `P10.S7` adopted **(b) KS X 1001, 291,072 B** over
-  (a) 94,604 B (company names fall back to the OS face) and (c) the full block at 1,022,828 B. This
-  is a **deliberate adaptation away from changple_web**, whose product has no dynamic Korean. It is
-  a real decision with a real cost, so **fold it into the walkthrough as a decision for the
-  operator**, with the three numbers and the one-variable flip to (c).
+- **The landing board's tab strip** — a third instance of the shove defect, deliberately not fixed
+  (three children per tab; the twin does not transfer). `P10.F2` measured it: **zero shift at 1280**,
+  **0.42px on `CB` at 390**. → this is an **operator decision** (its own design round, or a deferred
+  job). Fold it into the walkthrough with the numbers, or file it — but route it.
+- **R18 §②b** (`/ops` tabs) — already **CLOSED**, applied by `P10.F2`. Note that R18's own §⑦.1
+  still files it as out of scope; the operator's approval is what moved it. Confirm the record says so.
+- **Korean coverage** — still open, unchanged: (a) 94,604 B / **(b) 291,072 B adopted** / (c)
+  1,022,828 B, `HANGUL_COVERAGE=full` flips it. Carry it into the walkthrough verbatim.
 
-## 6. Docs — consolidate round 2 only, and only on a pass
+## 6. Docs — consolidate round 3 only, and only on a pass
 
-`P10.S7` appended **eight** `## Doc impact` lines. Consolidate **those** into new doc versions with
-`doc-new-version --source P10.REVIEW`. **Round 1's fifteen lines are already versioned** — the
-notebook compresses them to a pointer saying so. Re-versioning them would be a real error.
-
-Docs only, never source. Not in parallel mode, so consolidation happens here on a pass.
+Round 3's **four** `## Doc impact` entries → `doc-new-version --source P10.REVIEW`. `frontend.md`,
+`qa.md` and `decisions.md` are named there. **Rounds 1 and 2 are already versioned** — re-versioning
+them is a real error. Docs only, never source. Not in parallel mode, so consolidation happens here.
 
 ## 7. What you return
 
-- `review_verdict`: `pass` | `changes_requested` | `blocked`, with numbered findings and proposed
-  fix slices if not a pass. **A non-pass stops you before §6** — complete validation and judgment
-  first so the orchestrator gets the whole picture in one cycle, then return without doing
-  pass-only work.
-- On a **pass**, a concrete **`walkthrough`**: the run command, the URLs, what to click, at which
-  viewports, in the operator's runtime — plus the live decisions listed above. Write it for someone
-  who has already been through one failed gate on this phase: say what is *new* since round 1 and
-  what you are *not* asking them to re-test.
-- `explain: not written — run /explain for this phase` — fixed pointer; explaining is separate.
+- `review_verdict`: `pass` | `changes_requested` | `blocked`, with numbered findings and proposed fix
+  slices if not a pass. **A non-pass stops you before §6.**
+- On a **pass**, a concrete **`walkthrough`** — the run command, URLs, what to click, at which
+  viewports. Write it for someone who has now been through **two** gates on this phase: say what is
+  **new in round 3** and what you are **not** asking them to re-test. It must carry three things:
+  1. the **Korean-coverage** decision, with all three numbers;
+  2. **look at the real browser tab, light and dark** — `P10.F1` could not photograph the OS tab
+     strip (no Screen Recording permission) and proved the tile from served bytes plus a 16 CSS px
+     paint instead, so this is the one claim in the phase resting on inference rather than sight.
+     Say that plainly;
+  3. the **landing board** decision, if you routed it to the walkthrough rather than to a job.
+- `explain: not written — run /explain for this phase` — fixed pointer.
 
-**Do not** run `accept-gate`, `review-phase`, `finish-slice` or any commit. The orchestrator owns
-every state transition. **Do not** perform the R17 card regroup.
+**Do not** run `accept-gate`, `review-phase`, `finish-slice`, or any commit; the orchestrator owns
+every transition. **Do not** perform the R17/R18 card regroup — it waits for the gate to clear.
 
 ## A standing bias for this review
 
-Two rounds of this phase have now shipped work that *looked* right and was not — a filled counter
-visible only in the variant the product uses, ghost ink `-trim` preserves, a dead button under the
-launcher, and a signed 84px that left 8px of that button still covered. Every one was caught by
-measuring in a browser rather than reading source. **Weight your effort accordingly.**
+Three of the last five defects in this phase were **checks that could not fail** — a guard over an
+all-white image, an aspect nobody divided, a pixel read from transparent canvas. When you verify
+something, ask what input would make your check report failure. If there is none, you have not
+checked anything.
