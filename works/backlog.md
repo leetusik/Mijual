@@ -6,9 +6,9 @@
 ## Pointer
 
 - Current phase: `P10`
-- Current slice: `none`
+- Current slice: `P10.REVIEW`
 - Next slice: `none`
-- Waiting on operator: `P10`
+- Waiting on operator: `none`
 - Open deferred jobs: `25`
 
 ## Active Phases
@@ -16,7 +16,8 @@
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
-| [~] `P10` | `pending` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
+| [ ] `P10` | `in_progress` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
+| [ ] `P11` | `planned` | `pending` | Ask agent polish: inline citations and feature cards | `P11.DECOMP` | `works/phases/active/P11` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -53,7 +54,14 @@
 | [x] `P10.S7` | `done` | Apply it all — the signed design, the new mark, the favicon, the ops mark, the Korean font | `implementation` | `works/phases/active/P10/slices/P10.S7` |
 | [x] `P10.F1` | `done` | R18 ①③ — 워드마크 45열 삭제 · 파비콘 투명 타일, 그리고 두 README | `fix` | `works/phases/active/P10/slices/P10.F1` |
 | [x] `P10.F2` | `done` | R18 ②②b — nav·/ops 활성 탭이 형제를 밀지 않게 (폭 예약) | `fix` | `works/phases/active/P10/slices/P10.F2` |
-| [ ] `P10.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
+| [ ] `P10.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
+
+## Phase P11: Ask agent polish: inline citations and feature cards
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P11.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P11/slices/P11.DECOMP` |
+| [ ] `P11.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

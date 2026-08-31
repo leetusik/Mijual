@@ -16,13 +16,25 @@
       "id": "P10",
       "name": "Rebrand to 주주의관제탑",
       "objective": "Replace the product's user-facing identity — name 미주알 → 주주의관제탑 (uniformly unspaced, no latin mark) and the MIJUAL wordmark → the operator's supplied logo plus a derived white variant for the cosmos-dark chrome — across every operator-visible surface: brand binaries, favicon, document title, chrome and ops copy, the signed Korean strings that name the product, and user-visible docs. Code identifiers (src/mijual, MIJUAL_* env vars, X-Mijual-CSRF) are explicitly out of scope. Lands before P4 so the deck, demo video and submission carry the new name.",
-      "status": "pending",
+      "status": "in_progress",
       "order": 3.9,
       "path": "works/phases/active/P10",
       "review_status": "changes_requested",
       "current_slice": "P10.REVIEW",
       "slice_count": 11,
       "done_slice_count": 10
+    },
+    {
+      "id": "P11",
+      "name": "Ask agent polish: inline citations and feature cards",
+      "objective": "Fix two operator-reported defects on the AI 질문 surface. (1) Citation chips break the prose: InlineCitation's always-mounted .quoteWrap is display:grid — a block box in <p class=prose>'s inline flow — so every chip forces a line break and a sentence resting on two or more 근거 renders as 「…입니다.[1] ⏎ [2] ⏎ [3]」. Re-cut the ask chip onto the conditionally-mounted absolute-popover anatomy components/Citation.tsx already ships (R10), so chips follow the sentence's period inline and adjacent chips sit side by side — across all three signed placements (프로즈 · 데이터 행 값 · 계산 입력), on the page and the widget, at desktop and ≤767. Server-side numbering is correct and is not touched. (2) The four hard-coded START_CHIPS_KO cards are all read-a-filing questions, exercising only search_events/get_event and leaving calculate, get_portfolio, save_feedback and get_contact invisible. Replace them with a card set — count freed from D11's 'exactly four' by operator instruction — chosen so that clicking the cards one at a time demonstrates every agent capability, keeping R16's layout and the 'card sentence is the question sent' rule. Lands before P4 so the demo video shows both.",
+      "status": "planned",
+      "order": 3.95,
+      "path": "works/phases/active/P11",
+      "review_status": "pending",
+      "current_slice": "P11.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
     },
     {
       "id": "P4",
@@ -40,5 +52,5 @@
   "deferred_open_count": 25,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-31T11:24:27+09:00"
+  "last_rebuilt_at": "2026-08-31T12:28:59+09:00"
 }

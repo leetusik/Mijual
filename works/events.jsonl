@@ -560,3 +560,6 @@
 {"ts": "2026-08-31T11:15:15+09:00", "type": "doc_version_created", "doc": "product", "version": "v0011_p10_round_3_the_favicon-scale_mark_entry_now_describes_the_shipped_tile_transparent_one_2b8e6c_ink_at_75", "source": "P10.REVIEW"}
 {"ts": "2026-08-31T11:24:27+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-31T11:24:27+09:00", "type": "acceptance_opened", "phase": "P10"}
+{"ts": "2026-08-31T12:03:40+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "in_progress", "new_status": "changes_requested"}
+{"ts": "2026-08-31T12:03:40+09:00", "type": "phase_reviewed", "phase": "P10", "verdict": "changes_requested", "reviewer": "operator"}
+{"ts": "2026-08-31T12:28:12+09:00", "type": "phase_created", "phase": "P11"}
