@@ -6,10 +6,10 @@
 ## Pointer
 
 - Current phase: `P11`
-- Current slice: `P11.REVIEW`
+- Current slice: `none`
 - Next slice: `none`
-- Waiting on operator: `none`
-- Open deferred jobs: `25`
+- Waiting on operator: `P11`
+- Open deferred jobs: `28`
 
 ## Active Phases
 
@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
-| [ ] `P11` | `planned` | `pending` | Ask agent polish: inline citations and feature cards | `P11.REVIEW` | `works/phases/active/P11` |
+| [~] `P11` | `pending` | `pending` | Ask agent polish: inline citations and feature cards | `P11.REVIEW` | `works/phases/active/P11` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -64,7 +64,7 @@
 | [x] `P11.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P11/slices/P11.DECOMP` |
 | [x] `P11.S1` | `done` | Re-cut the ask citation chip onto the R10 popover anatomy | `implementation` | `works/phases/active/P11/slices/P11.S1` |
 | [x] `P11.S2` | `done` | Rebuild the /ask start cards to demonstrate every agent capability | `implementation` | `works/phases/active/P11/slices/P11.S2` |
-| [ ] `P11.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
+| [ ] `P11.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

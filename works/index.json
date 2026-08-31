@@ -28,7 +28,7 @@
       "id": "P11",
       "name": "Ask agent polish: inline citations and feature cards",
       "objective": "Fix two operator-reported defects on the AI 질문 surface. (1) Citation chips break the prose: InlineCitation's always-mounted .quoteWrap is display:grid — a block box in <p class=prose>'s inline flow — so every chip forces a line break and a sentence resting on two or more 근거 renders as 「…입니다.[1] ⏎ [2] ⏎ [3]」. Re-cut the ask chip onto the conditionally-mounted absolute-popover anatomy components/Citation.tsx already ships (R10), so chips follow the sentence's period inline and adjacent chips sit side by side — across all three signed placements (프로즈 · 데이터 행 값 · 계산 입력), on the page and the widget, at desktop and ≤767. Server-side numbering is correct and is not touched. (2) The four hard-coded START_CHIPS_KO cards are all read-a-filing questions, exercising only search_events/get_event and leaving calculate, get_portfolio, save_feedback and get_contact invisible. Replace them with a card set — count freed from D11's 'exactly four' by operator instruction — chosen so that clicking the cards one at a time demonstrates every agent capability, keeping R16's layout and the 'card sentence is the question sent' rule. Lands before P4 so the demo video shows both.",
-      "status": "planned",
+      "status": "pending",
       "order": 3.95,
       "path": "works/phases/active/P11",
       "review_status": "pending",
@@ -49,8 +49,8 @@
       "done_slice_count": 0
     }
   ],
-  "deferred_open_count": 25,
+  "deferred_open_count": 28,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-31T15:50:23+09:00"
+  "last_rebuilt_at": "2026-08-31T16:19:50+09:00"
 }

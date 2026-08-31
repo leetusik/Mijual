@@ -95,7 +95,7 @@
       ]
     },
     "experience": {
-      "latest": "v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width",
+      "latest": "v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -169,6 +169,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — R6's launcher motion exception expired: the launcher is a 32px sparkle with zero animations and a colour hover that survives reduced motion, and the footer's corner reservation makes 의견 보내기 clickable at every desktop width",
           "previous": "v0008_p10_rebrand_the_chrome_mark_is_the_operator_wordmark_with_no_ring_and_the_screen_is_named_without_the_retired_product_name"
+        },
+        {
+          "id": "v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected",
+          "path": "docs/versions/experience/v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected.md",
+          "created_at": "2026-08-31T16:13:41+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11: the /ask start screen offers six cards, one per agent capability; the seven-tool list and the never-calculates line are corrected",
+          "previous": "v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width"
         }
       ]
     },
@@ -259,7 +267,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate",
+      "latest": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -349,6 +357,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 4 — the wordmark's vertical law becomes text-referenced: the glyph band's ink bottom sits on the neighbouring Hangul's ink bottom (INK_OFFSET_PX {27: 8, 24: 6}), superseding R17's image-derived 0.2628*H at the operator's round-3 gate",
           "previous": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail"
+        },
+        {
+          "id": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose",
+          "path": "docs/versions/frontend/v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose.md",
+          "created_at": "2026-08-31T16:13:10+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11: the ask 인용 칩 becomes a conditionally mounted absolute popover, and the two-part rule for anything placed inside prose",
+          "previous": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate"
         }
       ]
     },
@@ -703,7 +719,7 @@
       ]
     },
     "qa": {
-      "latest": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction",
+      "latest": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -801,6 +817,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 4 — the falsified vertical-geometry line is replaced by a check that can fail: the mark's glyph band reads on one line with the Hangul beside it (0.5px), with its negative control and its N/A-at-390 construction",
           "previous": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block"
+        },
+        {
+          "id": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added",
+          "path": "docs/versions/qa/v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added.md",
+          "created_at": "2026-08-31T16:14:05+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11: the citation-chip and start-card checklist rows are re-cut for the overlay popover and the six cards, and the phase's own checks are added",
+          "previous": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction"
         }
       ]
     },
@@ -915,5 +939,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-31T14:26:44+09:00"
+  "last_rebuilt_at": "2026-08-31T16:15:02+09:00"
 }

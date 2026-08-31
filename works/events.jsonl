@@ -587,3 +587,12 @@
 {"ts": "2026-08-31T15:28:02+09:00", "type": "slice_status_changed", "slice": "P11.S1", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-31T15:29:40+09:00", "type": "slice_status_changed", "slice": "P11.S2", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-31T15:50:23+09:00", "type": "slice_status_changed", "slice": "P11.S2", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-31T15:51:12+09:00", "type": "slice_status_changed", "slice": "P11.REVIEW", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-31T16:13:10+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:13:41+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:14:05+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:19:32+09:00", "type": "deferred_created", "deferred": "D28", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:19:32+09:00", "type": "deferred_created", "deferred": "D29", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:19:32+09:00", "type": "deferred_created", "deferred": "D30", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T16:19:50+09:00", "type": "phase_status_changed", "phase": "P11", "old_status": "planned", "new_status": "pending"}
+{"ts": "2026-08-31T16:19:50+09:00", "type": "acceptance_opened", "phase": "P11"}

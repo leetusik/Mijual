@@ -1,0 +1,11 @@
+{
+  "id": "D30",
+  "title": "푸터 「AI 질문」 링크가 390에서 40 × 44",
+  "status": "deferred",
+  "source": "P11.REVIEW",
+  "reason": "Sub-44px touch target in the footer at 390, pre-existing since P8 and unrelated to P11's changes; found on the review's fresh-eyes walk.",
+  "trigger": "The next mobile-target pass",
+  "created_at": "2026-08-31T16:19:32+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}
