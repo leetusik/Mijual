@@ -3,12 +3,12 @@
   "phase_id": "P10",
   "name": "로고를 옆 글자에 맞춘다 — 바 중심 정렬을 텍스트 기준 정렬로 교체",
   "kind": "fix",
-  "status": "in_progress",
+  "status": "done",
   "order": 8.75,
   "depends_on": [],
   "created_at": "2026-08-31T12:57:41+09:00",
   "started_at": "2026-08-31T12:59:37+09:00",
-  "completed_at": null,
+  "completed_at": "2026-08-31T13:36:19+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "The glyph band now shares the neighbouring Hangul's baseline (nav -7 to -8, footer -6 re-derived unchanged); top clearance 4.00px, the new check proven to fail 5/5 on R17's placement",
   "validation": {
     "required": [],
     "last_run": null,

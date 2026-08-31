@@ -565,3 +565,5 @@
 {"ts": "2026-08-31T12:28:12+09:00", "type": "phase_created", "phase": "P11"}
 {"ts": "2026-08-31T12:57:41+09:00", "type": "slice_created", "phase": "P10", "slice": "P10.F3"}
 {"ts": "2026-08-31T12:59:37+09:00", "type": "slice_status_changed", "slice": "P10.F3", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-31T13:36:09+09:00", "type": "slice_status_changed", "slice": "P10.F3", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-31T13:36:19+09:00", "type": "slice_status_changed", "slice": "P10.F3", "old_status": "done", "new_status": "done"}

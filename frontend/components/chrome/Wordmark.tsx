@@ -32,30 +32,63 @@ import { BRAND_ALT_KO, WORDMARK_NATURAL, WORDMARK_WHITE } from "./copy";
  *
  * The box is **not** filled evenly: the sparkle cluster sits alone in the top
  * (222×165, flush to the box's top and right), the Korean glyph band occupies
- * the bottom (1087×176, flush to the bottom), and **30 empty rows** separate
- * them. So box-centring the image sits the *legible* part below the optical
- * centre of whatever row it is in, and a height-constrained placement gets a
- * mark whose readable half is 47.44% of the declared height.
+ * the bottom (ink rows **195–370** of 371, flush to the bottom), and **30 empty
+ * rows** separate them. So box-centring the image sits the *legible* part below
+ * whatever it stands next to, and a height-constrained placement gets a mark
+ * whose readable half is 47.44% of the declared height.
  *
- * R17 answers both halves of that (result.md §Q1/§Q2, `r17-mark.css` is the
- * geometry canon):
+ * **nav h27 / footer h24** are R17's, unchanged: at h27 the glyph band is
+ * 12.81px against the 13.5px link type (0.95×, where R2's signed h19 gave 0.72×
+ * and the retired ring gave 1.07×), and h27 is the ceiling the 52px bar allows.
  *
- * - **nav h27 / footer h24** — at h27 the glyph band is 12.81px against the
- *   13.5px link type (0.95×, where R2's signed h19 gave 0.72× and the retired
- *   ring gave 1.07×). h27 is also the ceiling the 52px bar allows under ink
- *   alignment: h30 leaves only 3.0px above the box and the sparkle touches the
- *   hairline.
- * - **ink alignment, not box centring** — the band's geometric centre is at
- *   76.28% of box height, i.e. `0.2628 × H` below the box centre, so the image
- *   is lifted by that much, rounded to whole pixels: `translateY(-7px)` at h27,
- *   `-6px` at h24. Rendered, that puts the h27 band centre at **26.10px** in a
- *   52px bar whose optical centre is 26px.
+ * **The offset is text-referenced, and that supersedes R17.** R17 derived
+ * `INK_OFFSET 0.2628 × H` from the *image alone* — the band's geometric centre
+ * is at 76.28% of box height — and so aligned the band to the optical centre of
+ * **the row**, never to the type beside it. The operator rejected that at the
+ * P10 round-3 acceptance gate («로고 글자가 옆 nav 링크 글자보다 아래로 내려가
+ * 있다 … 텍스트 기준 수평 정렬로 바꿀 것»), and `P10.F3` replaced the law with a
+ * measured relationship between two rendered ink boxes:
+ *
+ * > **the mark's glyph band sits on the same baseline as the Hangul standing
+ * > next to it** — band ink bottom on the neighbour's Hangul ink bottom.
+ *
+ * For Hangul beside Hangul that *is* the shared baseline the eye reads: the
+ * *alphabetic* baseline is not it, because the rendered type carries real ink
+ * below it (measured: 1.05px at 400 / 1.16px at 600 for 13.5px Noto Sans KR,
+ * 1.02px at 12px), so aligning to the alphabetic baseline paints the mark ~1px
+ * **high**. The rejected alternative the operator also named, a shared optical
+ * *centre* line, is not adopted: the band (12.81px at h27) is taller than the
+ * label ink (11.73–12.32px), so that law lands between 7.38 and 7.69 depending
+ * on which label you pick — it cannot decide, and against the pure-Hangul labels
+ * it reproduces the very placement the operator rejected.
+ *
+ * Measured in the running product (dev and a production build, 1280 and 390,
+ * two independent methods — canvas `TextMetrics` on the element's own computed
+ * font vs. an 8× pixel scan — agreeing to 0.04px):
+ *
+ * | surface | neighbour | its Hangul ink bottom | required offset | ships |
+ * |---|---|---|---|---|
+ * | nav h27 | `.link` 보유 종목 400 | 31.083 | 7.917 | **8** |
+ * | nav h27 | `.link` 보유 종목 600 | 31.189 | 7.811 | **8** |
+ * | nav h27 | `.link` AI 질문 400/600 | 30.947 / 31.091 | 8.053 / 7.909 | **8** |
+ * | footer h24 | `.source` 12px | row-relative | 6.281 | **6** |
+ *
+ * Every label and weight rounds to the same integer, which is why one number
+ * per height still serves. Whole pixels, per R17's own rounding rule (the PNG
+ * resamples to a fractional height anyway). Rendered at h27 that puts the band
+ * bottom at **31.00px** against the labels' **31.08–31.19px** — one line — with
+ * the box top at **4.00px** under the bar's top edge. The footer's number does
+ * not move: at h24 the band bottom was already within **0.28px** of `.source`'s
+ * Hangul bottom, so the same law re-derives the shipped `-6`.
  *
  * **The component carries the offset itself**, deliberately: it is not a value a
  * caller can be trusted to remember, and a call site that forgot it would render
  * a mark that is merely slightly low rather than visibly wrong.
  *
- * There is no viewport branch — h27 at 390px too (R17 §1).
+ * There is no viewport branch — h27 at 390px too (R17 §1). At 390 the bar's
+ * links are gone and the mark's neighbour is the 메뉴 button, whose Hangul ink
+ * bottom is 30.875: the same `-8` lands the band at 31.00, 0.13px off it (it was
+ * 1.13px off under R17's law), so one number still serves both viewports.
  */
 export type WordmarkProps = {
   /** 27 in the nav, 24 in the footer — R17's two numbers (R2's 19/17 retired). */
@@ -63,8 +96,10 @@ export type WordmarkProps = {
   className?: string;
 };
 
-/** `0.2628 × H` rounded to whole pixels — R17's `INK_OFFSET`, per height. */
-const INK_OFFSET_PX: Record<WordmarkProps["height"], number> = { 27: 7, 24: 6 };
+/** Text-referenced, per height: the offset that puts the mark's glyph-band ink
+ * bottom on the neighbouring Hangul's ink bottom, rounded to whole pixels
+ * (`P10.F3`, superseding R17's image-only `0.2628 × H`). */
+const INK_OFFSET_PX: Record<WordmarkProps["height"], number> = { 27: 8, 24: 6 };
 
 export function Wordmark({ height, className }: WordmarkProps) {
   return (
