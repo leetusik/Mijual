@@ -55,7 +55,7 @@
 | [x] `P10.F1` | `done` | R18 ①③ — 워드마크 45열 삭제 · 파비콘 투명 타일, 그리고 두 README | `fix` | `works/phases/active/P10/slices/P10.F1` |
 | [x] `P10.F2` | `done` | R18 ②②b — nav·/ops 활성 탭이 형제를 밀지 않게 (폭 예약) | `fix` | `works/phases/active/P10/slices/P10.F2` |
 | [x] `P10.F3` | `done` | 로고를 옆 글자에 맞춘다 — 바 중심 정렬을 텍스트 기준 정렬로 교체 | `fix` | `works/phases/active/P10/slices/P10.F3` |
-| [ ] `P10.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
+| [ ] `P10.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P10/slices/P10.REVIEW` |
 
 ## Phase P11: Ask agent polish: inline citations and feature cards
 
