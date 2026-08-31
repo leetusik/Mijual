@@ -91,7 +91,10 @@
 
 /* `.acards` / `.acard` — 「2열 그리드(≤767 1열), 카드 = --surface-raised + 1px
    --border-soft, 최소 높이 56px, 패딩 12px, sans --text-sm ink-1, hover 시 테두리
-   --live. 누르면 카드의 문장이 그대로 전송된다」. Four cards, no 메타 card. */
+   --live. 누르면 카드의 문장이 그대로 전송된다」. **Six cards** — R16 D11's 「4장」
+   was superseded by P11's operator instruction (one card per agent capability;
+   see `copy.ts` START_CHIPS_KO) — so the grid runs three even rows. Still no
+   메타 card: its 2026-08-25 retirement is untouched. */
 .cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

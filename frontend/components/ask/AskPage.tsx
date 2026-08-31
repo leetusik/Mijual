@@ -30,9 +30,13 @@ import styles from "./AskPage.module.css";
  * So the page has exactly two states, and the thread is what tells them apart:
  *
  * 1. **시작 화면** — no turn yet. The composer stands in the middle of the screen
- *    with the greeting and D1's promise above it and **four** question cards
- *    below (the landed build-prompt's 「5장」 and its 제품 메타 카드 are two of the
- *    three stale lines the signed copy overrides — `copy.ts::START_CHIPS_KO`).
+ *    with the greeting and D1's promise above it and **six** question cards
+ *    below — R16 D11 signed four, and P11's operator instruction freed the count
+ *    so that one card demonstrates one agent capability; the landed
+ *    build-prompt's 「5장」 and its 제품 메타 카드 remain two of the three stale
+ *    lines the signed copy overrides (`copy.ts::START_CHIPS_KO` carries both
+ *    citations). The array's length is the only thing that changed: this
+ *    component just maps it.
  *    Pressing a card **sends the card's own sentence**: 「카드의 문장이 곧 보내는
  *    질문이다」, which is why R14's label≠question convention (`presets.ts`) is
  *    explicitly *not* applied here.
