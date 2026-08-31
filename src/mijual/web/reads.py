@@ -89,6 +89,7 @@ from mijual.present import (
 )
 
 __all__ = [
+    "COMFORTABLE_DDAY",
     "CONVERTIBLE_COVERAGE_START",
     "COUNTDOWN_FIELDS",
     "DEFAULT_CUTOFF_TIME",
@@ -104,6 +105,7 @@ __all__ = [
     "load_corp_events",
     "load_detail",
     "load_portfolio",
+    "load_start_cards",
     "load_stock",
     "load_summary",
     "resolve_corp",
@@ -1473,3 +1475,172 @@ def _rights_summary(live: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "countdown": head["countdown"],
         }
     return summary
+
+
+# ---------------------------------------------------------------------------
+# the /ask start cards
+# ---------------------------------------------------------------------------
+#: 「가장 여유로운」 창 for the 계산 card's deadline. A card whose 마감 expires the
+#: day after a reader presses it is a dead question in slower motion, and one
+#: dated a year out reads like a filing nobody is waiting on.
+COMFORTABLE_DDAY = (20, 60)
+
+#: How many ranked candidates a card checks against :func:`find_corps` before it
+#: gives up. Each check is one narrow scan of the ~600-row corp table, so the
+#: work is bounded whatever the corpus does.
+_CARD_CANDIDATES = 8
+
+
+def _findable(session: Session, corp_code: str, corp_name: str | None) -> bool:
+    """Would the agent's **own** search find exactly this company by this name?
+
+    The card names a company and the reader presses it, so the sentence travels
+    to ``search_events`` → :func:`find_corps` (never :func:`resolve_corp`: the
+    tool's contract is a list). A name that reaches two issuers would make the
+    card's own count a claim about somebody else's filings, so it is not picked —
+    which is a *selection* rule, not a new resolution rule.
+    """
+    if not corp_name:
+        return False
+    found = find_corps(session, corp_name)
+    return len(found) == 1 and found[0].corp_code == corp_code
+
+
+def _search_card(
+    session: Session, by_corp: Mapping[str, list[EventView]], *, family: str
+) -> dict[str, Any] | None:
+    """A company whose 검색 visibly lists **several** filings of one 권리 가족.
+
+    Ranked so the card demonstrates 「여러 건이 정상이다」 where the corpus allows
+    it: multi-hit first, then issuers whose *whole* exposable set is that family
+    (so the 도구 행's 건수 and the card's own question count the same thing), then
+    the largest set, then ``corp_code`` — the last only so two equal candidates
+    resolve the same way on every request.
+    """
+    ranked: list[tuple[tuple[int, int, int, str], str, list[EventView]]] = []
+    for corp_code, views in by_corp.items():
+        family_views = [view for view in views if view.rights_type == family]
+        if not family_views:
+            continue
+        if not any(board_bucket(view) is not None for view in family_views):
+            # Not on the board at all: every filing of that family is history.
+            continue
+        filings = len({view.rcept_no for view in family_views})
+        pure = len(family_views) == len(views)
+        key = (0 if filings > 1 else 1, 0 if pure else 1, -filings, corp_code)
+        ranked.append((key, corp_code, family_views))
+
+    ranked.sort(key=lambda item: item[0])
+    for _, corp_code, family_views in ranked[:_CARD_CANDIDATES]:
+        corp_name = family_views[0].identity.corp_name
+        if not _findable(session, corp_code, corp_name):
+            continue
+        return {
+            "corp_name": corp_name,
+            "corp_code": corp_code,
+            "filings": len({view.rcept_no for view in family_views}),
+        }
+    return None
+
+
+def _dday_tier(days: int) -> int:
+    """0 = the comfortable window, 1 = further out, 2 = soon, 3 = about to pass."""
+    low, high = COMFORTABLE_DDAY
+    if low <= days <= high:
+        return 0
+    if days > high:
+        return 1
+    return 2 if days >= 7 else 3
+
+
+def _calculate_card(
+    session: Session,
+    by_corp: Mapping[str, list[EventView]],
+    offerings: Mapping[int, Mapping[str, Any]],
+    *,
+    avoid: str | None,
+) -> dict[str, Any] | None:
+    """An ① whose filing **exposes what the question asks about**, still ahead.
+
+    The question is 「1,000주 보유 시 배정 신주는 몇 주인가요」, so the event has to
+    carry a 신주배정비율 the answer can cite and a deadline that has not passed —
+    otherwise the chain 검색 → 이벤트 → 계산 ends in a number about a right nobody
+    can exercise. Preference order: the comfortable window, then an issuer whose
+    ① is its only one (so the read cannot land on a sibling filing), then the
+    latest deadline inside the window (the pick with the most headroom), then
+    ``rcept_no``.
+    """
+    ranked: list[tuple[tuple[int, int, int, str], str, EventView]] = []
+    for corp_code, views in by_corp.items():
+        offers = [view for view in views if view.rights_type == "R1"]
+        for view in offers:
+            inputs = offerings.get(view.event_id) or {}
+            days = view.countdown.days
+            if inputs.get("allotment_ratio") is None or days is None or days < 0:
+                continue
+            if board_bucket(view) is None:
+                continue
+            tier = _dday_tier(days)
+            key = (
+                tier,
+                0 if len(offers) == 1 else 1,
+                days if tier == 1 else -days,
+                view.rcept_no or "",
+            )
+            ranked.append((key, corp_code, view))
+
+    ranked.sort(key=lambda item: item[0])
+    # The two derived cards should not collapse onto one company when the corpus
+    # offers another — a start screen naming the same issuer twice reads as a
+    # thin corpus rather than as a product with a corpus behind it.
+    pools = [[item for item in ranked if item[1] != avoid], ranked] if avoid else [ranked]
+    for pool in pools:
+        for _, corp_code, view in pool[:_CARD_CANDIDATES]:
+            corp_name = view.identity.corp_name
+            if not _findable(session, corp_code, corp_name):
+                continue
+            return {
+                "corp_name": corp_name,
+                "corp_code": corp_code,
+                "rcept_no": view.rcept_no,
+                "dday": view.countdown.dday,
+                "days": view.countdown.days,
+            }
+    return None
+
+
+def load_start_cards(session: Session, *, today: date) -> dict[str, Any]:
+    """The companies the `/ask` start cards name, chosen **at request time**.
+
+    R16 D11's rule is that a 공시 question carries a 회사, and `P11.S2` shipped
+    those companies as fixed strings. The operator rejected exactly that at the
+    P11 acceptance gate — 「when they are outdated, what happen? we should make
+    them to be real time catch. not fixed.」 — because a filing ages out of the
+    corpus while the sentence stays on the screen, and the first thing a reader
+    presses is then a question the product can no longer answer.
+
+    So the two company-bearing cards name whoever can answer them **today**: the
+    검색 card an issuer with live 전환사채 filings, the 계산 card an ① that still
+    exposes a 신주배정비율 before its deadline. Nothing here writes Korean — the
+    sentence is a template in ``components/ask/copy.ts`` with a company slot, and
+    a card with no candidate comes back ``null`` so that surface can fall back to
+    its static sentence rather than draw an empty grid.
+
+    Read from :func:`_board_views` — the board's own reading of the corpus — so a
+    card can only name a company the board would show, gated by the persisted
+    verdict *and* the derived contract like every other surface.
+    """
+    views: dict[str, list[EventView]] = {}
+    offerings: dict[int, Mapping[str, Any]] = {}
+    for view, offering in _board_views(session, today=today):
+        if view.state != "exposable":
+            continue
+        views.setdefault(view.corp_code, []).append(view)
+        if offering is not None:
+            offerings[view.event_id] = offering
+
+    search = _search_card(session, views, family="R2")
+    calculate = _calculate_card(
+        session, views, offerings, avoid=search["corp_code"] if search else None
+    )
+    return {"reference": today.isoformat(), "search_events": search, "calculate": calculate}

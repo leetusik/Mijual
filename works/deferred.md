@@ -4,9 +4,9 @@
 
 ## Summary
 
-- Open: `28`
-- Promoted: `2`
-- Dropped: `0`
+- Open: `26`
+- Promoted: `3`
+- Dropped: `1`
 
 ## Open
 
@@ -31,8 +31,6 @@
 | `D25` | `deferred` | Code comments and dev-tooling banners still name the retired product | P10.REVIEW | Next time a slice edits those files anyway, or if the identifier rename is ever taken on | `works/deferred/open/D25` |
 | `D26` | `deferred` | The AI 질문 launcher's open state is covered by the widget and can never be seen | P10.REVIEW | The next design round that opens the AI 질문 surface, or the next time the launcher's state table is edited | `works/deferred/open/D26` |
 | `D27` | `deferred` | /ops/feedback overflows horizontally at 1280 — the desktop half of the ops layout gap | P10.REVIEW | Whenever D24 is picked up, or the first time the operator needs the feedback tab on a 1280 screen | `works/deferred/open/D27` |
-| `D28` | `deferred` | 시작 카드의 회사가 늙는다 — a data-derived start-card set | P11.REVIEW | A card's question can no longer be answered, or the next demo after 2026-09-07 | `works/deferred/open/D28` |
-| `D29` | `deferred` | 의견 카드가 다른 카드와 구별되지 않는다 | P11.REVIEW | Any future /ask start-screen work | `works/deferred/open/D29` |
 | `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
 | `D30` | `deferred` | 푸터 「AI 질문」 링크가 390에서 40 × 44 | P11.REVIEW | The next mobile-target pass | `works/deferred/open/D30` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
@@ -46,10 +44,11 @@
 | ID | Status | Title | Promoted To | Path |
 |---|---|---|---|---|
 | `D1` | `promoted` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채/이벤트 | `P5.S5` | `works/deferred/promoted/D1` |
+| `D28` | `promoted` | 시작 카드의 회사가 늙는다 — a data-derived start-card set | `P11.F1` | `works/deferred/promoted/D28` |
 | `D4` | `promoted` | Multi-span citations for multi-addend 실적보고서 figures | `P5.S20` | `works/deferred/promoted/D4` |
 
 ## Dropped
 
 | ID | Status | Title | Reason | Path |
 |---|---|---|---|---|
-| - | - | - | - | - |
+| `D29` | `dropped` | 의견 카드가 다른 카드와 구별되지 않는다 | Superseded by P11.F1: the 의견 card is removed from the start screen at the operator's gate rejection, so a card that files a row in the reader's name no longer exists to be indistinguishable from the others. | `works/deferred/dropped/D29` |

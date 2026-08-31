@@ -29,6 +29,7 @@
 
 import type {
   Account,
+  AskStartCards,
   AuthState,
   BoardResponse,
   BoardSummary,
@@ -409,8 +410,23 @@ export const getOpsUsers = (
 ) => request<OpsUsers>(`/ops/users${opsQuery(params)}`, init);
 
 // ---------------------------------------------------------------------------
-// AI 질문 (P6.S5) — the API's one streaming call
+// AI 질문 (P6.S5) — the API's one streaming call, and the start screen's read
 // ---------------------------------------------------------------------------
+
+/**
+ * The companies the `/ask` start cards name, **resolved on this request**
+ * (`P11.F1`).
+ *
+ * Called from the `/ask` route's server component, never from the browser: the
+ * start screen is the one surface that must never look empty, so the sentences
+ * arrive with the HTML instead of appearing after a spinner. Pass
+ * `cache: "no-store"` and a timeout signal — a card is only worth serving if it
+ * is today's, and a slow API must degrade to the static fallback rather than
+ * hold the page.
+ */
+export const getAskStartCards = (init?: RequestInitLike) =>
+  request<AskStartCards>("/ask/start-cards", init);
+
 //
 // `POST /ask` answers `text/event-stream`, so it cannot go through `request()`:
 // that helper reads the whole body before it returns, which is the one thing a

@@ -30,13 +30,17 @@ import styles from "./AskPage.module.css";
  * So the page has exactly two states, and the thread is what tells them apart:
  *
  * 1. **시작 화면** — no turn yet. The composer stands in the middle of the screen
- *    with the greeting and D1's promise above it and **six** question cards
- *    below — R16 D11 signed four, and P11's operator instruction freed the count
- *    so that one card demonstrates one agent capability; the landed
- *    build-prompt's 「5장」 and its 제품 메타 카드 remain two of the three stale
- *    lines the signed copy overrides (`copy.ts::START_CHIPS_KO` carries both
- *    citations). The array's length is the only thing that changed: this
- *    component just maps it.
+ *    with the greeting and D1's promise above it and **four** question cards
+ *    below. R16 D11 signed four, P11's operator instruction freed the count to
+ *    six (one card per agent capability), and the operator's report at P11's
+ *    acceptance gate dropped two of those six again — so four is where the
+ *    instruction landed, not a return to D11 (`copy.ts` carries the citations,
+ *    the landed build-prompt's 「5장」 and its 제품 메타 카드 still stale).
+ *    **This component does not own the sentences.** Two of the four name a
+ *    company the server resolved from the live corpus on this request, so the
+ *    route (`app/ask/page.tsx`) builds them and passes them in; the default is
+ *    the static fallback set, which is what the widget-less start screen shows
+ *    if the route ever renders it without a prop.
  *    Pressing a card **sends the card's own sentence**: 「카드의 문장이 곧 보내는
  *    질문이다」, which is why R14's label≠question convention (`presets.ts`) is
  *    explicitly *not* applied here.
@@ -64,7 +68,7 @@ import styles from "./AskPage.module.css";
  *   document under a reader as prose grows is ambient motion R1 keeps off data
  *   surfaces, and the sticky bar is what keeps the input reachable instead.
  */
-export function AskPage() {
+export function AskPage({ cards = START_CHIPS_KO }: { cards?: readonly string[] }) {
   const store = useAskStore();
   const state = useAskState();
   const input = useRef<HTMLInputElement>(null);
@@ -121,7 +125,7 @@ export function AskPage() {
             <p className={styles.intro}>{AGENT_INTRO_KO}</p>
             <div className={styles.startComposer}>{composerBox}</div>
             <div className={styles.cards}>
-              {START_CHIPS_KO.map((question) => (
+              {cards.map((question) => (
                 <button
                   key={question}
                   type="button"

@@ -304,50 +304,89 @@ export const START_HEADING_KO = "안녕하세요!";
 export const NEW_CHAT_KO = "새 대화";
 
 /**
- * 시작 화면의 질문 카드 — **6장**, 카드 한 장이 도구 하나를 보여 준다.
+ * 시작 화면의 질문 카드 — **넉 장**, 그리고 그중 **둘은 요청 시점에 회사가 정해진다**.
  *
  * 카드의 문장이 곧 보내는 질문이다: R14의 label≠question 관례(`presets.ts`)는
  * 시작 화면에 적용하지 않는다고 §0이 못 박는다.
  *
- * **넷이 아니라 여섯이다 — P11의 운영자 지시가 「4장」을 대체한다.** R16 §0이
- * 서명한 것은 네 장이었고, 네 장 모두 공시를 읽는 질문이어서 도구 일곱 개 중
- * `search_events`·`get_event` 둘만 보였다. `works/phases/active/P11/intent.md` §2:
- * 「Replace the set with cards chosen so that clicking them one at a time
- * demonstrates every agent capability」, 그리고 해결된 확인 사항 — 「**Copy + card
- * count may change**, existing visual style kept, no design round」. 매핑은
- * 같은 phase의 `phase.md` `## Decisions`가 정한다: `search_events` · `get_event` ·
- * `calculate` · `get_portfolio` · `save_feedback` · `get_contact`.
- * `security_check`은 카드가 아니다 — 첫 화면에서 프롬프트 인젝션을 시연해
- * 달라고 청하는 꼴이기 때문(intent.md). 2026-08-25의 제품 메타 카드 폐기는 이
- * 지시로 다시 열리지 않는다(「그 말은 `AGENT_INTRO_KO`가 이미 한다」); 랜딩된
- * build-prompt §2.7b 산문과 회귀 항목 21의 「질문 카드 5장」은 그때부터 stale이다.
+ * **여섯이 아니라 넷이고, 회사는 고정 문자열이 아니다 — P11 수용 게이트의
+ * 운영자 지시다.** `P11.S2`가 여섯 장을 고정 문장으로 냈고, 운영자는 그 화면을
+ * 걸어 보고 두 가지를 돌려보냈다(`works/phases/active/P11/slices/P11.F1/plan.md`,
+ * 원문 인용):
  *
- * **R16 D11의 집합 규칙 둘은 장수가 바뀌어도 살아남아 여기에 걸린다**
- * (`phase.md` `## Decisions`). 공시를 묻는 첫 질문은 회사(또는 접수번호)를
- * 담는다 — 범위가 항상 전체 공시이므로 「이 공시」류 지시어는 앞 턴이 있어야
- * 성립한다. 그리고 공시 카드 세 장은 서로 다른 회사 · 권리 가족 · 질문 꼴이다:
- * HLB ② 전환사채(검색) · 로젠 ③ 주식매수청구권(접수번호로 열기) · 에코프로비엠
- * ① 유상증자(계산). 나머지 세 장은 공시 질문이 아니고 회사를 담지 않는다 —
- * 그 도구들은 공시 인자를 받지 않는다.
+ * 1. 「접수번호… 내용이 있나요」(`get_event` 단독 카드)와 「공시를 원문으로…
+ *    좋겠습니다」(`save_feedback` 카드) **두 장을 뺀다.** `get_event`는 잃지
+ *    않는다 — 계산 카드가 검색 → 이벤트 → 계산으로 이미 그 도구를 부른다.
+ *    `save_feedback`은 첫 화면에서 시연하지 않기로 한 것을 받아들인다.
+ * 2. 「the HLB, 에코프로비엠 default is fine but when they are outdated, what
+ *    happen? we should make them to be real time catch. not fixed.」 — 회사를
+ *    문장에 박아 두면 그 공시가 코퍼스에서 늙어 사라진 뒤에도 문장만 남아,
+ *    독자가 처음 누르는 카드가 제품이 더는 답할 수 없는 질문이 된다.
  *
- * **회사와 접수번호는 코퍼스에서 실측했다** (P11.S2, 2026-08-31): 노출 가능
- * 이벤트 488건(R1 50 / R2 422 / R3 16)에서 HLB 4건 · 로젠 D-46(2026-10-16) ·
- * 에코프로비엠 D-32(2026-10-02) — 어느 마감도 2026-09-07 전에 지나지 않는다.
- * 앞선 네 장 중 계양전기는 매매기간이 이미 지났고 퓨쳐켐·아시아나항공은 살아
- * 있는 행이 없어, 세 장이 죽은 질문이었다. 카드가 늙는 문제 자체는 유예 작업
- * 후보로 남긴다 — `phase.md` Q1.
+ * 그래서 회사를 담는 두 장은 **템플릿**이고, 슬롯은 서버가 매 요청마다 코퍼스에서
+ * 고른다(`GET /ask/start-cards` → `mijual.web.reads.load_start_cards`;
+ * `app/ask/page.tsx`가 그 경계다). 나머지 두 장은 회사를 담지 않으므로 고정
+ * 문자열 그대로다. R16 D11의 집합 규칙은 그대로 걸린다: 공시를 묻는 첫 질문은
+ * 회사를 담고(범위가 항상 전체 공시이므로 「이 공시」류 지시어는 앞 턴이 있어야
+ * 성립한다), 파생되는 두 장은 코퍼스가 허락하는 한 같은 회사·같은 권리 가족으로
+ * 겹치지 않는다 — 그 두 규칙이 이제 서버의 선택 규칙이다.
  *
- * **의견 카드는 진짜로 한 줄을 남긴다** (`phase.md` Q2). `save_feedback`은
- * 독자가 실제로 의견을 낼 때만 불리므로 「의견은 어떻게 남기나요」라고 묻는
- * 카드는 `get_contact`으로 가고 기능은 계속 보이지 않는다. 그래서 문장이 독자
- * 자신의 1인칭 의견이고, **그 문장 자체가 동의**다 — 독자 모르게 저장되는 것은
- * 없다.
+ * `security_check`은 여전히 카드가 아니다(첫 화면에서 프롬프트 인젝션을 시연해
+ * 달라고 청하는 꼴이기 때문 — `intent.md`). 2026-08-25의 제품 메타 카드 폐기도
+ * 그대로다(「그 말은 `AGENT_INTRO_KO`가 이미 한다」); 랜딩된 build-prompt §2.7b
+ * 산문의 「질문 카드 5장」과 R16 D11의 「4장」 근거는 그때부터 stale이며, 지금 넷인
+ * 것은 D11로 돌아간 것이 아니라 운영자 지시가 정한 수다.
+ */
+export const START_CARD_SEARCH_KO = (corp: string) =>
+  `${corp} 전환사채 공시가 몇 건이나 있나요?`;
+
+/** 계산 카드. 독자가 스스로 넣는 수(1,000주)가 「입력」 마커로, 공시에서 읽은
+ * 신주배정비율이 인용 칩으로 붙는 검증된 계산 한 블록을 만든다 (R16 §2.5). */
+export const START_CARD_CALCULATE_KO = (corp: string) =>
+  `${corp} 유상증자, 1,000주 보유 시 배정 신주는 몇 주인가요?`;
+
+/** 회사를 담지 않는 두 장 — 도구가 공시 인자를 받지 않으므로 늙지 않는다. */
+export const START_CARD_PORTFOLIO_KO = "내 포트폴리오에서 가장 급한 일정은 무엇인가요?";
+export const START_CARD_CONTACT_KO = "운영자에게 직접 연락하려면 어디로 하면 되나요?";
+
+/**
+ * 서버가 고른 회사 두 곳. `null`은 「오늘 코퍼스에 그 카드를 답할 회사가 없다」는
+ * 뜻이고, 슬롯 하나만 비어도 그 카드만 아래 고정 문장으로 대체된다.
+ */
+export type StartCardPicks = {
+  search?: string | null;
+  calculate?: string | null;
+};
+
+/**
+ * **폴백** — API가 죽었거나 느리거나 코퍼스가 아무도 내놓지 못할 때 쓰는 넉 장.
+ *
+ * 여기의 두 회사는 2026-08-31 코퍼스의 실측 값이고(빛과전자 전환사채 5건,
+ * 아이에이 유상증자 D-45), **늙는다**. 그래도 괜찮은 이유는 이 배열이 답을
+ * 보장하러 있는 것이 아니라 **화면이 비지 않게** 하러 있기 때문이다: 카드
+ * 엔드포인트가 죽었다면 같은 서비스의 `/ask`도 죽어 있으므로, 어차피 어떤 문장을
+ * 그려도 그 턴은 답하지 못한다. 빈 격자·스피너·석 장짜리 격자보다 네 장의 문장이
+ * 낫다 — 제품의 첫 화면이기 때문이다.
  */
 export const START_CHIPS_KO = [
-  "HLB 전환사채 공시가 몇 건이나 있나요?",
-  "접수번호 20260730000215 공시에는 무슨 내용이 있나요?",
-  "에코프로비엠 유상증자, 1,000주 보유 시 배정 신주는 몇 주인가요?",
-  "내 포트폴리오에서 가장 급한 일정은 무엇인가요?",
-  "공시를 원문으로 확인할 수 있어 좋았어요. 어려운 용어에 설명도 붙으면 좋겠습니다.",
-  "운영자에게 직접 연락하려면 어디로 하면 되나요?",
+  START_CARD_SEARCH_KO("빛과전자"),
+  START_CARD_CALCULATE_KO("아이에이"),
+  START_CARD_PORTFOLIO_KO,
+  START_CARD_CONTACT_KO,
 ];
+
+/**
+ * 넉 장의 문장 — 서버가 고른 회사가 있으면 그 회사로, 없으면 고정 문장으로.
+ *
+ * 카드마다 따로 폴백한다: 검색 슬롯만 비면 검색 카드 한 장만 고정 문장이 되고
+ * 계산 카드는 오늘의 회사를 계속 쓴다. 네 문장은 서로 달라야 한다 —
+ * `AskPage.tsx`의 `key={question}`가 문장 자신이기 때문이며, 회사 둘이 겹치지
+ * 않게 고르는 것은 서버의 선택 규칙이 이미 보장한다.
+ */
+export function startChips(picks: StartCardPicks | null | undefined): string[] {
+  const search = picks?.search ? START_CARD_SEARCH_KO(picks.search) : START_CHIPS_KO[0];
+  const calculate = picks?.calculate
+    ? START_CARD_CALCULATE_KO(picks.calculate)
+    : START_CHIPS_KO[1];
+  return [search, calculate, START_CARD_PORTFOLIO_KO, START_CARD_CONTACT_KO];
+}

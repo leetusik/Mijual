@@ -1,4 +1,4 @@
-"""AI 질문 — one route, one turn, one stream.
+"""AI 질문 — one turn, one stream, and the start screen's own small read.
 
 ``POST /ask`` → ``text/event-stream``
 
@@ -34,15 +34,23 @@ to retract client-side, and the partial turn is still stored — see
 (:mod:`mijual.web.csrf`, service-wide). A headerless ``POST`` never reaches this
 module.
 
-**This route is where the architecture boundary moved.** It is the only place a
-request path reaches a model, and it does so through :mod:`mijual.agent` alone.
+``GET /ask/start-cards``
+    The companies the start screen's two 공시 cards name, resolved from the corpus
+    **per request** (`P11.F1`). It is a plain JSON read beside the stream because
+    the operator rejected fixed ones at P11's gate: a card whose company has aged
+    out is a dead question on the first screen a reader meets. No Korean travels
+    in it — the sentences are templates in ``components/ask/copy.ts``.
+
+**The streaming route is where the architecture boundary moved.** It is the only
+place a request path reaches a model, and it does so through :mod:`mijual.agent`
+alone.
 No OpenDART call happens in any request path, and ``mijual.web`` imports no model
 SDK — both are still scanned.
 """
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Request
 from fastapi.responses import StreamingResponse
@@ -50,6 +58,7 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 from mijual.agent import HistoryTurn
+from mijual.web import clock
 from mijual.web.ask import (
     ASK_PATH,
     MAX_HISTORY_CHARS,
@@ -57,6 +66,8 @@ from mijual.web.ask import (
     SSE_HEADERS,
     start_turn,
 )
+from mijual.web.deps import DbSession
+from mijual.web.reads import load_start_cards
 
 router = APIRouter(tags=["ask"])
 
@@ -105,3 +116,30 @@ def ask(request: Request, body: Annotated[AskIn, Body()]) -> StreamingResponse:
         headers=SSE_HEADERS,
         background=BackgroundTask(turn.close),
     )
+
+
+#: The start screen's own read. Under ``/ask`` because it belongs to this
+#: surface and to nothing else — the board's cards come from ``/board``.
+START_CARDS_PATH = f"{ASK_PATH}/start-cards"
+
+
+@router.get(START_CARDS_PATH, summary="시작 화면 질문 카드가 이름 붙일 회사 — 코퍼스에서, 요청마다")
+def start_cards(db: DbSession) -> dict[str, Any]:
+    """Which companies the `/ask` start cards name **on this request**.
+
+    P11's acceptance gate rejected fixed ones: a card naming a company whose
+    filing has aged out of the corpus is a dead question on the first screen a
+    reader meets, and the operator asked for 「real time catch. not fixed.」 So the
+    two company-bearing cards are resolved here, per render, from the same board
+    reading every other surface uses (:func:`mijual.web.reads.load_start_cards`).
+
+    **No Korean travels in this payload.** The sentences stay templates with a
+    company slot in ``components/ask/copy.ts`` — the frontend's one Korean-string
+    rule is not bent to make a card served — and a slot with no candidate comes
+    back ``null``, which the surface renders from its static fallback rather than
+    as a missing card. Read-only and anonymous, like ``/board``.
+
+    Its reference day comes from the same clock the board reports, so a card and
+    a D-day drawn on one screen cannot straddle midnight KST.
+    """
+    return load_start_cards(db, today=clock.now().date())

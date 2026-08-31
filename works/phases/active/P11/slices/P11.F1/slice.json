@@ -1,0 +1,33 @@
+{
+  "id": "P11.F1",
+  "phase_id": "P11",
+  "name": "Serve the start cards from the live corpus and drop two cards",
+  "kind": "fix",
+  "status": "done",
+  "order": 3,
+  "depends_on": [],
+  "created_at": "2026-08-31T21:25:29+09:00",
+  "started_at": "2026-08-31T21:26:50+09:00",
+  "completed_at": "2026-08-31T22:00:35+09:00",
+  "risk": "high",
+  "source": {
+    "type": "deferred",
+    "id": "D28",
+    "path": "works/deferred/open/D28"
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": "Dropped the 접수번호 and 의견 cards and made the two 공시 cards resolve their company from the live corpus per request via GET /ask/start-cards, with a per-card static fallback; /ask is now a dynamic route",
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

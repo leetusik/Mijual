@@ -1,11 +1,11 @@
 {
   "id": "D29",
   "title": "의견 카드가 다른 카드와 구별되지 않는다",
-  "status": "deferred",
+  "status": "dropped",
   "source": "P11.REVIEW",
   "reason": "The 의견 start card is visually identical to the five question cards, yet it is a statement sent in the reader's own voice that writes a real row to the operator review queue. The first-person sentence is the only consent signal.",
   "trigger": "Any future /ask start-screen work",
   "created_at": "2026-08-31T16:19:32+09:00",
   "promoted_to": null,
-  "dropped_reason": null
+  "dropped_reason": "Superseded by P11.F1: the 의견 card is removed from the start screen at the operator's gate rejection, so a card that files a row in the reader's name no longer exists to be indistinguishable from the others."
 }

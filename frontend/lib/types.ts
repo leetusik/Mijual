@@ -754,3 +754,35 @@ export type OpsVocky = {
  * `null` when vocky did not send one — the surface renders only the number.
  */
 export type FeedbackReceipt = { request_id: string; accepted_at?: string };
+
+/**
+ * One company a `/ask` start card names, resolved from the corpus **on the
+ * request that rendered the card** (`GET /ask/start-cards`, `P11.F1`).
+ *
+ * The operator rejected fixed companies at P11's acceptance gate — a card whose
+ * filing has aged out is a dead question on the first screen a reader meets — so
+ * the server picks whoever can answer that card's own shape today. **No Korean
+ * arrives in this payload:** the sentence is a template in
+ * `components/ask/copy.ts` with a company slot, and everything here is
+ * provenance for the slot it fills (`filings` = how many filings of that family
+ * the issuer has, `dday`/`rcept_no` = which ① the 계산 card will end up reading).
+ */
+export type AskStartCardPick = {
+  corp_name: string;
+  corp_code: string;
+  filings?: number;
+  rcept_no?: string | null;
+  dday?: string | null;
+  days?: number | null;
+};
+
+/**
+ * The two derived start cards. A slot is **`null`** when today's corpus offers
+ * no company that could answer it, and the surface then falls back to that
+ * card's static sentence rather than drawing a grid with a hole in it.
+ */
+export type AskStartCards = {
+  reference: string;
+  search_events: AskStartCardPick | null;
+  calculate: AskStartCardPick | null;
+};

@@ -1,18 +1,18 @@
 {
-  "id": "P11.REVIEW",
+  "id": "P11.F2",
   "phase_id": "P11",
-  "name": "phase review",
-  "kind": "review",
-  "status": "changes_requested",
-  "order": 9999,
+  "name": "Publish the operator contact in the agent answer and the footer",
+  "kind": "fix",
+  "status": "todo",
+  "order": 4,
   "depends_on": [],
-  "created_at": "2026-08-31T12:28:12+09:00",
-  "started_at": "2026-08-31T15:51:12+09:00",
+  "created_at": "2026-08-31T21:25:29+09:00",
+  "started_at": null,
   "completed_at": null,
   "risk": "high",
   "source": {
-    "type": "new_phase",
-    "id": "P11"
+    "type": "manual",
+    "id": null
   },
   "paths": {
     "plan": "plan.md",
