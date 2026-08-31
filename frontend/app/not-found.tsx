@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 import { NOT_FOUND_BACK_KO, NOT_FOUND_LINE_KO, NOT_FOUND_TITLE_KO } from "@/components/event/copy";
@@ -30,8 +31,28 @@ import styles from "./not-found.module.css";
  * the nav wordmark is the second way back to the 관제 현황판 — the button is the
  * first. Next returns **404** for this file's response, both for a segment's own
  * `notFound()` and for an unmatched URL.
+ *
+ * ## Why this page is request-time (`P11.F3`)
+ *
+ * `RequestedPath` reads `usePathname()`, and the *only* place that value exists
+ * is the request. Prerendered, this route baked Next's own internal segment name
+ * — the literal string **`/_not-found`** — into the HTML: the reader met a wrong
+ * address in mono on the one screen whose whole job is to echo the address they
+ * typed, and then React hydrated against their real path, threw **#418 (server
+ * rendered text didn't match)** and regenerated the tree on the client. It was a
+ * production-only fault, because `next dev` renders this page per request and so
+ * never disagrees with itself.
+ *
+ * `connection()` is the fix and not a workaround: it states the truth that this
+ * page depends on the request, exactly as `app/ask/page.tsx` does for its start
+ * cards (`P11.F1`). The route becomes `ƒ` and the server renders the reader's own
+ * path — right on the first paint, with no mismatch to suppress and no element
+ * appearing a beat late. The cost is one render per 404, which is what a page
+ * that prints the request costs.
  */
-export default function NotFound() {
+export default async function NotFound() {
+  await connection();
+
   return (
     <main className={`content ${styles.nf}`}>
       <h1 className={styles.title}>{NOT_FOUND_TITLE_KO}</h1>

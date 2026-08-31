@@ -6,7 +6,7 @@
 
 - Open: `30`
 - Promoted: `3`
-- Dropped: `1`
+- Dropped: `2`
 
 ## Open
 
@@ -36,7 +36,7 @@
 | `D31` | `deferred` | 푸터 전화번호가 600-620px에서 두 줄로 끊긴다 | P11.REVIEW | Next footer/chrome work, or before the P4 demo video | `works/deferred/open/D31` |
 | `D32` | `deferred` | API가 죽으면 랜딩(/)이 500 — 영문 오류 화면 | P11.REVIEW | Next landing work, or P4 deployment hardening | `works/deferred/open/D32` |
 | `D33` | `deferred` | tests/test_web_site.py가 운영자의 실제 이메일·전화를 고정한다 | P11.REVIEW | The operator's answer to gate decision 4 | `works/deferred/open/D33` |
-| `D34` | `deferred` | 프로덕션에서 React #418 하이드레이션 불일치가 한 번 관측됨 | P11.REVIEW | A second sighting | `works/deferred/open/D34` |
+| `D35` | `deferred` | 동적 세그먼트의 404는 SSR 없이 클라이언트에서만 그려진다 | P11.F3 | Next 404/error-surface work, or P4 deployment hardening | `works/deferred/open/D35` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D7` | `deferred` | Make the notification_pref save an upsert (Q49) | P8.REVIEW | Before P4 Ship & Submit, or the moment any second client can save preferences | `works/deferred/open/D7` |
@@ -56,3 +56,4 @@
 | ID | Status | Title | Reason | Path |
 |---|---|---|---|---|
 | `D29` | `dropped` | 의견 카드가 다른 카드와 구별되지 않는다 | Superseded by P11.F1: the 의견 card is removed from the start screen at the operator's gate rejection, so a card that files a row in the reader's name no longer exists to be indistinguishable from the others. | `works/deferred/dropped/D29` |
+| `D34` | `dropped` | 프로덕션에서 React #418 하이드레이션 불일치가 한 번 관측됨 | Cause found and fixed at P11.F3. The production #418(text) was /_not-found being prerendered while RequestedPath renders usePathname(): reproducible 5/5 on a 404 route before the fix, 0 across 58 loads over 13 route/viewport combinations after. D34's single sighting came from a multi-route sweep that did not record which URL was in flight, so this cannot be proven to be that sighting — but the signature matches exactly and no other #418 source survives. Re-file if a third sighting appears. | `works/deferred/dropped/D34` |

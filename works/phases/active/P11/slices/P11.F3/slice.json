@@ -1,0 +1,32 @@
+{
+  "id": "P11.F3",
+  "phase_id": "P11",
+  "name": "Silence the browser-injected hydration warning and check the root layout's cached read",
+  "kind": "fix",
+  "status": "done",
+  "order": 5,
+  "depends_on": [],
+  "created_at": "2026-09-01T01:40:22+09:00",
+  "started_at": "2026-09-01T01:41:09+09:00",
+  "completed_at": "2026-09-01T02:37:45+09:00",
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": "Scoped suppressHydrationWarning for Chrome-injected <html> attrs; exonerated the layout read over 19,720 docs; fixed the real production #418 — prerendered /_not-found showed every 404 reader the wrong address",
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

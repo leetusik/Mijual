@@ -617,3 +617,10 @@
 {"ts": "2026-08-31T23:06:58+09:00", "type": "deferred_created", "deferred": "D34", "source": "P11.REVIEW"}
 {"ts": "2026-08-31T23:07:18+09:00", "type": "phase_status_changed", "phase": "P11", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-08-31T23:07:18+09:00", "type": "acceptance_opened", "phase": "P11"}
+{"ts": "2026-09-01T01:40:22+09:00", "type": "slice_status_changed", "slice": "P11.REVIEW", "old_status": "changes_requested", "new_status": "changes_requested"}
+{"ts": "2026-09-01T01:40:22+09:00", "type": "phase_reviewed", "phase": "P11", "verdict": "changes_requested", "reviewer": "operator"}
+{"ts": "2026-09-01T01:40:22+09:00", "type": "slice_created", "phase": "P11", "slice": "P11.F3"}
+{"ts": "2026-09-01T01:41:09+09:00", "type": "slice_status_changed", "slice": "P11.F3", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-09-01T02:37:45+09:00", "type": "slice_status_changed", "slice": "P11.F3", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-09-01T02:38:17+09:00", "type": "deferred_created", "deferred": "D35", "source": "P11.F3"}
+{"ts": "2026-09-01T02:38:17+09:00", "type": "deferred_dropped", "deferred": "D34", "reason": "Cause found and fixed at P11.F3. The production #418(text) was /_not-found being prerendered while RequestedPath renders usePathname(): reproducible 5/5 on a 404 route before the fix, 0 across 58 loads over 13 route/viewport combinations after. D34's single sighting came from a multi-route sweep that did not record which URL was in flight, so this cannot be proven to be that sighting — but the signature matches exactly and no other #418 source survives. Re-file if a third sighting appears."}

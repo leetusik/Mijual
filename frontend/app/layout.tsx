@@ -103,7 +103,30 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     // The two font variables are declared here, on <html>, so `app/shell.css` can
     // point the vendored `--font-sans` / `--font-mono` tokens at them without
     // editing the frozen `foundations/tokens.css`.
-    <html lang="ko" className={`cosmos ${notoSansKr.variable} ${plexMono.variable}`}>
+    //
+    // **`suppressHydrationWarning` is scoped to this element and deliberate**
+    // (`P11.F3`). Chrome writes `__gchrome_remoteframetoken="…"` onto
+    // `<html>` after the document is parsed and before React hydrates, so the
+    // client element carries an attribute the server never rendered and React
+    // reports an attribute mismatch on every load. No server change can prevent
+    // it — the browser, not this app, adds the attribute — and the operator met
+    // it as a dev-overlay error on mobile.
+    //
+    // Know the cost. The flag covers **this element only**: its own attributes
+    // and its direct text, never its descendants. So it also hides a *genuine*
+    // `<html>`-level mismatch — the `lang` or the two font variables above
+    // changing between server and client — which is an accepted trade because
+    // all three are literals with no runtime input. Everything below `<html>`
+    // still reports normally, and that is the point: `P11.F3` found a real text
+    // mismatch one level down in the same pass (`app/not-found.tsx`, D34's
+    // signature) and it was findable only because nothing below `<html>` is
+    // suppressed. Do **not** copy this flag onto `<body>` or `SiteChrome` —
+    // that would blind exactly the subtree the next such fault will show up in.
+    <html
+      lang="ko"
+      className={`cosmos ${notoSansKr.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <link rel="stylesheet" href="/foundations/tokens.css" />
       </head>

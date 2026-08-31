@@ -1,0 +1,11 @@
+{
+  "id": "D34",
+  "title": "프로덕션에서 React #418 하이드레이션 불일치가 한 번 관측됨",
+  "status": "dropped",
+  "source": "P11.REVIEW",
+  "reason": "One React #418 hydration text mismatch fired once in roughly 20 production loads during the re-review and was not reproducible in 11 further attempts. Not diagnosable from a single non-reproducible sighting.",
+  "trigger": "A second sighting",
+  "created_at": "2026-08-31T23:06:58+09:00",
+  "promoted_to": null,
+  "dropped_reason": "Cause found and fixed at P11.F3. The production #418(text) was /_not-found being prerendered while RequestedPath renders usePathname(): reproducible 5/5 on a 404 route before the fix, 0 across 58 loads over 13 route/viewport combinations after. D34's single sighting came from a multi-route sweep that did not record which URL was in flight, so this cannot be proven to be that sighting — but the signature matches exactly and no other #418 source survives. Re-file if a third sighting appears."
+}
