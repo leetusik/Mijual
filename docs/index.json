@@ -1,7 +1,7 @@
 {
   "docs": {
     "product": {
-      "latest": "v0010_p10_round_2_the_favicon-scale_symbol_gap_open_since_r1_is_closed_the_operator_supplied_a_square_symbol_export_so_the_mark_ships_at_16_32_180_with_nothing_cropped_or_invented",
+      "latest": "v0011_p10_round_3_the_favicon-scale_mark_entry_now_describes_the_shipped_tile_transparent_one_2b8e6c_ink_at_75",
       "current_path": "docs/current/product.md",
       "versions": [
         {
@@ -83,6 +83,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — the favicon-scale symbol gap open since R1 is closed: the operator supplied a square symbol export, so the mark ships at 16/32/180 with nothing cropped or invented",
           "previous": "v0009_p10_rebrand_the_product_is_the_symbol-mark_favicon_gap_r2_closed_is_open_again"
+        },
+        {
+          "id": "v0011_p10_round_3_the_favicon-scale_mark_entry_now_describes_the_shipped_tile_transparent_one_2b8e6c_ink_at_75",
+          "path": "docs/versions/product/v0011_p10_round_3_the_favicon-scale_mark_entry_now_describes_the_shipped_tile_transparent_one_2b8e6c_ink_at_75.md",
+          "created_at": "2026-08-31T11:15:15+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 3: the favicon-scale mark entry now describes the shipped tile — transparent, one #2b8e6c ink at 75%",
+          "previous": "v0010_p10_round_2_the_favicon-scale_symbol_gap_open_since_r1_is_closed_the_operator_supplied_a_square_symbol_export_so_the_mark_ships_at_16_32_180_with_nothing_cropped_or_invented"
         }
       ]
     },
@@ -251,7 +259,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset",
+      "latest": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -325,6 +333,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — R17 ships: nav h27 / footer h24 with the ink offset in the component, a 32px mask-painted launcher with zero animation, the footer corner reservation, the favicon at 16/32/180, and a self-hosted Noto Sans KR subset",
           "previous": "v0008_p10_rebrand_the_chrome_loads_the_operator_mark_through_wordmark_white_the_ring_vocabulary_and_the_four_mijual-_.png_retire_and_the_favicon_gap_re-opens_as_a_superseding_row"
+        },
+        {
+          "id": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail",
+          "path": "docs/versions/frontend/v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail.md",
+          "created_at": "2026-08-31T11:10:41+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 3 (R18): the wordmark spliced to 1247x371, the favicon as a transparent #2b8e6c tile at 75%, and the active-tab width reservation on nav and /ops — plus the near-white guard rewritten into a form that can fail",
+          "previous": "v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset"
         }
       ]
     },
@@ -679,7 +695,7 @@
       ]
     },
     "qa": {
-      "latest": "v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added",
+      "latest": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -761,11 +777,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — the rebrand block is corrected for the second mark and the shipped favicon, and six R17 lines are added",
           "previous": "v0009_p10_rebrand_five_checklist_lines_guard_the_painted_mark_both_titles_the_old-name_sweep_including_the_live_agent_the_retired_binaries_and_the_still-absent_favicon"
+        },
+        {
+          "id": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block",
+          "path": "docs/versions/qa/v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block.md",
+          "created_at": "2026-08-31T11:13:14+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 3: correct the two lines R18 falsified (1292x371, the opaque 84% tile) and append the round-3 block",
+          "previous": "v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added"
         }
       ]
     },
     "decisions": {
-      "latest": "v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time",
+      "latest": "v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -855,9 +879,17 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — R17 signed and applied: the mark, the launcher and the favicon supersede R2/R6, the type moves to a self-hosted subset, and two record errors were corrected at apply time",
           "previous": "v0010_p10_rebrand_the_whole_latin_identity_is_superseded_by_with_no_romanized_replacement_the_dated_mijual_domain_fact_sheet_is_preserved_as_history"
+        },
+        {
+          "id": "v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail",
+          "path": "docs/versions/decisions/v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail.md",
+          "created_at": "2026-08-31T11:14:18+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 3 — D-29: R18 supersedes three R17 values, and three of its own verification procedures could not fail",
+          "previous": "v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-31T10:00:53+09:00"
+  "last_rebuilt_at": "2026-08-31T11:15:30+09:00"
 }

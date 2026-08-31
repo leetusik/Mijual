@@ -6,9 +6,9 @@
 ## Pointer
 
 - Current phase: `P10`
-- Current slice: `P10.REVIEW`
+- Current slice: `none`
 - Next slice: `none`
-- Waiting on operator: `none`
+- Waiting on operator: `P10`
 - Open deferred jobs: `25`
 
 ## Active Phases
@@ -16,7 +16,7 @@
 | Phase | Status | Review | Name | Current Slice | Path |
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
-| [ ] `P10` | `in_progress` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
+| [~] `P10` | `pending` | `changes_requested` | Rebrand to 주주의관제탑 | `P10.REVIEW` | `works/phases/active/P10` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant

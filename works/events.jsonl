@@ -554,3 +554,9 @@
 {"ts": "2026-08-31T10:03:10+09:00", "type": "slice_status_changed", "slice": "P10.F2", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-31T10:26:43+09:00", "type": "slice_status_changed", "slice": "P10.F2", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-31T10:28:33+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "changes_requested", "new_status": "in_progress"}
+{"ts": "2026-08-31T11:10:41+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T11:13:14+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T11:14:18+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T11:15:15+09:00", "type": "doc_version_created", "doc": "product", "version": "v0011_p10_round_3_the_favicon-scale_mark_entry_now_describes_the_shipped_tile_transparent_one_2b8e6c_ink_at_75", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T11:24:27+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-08-31T11:24:27+09:00", "type": "acceptance_opened", "phase": "P10"}
