@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { SiteChrome } from "@/components/chrome";
+import { getSiteContact } from "@/lib/api";
 import { notoSansKr, plexMono } from "./fonts";
 import "./shell.css";
 
@@ -66,7 +67,35 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+/** How long a served 운영자 연락처 stays good. The value changes almost never and
+ * the footer renders on **every** page, so a fetch per render would be waste; ten
+ * minutes is the cost of changing it, which is the right thing to be slow. */
+const CONTACT_REVALIDATE_S = 600;
+
+/** And how long a page waits for it. The footer is chrome: it must draw whether
+ * or not the API answers, so a hanging service costs the contact line and nothing
+ * else (`P11.F1` learned the same lesson on the start cards). */
+const CONTACT_TIMEOUT_MS = 2000;
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // **The 운영자 연락처 is read here, not in the footer** (`P11.F2`). `SiteChrome`
+  // is a client component — it branches on the pathname — so everything below it,
+  // `SiteFooter` included, is client code and cannot read the API on the server.
+  // This layout is the nearest server component, and it is also the only place
+  // the read happens once for every route rather than once per page.
+  //
+  // The setting itself (`MIJUAL_OPERATOR_CONTACT`) belongs to the API and the
+  // Next process cannot see it: `make web-up` passes only `MIJUAL_DEV_ORIGINS`
+  // and there is no `frontend/.env`. Serving it keeps one source of truth for a
+  // string the AI 질문 agent also hands out.
+  //
+  // A failure is `null`, and `null` is a rendered state: the footer simply
+  // carries no contact line. Nothing here throws and nothing renders a spinner.
+  const contact = await getSiteContact({
+    next: { revalidate: CONTACT_REVALIDATE_S },
+    signal: AbortSignal.timeout(CONTACT_TIMEOUT_MS),
+  }).catch(() => null);
+
   return (
     // Korean-only product surface. `class="cosmos"` on the page root is R2.1's
     // own mechanism: it remaps every token so the R1 components render correctly
@@ -83,7 +112,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           one nav, one footer, and vocky's script loaded once for the whole app
           (`components/chrome/`). A page still renders its own `<main>`. */}
       <body>
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome contact={contact}>{children}</SiteChrome>
       </body>
     </html>
   );

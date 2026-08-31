@@ -48,6 +48,7 @@ import type {
   OpsVocky,
   Portfolio,
   RightsType,
+  SiteContact,
   StockLookup,
   StockPage,
   StockSuggestions,
@@ -426,6 +427,27 @@ export const getOpsUsers = (
  */
 export const getAskStartCards = (init?: RequestInitLike) =>
   request<AskStartCards>("/ask/start-cards", init);
+
+// ---------------------------------------------------------------------------
+// 사이트 설정 (P11.F2) — the deploy values a reader surface renders
+// ---------------------------------------------------------------------------
+
+/**
+ * The 운영자 연락처 the global footer publishes, and the agent hands out.
+ *
+ * Called from the **root layout**, never from the browser: the footer is on every
+ * page, so the contact arrives with the HTML rather than appearing after a
+ * spinner. Unlike the start cards — which are `no-store` because staleness is the
+ * defect they exist to fix — this value changes almost never, so the caller
+ * caches it (`next: { revalidate }`) and a contact change costs minutes rather
+ * than a fetch per page render.
+ *
+ * `MIJUAL_OPERATOR_CONTACT` is the API's setting and the Next process cannot see
+ * it: `make web-up` passes only `MIJUAL_DEV_ORIGINS`, and there is no
+ * `frontend/.env`. Serving it keeps one source of truth instead of two.
+ */
+export const getSiteContact = (init?: RequestInitLike) =>
+  request<SiteContact>("/site/contact", init);
 
 //
 // `POST /ask` answers `text/event-stream`, so it cannot go through `request()`:

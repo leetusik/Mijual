@@ -603,3 +603,5 @@
 {"ts": "2026-08-31T21:25:29+09:00", "type": "deferred_dropped", "deferred": "D29", "reason": "Superseded by P11.F1: the 의견 card is removed from the start screen at the operator's gate rejection, so a card that files a row in the reader's name no longer exists to be indistinguishable from the others."}
 {"ts": "2026-08-31T21:26:50+09:00", "type": "slice_status_changed", "slice": "P11.F1", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-31T22:00:35+09:00", "type": "slice_status_changed", "slice": "P11.F1", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-31T22:01:50+09:00", "type": "slice_status_changed", "slice": "P11.F2", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-08-31T22:28:02+09:00", "type": "slice_status_changed", "slice": "P11.F2", "old_status": "in_progress", "new_status": "done"}

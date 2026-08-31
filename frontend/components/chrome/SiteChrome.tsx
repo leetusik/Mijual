@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { AskProvider, AskSurface } from "@/components/ask";
 import { isOpsPath } from "@/components/ops/routes";
+import type { SiteContact } from "@/lib/types";
 import { SiteFooter } from "./Footer";
 import { SiteNav } from "./Nav";
 import styles from "./SiteChrome.module.css";
@@ -49,6 +50,15 @@ import styles from "./SiteChrome.module.css";
  * children and nothing else — no nav, no footer, and no reader link anywhere in
  * the markup.
  *
+ * ## Why the contact arrives as a prop (`P11.F2`)
+ *
+ * Being a client component has one cost: nothing below it can read the API on the
+ * server. The footer publishes the 운영자 연락처 on every page, so the root layout
+ * — the nearest server component — reads it and passes it through here. It is
+ * plain serializable data (three strings or nulls) and this component does
+ * nothing with it but hand it to the footer; `/ops` renders no footer and
+ * therefore never publishes it.
+ *
  * That decision has to be made where the path is known, which is why this is a
  * client component: a root layout cannot read the pathname, and the alternative
  * — moving every reader route into a route group with its own layout — would
@@ -56,7 +66,13 @@ import styles from "./SiteChrome.module.css";
  * `P5.S13` already verified. The children are server-rendered and passed in as a
  * prop, so nothing about the pages themselves moves to the client.
  */
-export function SiteChrome({ children }: { children: ReactNode }) {
+export function SiteChrome({
+  children,
+  contact = null,
+}: {
+  children: ReactNode;
+  contact?: SiteContact | null;
+}) {
   const pathname = usePathname();
   if (isOpsPath(pathname ?? "")) return <>{children}</>;
 
@@ -65,7 +81,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       <div className={styles.frame}>
         <SiteNav />
         <div className={styles.page}>{children}</div>
-        <SiteFooter />
+        <SiteFooter contact={contact} />
         <AskSurface />
       </div>
     </AskProvider>

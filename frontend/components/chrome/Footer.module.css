@@ -42,6 +42,38 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
+/* ── The 운영자 연락처 (P11.F2) — an operator override on this file's own rule ──
+ *
+ * The header above says "**no `font-family: var(--font-mono)` anywhere in this
+ * file**", and that was R8's own reasoning: the round deleted the sentences and
+ * the mono bottom row, leaving a line with no numerals in it, so the type became
+ * Pretendard. `Footer.tsx`'s doc comment records the override in full — the
+ * operator asked at P11's acceptance gate for their email **and phone** to be
+ * published here, and a phone number is numerals.
+ *
+ * So the rule is not broken, it is **split** along the line R1 actually draws:
+ * the email is prose and stays Pretendard, the phone is digits and is mono. The
+ * contact reads as part of the identity line — same size, same ink — and only
+ * brightens on hover, like every other link in this footer. */
+.contact {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.contact:hover {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* R1: 숫자는 mono. `--text-xs` because Plex Mono runs optically larger than
+   Pretendard at the same size, and the row has to read as one line of one
+   weight — measured beside the 12px 자료/© text at 1280 and 390. */
+.phone {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.01em;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -169,6 +201,16 @@
   }
 
   .action {
+    min-height: 44px;
+  }
+
+  /* The two contact links are tappable targets on a phone (`mailto:` and
+     `tel:`), so they get the same 44px the actions get. `inline-flex` keeps them
+     inside the wrapping identity line instead of breaking it into blocks — the
+     second row R8's deletion removed is not coming back. */
+  .contact {
+    display: inline-flex;
+    align-items: center;
     min-height: 44px;
   }
 }

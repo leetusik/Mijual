@@ -49,6 +49,7 @@ from mijual.web.routers import (
     health,
     ops,
     portfolio,
+    site,
     stocks,
 )
 
@@ -145,6 +146,10 @@ def create_app(
     # 의견 보내기 (R8). Write-only and outward: it forwards one reader message to
     # vocky and stores nothing here — see `mijual.web.routers.feedback`.
     app.include_router(feedback.router)
+    # 사이트 설정 (`P11.F2`). The deploy values a reader surface renders — today
+    # the 운영자 연락처, which the footer publishes on every page and the agent
+    # hands out through `get_contact`. One setting, two consumers.
+    app.include_router(site.router)
     return app
 
 

@@ -786,3 +786,23 @@ export type AskStartCards = {
   search_events: AskStartCardPick | null;
   calculate: AskStartCardPick | null;
 };
+
+/**
+ * The 운영자 연락처 the chrome publishes (`GET /site/contact`, `P11.F2`).
+ *
+ * One deploy setting (`MIJUAL_OPERATOR_CONTACT`), served three ways: `contact` is
+ * the operator's own words — the same string the AI 질문 agent answers with — and
+ * `email` / `phone` are the parts the footer has to type apart, because R1 makes
+ * numerals mono and everything else Pretendard. **The split happens on the
+ * server** (`mijual.web.site`), so the two readouts cannot drift.
+ *
+ * Every field is `null` when the operator has set no contact string. That is a
+ * state, not an error: the footer then renders **no contact line at all** —
+ * never an empty label, and never the agent's honest 「연락처 미설정」 line, which
+ * is the agent's voice and not the chrome's.
+ */
+export type SiteContact = {
+  contact: string | null;
+  email: string | null;
+  phone: string | null;
+};

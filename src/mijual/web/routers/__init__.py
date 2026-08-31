@@ -10,7 +10,9 @@ habit. :mod:`~mijual.web.routers.ask` (`P6.S4`) is AI 질문 — the only route 
 streams, and the only one that reaches a model (through :mod:`mijual.agent`, and
 nowhere else). :mod:`~mijual.web.routers.feedback` (`P8.S3`, R8) is 의견 보내기 —
 the only route that writes **outward**: it forwards one reader message to vocky
-and persists nothing on this side. A router file never spans two signed design surfaces, so a review
+and persists nothing on this side. :mod:`~mijual.web.routers.site` (`P11.F2`) is
+사이트 설정 — the deploy values a reader surface renders (the 운영자 연락처 the
+global footer publishes), which is site-wide and therefore nobody else's router. A router file never spans two signed design surfaces, so a review
 can isolate a regression to one of them.
 
 Routers stay thin: they validate the request, call the presentation contract

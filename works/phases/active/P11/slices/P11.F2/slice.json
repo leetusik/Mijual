@@ -3,12 +3,12 @@
   "phase_id": "P11",
   "name": "Publish the operator contact in the agent answer and the footer",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 4,
   "depends_on": [],
   "created_at": "2026-08-31T21:25:29+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-31T22:01:50+09:00",
+  "completed_at": "2026-08-31T22:28:02+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Set MIJUAL_OPERATOR_CONTACT so the agent answers with the operator's email and phone, and published the same two values in the global footer via a new GET /site/contact — email sans, phone mono, an explicit operator override of R8 §4",
   "validation": {
     "required": [],
     "last_run": null,

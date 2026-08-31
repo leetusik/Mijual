@@ -198,6 +198,25 @@ export const COPYRIGHT_KO = "© 주주의관제탑";
  * provenance claim in the smallest possible form. */
 export const SOURCE_KO = "자료: 금융감독원 DART 전자공시";
 
+/* **The 운영자 연락처 joins that row at `P11.F2`, and adds no constant here.**
+ *
+ * The operator asked at P11's acceptance gate for their email and phone to be
+ * published in the footer as well as in the agent's answer. What renders is the
+ * **values themselves** — served from `MIJUAL_OPERATOR_CONTACT` through `GET
+ * /site/contact`, split into an address and a number by the API — separated by
+ * the same `·` the row already uses. They are *data*, not copy: an operator's own
+ * address is not a string this file could transcribe from a record, and it
+ * changes without a round.
+ *
+ * **And no label precedes them**, deliberately. 「문의」 or 「운영자 연락처」 here
+ * would be an invented Korean string, which is a design change and not an
+ * implementation detail (this file's own rule, first paragraph). The agent owns
+ * the labelled form — `CONTACT_ROW` = 「운영자 연락처 → …」 in `mijual.agent.copy`
+ * — and the footer owns the bare one.
+ *
+ * `Footer.tsx` carries the full override note, including why a numeral now sits
+ * in a Pretendard row R8 typeset for having none. */
+
 // ---------------------------------------------------------------------------
 // 의견 보내기 — R8's new 미주알-owned surface (build-prompt §6, copy table §7)
 // ---------------------------------------------------------------------------
