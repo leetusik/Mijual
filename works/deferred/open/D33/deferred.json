@@ -1,0 +1,11 @@
+{
+  "id": "D33",
+  "title": "tests/test_web_site.py가 운영자의 실제 이메일·전화를 고정한다",
+  "status": "deferred",
+  "source": "P11.REVIEW",
+  "reason": "The new site-contact test pins the operator's real email and phone as literals, so the values live in tracked files as well as in the published product. Follows from the instruction to publish them site-wide, but a fictional fixture would keep the repo clean of them.",
+  "trigger": "The operator's answer to gate decision 4",
+  "created_at": "2026-08-31T23:06:58+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

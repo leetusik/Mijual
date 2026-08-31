@@ -1,133 +1,127 @@
-# Plan — P11.REVIEW (phase review)
+# Plan — P11.REVIEW (phase review — SECOND PASS, after the operator's gate rejection)
 
 Kind `review`, risk `high`, executed by `slice-executor-high`.
 
-**This phase's operator acceptance gate is `required: true`.** So this review runs
-the gate stages, and its passing verdict does **not** close the phase: it returns a
-**`walkthrough`**, the orchestrator opens the gate, and the operator walks the
-running product before any pass is recorded. Plan your work accordingly.
+**This is a re-review, not a first review.** The first pass passed on the merits
+and consolidated the durable docs. The operator then walked the acceptance gate
+and **rejected it**, which reset the gate and reopened this slice. Two `fix`
+slices have since landed. Your job is to judge the phase **as it now stands** and,
+on a pass, open the gate again.
 
-The phase is **not** in parallel mode, so a passing review **does** consolidate the
-durable docs.
+The gate is `required: true` and currently **reset** (`requested_at=none`), so a
+passing verdict again returns a **`walkthrough`** rather than closing the phase.
+The phase is not in parallel mode, so a pass **does** consolidate docs.
 
-## What P11 claimed to do
+## What changed since the first review
 
-Two operator-reported defects on the AI 질문 surface (`intent.md` is the confirmed
-source of truth — read it in full):
+The operator's three gate reports, and where each landed:
 
-1. **Citation chips broke the prose.** `InlineCitation` mounted its quote panel
-   unconditionally and `Ask.module.css` gave it `display: grid`, so a block-level
-   box sat in `<p class=prose>`'s inline flow and every chip forced a line break —
-   `…입니다.[1] ⏎ [2] ⏎ [3]`. `P11.S1` re-cut it onto `Citation.tsx`'s R10
-   conditional-mount absolute-popover anatomy.
-2. **The start cards showed one capability out of seven.** `P11.S2` replaced the
-   four hard-coded `START_CHIPS_KO` questions with six, one per agent capability.
+1. **Drop two cards** — `P11.F1`. The bare-접수번호 `get_event` card and the 의견
+   `save_feedback` card are gone; four cards remain. `save_feedback` being
+   undemonstrated from the start screen is **accepted by the operator** — do not
+   raise it as a finding.
+2. **Cards must be caught in real time, not fixed** — `P11.F1`. The two 공시 cards
+   resolve their company per request from the live corpus
+   (`GET /ask/start-cards` → `reads.load_start_cards`), with a per-card static
+   fallback in `copy.ts`. `/ask` is now a **dynamic** route.
+3. **Publish the operator contact** — `P11.F2`. `MIJUAL_OPERATOR_CONTACT` is set
+   (in the **gitignored** `.env`), the agent answers with it, and the same values
+   are published in the global footer via `GET /site/contact`.
+
+Read both fix slices' `result.md` in full, plus `phase.md` and `intent.md`.
+
+## The doc versions from the first pass are now partly WRONG
+
+This is the part a re-review most easily gets wrong. The first pass created
+**`frontend v0012`, `experience v0010`, `qa v0013`**, and `P11.F1`/`P11.F2` have
+since superseded parts of all three — most obviously the **six-card** set
+(`experience`) and the 「질문 카드 6장」 checklist row (`qa`), both of which now
+describe a product that no longer exists.
+
+Never patch a version under `docs/versions/`. On a **pass**, create **new**
+versions that supersede them, consolidating every `## Doc impact` note now in
+`phase.md` — the F1 and F2 lines *and* the corrections they force on what the
+first pass wrote. Expect to touch `frontend`, `experience`, `qa`, `operations`,
+`backend` and `security`; let the notes decide, not this list. Then
+`rebuild-docs`. **Docs only, never source.**
 
 ## Validate the phase as a whole
 
-Re-run each slice's validation commands together, not just the last one's:
-`cd frontend && npm run typecheck && npm run build && npm run smoke`, and
-`python3 scripts/workflow.py validate` from the repo root. Read both slices'
-`result.md` and cross-check `phase.md` against them — a decision dropped from the
-notebook, or an `## Operator Questions` entry left unrouted, is a review finding.
+Re-run everything, not just the fix slices' commands: `.venv/bin/python -m pytest`
+(158 expected), `cd frontend && npm run typecheck && npm run build && npm run
+smoke`, and `python3 scripts/workflow.py validate`. Cross-check `phase.md`
+against all five slices' `result.md` — a dropped decision or an unrouted
+`## Operator Questions` entry is a review finding.
 
 ## Open the running product yourself
 
-**Do not pass on the other slices' reports.** Bring the product up in the
-`## Operator Runtime` runtime (`docs/current/operations.md`: `make stack-up`,
-`http://127.0.0.1:3010`, Chrome desktop **and** a mobile viewport, plus the
-production build) and spot-check the phase's headline claims with your own eyes:
+Bring it up in the `## Operator Runtime` runtime (`make stack-up`,
+`http://127.0.0.1:3010`, Chrome desktop **and** 390) **and** in the production
+build, and check with your own eyes — never on the fix slices' reports alone:
 
-- a sentence resting on **two or more** 근거 renders on **one line**, chips side by
-  side after the period — the defect the operator reported, in the three signed
-  placements (프로즈 · 데이터 행 값 · 계산 입력), on `/ask` and in the widget;
-- opening a chip moves nothing, and a data row's value column does not collapse;
-- the six start cards each fire their intended tool row and return a real answer.
+- **The original defect stays fixed.** A sentence resting on 2+ 근거 renders on one
+  line, chips side by side, in all three placements, page and widget. This is the
+  thing the operator reported and it must not have regressed under F1/F2.
+- **Four cards**, and the two 공시 cards name **today's** companies. Confirm the
+  derivation is genuinely per-request — the `ƒ (Dynamic)` route kind in
+  `npm run build`'s table is the tell, and a static render is the original defect
+  returning. Check it in the **production build**, where it would actually bite.
+- **The fallback**: stop the API, reload, four cards still draw.
+- **The contact** in the agent's 연락처 answer *and* in the footer on several
+  routes, at desktop and 390, dev and production.
+- **The footer got taller between 481 and 820px** (F2 measured the identity line
+  growing ~215px, so the action row wraps earlier). Look at it and judge whether
+  it reads acceptably — it is a visible change to a signed surface at widths the
+  operator may well browse.
 
-Aside is the preferred instrument but is not installed on this machine (both
-slices recorded it), so the documented fallback applies — the same sweep, same
-viewports, same manifest runtime, through the real browser available. Name the
-instrument you used; never claim a run you did not make.
+Then **walk it once with fresh eyes as a first-time reader** and report everything
+dead, confusing or annoying — **not** judged against the design record; findings
+go to the operator in the walkthrough, never into silent fixes.
 
-**Then walk the surface once with fresh eyes, as a first-time reader.** Report
-everything dead, confusing or annoying. This walk is explicitly **not** judged
-against the design record — findings go into the walkthrough for the operator to
-decide, never into silent fixes. Two things this phase makes worth looking at
-honestly: the popover's new opaque ground against the prose behind it, and whether
-six cards read as a helpful menu or as clutter on first sight.
+**Re-run the whole cumulative `## Regression Checklist`** in `docs/current/qa.md`,
+including the rows the first pass added, and re-cut this phase's rows to the
+product as it now is.
 
-**Re-run the whole cumulative `## Regression Checklist`** in `docs/current/qa.md`
-— all of it, not only this phase's rows — and append this phase's headline checks
-as part of the doc consolidation below.
+## Route the open questions again
 
-## Route every open question — an unrouted entry fails the review
+`phase.md` `## Operator Questions` holds three, each already marked with how the
+first pass routed it. Re-route for **this** gate:
 
-`phase.md` `## Operator Questions` currently holds **three**. Each must be either
-folded into the walkthrough as a decision for the operator, or listed for the
-orchestrator to file with `defer-job` (you list them; the orchestrator files them):
+1. The contact string — **answered and landed** by `P11.F2`. Confirm in the
+   product, then it needs no further routing.
+2. **The 인용 칩's ≤767 target (14 × 16px, not R16's stated 44px) is still
+   unanswered** — the operator did not address it in their gate report. It must be
+   carried into this walkthrough again, not quietly dropped.
+3. The `conversation_feedback` rows — the 의견 card is **gone**, so no new rows can
+   be written from the start screen, but **ids 4–7 still sit in the queue** and
+   the operator has not said what to do with them. Carry it forward, corrected to
+   what is now true.
 
-1. `MIJUAL_OPERATOR_CONTACT` is unset, so the 연락처 card answers 「미정」. Configure
-   a contact string before the P4 demo, and which? (Publishing it is the
-   operator's own identity decision.)
-2. The 인용 칩's ≤767 target is 14×16px, not the 44px R16 §2.6's prose names —
-   R16's own CSS never implemented it either, and closing it breaks something
-   signed either way. Close it, and at what cost, or leave it as the round's CSS
-   has it?
-3. Verification wrote **3 real rows** to the 운영자 검토 대기열
-   (`conversation_feedback` ids 4–6), and your own gate walk will add more. Clear
-   them from `/ops/feedback` before P4, or keep them as evidence?
+Anything your own walk turns up that is not this phase's business goes on the
+list for the orchestrator to file with `defer-job` (you list them; the
+orchestrator files them). Note **D28 is already promoted** (it became `P11.F1`),
+**D29 was dropped** (the 의견 card it described no longer exists), and **D30**
+(footer 「AI 질문」 link 40 × 44 at 390) is **open and untouched** — F2 measured it
+unchanged.
 
-Also consider filing, as deferred jobs rather than walkthrough decisions: the
-**aging start-card companies** (`phase.md` Decision Q1 named a data-derived card
-set as a deferred-job candidate — the corpus moves and three of the *old* four
-were already dead), and anything your fresh-eyes walk turns up that is not this
-phase's business.
+## If the verdict is not a pass
 
-## Consolidate the durable docs — pass path only
-
-On a **passing** verdict, and only then, turn `phase.md`'s `## Doc impact` notes
-into new versions with `python3 scripts/workflow.py doc-new-version --doc <doc>
---summary "..." --source P11.REVIEW`, then `rebuild-docs`. Write **docs only,
-never source**. The three notes are already written; consolidate what they say,
-including the two pieces of pre-existing staleness they carry:
-
-- **`frontend.md`** — the ask chip's anatomy;
-- **`experience.md`** — the six-card set, **plus the section's stale P9 lines**
-  (L205 lists five tools where there are seven; L206 says the agent never
-  calculates, which R16's calculator superseded);
-- **`qa.md`** — the `## Regression Checklist` rows: L403's 「4장」 → 6장 with its
-  capability claim, L384/L410's 「in place」 → overlay popover, and the two new
-  checks P11.S1's behaviour needs.
-
-There is also a **pattern worth a durable line**, and it is the orchestrator's
-one addition to the doc consolidation: this surface has now produced "a line per
-sentence" **twice**, by two different mechanisms — R14 walk finding 3 was leading
-whitespace in the streamed text (fixed at the store boundary in `lib/ask.ts`
-`leading()`), and P11's was a block-level box in the inline flow. Both times the
-symptom was identical and the cause was not. Record that in `frontend.md`'s
-consolidation as a standing caution for anyone who puts a new element in prose:
-**everything inside `<p class=prose>` must be phrasing content *and* inline-level**
-— it is a two-part rule, and each half has now failed once on its own.
-
-If the verdict is **not** a pass, stop before all of this: complete validation and
-judgment first so the orchestrator gets the whole picture in one cycle, then return
-the verdict with **numbered findings and proposed fix slices**, and do no pass-only
-work.
+Stop before the doc consolidation. Complete validation and judgment first so the
+orchestrator gets the whole picture in one cycle, then return the verdict with
+numbered findings and proposed fix slices, and do no pass-only work.
 
 ## Budget
 
-`phase.md` is at **177 lines / 15,987 bytes** against a 200-line / 16 KB budget —
-nearly full. You will need to **compress** it, not add to it: superseded decisions
-collapse, consumed notes go, and the detail is already in the two `result.md`
-files and in git. Do not let the notebook go over budget.
+`phase.md` is at **183 lines / 16,099 bytes** against 200 / 16,384 — it will go
+over on your first append. **Compress it**: the phase is nearly done, most of its
+notes are consumed, superseded decisions can collapse to what is true now, and
+every detail is in the five `result.md` files and in git.
 
 ## Return
 
-`review_verdict` (`pass` | `changes_requested` | `blocked`), the **`walkthrough`**
-(URLs to open, actions to try, in the operator runtime — say plainly what is real
-and what the operator is being asked to decide, including the three questions
-above and the opaque-ground deviation), the deferred jobs for the orchestrator to
-file, and the fixed pointer `explain: not written — run /explain for this phase`.
+`review_verdict`, the **`walkthrough`** (URLs, actions, what is real and what the
+operator must decide — including the two questions still open and the footer's
+height change), the deferred jobs for the orchestrator to file, and the fixed
+pointer `explain: not written — run /explain for this phase`.
 
-Do **not** run `review-phase`, `accept-gate`, `finish-slice` or any commit — all
-of those are the orchestrator's.
+Do **not** run `review-phase`, `accept-gate`, `finish-slice` or any commit.

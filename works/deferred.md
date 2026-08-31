@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `26`
+- Open: `30`
 - Promoted: `3`
 - Dropped: `1`
 
@@ -33,6 +33,10 @@
 | `D27` | `deferred` | /ops/feedback overflows horizontally at 1280 — the desktop half of the ops layout gap | P10.REVIEW | Whenever D24 is picked up, or the first time the operator needs the feedback tab on a 1280 screen | `works/deferred/open/D27` |
 | `D3` | `deferred` | Backfill pifricDecsn (유무상증자결정) history pre-2026, mirroring the P2.S7 CB backfill | P2.S8 | if P2.S9 sampling or P3 retrospective views need pre-2026 ① depth | `works/deferred/open/D3` |
 | `D30` | `deferred` | 푸터 「AI 질문」 링크가 390에서 40 × 44 | P11.REVIEW | The next mobile-target pass | `works/deferred/open/D30` |
+| `D31` | `deferred` | 푸터 전화번호가 600-620px에서 두 줄로 끊긴다 | P11.REVIEW | Next footer/chrome work, or before the P4 demo video | `works/deferred/open/D31` |
+| `D32` | `deferred` | API가 죽으면 랜딩(/)이 500 — 영문 오류 화면 | P11.REVIEW | Next landing work, or P4 deployment hardening | `works/deferred/open/D32` |
+| `D33` | `deferred` | tests/test_web_site.py가 운영자의 실제 이메일·전화를 고정한다 | P11.REVIEW | The operator's answer to gate decision 4 | `works/deferred/open/D33` |
+| `D34` | `deferred` | 프로덕션에서 React #418 하이드레이션 불일치가 한 번 관측됨 | P11.REVIEW | A second sighting | `works/deferred/open/D34` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D7` | `deferred` | Make the notification_pref save an upsert (Q49) | P8.REVIEW | Before P4 Ship & Submit, or the moment any second client can save preferences | `works/deferred/open/D7` |

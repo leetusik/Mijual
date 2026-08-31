@@ -95,7 +95,7 @@
       ]
     },
     "experience": {
-      "latest": "v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected",
+      "latest": "v0011_p11_fixes_the_ask_start_screen_offers_four_cards_whose_two_companies_the_server_picks_from_the_live_corpus_per_request_and_the_card_answers_the_operator_s_configured_contact",
       "current_path": "docs/current/experience.md",
       "versions": [
         {
@@ -177,6 +177,14 @@
           "source": "P11.REVIEW",
           "summary": "P11: the /ask start screen offers six cards, one per agent capability; the seven-tool list and the never-calculates line are corrected",
           "previous": "v0009_p10_round_2_r6_s_launcher_motion_exception_expired_the_launcher_is_a_32px_sparkle_with_zero_animations_and_a_colour_hover_that_survives_reduced_motion_and_the_footer_s_corner_reservation_makes_clickable_at_every_desktop_width"
+        },
+        {
+          "id": "v0011_p11_fixes_the_ask_start_screen_offers_four_cards_whose_two_companies_the_server_picks_from_the_live_corpus_per_request_and_the_card_answers_the_operator_s_configured_contact",
+          "path": "docs/versions/experience/v0011_p11_fixes_the_ask_start_screen_offers_four_cards_whose_two_companies_the_server_picks_from_the_live_corpus_per_request_and_the_card_answers_the_operator_s_configured_contact.md",
+          "created_at": "2026-08-31T22:56:14+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11 fixes: the ask start screen offers four cards whose two 공시 companies the server picks from the live corpus per request, and the 연락처 card answers the operator's configured contact",
+          "previous": "v0010_p11_the_ask_start_screen_offers_six_cards_one_per_agent_capability_the_seven-tool_list_and_the_never-calculates_line_are_corrected"
         }
       ]
     },
@@ -267,7 +275,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose",
+      "latest": "v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -365,11 +373,19 @@
           "source": "P11.REVIEW",
           "summary": "P11: the ask 인용 칩 becomes a conditionally mounted absolute popover, and the two-part rule for anything placed inside prose",
           "previous": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate"
+        },
+        {
+          "id": "v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout",
+          "path": "docs/versions/frontend/v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout.md",
+          "created_at": "2026-08-31T22:57:05+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11 fixes: the ask route becomes the start screen's data boundary with a per-card static fallback, and the global footer publishes served config read by the root layout",
+          "previous": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose"
         }
       ]
     },
     "backend": {
-      "latest": "v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized",
+      "latest": "v0008_p11_fixes_two_new_read_surfaces_get_ask_start-cards_picks_the_start_screen_s_companies_from_the_live_corpus_per_request_and_get_site_contact_serves_the_operator_s_one_contact_string_split_into_its_parts",
       "current_path": "docs/current/backend.md",
       "versions": [
         {
@@ -427,6 +443,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 rebrand — the agent's system instruction and tool descriptions name 주주의관제탑; the retired latin gloss is dropped rather than romanized",
           "previous": "v0006_p9_smart_assistant_the_citation_gate_strips_instead_of_dropping_markers_out_prose_survives_untraced_figures_marked_quotes_de-quoted_blocked_recounted"
+        },
+        {
+          "id": "v0008_p11_fixes_two_new_read_surfaces_get_ask_start-cards_picks_the_start_screen_s_companies_from_the_live_corpus_per_request_and_get_site_contact_serves_the_operator_s_one_contact_string_split_into_its_parts",
+          "path": "docs/versions/backend/v0008_p11_fixes_two_new_read_surfaces_get_ask_start-cards_picks_the_start_screen_s_companies_from_the_live_corpus_per_request_and_get_site_contact_serves_the_operator_s_one_contact_string_split_into_its_parts.md",
+          "created_at": "2026-08-31T22:57:47+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11 fixes: two new read surfaces — GET /ask/start-cards picks the start screen's companies from the live corpus per request, and GET /site/contact serves the operator's one contact string split into its parts",
+          "previous": "v0007_p10_rebrand_the_agent_s_system_instruction_and_tool_descriptions_name_the_retired_latin_gloss_is_dropped_rather_than_romanized"
         }
       ]
     },
@@ -547,7 +571,7 @@
       ]
     },
     "operations": {
-      "latest": "v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs",
+      "latest": "v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -645,11 +669,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — the web fonts are regenerated by three dev-only scripts from a pinned google/fonts commit, and the Operator Runtime carries the ops-credential step every gate walkthrough needs",
           "previous": "v0011_operator-directed_port_move_the_dev_stack_runs_on_3010_8010_5434_so_it_never_collides_with_the_operator_s_other_project"
+        },
+        {
+          "id": "v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit",
+          "path": "docs/versions/operations/v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit.md",
+          "created_at": "2026-08-31T22:58:12+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11.F2: MIJUAL_OPERATOR_CONTACT is set and must travel to wherever the API runs — it now feeds the global footer as well as the agent's answer, and .env carries it in no commit",
+          "previous": "v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs"
         }
       ]
     },
     "security": {
-      "latest": "v0008_p10_round_2_no_page_contacts_a_third-party_origin_any_more_the_google_fonts_stylesheet_and_its_gstatic_font_request_were_the_last_two_measured_0_across_five_routes_in_dev_and_production",
+      "latest": "v0009_p11.f2_the_operator_contact_is_now_genuinely_published_set_answered_by_the_agent_and_printed_in_every_reader_page_s_footer_so_it_is_public_by_decision_and_appears_in_tracked_files_too",
       "current_path": "docs/current/security.md",
       "versions": [
         {
@@ -715,11 +747,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 2 — no page contacts a third-party origin any more: the Google Fonts stylesheet and its gstatic font request were the last two, measured 0 across five routes in dev and production",
           "previous": "v0007_p10_rebrand_the_lethal-trifecta_paragraph_names_and_the_two_mijual-side_clauses_are_reworded_to_the_doc_s_own_on_this_side"
+        },
+        {
+          "id": "v0009_p11.f2_the_operator_contact_is_now_genuinely_published_set_answered_by_the_agent_and_printed_in_every_reader_page_s_footer_so_it_is_public_by_decision_and_appears_in_tracked_files_too",
+          "path": "docs/versions/security/v0009_p11.f2_the_operator_contact_is_now_genuinely_published_set_answered_by_the_agent_and_printed_in_every_reader_page_s_footer_so_it_is_public_by_decision_and_appears_in_tracked_files_too.md",
+          "created_at": "2026-08-31T22:58:35+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11.F2: the operator contact is now genuinely published — set, answered by the agent and printed in every reader page's footer, so it is public by decision and appears in tracked files too",
+          "previous": "v0008_p10_round_2_no_page_contacts_a_third-party_origin_any_more_the_google_fonts_stylesheet_and_its_gstatic_font_request_were_the_last_two_measured_0_across_five_routes_in_dev_and_production"
         }
       ]
     },
     "qa": {
-      "latest": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added",
+      "latest": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -825,6 +865,14 @@
           "source": "P11.REVIEW",
           "summary": "P11: the citation-chip and start-card checklist rows are re-cut for the overlay popover and the six cards, and the phase's own checks are added",
           "previous": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction"
+        },
+        {
+          "id": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks",
+          "path": "docs/versions/qa/v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks.md",
+          "created_at": "2026-08-31T22:59:00+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11 fixes: the start-card checklist rows are re-cut to four live-corpus cards, the footer row admits the operator's mono phone, and the P11 block gains the contact, fallback and dynamic-route checks",
+          "previous": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added"
         }
       ]
     },
@@ -939,5 +987,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-31T16:15:02+09:00"
+  "last_rebuilt_at": "2026-08-31T23:00:03+09:00"
 }

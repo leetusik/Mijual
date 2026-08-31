@@ -605,3 +605,15 @@
 {"ts": "2026-08-31T22:00:35+09:00", "type": "slice_status_changed", "slice": "P11.F1", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-31T22:01:50+09:00", "type": "slice_status_changed", "slice": "P11.F2", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-08-31T22:28:02+09:00", "type": "slice_status_changed", "slice": "P11.F2", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-08-31T22:56:14+09:00", "type": "doc_version_created", "doc": "experience", "version": "v0011_p11_fixes_the_ask_start_screen_offers_four_cards_whose_two_companies_the_server_picks_from_the_live_corpus_per_request_and_the_card_answers_the_operator_s_configured_contact", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T22:57:05+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T22:57:47+09:00", "type": "doc_version_created", "doc": "backend", "version": "v0008_p11_fixes_two_new_read_surfaces_get_ask_start-cards_picks_the_start_screen_s_companies_from_the_live_corpus_per_request_and_get_site_contact_serves_the_operator_s_one_contact_string_split_into_its_parts", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T22:58:12+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T22:58:35+09:00", "type": "doc_version_created", "doc": "security", "version": "v0009_p11.f2_the_operator_contact_is_now_genuinely_published_set_answered_by_the_agent_and_printed_in_every_reader_page_s_footer_so_it_is_public_by_decision_and_appears_in_tracked_files_too", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T22:59:00+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T23:06:58+09:00", "type": "deferred_created", "deferred": "D31", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T23:06:58+09:00", "type": "deferred_created", "deferred": "D32", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T23:06:58+09:00", "type": "deferred_created", "deferred": "D33", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T23:06:58+09:00", "type": "deferred_created", "deferred": "D34", "source": "P11.REVIEW"}
+{"ts": "2026-08-31T23:07:18+09:00", "type": "phase_status_changed", "phase": "P11", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-08-31T23:07:18+09:00", "type": "acceptance_opened", "phase": "P11"}
