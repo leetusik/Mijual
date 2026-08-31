@@ -118,8 +118,9 @@ export function SiteNav() {
                 href={link.href}
                 className={active ? `${styles.link} ${styles.active}` : styles.link}
                 aria-current={active ? "page" : undefined}
+                data-label={link.label}
               >
-                {link.label}
+                <span>{link.label}</span>
               </Link>
             );
           })}

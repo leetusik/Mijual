@@ -28,8 +28,9 @@ export function OpsTabs() {
             href={tab.href}
             className={active ? `${styles.tab} ${styles.tabActive}` : styles.tab}
             aria-current={active ? "page" : undefined}
+            data-label={tab.label}
           >
-            {tab.label}
+            <span>{tab.label}</span>
           </Link>
         );
       })}

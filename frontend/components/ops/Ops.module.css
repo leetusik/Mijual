@@ -69,11 +69,42 @@
 }
 
 .tab {
+  /* R18 §②b 폭 예약 — nav의 `.link`와 같은 처방(같은 결함이므로). 라벨과 숨은
+     600 쌍둥이를 같은 그리드 칸에 겹쳐 두면 칸의 폭이 항상 넓은 쪽(=600)이므로
+     활성 탭이 뒤따르는 탭을 밀지 못한다.
+
+     nav와 다른 두 가지, 둘 다 의도적이다. (1) `.tab`에는 원래 `display` 선언이
+     없어 `inline-grid`는 교체가 아니라 **추가**다 (`.tabs`가 flex이므로 실제
+     계산값은 blockify된 `grid`). (2) nav의 `.link`가 갖는 `white-space: nowrap`은
+     **넣지 않는다** — 390px에서 이 여섯 탭은 줄바꿈으로 바에 들어가고 있고
+     (`D24`), nowrap은 그 줄바꿈을 없애 가로 넘침으로 바꿔 버린다. 폭 예약은
+     칸이 max-content를 가질 때만 필요한데 그 폭이 있는 것은 데스크톱뿐이다.
+     `padding-bottom: 2px`은 그대로 두고, 쌍둥이는 `height: 0`이라 칸 높이에
+     기여하지 않는다. */
+  display: inline-grid;
+  grid-template-areas: "label";
+  place-items: center;
   font-size: var(--text-base);
   color: var(--ink-2);
   text-decoration: none;
   padding-bottom: 2px;
   border-bottom: 2px solid transparent;
+}
+
+.tab > span {
+  grid-area: label;
+}
+
+/* 쌍둥이. `visibility: hidden`이지 `opacity: 0`이 아니다 — 전자만 보조기술과
+   히트 테스트에서 빠진다 (`Nav.module.css`의 같은 주석 참조). */
+.tab::after {
+  content: attr(data-label);
+  grid-area: label;
+  font-weight: 600;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .tab:hover {

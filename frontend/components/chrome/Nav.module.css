@@ -37,8 +37,13 @@
 }
 
 .link {
-  display: inline-flex;
-  align-items: center;
+  /* R18 §② 폭 예약: 라벨과 숨은 600 쌍둥이를 같은 그리드 칸에 겹쳐 둔다. 칸의 폭은
+     둘 중 넓은 쪽(=600)이므로 활성 여부가 폭을 바꾸지 못한다. 밑줄 2px을
+     transparent로 예약해 둔 것과 같은 방식의 세로판 대응. */
+  display: inline-grid;
+  grid-template-areas: "label";
+  place-items: center;
+  white-space: nowrap;
   font-size: var(--text-base); /* R2: 13.5px */
   color: var(--ink-1);
   text-decoration: none;
@@ -47,6 +52,22 @@
      active. */
   border-bottom: 2px solid transparent;
   transition: color var(--dur-fast) var(--ease);
+}
+
+.link > span {
+  grid-area: label;
+}
+
+/* 쌍둥이. `visibility: hidden`이지 `opacity: 0`이 아니다 — 전자는 보조기술이
+   무시하고 히트 테스트에서도 빠진다. 높이 0이라 칸 높이에는 기여하지 않는다. */
+.link::after {
+  content: attr(data-label);
+  grid-area: label;
+  font-weight: 600;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .link:hover {
