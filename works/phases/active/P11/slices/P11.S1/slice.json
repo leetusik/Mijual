@@ -3,12 +3,12 @@
   "phase_id": "P11",
   "name": "Re-cut the ask citation chip onto the R10 popover anatomy",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 1,
   "depends_on": [],
   "created_at": "2026-08-31T14:54:05+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-31T14:58:57+09:00",
+  "completed_at": "2026-08-31T15:28:02+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Re-cut InlineCitation onto Citation.tsx's R10 conditional-mount absolute-popover anatomy — a sentence resting on 2-3 근거 now renders on one line with chips side by side, in all three placements, page and widget, 1280 and 390, dev and production",
   "validation": {
     "required": [],
     "last_run": null,

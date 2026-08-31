@@ -127,8 +127,17 @@
 }
 
 /* 세 칸: 라벨 · 값(넘치면 이 칸만 스크롤) · 마커/칩(고정).
-   인용 칩은 절대 스크롤 밖으로 밀리지 않는다 — 보이지 않는 근거는 근거가 아니다. */
+   인용 칩은 절대 스크롤 밖으로 밀리지 않는다 — 보이지 않는 근거는 근거가 아니다.
+
+   `position: relative` is the row's one job for the chip: R16 §2.6 opens a row's
+   인용 블록 「행 아래, 블록 전폭」, and since `P11.S1` that block is an overlay
+   popover (`Ask.module.css` `.quotePop`) rather than a second grid row. The row
+   is what it anchors to — the chip's own wrap is `display: contents` and
+   generates no box — so the block still opens under this row at this block's
+   width, and now sizes no grid track while it does it (§2.3's measured value-
+   column collapse becomes impossible rather than avoided). */
 .row {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 40%) minmax(0, 1fr) auto;
   column-gap: var(--space-2);

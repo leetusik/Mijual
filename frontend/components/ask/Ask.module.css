@@ -254,34 +254,60 @@
   background: var(--live-tint);
 }
 
-/* 제자리 인용 블록 — the Citation primitive's own anatomy and timing, shared as
-   R6-4 asks (「Citation 프리미티브의 인라인형 — 블록형과 스타일 공유」): a grid
-   height animation so the panel opens to its own height, everything phrasing
-   content so it may sit inside a paragraph. */
-.quoteWrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows var(--dur-slow) var(--ease),
-    opacity var(--dur-slow) var(--ease);
+/* 인용 블록 — the Citation primitive's own anatomy, shared as R6-4 asks
+   (「Citation 프리미티브의 인라인형 — 블록형과 스타일 공유」) and, since `P11.S1`,
+   shared **literally**: a conditionally mounted **overlay popover**, everything
+   phrasing content so it may sit inside a paragraph.
+
+   R1's grid height animation and the `inert` collapse retire here with the
+   in-flow panel they served. That panel was `display: grid` inside
+   `<p class=prose>`'s inline formatting context, so it split the paragraph into
+   anonymous block boxes and **every chip forced a line break** — a sentence
+   resting on three 근거 arrived as 「…입니다.[1] ⏎ [2] ⏎ [3]」, and `.sentence +
+   .sentence`'s `0.25em`, which assumes inline siblings, went with it. An overlay
+   has nothing to push, so there is nothing to ease and nothing to break. */
+
+/* 프로즈 자리: the positioning context for the popover, `inline-block` so a chip
+   that ends a sentence keeps flowing with it (`Citation.module.css` `.wrap`). */
+.citationWrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
 }
 
-.quoteOpen {
-  grid-template-rows: 1fr;
-  opacity: 1;
-}
-
-.quoteClip {
-  overflow: hidden;
-}
-
-.quotePanel {
+/* **The ground is opaque, and that is this slice's one deviation from R16.** The
+   round signed this block as `--surface-inset` + a 2px `--live` left edge, drawn
+   as an *in-flow* panel with nothing behind it. As an overlay it lies on top of
+   the prose, and `--surface-inset` is `rgba(255,255,255,.08)` — the sentence
+   would read straight through the reader's evidence. So the 2px `--live` edge
+   and the 180px quote cap R16 signed both stand, and the ground becomes the one
+   this product already gives everything that floats: `#0e1a15` + 1px
+   `--border-strong` + `--panel-glow` — the widget's own surface (the same
+   `#0e1a15` this file's `.widget` is drawn on, and the record's own literal),
+   and `Citation.module.css`'s for the same reason. So the file gains no new
+   colour, only a second use of the one it already had (`P11.S1`). */
+.quotePop {
   display: block;
-  margin-top: var(--space-2);
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 380px;
+  max-width: min(380px, calc(100vw - 32px));
   padding: var(--space-3);
-  background: var(--surface-inset);
+  background: #0e1a15;
+  border: 1px solid var(--border-strong);
   border-left: 2px solid var(--live);
+  box-shadow: var(--panel-glow);
+  text-align: left;
+}
+
+/* Opened upward when the surface that clips it — the widget thread, at 620px —
+   has more room above the chip than below (`InlineCitation.tsx` `fit()`). The
+   drop is the same 6px, mirrored. */
+.quotePop[data-flip="up"] {
+  top: auto;
+  bottom: calc(100% + 6px);
 }
 
 .quote {
@@ -333,16 +359,19 @@
  * §2.3 fixes that third column as 고정 and `nowrap`, and says why: 「칩은 값과
  * 함께 스크롤되지 않는다 — 390에서 긴 값이 있을 때 칩이 화면 밖으로 밀리면 근거가
  * 사라진 것과 같다」. A column that narrow cannot also *measure* the 인용 블록:
- * with the panel inside it the `auto` track grows toward the quote's max-content
- * and the `minmax(0,1fr)` value column collapses to zero (measured in Chrome —
+ * with the panel inside it the `auto` track grew toward the quote's max-content
+ * and the `minmax(0,1fr)` value column collapsed to zero (measured in Chrome —
  * the value disappeared entirely, closed panel included).
  *
- * So in a row the chip and its block are grid items of **the row**: the chip
- * keeps the fixed third column and the block opens under the row across the
- * whole block. That is the same relationship prose has — 제자리, under the thing
- * it belongs to, at the width of its container — and it is the row-scale reading
- * of R6 §Mobile's 「인용 블록 전폭」. The component itself is unchanged (§2.6
- * 「변경 없음」); this is placement only. */
+ * So the wrap stays `display: contents` — the chip is a grid item of **the row**
+ * and keeps the fixed third column — and the block opens under the row across
+ * the whole block. `P11.S1` changes only *how* it opens there: the popover is
+ * absolutely positioned against `.row` (`Blocks.module.css`, which takes
+ * `position: relative` for exactly this) instead of occupying a second grid row,
+ * so 「행 아래, 블록 전폭」 is unchanged and the measured collapse becomes
+ * **structurally impossible** — an absolutely positioned box sizes no grid track.
+ * That is the same 제자리 relationship prose has, and the row-scale reading of R6
+ * §Mobile's 「인용 블록 전폭」. The chip itself is unchanged (§2.6 「변경 없음」). */
 .citationRow {
   display: contents;
 }
@@ -353,9 +382,18 @@
   justify-self: end;
 }
 
-.citationRow > .quoteWrap {
-  grid-column: 1 / -1;
-  grid-row: 2;
+/* 블록 전폭: the row's own width, so no horizontal clamp applies to it. */
+.citationRow > .quotePop {
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: none;
+}
+
+.citationRow > .quotePop[data-flip="up"] {
+  top: auto;
+  bottom: 100%;
 }
 
 /* --- 푸터 · 갈 곳 · 중단 행 --------------------------------------------- */
@@ -519,12 +557,16 @@
   }
 
   /* 「인용 블록 전폭」 (R6 §Mobile, drawn by R14's canon as the `.m390` mirror):
-     on a phone the quote pushes back out through the answer box's own padding
-     and spans it edge to edge, so a 180px-capped 원문 gets the whole width the
-     surface has. The padding it gives back is what keeps the text off the
-     hairline. */
-  .quotePanel {
-    margin-inline: calc(-1 * var(--space-3));
-    padding-inline: var(--space-3);
+     on a phone the 원문 gets the whole width the surface has. As an overlay that
+     is the primitive's own mobile geometry — anchored to the chip's right edge
+     rather than pushed out through the answer box's padding, because an
+     absolutely positioned box has no padding to push out through — and at 390
+     `100vw - 44px` is that same edge-to-edge width. `fit()` slides it back
+     inside when a chip sits far enough right to carry it off-screen. */
+  .quotePop {
+    left: auto;
+    right: 0;
+    width: calc(100vw - 44px);
+    max-width: 340px;
   }
 }
