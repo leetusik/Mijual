@@ -5,10 +5,10 @@
 
 ## Pointer
 
-- Current phase: `P11`
-- Current slice: `none`
-- Next slice: `none`
-- Waiting on operator: `P11`
+- Current phase: `P4`
+- Current slice: `P4.DECOMP`
+- Next slice: `P4.REVIEW`
+- Waiting on operator: `none`
 - Open deferred jobs: `34`
 
 ## Active Phases
@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
-| [~] `P11` | `pending` | `changes_requested` | Ask agent polish: inline citations and feature cards | `P11.REVIEW` | `works/phases/active/P11` |
+| [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -67,7 +67,7 @@
 | [x] `P11.F1` | `done` | Serve the start cards from the live corpus and drop two cards | `fix` | `works/phases/active/P11/slices/P11.F1` |
 | [x] `P11.F2` | `done` | Publish the operator contact in the agent answer and the footer | `fix` | `works/phases/active/P11/slices/P11.F2` |
 | [x] `P11.F3` | `done` | Silence the browser-injected hydration warning and check the root layout's cached read | `fix` | `works/phases/active/P11/slices/P11.F3` |
-| [ ] `P11.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
+| [x] `P11.REVIEW` | `done` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
 
 ## Phase P4: Ship & Submit
 

@@ -632,3 +632,7 @@
 {"ts": "2026-09-01T03:36:33+09:00", "type": "deferred_created", "deferred": "D39", "source": "P11.REVIEW"}
 {"ts": "2026-09-01T03:37:04+09:00", "type": "phase_status_changed", "phase": "P11", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-09-01T03:37:04+09:00", "type": "acceptance_opened", "phase": "P11"}
+{"ts": "2026-09-01T08:57:31+09:00", "type": "phase_status_changed", "phase": "P11", "old_status": "pending", "new_status": "in_progress"}
+{"ts": "2026-09-01T08:57:31+09:00", "type": "acceptance_cleared", "phase": "P11"}
+{"ts": "2026-09-01T08:57:37+09:00", "type": "slice_status_changed", "slice": "P11.REVIEW", "old_status": "changes_requested", "new_status": "done"}
+{"ts": "2026-09-01T08:57:37+09:00", "type": "phase_reviewed", "phase": "P11", "verdict": "pass", "reviewer": "slice-executor-high"}
