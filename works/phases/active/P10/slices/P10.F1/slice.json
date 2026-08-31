@@ -3,12 +3,12 @@
   "phase_id": "P10",
   "name": "R18 ①③ — 워드마크 45열 삭제 · 파비콘 투명 타일, 그리고 두 README",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 8,
   "depends_on": [],
   "created_at": "2026-08-31T09:28:14+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-08-31T09:32:48+09:00",
+  "completed_at": "2026-08-31T10:00:36+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Wordmark 1247x371 and three transparent #2b8e6c favicon tiles shipped, seven README sections rewritten; two more broken verification procedures in R18 caught",
   "validation": {
     "required": [],
     "last_run": null,

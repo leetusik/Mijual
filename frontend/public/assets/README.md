@@ -10,7 +10,7 @@ as untouchable, or an untouchable export gets "regenerated".
 | **B — operator delivery** | handed over directly by the operator, outside the design project. Landed byte-exact and never re-encoded. Also not regenerable here. | `juju2-logo-source.png`, `juju2-symbol-source.png` |
 | **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju2-wordmark-white.png`, `juju2-symbol-white.png`, and the three favicon tiles in `../../app/` |
 
-## The brand mark (2026-08-31, `P10.S7`) — the second delivery
+## The brand mark (2026-08-31, `P10.S7`; re-derived by `P10.F1` for R18) — the second delivery
 
 The operator delivered two files directly — **not** exports from the Claude Design project, so the
 "byte-for-byte from the design project" rule does not describe them or their derivatives. Both
@@ -31,7 +31,7 @@ wordmark: both measure **2,481 ink pixels**, which is how we know it was not red
 |---|---|---|---|
 | `juju2-logo-source.png` | B | the operator's wordmark delivery, byte-exact and **unreferenced** — kept only as the ancestor | PNG 1614×1076 sRGBA, 239,858 b |
 | `juju2-symbol-source.png` | B | the operator's symbol delivery, byte-exact and **unreferenced** — same role | PNG 278×278 sRGBA, 31,674 b |
-| `juju2-wordmark-white.png` | C | the wordmark trimmed to its ink and recoloured **white** — **the only image the chrome loads** | PNG 1292×371 sRGBA, 21,998 b |
+| `juju2-wordmark-white.png` | C | the wordmark trimmed to its ink, recoloured **white**, and **spliced** to drop the quarter-em space inside it (R18) — **the only image the chrome loads** | PNG 1247×371 sRGBA, 21,920 b |
 | `juju2-symbol-white.png` | C | the symbol **cropped** to its real ink and recoloured white — the launcher paints it with a CSS `mask`, and the favicon tiles are composited from it | PNG 222×165 sRGBA, 3,232 b |
 
 **There is no black variant, and that is deliberate.** The retired first mark had one for light
@@ -41,13 +41,17 @@ asset serves every colour. Adding a second recolour now would be a file with no 
 
 ### Exactly how the derivatives were produced
 
-Run from this directory, ImageMagick **7.1.2-27 Q16-HDRI aarch64**. These are R17 §0's commands
-verbatim, with the operator's filenames replaced by the landed class-B names (same bytes):
+Run from this directory, ImageMagick **7.1.2-27 Q16-HDRI aarch64**. The symbol's command is R17
+§0's verbatim (with the operator's filenames replaced by the landed class-B names — same bytes); the
+wordmark's is R17 §0's plus the R18 splice stage, which is the only change either has had:
 
 ```sh
-# wordmark — -trim gives exactly 1292x371+238+255
+# wordmark — -trim gives exactly 1292x371+238+255, then the splice drops 45 columns
 magick juju2-logo-source.png -trim +repage \
        -channel RGB +level-colors white,white +channel \
+       \( -clone 0 -crop 530x371+0+0 +repage \) \
+       \( -clone 0 -crop 717x371+575+0 +repage \) \
+       -delete 0 +append +repage \
        -define png:color-type=6 juju2-wordmark-white.png
 
 # symbol — NEVER -trim; crop the real ink explicitly (see the warning below)
@@ -56,7 +60,22 @@ magick juju2-symbol-source.png -crop 222x165+39+62 +repage \
        -define png:color-type=6 juju2-symbol-white.png
 ```
 
-Nothing was resized, optimised, re-compressed, or had metadata stripped.
+Nothing was resized, optimised, re-compressed, or had metadata stripped. `530 + 717 = 1247`;
+`575 = 530 + 45`.
+
+**Why 45 columns, and why cutting them is safe** (R18 §①, `docs/reference/design/rounds/18-p10-review/`).
+The artwork spelled the name with a **quarter-em space between 「의」 and 「관」** — the operator saw it
+as 「주주의 관제탑」. It is measurable, not a matter of taste: the mark's Hangul **advance width** is
+**183.0px** (the ink-centre distance between the two identical 주 glyphs), and 의→관 measures
+**228.5px** — an excess of **45.5px = 0.249em**, and 관·제·탑 all carry the same `+40..+56px` offset
+against a 183 grid, so it is one shifted space rather than one bad kerning pair. The cut is a splice,
+not a resize: `x=519..588` (**70 columns**) has **zero alpha at every one of the 371 rows**, and the
+command removes `x=530..574` from strictly inside that band — 11 columns of clearance on the left,
+14 on the right. The sparkle cluster starts at `x≥1070` in the old raster, so nothing it owns is
+touched (its own box is `x=1070..1291` in the old raster, all of it above the glyph band).
+Everything right of the cut simply moves 45px left, which is why the mark stays flush to the box's
+top and right. −40 was rejected (the gap still reads as a space at 30px) and −52 (18px,
+tighter than the 19px between 주 and 주, so 「의관」 would collide).
 
 ### Four traps, all of them real, all of them silent
 
@@ -84,7 +103,26 @@ print(sum(1 for i in range(0,len(b),4) if b[i+3]==255 and min(b[i:i+3])>=240))"
 
 A second, independent check on the derivative itself: flood-filling the transparent region from the
 border leaves **2,845 enclosed pixels in two islands** — `50×46 at (402,226)` (「의」's ㅇ) and
-`69×15 at (1014,335)` (「탑」's ㅂ). Two counters, both punched through.
+`69×15 at (969,335)` (「탑」's ㅂ). Two counters, both punched through. The second island's `x`
+**moved 45 left** with the R18 splice (it was `(1014,335)`); the first is left of the cut and did not
+move.
+
+Run it as a before/after guard on the *derivative*, which is the form R18 needs — a re-derivation
+must leave both islands exactly as they were:
+
+```sh
+# 481 and 15. Both counts are of the ENCLOSED islands' bounding boxes, which clip a few
+# border ink pixels — that is why they are not 0, and why only their CONSTANCY matters.
+magick juju2-wordmark-white.png -crop 50x46+402+226 +repage -alpha extract -threshold 0 \
+       -format '%[fx:int(w*h*mean+0.5)]\n' info:
+magick juju2-wordmark-white.png -crop 69x15+969+335 +repage -alpha extract -threshold 0 \
+       -format '%[fx:int(w*h*mean+0.5)]\n' info:
+```
+
+**Do not replace this with an "opaque near-white pixels = 0" count over the whole derivative.** On an
+all-white mark that expression is just the opaque-pixel count (69,630) and can never be 0, so it
+filters nothing. The check above is scoped to the *source's* counter region for exactly that reason,
+and these two islands are its derivative-side counterpart.
 
 **3. `+level-colors` without the `-channel RGB … +channel` guard destroys the artwork.** It
 flattens the alpha channel and yields an opaque white rectangle (verified: `Grayscale Gray`, one
@@ -104,35 +142,65 @@ sRGBA and directly comparable.
 ```
 393361d7dd49ab0687e6925d8f93bf28f9cab7be3e21f4110a4ae76fc36f3450  juju2-logo-source.png
 1c44ca4023c2980949e04e5b5e2a5c31ac1c06f924d0dd9c6890192d563e6f3c  juju2-symbol-source.png
-749d413f0543b276873f5a6814bc01d0a425f460bee51af216edc6aceb28eba6  juju2-wordmark-white.png
+539dce785cef599cb8d9e533f67df45d9525af2be2fff27ec639b6ea4b3f8fd2  juju2-wordmark-white.png
 7946b99cc4b7c640af7b214a89efaeb965f53d729e0656c914a4b39093f4cc7c  juju2-symbol-white.png
+f12828c32a82c0e2d307dcd3c01b6938388fa77e02cac60452a698e2e7252e06  ../../app/icon.png
+54ff6da3f1a1c9657721668870f97ab5f991eecddc0a55afd552910b0bac92d2  ../../app/icon1.png
+72fc30fb3066a692b4c63b04a13809bca35c5f53d707248127bd8cfa4f0be418  ../../app/apple-icon.png
 ```
+
+The two class-B originals and `juju2-symbol-white.png` are **unchanged by R18** and still carry the
+hashes `P10.S7` recorded. The wordmark and all three tiles were re-derived, so their hashes and
+signatures below are re-measured, never carried over.
 
 **Those file hashes do not survive a re-run of the commands** — ImageMagick stamps a `png:tIME`
 chunk, so re-deriving gives identical pixels in a different container. **To verify a *derivation*,
 compare pixels, not bytes.** Never "fix" a mismatched file hash by re-deriving.
 
 ```
-66d9354ba3587f9df3584532c9c9c2bee3894414202f974a53e82f681d7f8e1e  juju2-wordmark-white.png  (identify -format '%#')
+bc1bfd6ccc096b8272b0a3a36e0d246116fc4be76850beadcd7d8d0d3632a891  juju2-wordmark-white.png  (identify -format '%#')
 37577b8751e8caaa52aa9c944c575dc7871ff6f22739b1e7c210ac116b9fedb7  juju2-symbol-white.png    (identify -format '%#')
+07aa766bb20d1a804b7382a5aca17d76b22374eaa43c9e674d277600f59b9794  ../../app/icon.png        (identify -format '%#')
+c57c675a66d45295b0b91aab0367e63a07d0871c6d2fd4af230cec12ed5c6166  ../../app/icon1.png       (identify -format '%#')
+9d8c0e0083cc7245a2889cee7cd7958993c9f6d1d81020e28f9282c2bab02962  ../../app/apple-icon.png  (identify -format '%#')
 ```
+
+All four R18 derivatives were re-run into a scratch directory from the commands above and compared:
+**pixel signature identical and `compare -metric AE` = 0** on every one, which is what "regenerable
+here" is supposed to mean. File sizes as they sit here: wordmark **21,920 b** (was 21,998), `icon.png`
+**684 b**, `icon1.png` **476 b**, `apple-icon.png` **2,799 b** — the tiles shrank because a
+transparent PNG stores no background.
 
 `identify -format '%#'` is ImageMagick's own pixel signature; `magick f.png -depth 8 RGBA:- |
 shasum -a 256` gives the same guarantee from raw bytes, and `compare -metric AE a.png b.png null:`
 reporting `0` is the direct check.
 
-### That the recolor changed colour and nothing else
+### That the recolor changed colour, and the splice changed nothing else
 
 Measured on the landed files, not asserted:
 
 - both derivatives are `srgba 4.0`, 8-bit, alpha `Blend`;
-- their **alpha channels are byte-identical to the source's**, which is the whole claim of an
-  alpha-preserving recolor. `magick juju2-logo-source.png -trim +repage -alpha extract -depth 8
-  gray:- | shasum -a 256` and the same on the derivative both give
-  `296508ffbbfcfc0fcbcc67a58348ecf94a32f3989bdac9f049354323cc5d2fbe`; for the symbol (source cropped
-  the same way) both give `5e6540eb2a39913f93157e9205009bb9b2d30d6cbdcd12681a774a0e54ef67fc`;
-- the wordmark keeps **154 distinct alpha values** over 479,332 px — 78,212 non-transparent, 69,630
-  fully opaque; the symbol keeps **112** over 36,630 px, 2,481 non-transparent;
+- **the wordmark's alpha channel is a pure splice of the source's alpha.** Byte-identity with the
+  source trim no longer holds — 45 columns are gone — so the check is: apply the *same two crops* to
+  the source trim, `+append` them, and compare that alpha against the derivative's. Both give
+  `d90e982748259b5356373cb82b5fb9fc20678947eb6df1994554b56ae895df79`:
+
+  ```sh
+  magick juju2-logo-source.png -trim +repage \
+    \( -clone 0 -crop 530x371+0+0 +repage \) \( -clone 0 -crop 717x371+575+0 +repage \) \
+    -delete 0 +append +repage -alpha extract -depth 8 gray:- | shasum -a 256
+  magick juju2-wordmark-white.png -alpha extract -depth 8 gray:- | shasum -a 256   # must match
+  ```
+
+  That equality is the *proof* of the line below: the shape of this mark is carried entirely by
+  alpha, so an alpha channel that is exactly the source's minus 45 fully-transparent columns means
+  **cutting those columns did not change one pixel of ink**. For the symbol (untouched by R18) the
+  original byte-identity claim still holds: source cropped the same way and the derivative both give
+  `5e6540eb2a39913f93157e9205009bb9b2d30d6cbdcd12681a774a0e54ef67fc`;
+- the ink statistics are therefore **identical before and after the splice**: the wordmark keeps
+  **154 distinct alpha values**, **78,212** non-transparent and **69,630** fully opaque px — now over
+  462,637 px of raster instead of 479,332, which is the only number that moved. The symbol keeps
+  **112** over 36,630 px, 2,481 non-transparent;
 - in both, **every** pixel is exactly `#FFFFFF` — transparent ones included (1 distinct RGB across
   the whole raster). That matters on cosmos: a renderer that filters without premultiplying can
   bleed transparent-pixel RGB into the edges on a hard downscale, and h27 from 371 is a 7.3 %
@@ -141,18 +209,26 @@ Measured on the landed files, not asserted:
 
 ### Measured geometry — the numbers the chrome depends on
 
-| | this mark | the retired first mark (`juju-wordmark-white.png`) |
-|---|---|---|
-| trimmed box | **1292×371** | 1213×319 |
-| aspect | **3.4825 : 1** | 3.80 : 1 |
-| glyph band | **1132×176**, box-bottom flush, starting at y=195 → **47.44 %** of box height | 1063×162 at y=157 → 50.8 % |
-| ink coverage inside the band | **38.0 %** | 16.1 % |
+These are the **post-R18** numbers: the splice took 45 columns out of the width and **nothing else**,
+so every vertical figure below is the same one R17 measured.
+
+| | this mark (R18) | before R18 | the retired first mark (`juju-wordmark-white.png`) |
+|---|---|---|---|
+| trimmed box | **1247×371** | 1292×371 | 1213×319 |
+| aspect | **3.3612 : 1** | 3.4825 : 1 | 3.80 : 1 |
+| glyph band | **1087×176**, box-bottom flush, starting at y=195 → **47.44 %** of box height | 1132×176, same y | 1063×162 at y=157 → 50.8 % |
+| ink coverage inside the band | **39.6 %** | 38.0 % | 16.1 % |
 
 The box is **not** filled evenly, and this is the fact every placement decision turns on:
 
-- sparkle cluster: **222×165** at `x=1070, y=0` — 2,481 ink px, flush to the box's top **and** right;
+- sparkle cluster: **222×165** at `x=1025, y=0` — 2,481 ink px, still flush to the box's top **and**
+  right (`1025 + 222 = 1247`); it moved 45px left with everything else right of the cut;
 - empty band: **30 rows**, `y=165..194`, zero ink;
-- Korean glyphs 주주의관제탑: **1132×176** at `x=0, y=195` — 75,731 ink px, bottom-flush.
+- Korean glyphs 주주의관제탑: **1087×176** at `x=0, y=195` — 75,731 ink px, bottom-flush. The ink
+  count is unchanged and the band is 45px narrower, which is the whole of the density move
+  (38.0 % → 39.6 %);
+- 의\|관 ink gap: **25px**, `x=519..543` — was 70px. The advance-width grid says a Hangul step here
+  is 183.0px, so this is now a normal inter-syllable gap (주\|주 is 19px).
 
 So a height-constrained placement gets a mark whose *legible* part is 47 % of the declared height,
 sitting in its **bottom** half. **R17 answers that** (`docs/reference/design/rounds/17-brand-mark-launcher/`):
@@ -161,61 +237,155 @@ the chrome renders **nav h27 / footer h24** and lifts the image by the band's ow
 rounded to `translateY(-7px)` / `-6px`. `components/chrome/Wordmark.tsx` carries both numbers and
 the offset; the earlier "is h19 still right?" question is **closed**.
 
+**R18 changed none of that.** `BAND_CENTRE 76.28 %`, `INK_OFFSET = 0.2628 × H` and both
+`translateY` values are vertical, the splice was horizontal, and 47.44 % is a ratio of two unchanged
+heights. The only figure that follows the new width is the **rendered width**: nav h27 goes
+**94.03 → 90.75px**, footer h24 **83.58 → 80.67px**. Neither has a layout consequence — `.brand` is
+`flex:none` and no rule fixes a width.
+
+*(R18's own §① states the aspect as 3.3603 and the widths as 90.7 / 80.6. `1247 / 371 = 3.36119`,
+`× 27 = 90.752`, `× 24 = 80.668` — the round's three figures all follow from one arithmetic slip in
+the aspect. `P10.F1` read the widths out of the running document instead: Chrome reports
+`getBoundingClientRect()` **90.75 × 27** in the nav and **80.66 × 24** in the footer, in dev and in
+the production build, at 1280 and 390. The measured values are used here; the design record is not
+edited. Same treatment `P10.S7` gave R17's two arithmetic errors.)*
+
 The replacement is *proportionally shorter* in its band than the mark it retires (47.4 % against
 50.8 %) but carries **2.4× the ink** in it. That density — not scale — is the answer to the
 operator's "previous one was so thin".
 
-## The favicon — shipped (R17 §2), and this section replaces the prohibition
+## The favicon — shipped (R17 §2), re-cut transparent (R18 §③), and no longer prohibited
 
 The previous README said "**Still no favicon, and this mark does not become one**". That is
 **retired by R17**, and it was retired the way the rule required: not by cropping something out of
 the wordmark, but by the operator **delivering a square symbol export**. The standing rule below is
 therefore *satisfied*, not relaxed.
 
+**R18 (`P10.review`) re-cut all three.** They are now **transparent** tiles carrying **one ink
+colour**, at **75 %** ink width instead of R17's 84 %. R17's own line — one artwork, one rule, 16 a
+downscale of the 32 raster, nothing cropped out of the wordmark — is untouched; what changed is the
+placement rule and the ink colour.
+
 Three tiles, all class C, all composited in this repo from `juju2-symbol-white.png`, and all shipped
 through Next's `app/` file conventions so Next emits the `<link>` tags itself:
 
 | file | tile | ink | sha256 / pixel signature |
 |---|---|---|---|
-| `../../app/icon.png` | 32×32 | 27×20 at +2+6 (84.4 %) | `1c11de45…` / `0e506ad7…` |
-| `../../app/icon1.png` | 16×16 | downscale of the 32 raster | `89e57f1a…` / `331ac3d5…` |
-| `../../app/apple-icon.png` | 180×180 | 151×112 at +14+34 (83.9 %) | `7f36b89e…` / `ba819f18…` |
+| `../../app/icon.png` | 32×32, transparent | **24×18 at +4+7** (75.0 %) | `f12828c3…` / `07aa766b…` |
+| `../../app/icon1.png` | 16×16, transparent | downscale of the 32 raster (12×10 at +2+3) | `54ff6da3…` / `c57c675a…` |
+| `../../app/apple-icon.png` | 180×180, transparent | **134×100 at +23+40** (74.4 %) | `72fc30fb…` / `9d8c0e00…` |
 
 Run from **`frontend/`** (one level up from this directory), not from here — the paths below are
 repo-frontend-relative because the tiles land in `app/`:
 
 ```sh
-# 84% ink-width rule, ink box centred on both axes, on an OPAQUE #0a1310 tile.
-#   32px  -> 32 * 0.84 = 26.88 wide;  26.88 * 165/222 = 19.98 tall   (R17's "26.9 x 20.0")
-#   180px -> 151.2 x 112.38
-magick -size 32x32 xc:'#0a1310' \
-       \( public/assets/juju2-symbol-white.png -resize 26.88x \) \
-       -gravity center -composite -alpha off -depth 8 -define png:color-type=2 app/icon.png
+# Transparent tile. Ink = the symbol recoloured to #2b8e6c, then given an exact integer
+# width, composited dead-centre on both axes.
+#   32px  -> 24 wide (75.0%);  24 * 165/222 = 17.8 -> 18 tall;  margins 4/4 and 7/7
+#   180px -> 134 wide (74.4%); 134 * 165/222 = 99.6 -> 100 tall; margins 23/23 and 40/40
+magick -size 32x32 xc:none \
+       \( public/assets/juju2-symbol-white.png \
+          -channel RGB +level-colors '#2b8e6c','#2b8e6c' +channel \
+          -resize 24x \) \
+       -gravity center -composite -depth 8 -define png:color-type=6 app/icon.png
 
-magick -size 180x180 xc:'#0a1310' \
-       \( public/assets/juju2-symbol-white.png -resize 151.2x \) \
-       -gravity center -composite -alpha off -depth 8 -define png:color-type=2 app/apple-icon.png
+magick -size 180x180 xc:none \
+       \( public/assets/juju2-symbol-white.png \
+          -channel RGB +level-colors '#2b8e6c','#2b8e6c' +channel \
+          -resize 134x \) \
+       -gravity center -composite -depth 8 -define png:color-type=6 app/apple-icon.png
 
 # 16px is a DOWNSCALE OF THE 32 RASTER, not separate artwork (R17 §5: one artwork, one rule).
 # -filter Box because at exactly 2:1 it is a plain 2x2 mean: the literal reduction, with no filter
-# of its own. Lanczos (the default) rings — measured 36 pixels *darker than the tile*, a colour the
-# design never specified — and Box also keeps the ink brightest (232 vs 214).
-magick app/icon.png -filter Box -resize 16x16 -alpha off -depth 8 -define png:color-type=2 app/icon1.png
+# of its own. Lanczos (the default) rings — on the old opaque tile that measured 36 pixels *darker
+# than the tile*, a colour the design never specified; on a transparent tile it would invent
+# colours at the ink edge instead.
+magick app/icon.png -filter Box -resize 16x16 -depth 8 -define png:color-type=6 app/icon1.png
 ```
 
-**The tile is opaque on purpose.** A transparent favicon vanishes on a light browser tab; `#0a1310`
-is the cosmos `--paper`, so the icon carries its own surface.
+**Three silent traps in those three commands** — all of them produce a normal-looking PNG of the
+right size:
+
+1. **`-alpha off` must not be there.** It, not `xc:'#0a1310'`, is what actually made the old tiles
+   opaque: it flattens transparency to black. R17's commands carried it, which is why this diff
+   looks like a colour change and is really a flag removal.
+2. **`png:color-type=6`, never `2`.** Type 2 is RGB with no alpha; ask for transparency while
+   leaving `2` in place and ImageMagick quietly composites a background instead of telling you.
+3. **Recolour *before* resize.** Doing it in that order means every pixel of the ink layer — the
+   transparent ones included — is exactly `#2b8e6c` going into the downscale, so a renderer that
+   filters without premultiplying cannot bleed a foreign colour into the edge. It is the green
+   version of the same reason the white derivatives are white everywhere.
+
+Verify (run from `frontend/`):
+
+```sh
+identify -format '%f %wx%h %[channels] %[opaque]\n' app/icon.png app/icon1.png app/apple-icon.png
+# 32x32 / 16x16 / 180x180, all srgba, all opaque=false
+
+# ink box AND its offsets — NO +repage here, or the offsets reset to +0+0
+magick app/icon.png -trim -format '%wx%h%O\n' info:         # 24x18+4+7
+magick app/apple-icon.png -trim -format '%wx%h%O\n' info:   # 134x100+23+40
+
+# every visible pixel is exactly #2b8e6c — this is the colour check that works.
+# (R18 §③ prints '%[fx:int(255*u.r)]' instead, but that reads pixel (0,0), which is
+#  transparent canvas on all three tiles and always answers 0,0,0.)
+magick app/icon.png -depth 8 RGBA:- | python3 -c "
+import sys; b=sys.stdin.buffer.read()
+px=[tuple(b[i:i+4]) for i in range(0,len(b),4)]
+print(sum(1 for p in px if p[3]>0 and p[:3]!=(43,142,108)))"   # 0
+```
+
+**The tile is transparent on purpose — and the old opaque rule was not wrong, its premise was.**
+R17 said a transparent favicon vanishes on a light browser tab, and that is true *of white ink*.
+The background was carrying the contrast for an ink colour that had none. Unpin the ink from white
+and the background stops being necessary: **`#2b8e6c`** (`oklch(0.58 0.105 166)`) sits between the
+design system's two `--live` greens on the same hue axis and reads on both sides —
+
+| surface | contrast |
+|---|---|
+| white tab | **4.05** |
+| Chrome light tab `#f1f3f4` | 3.64 |
+| Chrome dark tab `#202124` | **3.98** |
+| cosmos `#0a1310` | 4.66 |
+| pure black | 5.19 |
+
+— 4.05 against white and 3.98 against a dark tab, which is the point: it leans neither way, so one
+tile serves every context and there is **no separate opaque `apple-touch-icon`**. iOS composites the
+transparent tile on black or white, and both of those numbers are in the table. `#2b8e6c` is an
+ImageMagick **literal**, not a token: `../foundations/tokens.css` stays frozen.
+
+**Why 75 % and not 84 %.** The ink box is 222×165 — **4:3** — and the tile is square, so preserving
+the aspect always leaves more vertical margin than horizontal, and the horizontal margin is the one
+that decides. At 84 % a 32px tile had **2.5px** of side margin (landing at +2), and the left sparkle
+is **flush to `x=0`** of the ink box, so 2px was the entire gap between artwork and tile edge — the
+"stuck to the border" the operator saw. 75 % gives **4px** at 32 and **23px** at 180 (from 14). 78 %
+was measured too and rejected: 3.5px is indistinguishable from the state being fixed.
+
+**`Launcher.module.css` keeps `mask-size: 84% auto`, and that divergence is deliberate.** The
+launcher paints the same artwork inside a 68×50 frame this product draws itself, never adjacent to
+another site's tab text. R17's "one artwork, one rule" was signed about the **crop**, and the crop is
+unchanged; a placement rule may differ per surface, and here it does. Do not "harmonise" the two.
 
 **Two bounds R17 signed, and neither is a bug to fix:**
 
 - the **single-star crop is explicitly not adopted** (`-crop 74x74+148+12`). One artwork, one rule —
   splitting the icon into two variants would set the precedent of picking a piece of the artwork;
-- at 16px the five small dots are about **1.4px each** and read as soft dust. That is a **recorded
-  limitation**, disclosed here rather than fixed by inventing a second icon.
+- at 16px the five small dots are about **1.2px each** (1.4px before R18, scaled by 75/84) and read
+  as soft dust. That is a **recorded limitation**, disclosed here rather than fixed by
+  inventing a second icon, and R18 §⑦.3 keeps it closed: reopening it needs an operator instruction.
 
 Verified served, dev **and** production: `link[rel="icon"] sizes="32x32"`, `sizes="16x16"` and
 `link[rel="apple-touch-icon"] sizes="180x180"` all present in the DOM. `P10.S5` proved their absence
 the same way; this is the same check with the opposite result.
+
+**A transparent tile needs one check more than a tag count** — the whole change is that there is no
+longer a square carrying the contrast, so `P10.F1` re-fetched the three hashed URLs the DOM actually
+names (`sha256` identical to the files here, dev and production) and had Chrome paint each of them
+at the tab strip's **16 CSS px** on four backgrounds. It reads on every one; the peak per-pixel
+contrast is **2.94** against a white tab, **2.71** on Chrome light `#f1f3f4`, **3.02** on Chrome dark
+`#202124` and **3.38** on cosmos — *below* the flat colour's 4.05/3.98 because a 16px downscale of a
+five-dot cluster leaves almost no fully opaque pixel (1 of 84 in `icon.png`, 0 of 37 in `icon1.png`).
+That softness is the same recorded limitation as the 1.2px dots, seen from the contrast side.
 
 ## Retired and **deleted** — what left, and why nothing loads it
 

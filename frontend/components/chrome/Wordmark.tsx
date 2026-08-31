@@ -19,16 +19,20 @@ import { BRAND_ALT_KO, WORDMARK_NATURAL, WORDMARK_WHITE } from "./copy";
  *   links it to the operator's file. So this stays a plain `<img>`: `next/image`
  *   would serve a re-compressed derivative, which is exactly what that proof
  *   forbids.
- * - **Height-constrained rendering only.** The intrinsic 1292×371 travels as the
- *   `width`/`height` attributes so the browser knows the ratio and reserves the
- *   right box before the PNG arrives (no layout shift in a 52px bar); CSS then
- *   sets the height and lets the width follow.
+ * - **Height-constrained rendering only.** The intrinsic 1247×371 (3.3612:1)
+ *   travels as the `width`/`height` attributes so the browser knows the ratio and
+ *   reserves the right box before the PNG arrives (no layout shift in a 52px
+ *   bar); CSS then sets the height and lets the width follow. **R18 re-derived
+ *   the file from 1292×371 to 1247×371** by cutting the quarter-em space between
+ *   「의」 and 「관」; only the width changed, so the rendered mark is 90.75px at
+ *   h27 and 80.67px at h24 (was 94.03 / 83.58). No layout consequence — `.brand`
+ *   is `flex:none` with no fixed width.
  *
  * ## The two heights, and the offset that comes with them
  *
  * The box is **not** filled evenly: the sparkle cluster sits alone in the top
  * (222×165, flush to the box's top and right), the Korean glyph band occupies
- * the bottom (1132×176, flush to the bottom), and **30 empty rows** separate
+ * the bottom (1087×176, flush to the bottom), and **30 empty rows** separate
  * them. So box-centring the image sits the *legible* part below the optical
  * centre of whatever row it is in, and a height-constrained placement gets a
  * mark whose readable half is 47.44% of the declared height.

@@ -57,7 +57,8 @@ lib/
 app/
   fonts.ts          the two self-hosted faces (next/font/local)
   fonts/            NotoSansKR + IBMPlexMono woff2 subsets, and their OFL files
-  icon.png icon1.png apple-icon.png    the favicon tiles, 32 / 16 / 180 (R17 §2)
+  icon.png icon1.png apple-icon.png    the favicon tiles, 32 / 16 / 180 (R17 §2; transparent,
+                    #2b8e6c ink at 75% width since R18/P10.review — assets/README.md)
 scripts/            dev-only: re-subset the two faces, re-extract the Korean charset
 public/
   foundations/      tokens.css, VENDORED VERBATIM from the landed record

@@ -20,9 +20,9 @@
       "order": 3.9,
       "path": "works/phases/active/P10",
       "review_status": "changes_requested",
-      "current_slice": "P10.F1",
+      "current_slice": "P10.F2",
       "slice_count": 11,
-      "done_slice_count": 8
+      "done_slice_count": 9
     },
     {
       "id": "P4",
@@ -40,5 +40,5 @@
   "deferred_open_count": 25,
   "deferred_promoted_count": 2,
   "deferred_dropped_count": 0,
-  "last_rebuilt_at": "2026-08-31T09:28:14+09:00"
+  "last_rebuilt_at": "2026-08-31T10:00:53+09:00"
 }

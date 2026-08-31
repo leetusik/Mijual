@@ -46,7 +46,12 @@ import { ROUTES } from "@/lib/routes";
  * is a plain `<img>` and not `next/image` (that would ship a re-compressed
  * derivative). */
 export const WORDMARK_WHITE = "/assets/juju2-wordmark-white.png";
-export const WORDMARK_NATURAL = { width: 1292, height: 371 } as const;
+/** The file's intrinsic box. **1292 was the pre-R18 value** — the artwork carried
+ * a quarter-em space between 「의」 and 「관」, and the derivation command now cuts
+ * those **45 dead columns** (`x=530..574`, inside a 70-column, full-height
+ * transparent band) before writing the PNG, so the box is 1247×371. `P10.review`
+ * (R18 §①). Nothing vertical moved: see `Wordmark.tsx` for the offset. */
+export const WORDMARK_NATURAL = { width: 1247, height: 371 } as const;
 
 /** The wordmark's text equivalent — the product's own name in Korean, unspaced
  * (`docs/current/product.md`). Not a new string: it is the name of the thing,

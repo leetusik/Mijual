@@ -35,11 +35,21 @@ export const metadata: Metadata = {
   // **No `icons` key, and that is not the old gap.** The favicon question the
   // assets README held open ("this mark does not become one") was answered at the
   // P10 gate: the operator delivered a square symbol export, R17 §2 made the
-  // sparkle a first-class mark and specified the tiles — an opaque `#0a1310`
-  // square, the white symbol at the 84% ink-width rule, sizes 16 / 32 / 180 with
+  // sparkle a first-class mark and specified the tiles, sizes 16 / 32 / 180 with
   // 16 a downscale of the 32 raster rather than separate artwork. Nothing was
   // cropped out of the wordmark, so the README's "no image is substituted,
   // generated or placeheld" rule is *satisfied*, not relaxed.
+  //
+  // **`P10.review` (R18 §③) re-cut the tiles and superseded two of R17's
+  // numbers.** They are no longer an opaque `#0a1310` square carrying white ink:
+  // the tile is **transparent** and the ink is a single literal `#2b8e6c`, chosen
+  // to read on a light tab (4.05) and a dark one (3.98) without leaning either
+  // way — which is what makes the background unnecessary. And the ink width is
+  // **75%** here, not R17's 84%: at 84% a 32px tile left only 2px between the
+  // left sparkle and the tile edge. **The launcher keeps 84%** — same artwork,
+  // different surface, deliberately divergent placement rules
+  // (`components/ask/Launcher.module.css`). `#2b8e6c` is an ImageMagick literal
+  // for compositing, not a token: `public/foundations/tokens.css` stays frozen.
   //
   // The tiles ship as Next `app/` file conventions — `app/icon.png` (32),
   // `app/icon1.png` (16), `app/apple-icon.png` (180) — so Next emits the `<link
