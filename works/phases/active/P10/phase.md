@@ -128,9 +128,11 @@ live decisions in the round-4 gate walkthrough._
 
 ## Notes for later slices
 
-- **The card regroup still waits on the gate clearing** — R17's six cards **and** R18's one
-  (`p10-review/Review.html`, group `P10.review`): rewrite `group` on line 1, nothing else. **(from
-  P10.REVIEW + R18, for the orchestrator)**
+- **The card regroup was offered at gate close and the operator declined it (2026-08-31).** Not
+  pending — do it only if asked. R17's six (`chrome/{NavMark,FooterMark,MarkScale}.html`,
+  `ask/{Launcher,LauncherStates}.html`, `components/BrandSymbol.html`, groups `⏳ P10.S6 · Chrome`
+  / `· Ask`) are mechanical; R18's `p10-review/Review.html` (group `P10.review`) has no library home
+  and needs the operator to name one. **(from P10.REVIEW + R18, for the orchestrator)**
 - **Three measurement traps, now all in durable docs.** `frontend.md` v0011: Chrome **pixel-snaps the
   mark's paint origin** to whole CSS px when its layout y is fractional (footer ±0.5px, so a rect and
   a screenshot legitimately disagree), and a zero-size `inline-block` baseline probe is **invalid
