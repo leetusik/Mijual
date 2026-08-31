@@ -4,7 +4,7 @@
 #   python3 scripts/workflow.py sync-agents
 #
 # With no active mode or overrides, the engine uses economy. This repo selects
-# flex below, and the commented per-tier values match that active preset. Two
+# economy below, and the commented per-tier values match that active preset. Two
 # knobs, lowest precedence first:
 #
 #   1. mode — a named preset for both tiers (top level, before any table):
@@ -28,12 +28,12 @@
 # config. After /update-workspace, re-run sync-agents (updates reset the
 # agent files to upstream defaults; `validate` warns while they drift).
 
-mode = "flex"
+mode = "economy"
 
-# Claude Code (.claude/agents/slice-executor-{mid,high}.md) — flex values shown
+# Claude Code (.claude/agents/slice-executor-{mid,high}.md) — economy values shown
 #[claude.mid]
 #model = "sonnet"
-#effort = "xhigh"
+#effort = "high"
 #[claude.high]
 #model = "opus"    # e.g. "fable", or "claude-mythos-5" once available
-#effort = "xhigh"
+#effort = "high"

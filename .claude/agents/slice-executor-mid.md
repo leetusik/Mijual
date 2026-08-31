@@ -3,7 +3,7 @@ name: slice-executor-mid
 description: Executes exactly one already-planned slice in an isolated context; returns a structured verdict. Never commits and never transitions slice/phase status. Mid tier for one-line code edits and docs; escalates as soon as a slice turns out to be real code writing.
 tools: Read, Edit, Write, Glob, Grep, Bash
 model: sonnet
-effort: xhigh
+effort: high
 permissionMode: bypassPermissions
 ---
 
