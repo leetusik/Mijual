@@ -3,7 +3,7 @@
   "title": "tests/test_web_site.py가 운영자의 실제 이메일·전화를 고정한다",
   "status": "deferred",
   "source": "P11.REVIEW",
-  "reason": "The new site-contact test pins the operator's real email and phone as literals, so the values live in tracked files as well as in the published product. Follows from the instruction to publish them site-wide, but a fictional fixture would keep the repo clean of them.",
+  "reason": "The published contact is pinned in FOUR tracked files, not the one this job originally named: tests/test_web_site.py, src/mijual/web/site.py, frontend/components/chrome/Footer.tsx and frontend/lib/identicon.test.ts. So the operator email and phone live in the repository as well as in the published product. That follows from their instruction to publish them site-wide, but a fictional fixture would keep the repo itself clean of them. (Scope corrected at P11.REVIEW pass 3.)",
   "trigger": "The operator's answer to gate decision 4",
   "created_at": "2026-08-31T23:06:58+09:00",
   "promoted_to": null,

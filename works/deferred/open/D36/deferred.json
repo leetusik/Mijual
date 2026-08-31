@@ -1,0 +1,11 @@
+{
+  "id": "D36",
+  "title": "인용 팝오버가 아랫줄 칩들을 덮는다",
+  "status": "deferred",
+  "source": "P11.REVIEW",
+  "reason": "The overlay anatomy that fixed the line breaks necessarily covers what is under it; on a multi-chip answer the reader must close one popover before tapping the next chip. Flip/offset/shrink is a design decision on an R16 surface.",
+  "trigger": "The next AI 질문 design round, or an operator complaint after the P4 demo",
+  "created_at": "2026-09-01T03:36:33+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

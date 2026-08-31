@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `30`
+- Open: `34`
 - Promoted: `3`
 - Dropped: `2`
 
@@ -37,6 +37,10 @@
 | `D32` | `deferred` | API가 죽으면 랜딩(/)이 500 — 영문 오류 화면 | P11.REVIEW | Next landing work, or P4 deployment hardening | `works/deferred/open/D32` |
 | `D33` | `deferred` | tests/test_web_site.py가 운영자의 실제 이메일·전화를 고정한다 | P11.REVIEW | The operator's answer to gate decision 4 | `works/deferred/open/D33` |
 | `D35` | `deferred` | 동적 세그먼트의 404는 SSR 없이 클라이언트에서만 그려진다 | P11.F3 | Next 404/error-surface work, or P4 deployment hardening | `works/deferred/open/D35` |
+| `D36` | `deferred` | 인용 팝오버가 아랫줄 칩들을 덮는다 | P11.REVIEW | The next AI 질문 design round, or an operator complaint after the P4 demo | `works/deferred/open/D36` |
+| `D37` | `deferred` | 404가 한글 주소를 퍼센트 인코딩된 채로 보여준다 | P11.REVIEW | The next 404/error-surface work (natural pair with D35), or before the P4 demo | `works/deferred/open/D37` |
+| `D38` | `deferred` | 답변 푸터가 근거 5건 중 3건만 링크한다 | P11.REVIEW | The next AI 질문 answer-footer work | `works/deferred/open/D38` |
+| `D39` | `deferred` | 404 라우트에만 폰트 preload 링크가 없다 | P11.REVIEW | The next font or 404 work, or any Next upgrade | `works/deferred/open/D39` |
 | `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D7` | `deferred` | Make the notification_pref save an upsert (Q49) | P8.REVIEW | Before P4 Ship & Submit, or the moment any second client can save preferences | `works/deferred/open/D7` |

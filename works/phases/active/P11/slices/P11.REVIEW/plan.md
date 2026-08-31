@@ -1,127 +1,113 @@
-# Plan — P11.REVIEW (phase review — SECOND PASS, after the operator's gate rejection)
+# Plan — P11.REVIEW (phase review — THIRD PASS)
 
 Kind `review`, risk `high`, executed by `slice-executor-high`.
 
-**This is a re-review, not a first review.** The first pass passed on the merits
-and consolidated the durable docs. The operator then walked the acceptance gate
-and **rejected it**, which reset the gate and reopened this slice. Two `fix`
-slices have since landed. Your job is to judge the phase **as it now stands** and,
-on a pass, open the gate again.
+**Third pass.** Pass 1 passed → the operator rejected at the gate (cards, contact)
+→ `P11.F1`/`P11.F2`. Pass 2 passed → the operator rejected again (a hydration
+warning on mobile) → `P11.F3`. Your own `result.md` from pass 2 is in this folder;
+read it as history, then rewrite it for this pass.
 
-The gate is `required: true` and currently **reset** (`requested_at=none`), so a
-passing verdict again returns a **`walkthrough`** rather than closing the phase.
-The phase is not in parallel mode, so a pass **does** consolidate docs.
+The gate is `required: true` and currently **reset**. A passing verdict returns a
+**`walkthrough`** and does not close the phase. Not parallel mode, so a pass
+**does** consolidate docs.
 
-## What changed since the first review
+## Do this first: the notebook is over budget
 
-The operator's three gate reports, and where each landed:
+`phase.md` is **190 lines / 16,617 bytes** against 200 / 16,384 — `validate`
+warns today. Compress it before you add anything. The phase is closing: nearly
+every note is consumed, superseded decisions collapse to what is true now, and
+all the detail is in six `result.md` files and in git. Getting it under budget is
+part of this slice's job, not a nicety.
 
-1. **Drop two cards** — `P11.F1`. The bare-접수번호 `get_event` card and the 의견
-   `save_feedback` card are gone; four cards remain. `save_feedback` being
-   undemonstrated from the start screen is **accepted by the operator** — do not
-   raise it as a finding.
-2. **Cards must be caught in real time, not fixed** — `P11.F1`. The two 공시 cards
-   resolve their company per request from the live corpus
-   (`GET /ask/start-cards` → `reads.load_start_cards`), with a per-card static
-   fallback in `copy.ts`. `/ask` is now a **dynamic** route.
-3. **Publish the operator contact** — `P11.F2`. `MIJUAL_OPERATOR_CONTACT` is set
-   (in the **gitignored** `.env`), the agent answers with it, and the same values
-   are published in the global footer via `GET /site/contact`.
+## What changed since pass 2
 
-Read both fix slices' `result.md` in full, plus `phase.md` and `intent.md`.
+`P11.F3` only. Read its `result.md` in full. Two faults, deliberately kept apart:
 
-## The doc versions from the first pass are now partly WRONG
+1. **Chrome's `__gchrome_remoteframetoken`** injected on `<html>` before
+   hydration — not a product defect. Silenced by a `suppressHydrationWarning`
+   **scoped to `<html>`**. The scope was proved, not assumed: with the flag in
+   place the same injection aimed at `<body>` still fires, and a planted deep text
+   mismatch still throws #418 in a production build. **Check that reasoning
+   holds** — a suppression that quietly hides more than it claims is exactly the
+   kind of thing a review exists to catch.
+2. **The real one.** `/_not-found` was the single statically prerendered route
+   while `app/RequestedPath.tsx` renders `usePathname()`, so the build baked the
+   literal `/_not-found` into the artifact and **every production reader hitting
+   an unknown URL was shown that as their own address**, then React threw
+   #418(text). `await connection()` in `app/not-found.tsx` makes it request-time.
+   The plan's original suspect (the root layout's cached contact read) was
+   **exonerated** over 19,720 documents across a fetch and an ISR revalidation.
 
-This is the part a re-review most easily gets wrong. The first pass created
-**`frontend v0012`, `experience v0010`, `qa v0013`**, and `P11.F1`/`P11.F2` have
-since superseded parts of all three — most obviously the **six-card** set
-(`experience`) and the 「질문 카드 6장」 checklist row (`qa`), both of which now
-describe a product that no longer exists.
-
-Never patch a version under `docs/versions/`. On a **pass**, create **new**
-versions that supersede them, consolidating every `## Doc impact` note now in
-`phase.md` — the F1 and F2 lines *and* the corrections they force on what the
-first pass wrote. Expect to touch `frontend`, `experience`, `qa`, `operations`,
-`backend` and `security`; let the notes decide, not this list. Then
-`rebuild-docs`. **Docs only, never source.**
+Verify the fix yourself in a **production build** — this bug was invisible in dev,
+which is the whole reason it survived two reviews. Hit several unknown URLs and
+confirm the reader's own address is echoed, on the first paint, with no #418.
 
 ## Validate the phase as a whole
 
-Re-run everything, not just the fix slices' commands: `.venv/bin/python -m pytest`
-(158 expected), `cd frontend && npm run typecheck && npm run build && npm run
-smoke`, and `python3 scripts/workflow.py validate`. Cross-check `phase.md`
-against all five slices' `result.md` — a dropped decision or an unrouted
-`## Operator Questions` entry is a review finding.
+`.venv/bin/python -m pytest` (158 expected), `cd frontend && npm run typecheck &&
+npm run build && npm run smoke`, `python3 scripts/workflow.py validate`. In the
+build's route table expect **19 `ƒ`, nothing prerendered** — F3 changed the route
+kinds, which supersedes F2's 「route kinds unchanged」 line. Cross-check `phase.md`
+against all six slices' `result.md`.
 
 ## Open the running product yourself
 
-Bring it up in the `## Operator Runtime` runtime (`make stack-up`,
-`http://127.0.0.1:3010`, Chrome desktop **and** 390) **and** in the production
-build, and check with your own eyes — never on the fix slices' reports alone:
+Manifest runtime (`make stack-up`, `http://127.0.0.1:3010`, Chrome desktop **and**
+390) **and** the production build. Never pass on the slices' reports alone:
 
-- **The original defect stays fixed.** A sentence resting on 2+ 근거 renders on one
-  line, chips side by side, in all three placements, page and widget. This is the
-  thing the operator reported and it must not have regressed under F1/F2.
-- **Four cards**, and the two 공시 cards name **today's** companies. Confirm the
-  derivation is genuinely per-request — the `ƒ (Dynamic)` route kind in
-  `npm run build`'s table is the tell, and a static render is the original defect
-  returning. Check it in the **production build**, where it would actually bite.
-- **The fallback**: stop the API, reload, four cards still draw.
-- **The contact** in the agent's 연락처 answer *and* in the footer on several
-  routes, at desktop and 390, dev and production.
-- **The footer got taller between 481 and 820px** (F2 measured the identity line
-  growing ~215px, so the action row wraps earlier). Look at it and judge whether
-  it reads acceptably — it is a visible change to a signed surface at widths the
-  operator may well browse.
+- **The original defect stays fixed** — a sentence on 2+ 근거 renders on one line,
+  chips side by side, three placements, page and widget. Two fix slices have
+  landed since anyone last looked at this; confirm it.
+- **Four cards**, two naming today's companies, resolved per request; the fallback
+  still draws four cards with the API stopped.
+- **The contact** in the agent answer and the footer, several routes.
+- **The 404s**, in production, per above.
+- Then **walk it once with fresh eyes** and report what is dead, confusing or
+  annoying — to the operator in the walkthrough, never into silent fixes.
 
-Then **walk it once with fresh eyes as a first-time reader** and report everything
-dead, confusing or annoying — **not** judged against the design record; findings
-go to the operator in the walkthrough, never into silent fixes.
+**Re-run the whole cumulative `## Regression Checklist`** and re-cut this phase's
+rows to the product as it now is, including F3's 404 check.
 
-**Re-run the whole cumulative `## Regression Checklist`** in `docs/current/qa.md`,
-including the rows the first pass added, and re-cut this phase's rows to the
-product as it now is.
+## Consolidate the docs — pass path only
 
-## Route the open questions again
+Pass 2 created `frontend v0013` · `experience v0011` · `qa v0014` ·
+`operations v0013` · `backend v0008` · `security v0009`. `P11.F3` supersedes parts
+of at least **`frontend`** (the scoped `<html>` suppression; `not-found.tsx` is
+request-time; nothing is prerendered; and the standing rule F3 draws — **no
+prerenderable tree renders a request-dependent client value**) and **`qa`** (an
+unknown URL in the production build echoes the reader's address, no #418). Create
+**new** versions superseding them from `phase.md`'s `## Doc impact`; never patch a
+file under `docs/versions/`. Then `rebuild-docs`. Docs only, never source.
 
-`phase.md` `## Operator Questions` holds three, each already marked with how the
-first pass routed it. Re-route for **this** gate:
+## Route the open questions
 
-1. The contact string — **answered and landed** by `P11.F2`. Confirm in the
-   product, then it needs no further routing.
-2. **The 인용 칩's ≤767 target (14 × 16px, not R16's stated 44px) is still
-   unanswered** — the operator did not address it in their gate report. It must be
-   carried into this walkthrough again, not quietly dropped.
-3. The `conversation_feedback` rows — the 의견 card is **gone**, so no new rows can
-   be written from the start screen, but **ids 4–7 still sit in the queue** and
-   the operator has not said what to do with them. Carry it forward, corrected to
-   what is now true.
+Re-route for **this** gate. Still genuinely open:
 
-Anything your own walk turns up that is not this phase's business goes on the
-list for the orchestrator to file with `defer-job` (you list them; the
-orchestrator files them). Note **D28 is already promoted** (it became `P11.F1`),
-**D29 was dropped** (the 의견 card it described no longer exists), and **D30**
-(footer 「AI 질문」 link 40 × 44 at 390) is **open and untouched** — F2 measured it
-unchanged.
+1. **The 인용 칩's ≤767 target** (14 × 16px, not R16's stated 44px) — carried
+   through two gates unanswered. Carry it again; do not quietly drop it.
+2. **`/ops/feedback`'s rows** — ids 1–3 genuine reader feedback, ids 4–8 from
+   verification and the operator's own walks. The 의견 card is gone so no new ones
+   can appear. Clear or keep?
+3. **The operator's real email and phone are in tracked files** (a test pins them,
+   the notebook records them) — filed as **D33**, and posed at the last gate as a
+   decision. Carry it.
+
+Already settled, do not re-raise: the contact string (landed, F2), the six-card
+set (superseded, F1), `save_feedback` being undemonstrated (operator accepted).
+**D28** promoted, **D29** dropped, **D34** dropped at F3 (cause found and fixed;
+its lone sighting recorded no URL, so re-file on a third). **D30** (footer 「AI
+질문」 link 40 × 44 at 390), **D31** (phone wraps mid-number at 600–620px),
+**D32** (landing 500s in English with the API down), **D33**, **D35**
+(dynamic-segment 404s draw client-only with an empty first paint) are open and
+are **not** this phase's work. List anything new for the orchestrator to file.
 
 ## If the verdict is not a pass
 
-Stop before the doc consolidation. Complete validation and judgment first so the
-orchestrator gets the whole picture in one cycle, then return the verdict with
-numbered findings and proposed fix slices, and do no pass-only work.
-
-## Budget
-
-`phase.md` is at **183 lines / 16,099 bytes** against 200 / 16,384 — it will go
-over on your first append. **Compress it**: the phase is nearly done, most of its
-notes are consumed, superseded decisions can collapse to what is true now, and
-every detail is in the five `result.md` files and in git.
+Stop before consolidation; complete validation and judgment first, then return
+numbered findings and proposed fix slices.
 
 ## Return
 
-`review_verdict`, the **`walkthrough`** (URLs, actions, what is real and what the
-operator must decide — including the two questions still open and the footer's
-height change), the deferred jobs for the orchestrator to file, and the fixed
-pointer `explain: not written — run /explain for this phase`.
-
-Do **not** run `review-phase`, `accept-gate`, `finish-slice` or any commit.
+`review_verdict`, the **`walkthrough`**, the deferred jobs to file, and
+`explain: not written — run /explain for this phase`. Do **not** run
+`review-phase`, `accept-gate`, `finish-slice` or any commit.

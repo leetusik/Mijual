@@ -275,7 +275,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout",
+      "latest": "v0014_p11.f3_nothing_is_prerendered_not-found.tsx_is_request-time_and_the_root_layout_s_html_carries_a_scoped_suppresshydrationwarning",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -381,6 +381,14 @@
           "source": "P11.REVIEW",
           "summary": "P11 fixes: the ask route becomes the start screen's data boundary with a per-card static fallback, and the global footer publishes served config read by the root layout",
           "previous": "v0012_p11_the_ask_becomes_a_conditionally_mounted_absolute_popover_and_the_two-part_rule_for_anything_placed_inside_prose"
+        },
+        {
+          "id": "v0014_p11.f3_nothing_is_prerendered_not-found.tsx_is_request-time_and_the_root_layout_s_html_carries_a_scoped_suppresshydrationwarning",
+          "path": "docs/versions/frontend/v0014_p11.f3_nothing_is_prerendered_not-found.tsx_is_request-time_and_the_root_layout_s_html_carries_a_scoped_suppresshydrationwarning.md",
+          "created_at": "2026-09-01T03:26:53+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11.F3: nothing is prerendered — not-found.tsx is request-time, and the root layout's <html> carries a scoped suppressHydrationWarning",
+          "previous": "v0013_p11_fixes_the_ask_route_becomes_the_start_screen_s_data_boundary_with_a_per-card_static_fallback_and_the_global_footer_publishes_served_config_read_by_the_root_layout"
         }
       ]
     },
@@ -759,7 +767,7 @@
       ]
     },
     "qa": {
-      "latest": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks",
+      "latest": "v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -873,6 +881,14 @@
           "source": "P11.REVIEW",
           "summary": "P11 fixes: the start-card checklist rows are re-cut to four live-corpus cards, the footer row admits the operator's mono phone, and the P11 block gains the contact, fallback and dynamic-route checks",
           "previous": "v0013_p11_the_citation-chip_and_start-card_checklist_rows_are_re-cut_for_the_overlay_popover_and_the_six_cards_and_the_phase_s_own_checks_are_added"
+        },
+        {
+          "id": "v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument",
+          "path": "docs/versions/qa/v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument.md",
+          "created_at": "2026-09-01T03:28:12+09:00",
+          "source": "P11.REVIEW",
+          "summary": "P11 third pass: the production 404 echoes the reader's own address with no #418, the P11 block is re-cut and re-measured, and Aside is now the instrument",
+          "previous": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks"
         }
       ]
     },
@@ -987,5 +1003,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-09-01T02:38:04+09:00"
+  "last_rebuilt_at": "2026-09-01T03:36:45+09:00"
 }
