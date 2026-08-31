@@ -259,7 +259,7 @@
       ]
     },
     "frontend": {
-      "latest": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail",
+      "latest": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate",
       "current_path": "docs/current/frontend.md",
       "versions": [
         {
@@ -341,6 +341,14 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 3 (R18): the wordmark spliced to 1247x371, the favicon as a transparent #2b8e6c tile at 75%, and the active-tab width reservation on nav and /ops — plus the near-white guard rewritten into a form that can fail",
           "previous": "v0009_p10_round_2_r17_ships_nav_h27_footer_h24_with_the_ink_offset_in_the_component_a_32px_mask-painted_launcher_with_zero_animation_the_footer_corner_reservation_the_favicon_at_16_32_180_and_a_self-hosted_noto_sans_kr_subset"
+        },
+        {
+          "id": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate",
+          "path": "docs/versions/frontend/v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate.md",
+          "created_at": "2026-08-31T14:22:52+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 4 — the wordmark's vertical law becomes text-referenced: the glyph band's ink bottom sits on the neighbouring Hangul's ink bottom (INK_OFFSET_PX {27: 8, 24: 6}), superseding R17's image-derived 0.2628*H at the operator's round-3 gate",
+          "previous": "v0010_p10_round_3_r18_the_wordmark_spliced_to_1247x371_the_favicon_as_a_transparent_2b8e6c_tile_at_75_and_the_active-tab_width_reservation_on_nav_and_ops_plus_the_near-white_guard_rewritten_into_a_form_that_can_fail"
         }
       ]
     },
@@ -695,7 +703,7 @@
       ]
     },
     "qa": {
-      "latest": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block",
+      "latest": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -785,11 +793,19 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 3: correct the two lines R18 falsified (1292x371, the opaque 84% tile) and append the round-3 block",
           "previous": "v0010_p10_round_2_the_rebrand_block_is_corrected_for_the_second_mark_and_the_shipped_favicon_and_six_r17_lines_are_added"
+        },
+        {
+          "id": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction",
+          "path": "docs/versions/qa/v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction.md",
+          "created_at": "2026-08-31T14:24:22+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 4 — the falsified vertical-geometry line is replaced by a check that can fail: the mark's glyph band reads on one line with the Hangul beside it (0.5px), with its negative control and its N/A-at-390 construction",
+          "previous": "v0011_p10_round_3_correct_the_two_lines_r18_falsified_1292x371_the_opaque_84_tile_and_append_the_round-3_block"
         }
       ]
     },
     "decisions": {
-      "latest": "v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail",
+      "latest": "v0013_p10_round_4_d-30_the_operator_supersedes_r17_s_ink_offset_0.2628_h_at_the_round-3_acceptance_gate_the_mark_s_vertical_law_becomes_text-referenced_shared_hangul_baseline_adopted_shared_optical_line_rejected",
       "current_path": "docs/current/decisions.md",
       "versions": [
         {
@@ -887,9 +903,17 @@
           "source": "P10.REVIEW",
           "summary": "P10 round 3 — D-29: R18 supersedes three R17 values, and three of its own verification procedures could not fail",
           "previous": "v0011_p10_round_2_r17_signed_and_applied_the_mark_the_launcher_and_the_favicon_supersede_r2_r6_the_type_moves_to_a_self-hosted_subset_and_two_record_errors_were_corrected_at_apply_time"
+        },
+        {
+          "id": "v0013_p10_round_4_d-30_the_operator_supersedes_r17_s_ink_offset_0.2628_h_at_the_round-3_acceptance_gate_the_mark_s_vertical_law_becomes_text-referenced_shared_hangul_baseline_adopted_shared_optical_line_rejected",
+          "path": "docs/versions/decisions/v0013_p10_round_4_d-30_the_operator_supersedes_r17_s_ink_offset_0.2628_h_at_the_round-3_acceptance_gate_the_mark_s_vertical_law_becomes_text-referenced_shared_hangul_baseline_adopted_shared_optical_line_rejected.md",
+          "created_at": "2026-08-31T14:25:37+09:00",
+          "source": "P10.REVIEW",
+          "summary": "P10 round 4 — D-30: the operator supersedes R17's INK_OFFSET 0.2628*H at the round-3 acceptance gate; the mark's vertical law becomes text-referenced (shared Hangul baseline adopted, shared optical line rejected)",
+          "previous": "v0012_p10_round_3_d-29_r18_supersedes_three_r17_values_and_three_of_its_own_verification_procedures_could_not_fail"
         }
       ]
     }
   },
-  "last_rebuilt_at": "2026-08-31T12:28:59+09:00"
+  "last_rebuilt_at": "2026-08-31T14:26:44+09:00"
 }

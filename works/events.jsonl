@@ -568,3 +568,9 @@
 {"ts": "2026-08-31T13:36:09+09:00", "type": "slice_status_changed", "slice": "P10.F3", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-08-31T13:36:19+09:00", "type": "slice_status_changed", "slice": "P10.F3", "old_status": "done", "new_status": "done"}
 {"ts": "2026-08-31T13:38:47+09:00", "type": "slice_status_changed", "slice": "P10.REVIEW", "old_status": "changes_requested", "new_status": "in_progress"}
+{"ts": "2026-08-31T14:22:52+09:00", "type": "doc_version_created", "doc": "frontend", "version": "v0011_p10_round_4_the_wordmark_s_vertical_law_becomes_text-referenced_the_glyph_band_s_ink_bottom_sits_on_the_neighbouring_hangul_s_ink_bottom_ink_offset_px_27_8_24_6_superseding_r17_s_image-derived_0.2628_h_at_the_operator_s_round-3_gate", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T14:24:22+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0012_p10_round_4_the_falsified_vertical-geometry_line_is_replaced_by_a_check_that_can_fail_the_mark_s_glyph_band_reads_on_one_line_with_the_hangul_beside_it_0.5px_with_its_negative_control_and_its_n_a-at-390_construction", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T14:25:37+09:00", "type": "doc_version_created", "doc": "decisions", "version": "v0013_p10_round_4_d-30_the_operator_supersedes_r17_s_ink_offset_0.2628_h_at_the_round-3_acceptance_gate_the_mark_s_vertical_law_becomes_text-referenced_shared_hangul_baseline_adopted_shared_optical_line_rejected", "source": "P10.REVIEW"}
+{"ts": "2026-08-31T14:27:40+09:00", "type": "agents_synced", "changed": [".claude/agents/slice-executor-mid.md", ".claude/agents/slice-executor-high.md"], "config_present": true}
+{"ts": "2026-08-31T14:36:39+09:00", "type": "phase_status_changed", "phase": "P10", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-08-31T14:36:39+09:00", "type": "acceptance_opened", "phase": "P10"}
