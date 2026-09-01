@@ -85,12 +85,13 @@ inside it, so "take either side and regenerate" does not apply to the file: a co
 `python3 scripts/workflow.py rebuild`, while the rest of the notebook — Decisions, Doc impact,
 Operator Questions, Notes, Now — is merged by hand like any other prose.
 
-## 4. Review on the branch — with consolidation deferred
+## 4. Review on the branch — with even the gate sections deferred
 
-Run the phase review exactly as `review-phase` describes, with **one** difference: a parallel phase's
-passing review **stops before doc consolidation**. Doc versions are allocated from a single
-`docs/index.json` counter, so two branches consolidating at once collide; consolidation is therefore
-deferred to the serialized post-merge step on the default stream.
+Run the phase review exactly as `review-phase` describes, with **one** difference. Every phase now
+defers consolidation to a docs phase, but a default-stream review still writes two named sections
+itself (`## Regression Checklist`, `## Operator Runtime`); on a branch it writes **nothing**. Doc
+versions are allocated from a single `docs/index.json` counter, so two branches writing at once
+collide — everything waits for the serialized post-merge step on the default stream.
 
 So on a parallel branch the review executor:
 
@@ -98,7 +99,8 @@ So on a parallel branch the review executor:
 - **verifies** that the running "Doc impact" list in `phase.md` covers every durable-truth change the
   phase made (that list is the input the post-merge step consolidates from — an incomplete list is a
   review finding, not a detail);
-- runs **no** `doc-new-version` and no `rebuild-docs`, and reports
+- runs **no** `doc-new-version` and no `rebuild-docs` — including the two named gate sections a
+  default-stream review may write (`## Regression Checklist`, `## Operator Runtime`) — and reports
   `doc_versions: none — deferred to post-merge consolidation (parallel mode)`;
 - the "does `docs/current` match `docs/index.json`" check applies at consolidation time on the
   default stream, not here.
@@ -161,8 +163,10 @@ closes the gate or turns a check red mid-sequence, STOP and report — never mer
    python3 scripts/workflow.py rebuild-docs
    ```
    One version per doc, capturing the whole phase. Never two phases in parallel here.
-8. **Mark it consolidated.** `python3 scripts/workflow.py parallel-consolidated <P>` — flips
-   `execution.consolidation` to `"done"`, which is also what unblocks archiving.
+8. **Mark it consolidated.** `python3 scripts/workflow.py parallel-consolidated <P>` — flips the
+   phase's `consolidation` to `"done"` (in both the general field and the `execution` block),
+   which is also what unblocks archiving. `docs-consolidated <P>` is the default-stream twin, for
+   a phase that never went parallel.
 9. **Tear down.** `python3 scripts/workflow.py parallel-teardown <P>` — removes the worktree and the
    merged branch (it refuses if the branch is unmerged, or if run from the branch itself) and nulls
    `execution.worktree`. It makes no commit.
@@ -170,7 +174,7 @@ closes the gate or turns a check red mid-sequence, STOP and report — never mer
     default stream, following the Commit Convention.
 
 Afterwards the phase is `done` and archivable the normal way (`archive-phase <P>`, `rotate-backlog`,
-`archive-all`) — archiving is still manual and still blocked while `execution.consolidation` is
+`archive-all`) — archiving is still manual and still blocked while `consolidation` is
 `"pending"`.
 
 ## Guardrails

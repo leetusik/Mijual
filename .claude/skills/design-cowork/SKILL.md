@@ -123,9 +123,9 @@ The orchestrator makes all four; the dispatched executor commits nothing, as alw
   to build, not how. That inventory is what the handoff's scope checklist is written from, what the
   round count is judged from, and what `paired` counts its apply slices from; the design is free to
   add to it and cut from it. In `build-after` it is what the opening `DECOMP` produces **instead of**
-  build slices. It lives in the **bounded notebook** and **counts against its budget** (200 lines /
-  16 KB), so keep it to the inventory itself — one line per candidate — and let the round's own
-  record hold the detail.
+  build slices. It lives in the **bounded notebook**, which stays curated even under a soft
+  ~100k-token cap (400 KB), so keep it to the inventory itself — one line per candidate — and
+  let the round's own record hold the detail.
 - A design slice keeps ordinary `S<n>` numbering: it is not necessarily the phase's first slice.
 - **Expect the read-back to re-shape the phase** — it routinely proves the design is bigger than
   decomposition assumed. In `build-after`, `DECOMP2` **is** that re-shaping, which is why it exists;
@@ -241,8 +241,9 @@ the round's `build-prompt.md` is the thing that is short — say so at read-back
    downstream slices. **Landing is not implementing:** it is what makes the implement slice easy.
    What goes into the notebook is the spec **pointers** — what landed, where the record is, the
    mockup route once it exists, and the decisions later slices must not re-litigate — because
-   `phase.md` is bounded (200 lines / 16 KB) and every later dispatch re-reads it; the artifacts and
-   the full spec stay in the round's record, linked by path, never copied in.
+   `phase.md` is bounded — a soft ~100k-token cap (400 KB) — and every later dispatch re-reads
+   it; the artifacts and the full spec stay in the round's record, linked by path, never
+   copied in.
 
 **Stop there.** Steps 4 and 5 — SIGNOFF and the regroup — happen **after the mockup gate** (*Closing
 the round*, below). What you hold at this point is a **landed** record, not an approved one, and the
@@ -275,8 +276,8 @@ something looks like, you are designing — stop, and raise it.
   operations doc) names, and additionally in the production build when the two differ. Absent, or
   still carrying its `UNFILLED` marker → **`needs_operator`**, and the orchestrator sets the slice
   `pending`. Never assume localhost, never assume headless. Drive it with the same instrument
-  *Verifying* prescribes (**Aside**, MCP first): the mockup's exemption is from the sweep, never
-  from the runtime and never from the tooling.
+  *Verifying* prescribes (**Aside**, the `repl` surface over Bash): the mockup's exemption is from
+  the sweep, never from the runtime and never from the tooling.
 - **Dispatched to `slice-executor-high`** — the one dispatched span inside the `co-work` slice.
   DesignSync is main-thread only, so read-back and regroup stay inline; the mockup is real code and
   the orchestrator does not write code. The executor gets **no DesignSync**, so `build-prompt.md` plus
@@ -418,32 +419,81 @@ localhost, never assume the production build, never assume headless — a browsi
 visible browser, and Aside's headless story is undocumented.
 
 **With what — the instrument.** Drive that browser with **Aside** (aside.com), the workspace's
-default instrument for every check in this section, **in place of scripted Playwright-style
-automation**. Prefer the **MCP** surface — `aside mcp`, configured as
-`{"mcpServers":{"aside":{"command":"aside","args":["mcp"]}}}` — because an MCP server's tools arrive
-as native tools in a dispatched executor's session, which a shell-out does not. The **CLI**
-(`aside "Open <the manifest origin> and …"`, `aside --session <id>` to continue one, `aside exec -m
-<model> "…"`) is the one-shot Bash surface; the Playwright-like **REPL** (`aside repl "const p =
-await openTab('<url>')"` — tabs, locators, page JS, screenshots) is the deterministic-inspection one.
+default instrument for every check in this section, **in place of a pre-written assertion suite**.
+Aside has **two surfaces, not three**:
 
-**Why an agent and not a script.** An assertion suite tests the selectors someone already thought
-of, and not one demand above is of that shape: "type into it and wait", "watch a timer tick for a
-real interval", "the browser defaults the record never drew". A scripted fidelity slice at the end
-of thirty slices is precisely what passed while eleven user-visible failures survived — the story is
-in the qa doc's *Verification doctrine*, and this instrument is the answer it could not name.
+- the **`repl` surface** — one tool, *identical* over `aside mcp` and the `aside repl` CLI: the same
+  Playwright-like environment (`page`, `snapshot()`, locators, page JS, screenshots), **different
+  transport only**. The executor holds the surface and **picks each next action itself**.
+- **`aside exec`** — Aside's own model drives the browser from a natural-language instruction
+  (`aside exec -m <model> "Open <the manifest origin> and …"`, `aside --session <id>` to continue
+  one). Useful for a broad look; it is not what a check you must be able to describe runs on.
+
+**The default is `aside repl` over Bash** — executor-driven, and explicitly **not** the MCP
+transport. `aside mcp` exposes that one `repl` tool, and its definition measures 4,974 JSON chars
+(**~1,344 tokens**) paid in **every** session, browser-related or not, with no lazy-load option: a
+standing registration taxes every slice in the workspace for a capability almost none of them use.
+Bash is already in both executor tiers' allowlists, so **nothing ships, nothing registers, nothing
+is configured** — the default costs nothing until the first call. The one thing the CLI loses is JS
+scope between invocations, and a two-line preamble buys it back — re-attach to the tab you already
+opened:
+
+```js
+const tabs = await listBrowserTabs();
+const page = await attachBrowserTab(tabs[0].targetId);
+```
+
+Two sharp edges, both worth knowing before the first call. Over MCP the `repl` tool **requires both
+`title` and `code`** — a call omitting either fails (over the CLI the code is positional:
+`aside repl --account <id> "await openTab('<url>')"`). And **snapshot refs are session- and
+snapshot-scoped: they go stale on navigation** (`RefStaleError`), while `getByRole` survives it — so after navigating, re-snapshot
+or locate by role rather than reusing a ref. An operator who wants Aside's tools as native tools in
+their **own** session may run `claude mcp add -s local aside -- aside mcp`; that is a per-operator,
+per-session **escape hatch** the workspace neither ships nor prescribes, and no slice may assume it.
+
+**Whose browser — a dedicated profile, never the operator's.** Aside is a real desktop browser and
+`--account <id>` picks a real signed-in profile: the probe behind this rule reached one holding the
+operator's Google session, 49 imported passwords and 6 passkeys. An agent driving that profile is
+not "browsing" — it can read the operator's mail, spend from saved cards and authenticate as them
+anywhere those credentials reach, and nothing in a sweep here needs any of it. So agent runs happen
+on a **dedicated Aside profile**, and every call carries its own flag:
+`aside repl --account <id> "<js>"` (ids are short opaque tokens — `0`, `u0`, `u1` — and the same
+flag exists on `aside` and on `aside exec`). Pass it per invocation, and **do not rely on
+`aside account use <id>`**: that only moves the *default*, and the default is the operator's
+signed-in profile — exactly the thing that silently reverts between sessions, machines and updates.
+`## Operator Runtime` records which id is the agent's, and `aside account list` enumerates the local
+accounts without driving anything (it does need the Aside app running, so an unreachable daemon is
+not evidence either way). **The halt:** a manifest that names Aside but records no agent account id,
+or a machine holding only the operator's personal profile, returns **`needs_operator`** and stops —
+never a fallback to the personal profile "just for this check", and never an account the workspace
+creates on the operator's behalf (creating one is an outward-facing operator action; nothing here
+installs, bundles, registers or auto-configures Aside). That is a **third** halt condition and it is
+not the runtime one: the runtime halt fires on an absent or `UNFILLED` manifest, while a manifest
+naming no instrument still stops nothing.
+
+**Why the executor drives, and not a pre-written suite.** The surface *is* Playwright — what the
+doctrine rejects was never the library, it is **deciding every check in advance**. A suite tests the
+selectors someone already thought of, and not one demand above is of that shape: "type into it and
+wait", "watch a timer tick for a real interval", "the browser defaults the record never drew". Those
+pass only when something looks at the page and chooses the next action. A fidelity slice of exactly
+that pre-written shape, at the end of thirty slices, is precisely what passed while eleven
+user-visible failures survived — the story is in the qa doc's *Verification doctrine*, and this
+instrument is the answer it could not name.
 
 **The fallback — the doctrine's demands bind, the instrument does not.** Aside is a macOS desktop
 browser and needs an Aside account, so a workspace that cannot install it (Linux, CI, or an operator
 who declines) is **not** excused anything here: run the same sweep, at the same viewports, in the
-same manifest runtime, through whatever real browser it does have. Name the instrument you actually
-used in `result.md`, and never report a browser run you did not make.
+same manifest runtime, through whatever real browser it does have — and on a profile of its own
+there too: an agent never drives a browser profile signed into the operator's accounts, whichever
+browser it is. Name the instrument you actually used in `result.md`, and never report a browser run
+you did not make.
 
 **Re-run the whole list.** A fidelity slice re-runs **all** of `## Regression Checklist` (the qa
 doc's cumulative product smoke list) — every earlier phase's headline behaviours, not only this
 phase's surfaces. That is not ceremony: a later phase touching shared chrome silently invalidates an
 earlier phase's pass, and nothing else is looking. Then append this phase's headline lines in the
-shipped shape `- [ ] <surface>: <one observable behaviour> (P<N>)` via the phase's "Doc impact" list
-— the review consolidates the docs.
+shipped shape `- [ ] <surface>: <one observable behaviour> (P<N>)` — the review writes that
+section itself, as one of its two named doc writes.
 
 **What a fidelity slice may fix, and what it may not.** A **departure from the record** is a
 faithful-implementation fix: make it in the slice, or cut a `fix` slice. Anything that is a **design
@@ -496,9 +546,10 @@ something to argue out of with the record.
   operator opening the running mockup**, and only their literal words close it.
 - Verify only against the record, or only in whichever runtime is convenient for you. The manifest's
   runtime is mandatory **everywhere, the mockup included**; the functional sweep is mandatory on
-  every slice that ships real wiring; and a scripted assertion suite is no substitute for a browsing
-  agent — **Aside** is the instrument, and a workspace that cannot run it owes the same checks
-  through another real browser, never weaker ones.
+  every slice that ships real wiring; and a pre-written assertion suite is no substitute for an
+  executor that looks at the page and picks the next action — **Aside** is the instrument (`aside
+  repl` over Bash), and a workspace that cannot run it owes the same checks through another real
+  browser, never weaker ones.
 - Fix a design gap silently, or "improve" it — catalogue it on `## Operator Questions` so the
   operator is actually asked.
 - Edit the returned record — or touch anything below line 1 of a card during the SIGNOFF regroup.

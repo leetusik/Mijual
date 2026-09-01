@@ -18,7 +18,7 @@ _Durable cross-slice decisions. Replace a superseded line; never stack versions.
 
 ## Doc impact
 
-_One line per durable-truth change: `- <doc>.md: <what changed> (<slice>)`. Append only; consolidated into versions at the review, never per slice._
+_One line per durable-truth change: `- <doc>.md: <what changed> (<slice>)`. Append only; the review verifies this list and a later docs phase consolidates it into versions — never per slice, never at the review._
 
 ## Operator Questions
 
