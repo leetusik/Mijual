@@ -3,12 +3,12 @@
   "phase_id": "P4",
   "name": "첨부1 공모전 기획서",
   "kind": "docs",
-  "status": "todo",
+  "status": "done",
   "order": 0.5,
   "depends_on": [],
   "created_at": "2026-09-02T06:20:07+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T06:39:03+09:00",
+  "completed_at": "2026-09-02T07:01:32+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "첨부1 공모전 기획서 written (7 양식 sections, Korean headings verbatim, English body, ~6.2k words) plus scripts/render_submission_pdf.py, the stdlib+Chrome Markdown→PDF path S8 reuses",
   "validation": {
     "required": [],
     "last_run": null,

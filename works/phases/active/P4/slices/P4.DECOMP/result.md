@@ -13,7 +13,7 @@
   - `python3 scripts/workflow.py validate` → **passed** (`Workflow validation passed.`, exit 0)
   - `python3 scripts/workflow.py next` → `next_slice=P4.S1` ✅
   - `works/backlog.md` lists all eight new slices with the intended kinds ✅
-  - `phase.md` = **124 lines / 16383 bytes** against the 200-line / 16384-byte budget ✅ (see *Notes on the budget*)
+  - `phase.md` = **124 lines / 16377 bytes** against the 200-line / 16384-byte budget ✅, `validate` emits no budget warning (see *Notes on the budget*)
   - `intent.md` untouched by this slice; its verbatim block is byte-identical ✅
 - **deviations:** three, all forced by engine mechanics or by the notebook's own template version — detailed below.
 - **doc_impact:** none. `P4.DECOMP` changed no durable truth. (It *found* one durable-truth gap — the dev-only `## Operator Runtime` — but that is `P4.S4`'s change to make, and it is recorded as a note for S4, not as a doc-impact line here.)
@@ -98,13 +98,15 @@ Why D7 and not D23: D7 is a measured correctness bug (`PUT /portfolio/notificati
 
 **On the eight-slices-in-five-days concern.** I looked for a materially cheaper cut and did not find one that still delivers the ten confirmed intent points. The merges I considered and rejected: S3+S4 (authoring in-repo vs. executing on a live shared box — keeping them split is what lets a bad vhost fail `nginx -t` before it reaches the box); S6 into S4 (the deploy slice is already the `pending`-heaviest, and the smoke suite is real test authoring); S7+S8 (they have *different* dependencies — see below — so merging them would couple 첨부1 to the deploy for no reason). The deadline is also not binding: the operator is not submitting, so 09-07 is a design input.
 
-**The one lever I would pull, and did not.** `P4.S7` (첨부1 공모전 기획서) has **no dependency on the deploy** — only 첨부2 §5 needs the live URL and its 관련 화면 screenshots. The plan's own "honest note on scale" says the order to protect is *documents → deploy → SEO → monitoring*, yet both documents sit last, behind a first production deploy onto a shared box. Since the documents are the operator's headline deliverable ("no submit, only prepare the document"), I would move `P4.S7` to **`--order 0.5`** so 첨부1 is finished before anything can stall. I left the order as planned because the dispatch asked me to preserve the plan's ordering rationale and to propose rather than take a change like this; `--order` accepts fractions, so it is a one-command change at any point. The option is recorded in `phase.md`'s `## Decisions` and `## Now` so a later slice can act on it.
+**The one lever I would pull, and did not.** `P4.S7` (첨부1 공모전 기획서) has **no dependency on the deploy** — only 첨부2 §5 needs the live URL and its 관련 화면 screenshots. The plan's own "honest note on scale" says the order to protect is *documents → deploy → SEO → monitoring*, yet both documents sit last, behind a first production deploy onto a shared box. Since the documents are the operator's headline deliverable ("no submit, only prepare the document"), I would move `P4.S7` to **`--order 0.5`** so 첨부1 is finished before anything can stall. I left the order as planned because the dispatch asked me to preserve the plan's ordering rationale and to propose rather than take a change like this; `--order` accepts fractions, so it is a one-command change at any point. The option is recorded in `phase.md`'s `## Decisions` so a later slice can act on it.
+
+*Update, same session:* the orchestrator took this proposal while I was finishing — `P4.S7` now carries `order 0.5` and runs first. Nothing else about the cut changed.
 
 ---
 
 ## Notes on the budget
 
-`phase.md` finished at **16383 / 16384 bytes** — one byte under, and 124 / 200 lines. It took five compression passes; the honest read is that this phase is unusually constraint-dense (a first production deploy onto a multi-tenant box, plus SEO from zero, plus two authored documents) and the 16 KB ceiling is genuinely tight for it. What I did to fit:
+`phase.md` finished at **16377 / 16384 bytes**, 124 / 200 lines — seven bytes of headroom, with `finish-slice`'s outcome cell already counted in the generated table. It took five compression passes; the honest read is that this phase is unusually constraint-dense (a first production deploy onto a multi-tenant box, plus SEO from zero, plus two authored documents) and the 16 KB ceiling is genuinely tight for it. What I did to fit:
 
 - Line 3 links `slices/P4.DECOMP/plan.md`, which holds every constraint block verbatim and is committed and immutable. Anything I compressed is recoverable there in one read.
 - Cut outright: the standalone "reference repos" block (every path in it is already named inside the mail / SEO / no-harm / uptime blocks), the 양식 section enumerations (verbatim in `docs/reference/challenge/submission/README.md`), the enumerated nginx streaming directives (the instruction is "copy the `/bff/` block wholesale", so listing them invites hand-assembly), the written-out gate walkthrough, and the one `## Decisions` line that duplicated a note.

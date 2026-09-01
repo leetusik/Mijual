@@ -72,6 +72,13 @@ AI reads & speaks / determinism calculates, no fine-tuning/PyTorch/HF framing. C
 - Q: SEO needs a Korean meta description, which the signed design deliberately does not contain.
   How? — A: **The phase drafts it; the operator approves the literal strings at the acceptance
   gate.** No design round.
+- Q: What 팀명 and 구성원 성명 go on the two 양식 headers? — A: **팀명 is 주주의관제탑** (the same as
+  the service name); the entrant is **solo**. The operator fills `구성원 성명` in themselves, so the
+  documents carry a marked placeholder there.
+- Q: The signed R5 mail subject still renders the retired name — `[미주알] {종목} — {마감명} D-{n}`
+  (D23). Re-sign it as what? — A: **주주의관제탑, not 미주알** — the retired name appears nowhere.
+  This resolves D23 by operator decision; `P4.S2` implements it and the orchestrator then runs
+  `drop-deferred D23`.
 
 ## Notes
 
