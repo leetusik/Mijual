@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P4`
-- Current slice: `P4.S1`
-- Next slice: `P4.S2`
+- Current slice: `P4.S2`
+- Next slice: `P4.S3`
 - Waiting on operator: `none`
 - Open deferred jobs: `31`
 
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.S1` | `works/phases/active/P4` |
+| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.S2` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -75,7 +75,7 @@
 |---|---|---|---|---|
 | [x] `P4.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P4/slices/P4.DECOMP` |
 | [x] `P4.S7` | `done` | 첨부1 공모전 기획서 | `docs` | `works/phases/active/P4/slices/P4.S7` |
-| [ ] `P4.S1` | `todo` | Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam | `implementation` | `works/phases/active/P4/slices/P4.S1` |
+| [x] `P4.S1` | `done` | Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam | `implementation` | `works/phases/active/P4/slices/P4.S1` |
 | [ ] `P4.S2` | `todo` | The real Mailer over SMTP, and the D-day notification send path | `implementation` | `works/phases/active/P4/slices/P4.S2` |
 | [ ] `P4.S3` | `todo` | Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook | `implementation` | `works/phases/active/P4/slices/P4.S3` |
 | [ ] `P4.S4` | `todo` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |

@@ -1,0 +1,18 @@
+# Build context for frontend/Dockerfile. P4.S1.
+#
+# Docker honours ONLY full-line `#` comments — a `#` after a pattern becomes part
+# of the pattern and silently stops it matching.
+
+# node_modules: mac-native binaries would poison the linux image, and the build
+# stage runs its own `npm ci` from package-lock.json anyway.
+node_modules
+# .next: a stale mac build output, including a stale standalone tree.
+.next
+*.tsbuildinfo
+# No env file ever enters this context. The one value the build needs
+# (MIJUAL_API_ORIGIN) arrives as a build ARG from compose.prod.yml.
+.env
+.env.*
+.DS_Store
+Dockerfile
+.dockerignore

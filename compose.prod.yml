@@ -1,0 +1,227 @@
+# 주주의관제탑 — the production stack (P4.S1).
+#
+# Six long-running services plus one one-shot, all co-tenants on a shared box that
+# already runs other people's containers behind a shared `edge-nginx`. Three rules
+# come from that and are not preferences:
+#
+#   1. **No `ports:` anywhere.** A published host port collides with a co-tenant.
+#      The edge reaches this stack by SERVICE NAME over the external network.
+#   2. **No `container_name:` anywhere.** The dev `compose.yaml` on the operator's
+#      Mac already owns the names `mijual-postgres` and `mijual-redis`; compose
+#      derives per-project names instead, and the edge resolves service names.
+#   3. **The external network is `external: true`.** `docker compose down` on this
+#      project must never be able to delete a network other tenants are attached to.
+#
+# Only `mijual-web` is on the edge network. The API, worker, beat, Postgres and
+# Redis are on the project-internal default network and are unreachable from
+# outside it — the browser talks to the Next origin and nothing else, which is what
+# keeps `/api/*` same-origin (no CORS, no preflight; the CSRF design rests on it).
+#
+#   deploy:   COMPOSE_BAKE=false docker compose -f compose.prod.yml build
+#             docker compose -f compose.prod.yml up -d
+#   (the tag-flip + health-gate wrapper is deploy/deploy.sh — P4.S3)
+name: mijual
+
+services:
+  # ---------------------------------------------------------------------------
+  # Data. Net-new on the box: nothing here existed before this deploy.
+  # ---------------------------------------------------------------------------
+  mijual-postgres:
+    image: postgres:16
+    restart: unless-stopped
+    # Reads POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB from the same file the
+    # app services read DATABASE_URL from — which is why .env.prod.example says,
+    # loudly, that POSTGRES_PASSWORD and the password inside DATABASE_URL must match.
+    env_file: .env.prod
+    volumes:
+      - mijual-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # `mijual-schema` gates on this, and the API gates on `mijual-schema`, so a
+      # cold `up -d` orders itself correctly with no sleeps anywhere.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-mijual} -d $${POSTGRES_DB:-mijual}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Co-tenant guards. Placeholders: P4.S4 tunes every mem_limit in this file
+    # from the box's actual `free -m`.
+    mem_limit: 512m
+
+  mijual-redis:
+    image: redis:7
+    restart: unless-stopped
+    # Celery broker, result backend and the pipeline run-lock store. `appendonly`
+    # because losing the run lock across a restart is worse than the disk cost.
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - mijual-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+
+  # ---------------------------------------------------------------------------
+  # Schema bootstrap — a one-shot, not a service.
+  #
+  # There are no migrations by design; `python -m mijual.db ensure` is additive and
+  # idempotent (create_all + ensure_columns). It runs on EVERY `up`, exits 0, and
+  # the API will not start unless it did — which is the guard against the failure
+  # this project has actually had: a database missing the two conversation tables
+  # serves every page perfectly and fails every /ask turn at persistence.
+  # ---------------------------------------------------------------------------
+  mijual-schema:
+    image: mijual-api:latest
+    # No `build:` — it reuses the API image, so it can never be built from
+    # different source than the API it gates. `deploy.sh` builds `mijual-api` first.
+    command: ["python", "-m", "mijual.db", "ensure"]
+    env_file: .env.prod
+    restart: "no"
+    # Dockerfile.api's HEALTHCHECK probes :8010, which this one-shot never serves.
+    # An inherited healthcheck would mark it `unhealthy` forever — measured in the
+    # P4.S1 smoke. The gate that matters here is the EXIT CODE, which
+    # `service_completed_successfully` reads.
+    healthcheck:
+      disable: true
+    depends_on:
+      mijual-postgres:
+        condition: service_healthy
+    mem_limit: 256m
+
+  # ---------------------------------------------------------------------------
+  # The application. One image (Dockerfile.api), three commands.
+  # ---------------------------------------------------------------------------
+  mijual-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    # Tagged so P4.S3's rollback can flip :latest -> :previous.
+    image: mijual-api:latest
+    restart: unless-stopped
+    env_file: .env.prod
+    volumes:
+      # MIJUAL_ROOT=/app, so this is the DART response cache (regenerable, but it
+      # saves OpenDART quota across redeploys), beat's shelve and the file-lock
+      # fallback. Shared with the worker and beat on purpose — same cache, one copy.
+      - mijual-var:/app/var
+    expose:
+      - "8010"
+    depends_on:
+      mijual-schema:
+        condition: service_completed_successfully
+    # Redis is deliberately NOT a dependency: it is optional to the API at request
+    # time (the ops lock chip degrades to "unknown" and the tab still answers 200),
+    # and a hard dependency would turn an optional component into an outage.
+    mem_limit: 768m
+
+  mijual-web:
+    build:
+      context: ./frontend
+      args:
+        # Needed at BUILD time (next.config.ts resolves the rewrite destination
+        # then) — and again below at runtime, for lib/api.ts's server-component
+        # fetches. Same value, two places, on purpose. The Dockerfile asserts it
+        # non-empty so a forgotten arg cannot ship a container pointed at its own
+        # empty loopback.
+        MIJUAL_API_ORIGIN: "http://mijual-api:8010"
+    image: mijual-web:latest
+    restart: unless-stopped
+    # No env_file: the frontend container holds no secret and must not be able to.
+    # Every secret — session key, ops credential, API keys, SMTP — lives on the API
+    # process. MIJUAL_OPERATOR_CONTACT too: it is public, but it is served by the
+    # API through GET /site/contact, so it belongs there and nowhere else.
+    environment:
+      MIJUAL_API_ORIGIN: "http://mijual-api:8010"
+    expose:
+      - "3010"
+    depends_on:
+      mijual-api:
+        condition: service_healthy
+    mem_limit: 512m
+    networks:
+      # BOTH: `default` to reach mijual-api, `edge` so edge-nginx can reach it.
+      - default
+      - edge
+
+  # ---------------------------------------------------------------------------
+  # The scheduler: beat decides when, the worker does the work. Both are the API
+  # image with a different command — the worker runs the same pipeline code whose
+  # results the API reads.
+  # ---------------------------------------------------------------------------
+  mijual-worker:
+    image: mijual-api:latest
+    restart: unless-stopped
+    command: ["celery", "-A", "mijual.scheduler.app", "worker", "-l", "info", "-c", "1"]
+    # `-c 1` is the honest concurrency: the run lock would make a second slot skip.
+    env_file: .env.prod
+    volumes:
+      - mijual-var:/app/var
+    # Overrides Dockerfile.api's HTTP probe, which this process does not serve —
+    # inherited, it marks the worker `unhealthy` forever (measured in the P4.S1
+    # smoke). `inspect ping` is the real question for a worker: is it consuming
+    # from the broker? It answers over Redis, so a broker outage reads as unhealthy,
+    # which is correct for this service (unlike for the API, where Redis is optional).
+    healthcheck:
+      test: ["CMD", "celery", "-A", "mijual.scheduler.app", "inspect", "ping", "-t", "10"]
+      interval: 60s
+      timeout: 15s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      mijual-redis:
+        condition: service_healthy
+      mijual-schema:
+        condition: service_completed_successfully
+    mem_limit: 1g
+
+  mijual-beat:
+    image: mijual-api:latest
+    restart: unless-stopped
+    # `-s /app/var/celerybeat-schedule` puts beat's shelve on the persisted volume;
+    # without it beat writes its last-run state into the container's working
+    # directory and forgets every schedule position on redeploy.
+    command:
+      ["celery", "-A", "mijual.scheduler.app", "beat", "-l", "info", "-s", "/app/var/celerybeat-schedule"]
+    env_file: .env.prod
+    volumes:
+      - mijual-var:/app/var
+    # Same inherited-probe trap as the worker, with no honest replacement: beat
+    # exposes nothing to ask. A missed beat is detected where it is visible —
+    # the ops 개요 tab's 「실행 기록 없음」 row, which reads the run log.
+    healthcheck:
+      disable: true
+    depends_on:
+      mijual-redis:
+        condition: service_healthy
+      mijual-schema:
+        condition: service_completed_successfully
+    mem_limit: 256m
+
+networks:
+  # The project-internal network. Compose creates it; everything not named `edge`
+  # below is on it and only on it.
+  default:
+
+  edge:
+    # external: compose never creates or removes it, so `docker compose down` here
+    # cannot tear down a network the edge and every other co-tenant share. A wrong
+    # name fails fast at `up`.
+    external: true
+    # ON THE BOX, LEAVE MIJUAL_EDGE_NETWORK UNSET — the default IS the box's
+    # network (the one `edge-nginx` is attached to; confirmed from
+    # ~/projects/personal/edge/edge/compose.yml). The variable exists so a local
+    # rehearsal can substitute a throwaway network without an override file:
+    #   docker network create mijual-edge-smoke
+    #   MIJUAL_EDGE_NETWORK=mijual-edge-smoke docker compose -f compose.prod.yml \
+    #       -p mijual-smoke up -d
+    name: ${MIJUAL_EDGE_NETWORK:-changple_shared_network}
+
+volumes:
+  # The production database. The ONLY volume here whose contents are not
+  # regenerable, and the one a backup/restore path must cover (owed by P4.S3).
+  mijual-pgdata:
+  # Celery broker/backend state + the run lock. Regenerable.
+  mijual-redisdata:
+  # /app/var for the API, worker and beat: the DART response cache, beat's shelve,
+  # the file-lock fallback. Regenerable, but re-collecting the cache costs quota.
+  mijual-var:

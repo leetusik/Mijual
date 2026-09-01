@@ -51,16 +51,12 @@ db-up:
 # Additive and idempotent: create_all only creates missing tables (the
 # serving process deliberately creates none at startup), ensure_columns
 # closes the additive-column gap. Safe to run on every stack-up.
+#
+# P4.S1 moved the body into `mijual.db.__main__` so the production compose
+# one-shot (`mijual-schema` in compose.prod.yml) runs the SAME code path
+# instead of a second copy of it. This target now delegates.
 db-ensure:
-	@$(VENV)/python -c "\
-	from mijual.config import load_settings; \
-	from mijual.db import make_engine, create_all; \
-	from mijual.db.schema_sync import ensure_columns; \
-	from mijual.db.models import Base; \
-	e = make_engine(load_settings().database_url); \
-	create_all(e); \
-	added = ensure_columns(e, Base); \
-	print('schema ok' + (f' (+{len(added)} columns)' if added else ''))"
+	@$(VENV)/python -m mijual.db ensure
 
 api-up:
 	@mkdir -p $(STACK)

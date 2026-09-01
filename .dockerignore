@@ -1,0 +1,54 @@
+# Build context for Dockerfile.api (repo root). P4.S1.
+#
+# Docker honours ONLY full-line `#` comments — a `#` after a pattern is part of
+# the pattern and silently stops it matching. Every comment here is on its own
+# line for that reason.
+#
+# Two things in this file are correctness, not size: `.env*` (a real secret must
+# never enter a layer) and the two `!` negations at the bottom (two directories
+# the RUNNING app reads from disk).
+
+# --- correctness: secrets and host-shaped artifacts ---
+.env
+.env.*
+# The mac virtualenv: linux wheels are resolved from uv.lock inside the image.
+.venv
+.python-version
+*.zip
+
+# --- the frontend: its own build context (frontend/Dockerfile) ---
+frontend
+node_modules
+
+# --- the agentic workspace and everything else the service never reads ---
+.git
+.github
+.githooks
+.claude
+works
+tests
+scripts
+var
+evalset
+docs
+.pytest_cache
+.ruff_cache
+__pycache__
+*.egg-info
+*.pyc
+.DS_Store
+Makefile
+CLAUDE.md
+compose.yaml
+compose.prod.yml
+executors.toml
+
+# --- re-included: read from disk by the running app ---
+# `mijual.evalset` resolves EVALSET_DIR = MIJUAL_ROOT/"evalset" and the ops
+# 정확도 tab loads both frozen artifacts at request time (`opsreads.accuracy`).
+# Excluding them turns that signed tab into its empty state.
+!evalset/labels.json
+!evalset/sample.json
+# The ops 개요 tab's 가동 전 미결 panel quotes this one doc verbatim
+# (`opsreads.open_decisions`). No other doc is read by any request path.
+!docs/current/decisions.md

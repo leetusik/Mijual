@@ -56,7 +56,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from mijual.beat import BEAT_ENTRIES, PIPELINE_LOCK_NAME, TIMEZONE, lock_key
-from mijual.config import Settings
+from mijual.config import ROOT, Settings
 from mijual.db.models import (
     Account,
     Event,
@@ -109,8 +109,32 @@ RUN_LOG_LIMIT = 40
 BEAT_LOOKBACK = timedelta(days=3)
 #: Where the 가동 전 미결 panel reads from. R7: 「가동 전 미결 (D-4 등)은 decisions
 #: 문서에서 읽어 렌더 — 패널에 직접 쓰지 않음」, so the source is the durable doc and
-#: this module quotes it rather than restating it. ``src/mijual/web/`` → repo root.
-DECISIONS_DOC = Path(__file__).resolve().parents[3] / "docs" / "current" / "decisions.md"
+#: this module quotes it rather than restating it.
+#:
+#: Two candidates, in order, because the module runs from two very different
+#: places (P4.S1 — this is the "package the doc, or point this constant at where
+#: it lands" note in :func:`open_decisions`):
+#:
+#: 1. a **source checkout**: ``src/mijual/web/`` → repo root → ``docs/current/``;
+#: 2. an **installed package** (the container installs the wheel into a venv, so
+#:    ``parents[3]`` is somewhere inside ``site-packages`` and holds no docs):
+#:    ``MIJUAL_ROOT`` — set to ``/app`` in the image, where the Dockerfile copies
+#:    this one doc.
+#:
+#: Neither existing is still a *state*, not a failure: :func:`open_decisions`
+#: renders the panel empty rather than 500-ing the tab.
+_DECISIONS_RELATIVE = ("docs", "current", "decisions.md")
+DECISIONS_DOC = next(
+    (
+        candidate
+        for candidate in (
+            Path(__file__).resolve().parents[3].joinpath(*_DECISIONS_RELATIVE),
+            ROOT.joinpath(*_DECISIONS_RELATIVE),
+        )
+        if candidate.exists()
+    ),
+    Path(__file__).resolve().parents[3].joinpath(*_DECISIONS_RELATIVE),
+)
 
 
 # ---------------------------------------------------------------------------

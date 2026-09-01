@@ -60,6 +60,11 @@ const DEV_ORIGINS = [
 ];
 
 const nextConfig: NextConfig = {
+  // P4.S1 — the deploy ships this app as a container, and `standalone` is what
+  // makes that image small and self-contained: `next build` traces the server's
+  // real node_modules closure into `.next/standalone` (see frontend/Dockerfile).
+  // `next dev` ignores the key entirely, so the operator's dev runtime is unchanged.
+  output: "standalone",
   allowedDevOrigins: DEV_ORIGINS,
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${API_ORIGIN}/:path*` }];

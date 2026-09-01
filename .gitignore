@@ -1,6 +1,9 @@
 # Secrets
 .env
 .env.*
+# ...but the committed production env TEMPLATE (names + purpose, no values).
+# P4.S1: `.env.prod` itself is operator-created on the box and never committed.
+!.env.prod.example
 
 # Python
 __pycache__/

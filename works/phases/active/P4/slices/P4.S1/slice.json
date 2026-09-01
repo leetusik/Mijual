@@ -3,12 +3,12 @@
   "phase_id": "P4",
   "name": "Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 1,
   "depends_on": [],
   "created_at": "2026-09-02T06:20:06+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T07:12:19+09:00",
+  "completed_at": "2026-09-02T07:33:07+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Containerized the stack: Dockerfile.api (API + worker + beat + schema one-shot), a standalone Next image, compose.prod.yml on named volumes with no host ports, a pinned uv.lock and .env.prod.example — proven in an isolated local smoke (six services healthy, 18 tables, /api/health through the rewrite from the edge network) and torn down clean",
   "validation": {
     "required": [],
     "last_run": null,

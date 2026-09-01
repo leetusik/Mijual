@@ -1,0 +1,89 @@
+# syntax=docker/dockerfile:1
+# 주주의관제탑 — the Python image. ONE image, three processes.
+#
+# `mijual-api`, `mijual-worker`, `mijual-beat` and the `mijual-schema` one-shot in
+# compose.prod.yml all run THIS image with their own `command:`. That is
+# deliberate: the worker executes the same pipeline code the API reads the results
+# of, and two images would let them drift apart between deploys.
+#
+# Built ARM64 (linux/arm64) on the dev Mac and on the OCI box alike — same
+# architecture, so a local build is a real rehearsal (P4.S1).
+#
+# Context: the repo root. See .dockerignore — in particular its two negations,
+# which keep the only two things the RUNNING app reads off disk.
+
+# ---------- build ----------
+FROM python:3.13-slim AS build
+
+# uv, pinned by digest-free tag to the version the lockfile was produced with.
+COPY --from=ghcr.io/astral-sh/uv:0.8.14 /uv /uvx /usr/local/bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
+
+WORKDIR /app
+
+# Layer 1 — third-party dependencies only. Nothing here changes when `src/`
+# changes, so the (slow) resolve+install layer is reused across ordinary code
+# deploys. `--frozen` makes a stale lockfile a build failure rather than a silent
+# re-resolve; `--no-dev` leaves pytest/httpx out of the runtime image.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Layer 2 — the project itself, installed as a real wheel (`--no-editable`), so
+# the image carries no dependency on /app/src surviving.
+COPY src/ ./src/
+RUN uv sync --frozen --no-dev --no-editable
+
+# ---------- runtime ----------
+FROM python:3.13-slim AS runtime
+
+# MIJUAL_ROOT is the one setting that makes the installed package behave.
+# `mijual.config.repo_root()` walks up for a pyproject.toml/.git; inside an image
+# whose package lives in site-packages there is neither, so without this the DART
+# cache, the evalset artifacts and the decisions doc all resolve relative to the
+# cwd. /app is where this file puts all three.
+ENV MIJUAL_ROOT=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TZ=Asia/Seoul \
+    PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+# Non-root. `--no-log-init` avoids the huge sparse lastlog some base images grow.
+RUN useradd --create-home --no-log-init --uid 10001 mijual
+
+COPY --from=build --chown=mijual:mijual /app/.venv /app/.venv
+
+# The two directories the RUNNING app reads off disk (see .dockerignore):
+#   evalset/          — `opsreads.accuracy()` loads both frozen JSON artifacts
+#   docs/current/     — `opsreads.open_decisions()` quotes decisions.md verbatim
+# Both are read-only evidence; neither is regenerable inside the container.
+COPY --chown=mijual:mijual evalset/labels.json evalset/sample.json ./evalset/
+COPY --chown=mijual:mijual docs/current/decisions.md ./docs/current/
+
+# The writable state directory and the mount point of the `mijual-var` volume:
+# the DART response cache (regenerable, but it saves OpenDART quota across
+# redeploys), beat's shelve schedule, and the scheduler's file-lock fallback.
+# Created and owned HERE so the volume inherits the ownership on first mount —
+# a volume created against a root-owned mount point is unwritable to `mijual`.
+RUN mkdir -p /app/var && chown -R mijual:mijual /app/var
+
+USER mijual
+
+# Documentation only — compose uses `expose:`, never a published host port.
+EXPOSE 8010
+
+# `python:3.13-slim` carries no curl and no wget; stdlib urllib is the probe.
+# /health touches no database by design (it is the liveness probe: the board goes
+# stale, never dark), so this reports "the process is serving", which is exactly
+# what a restart policy should act on.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD ["python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=4).status == 200 else 1)"]
+
+# The API. The worker, beat and the schema one-shot override this in compose.
+# NOT a bare `uvicorn`: `mijual.web.__main__` installs the root logging config
+# without which the per-turn ▷ agent-spend ledger is recorded nowhere at all.
+CMD ["python", "-m", "mijual.web"]
