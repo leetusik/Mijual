@@ -4,8 +4,8 @@
 
 ## Summary
 
-- Open: `34`
-- Promoted: `3`
+- Open: `31`
+- Promoted: `6`
 - Dropped: `2`
 
 ## Open
@@ -17,7 +17,6 @@
 | `D12` | `deferred` | Density round for the ② row and the 놓친 돈 breakdown at 390 (Q34b) | P8.REVIEW | When mobile scroll length on 조회 becomes a complaint | `works/deferred/open/D12` |
 | `D13` | `deferred` | Regenerate board-snapshot.md with the top 진행 중 rows and every 추후결정 name (Q13) | P8.REVIEW | Before the next design round that needs the board strips | `works/deferred/open/D13` |
 | `D14` | `deferred` | Teach export_design_grounding.py to read the frontend copy.ts, or protect the hand-written tails | P8.REVIEW | Before anyone regenerates the grounding pack | `works/deferred/open/D14` |
-| `D15` | `deferred` | Take the R7 implementation rules off the /ops door | P8.REVIEW | Before P4 Ship & Submit, or whenever D6 is promoted | `works/deferred/open/D15` |
 | `D16` | `deferred` | 운영 대화 로그에 저장된 구조화 블록을 보여줄지 결정 | P9.REVIEW | When 품질 점검 needs to read a calculation, or a 대화 로그 design round opens. | `works/deferred/open/D16` |
 | `D17` | `deferred` | 대화 로그가 「미확인」 hedge를 보존해야 하는지 결정 | P9.REVIEW | Same as the stored-blocks decision: 품질 점검 need or a 대화 로그 design round. | `works/deferred/open/D17` |
 | `D18` | `deferred` | ▷ 추정 계산을 독자에게 노출할지 결정 | P9.REVIEW | When 「내 증서는 얼마어치인가」 is wanted in the assistant. | `works/deferred/open/D18` |
@@ -41,9 +40,7 @@
 | `D37` | `deferred` | 404가 한글 주소를 퍼센트 인코딩된 채로 보여준다 | P11.REVIEW | The next 404/error-surface work (natural pair with D35), or before the P4 demo | `works/deferred/open/D37` |
 | `D38` | `deferred` | 답변 푸터가 근거 5건 중 3건만 링크한다 | P11.REVIEW | The next AI 질문 answer-footer work | `works/deferred/open/D38` |
 | `D39` | `deferred` | 404 라우트에만 폰트 preload 링크가 없다 | P11.REVIEW | The next font or 404 work, or any Next upgrade | `works/deferred/open/D39` |
-| `D5` | `deferred` | Favicon + per-route <title>/meta for the reader chrome | P8.S2 | when the operator wants the tab/branding polish, or before P4 Ship & Submit | `works/deferred/open/D5` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
-| `D7` | `deferred` | Make the notification_pref save an upsert (Q49) | P8.REVIEW | Before P4 Ship & Submit, or the moment any second client can save preferences | `works/deferred/open/D7` |
 | `D8` | `deferred` | Strip the // eyebrow from the accessible name on 조회 and 보유 종목 (Q21) | P8.REVIEW | Each surface next round, or as one small cross-surface job before P4 | `works/deferred/open/D8` |
 | `D9` | `deferred` | Carry the ③ 반대의사 통지 procedure fields onto GET /stocks/{corp_code} (Q30b) | P8.REVIEW | When 조회 and 상세 disagreeing about the same filing becomes a reported problem | `works/deferred/open/D9` |
 
@@ -52,8 +49,11 @@
 | ID | Status | Title | Promoted To | Path |
 |---|---|---|---|---|
 | `D1` | `promoted` | Identity-scope the API-backed gates: re-pair 정정 filings joined to the wrong 사채/이벤트 | `P5.S5` | `works/deferred/promoted/D1` |
+| `D15` | `promoted` | Take the R7 implementation rules off the /ops door | `P4.S4` | `works/deferred/promoted/D15` |
 | `D28` | `promoted` | 시작 카드의 회사가 늙는다 — a data-derived start-card set | `P11.F1` | `works/deferred/promoted/D28` |
 | `D4` | `promoted` | Multi-span citations for multi-addend 실적보고서 figures | `P5.S20` | `works/deferred/promoted/D4` |
+| `D5` | `promoted` | Favicon + per-route <title>/meta for the reader chrome | `P4.S5` | `works/deferred/promoted/D5` |
+| `D7` | `promoted` | Make the notification_pref save an upsert (Q49) | `P4.S2` | `works/deferred/promoted/D7` |
 
 ## Dropped
 

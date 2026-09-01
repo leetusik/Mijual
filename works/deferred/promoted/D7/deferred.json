@@ -1,11 +1,15 @@
 {
   "id": "D7",
   "title": "Make the notification_pref save an upsert (Q49)",
-  "status": "deferred",
+  "status": "promoted",
   "source": "P8.REVIEW",
   "reason": "Two concurrent PUT /portfolio/notifications -> 500: unique constraint on account_id with a read-then-insert path; both saves miss the row and the second INSERT raises UniqueViolation (measured, traceback in var/stack/api.log, uq_notification_pref_account). Unreachable by hand today only because the chip handler disables chips in flight.",
   "trigger": "Before P4 Ship & Submit, or the moment any second client can save preferences",
   "created_at": "2026-08-24T23:58:15+09:00",
-  "promoted_to": null,
+  "promoted_to": {
+    "phase_id": "P4",
+    "slice_id": "P4.S2",
+    "path": "works/phases/active/P4/slices/P4.S2"
+  },
   "dropped_reason": null
 }

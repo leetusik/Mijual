@@ -1,7 +1,7 @@
 {
   "id": "P4",
-  "name": "Ship & Submit",
-  "objective": "Notifications (email first), production deploy to ssh h, smoke tests, presentation deck (주최사별 효용 매핑, AI-role architecture, 소멸 총액 opening number), demo video, and daker.ai submission before 2026-09-07 10:00.",
+  "name": "Ship & Deploy",
+  "objective": "Prepare both official 양식 documents (첨부1 공모전 기획서, 첨부2 기능명세서 — English body, Korean headings, not submitted); deploy to the operator's Oracle Cloud box additively behind the shared nginx edge and Cloudflare at jujutower.com; set up SEO; ship the email D-day notification channel; and add a production smoke suite with uptime monitoring.",
   "status": "planned",
   "order": 4,
   "created_at": "2026-08-19T17:41:27+09:00",
@@ -11,6 +11,13 @@
     "status": "pending",
     "reviewed_at": null,
     "reviewer": null,
+    "note": null
+  },
+  "acceptance": {
+    "required": true,
+    "walkthrough": null,
+    "requested_at": null,
+    "cleared_at": null,
     "note": null
   },
   "paths": {

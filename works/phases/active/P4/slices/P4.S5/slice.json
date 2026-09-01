@@ -1,0 +1,35 @@
+{
+  "id": "P4.S5",
+  "phase_id": "P4",
+  "name": "SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD",
+  "kind": "implementation",
+  "status": "todo",
+  "order": 5,
+  "depends_on": [
+    "P4.S4"
+  ],
+  "created_at": "2026-09-02T06:19:59+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "deferred",
+    "id": "D5",
+    "path": "works/deferred/open/D5"
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": null,
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

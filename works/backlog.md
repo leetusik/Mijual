@@ -6,10 +6,10 @@
 ## Pointer
 
 - Current phase: `P4`
-- Current slice: `P4.DECOMP`
-- Next slice: `P4.REVIEW`
+- Current slice: `P4.S7`
+- Next slice: `P4.S1`
 - Waiting on operator: `none`
-- Open deferred jobs: `34`
+- Open deferred jobs: `31`
 
 ## Active Phases
 
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [ ] `P4` | `planned` | `pending` | Ship & Submit | `P4.DECOMP` | `works/phases/active/P4` |
+| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.S7` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -69,9 +69,17 @@
 | [x] `P11.F3` | `done` | Silence the browser-injected hydration warning and check the root layout's cached read | `fix` | `works/phases/active/P11/slices/P11.F3` |
 | [x] `P11.REVIEW` | `done` | phase review | `review` | `works/phases/active/P11/slices/P11.REVIEW` |
 
-## Phase P4: Ship & Submit
+## Phase P4: Ship & Deploy
 
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
-| [ ] `P4.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P4/slices/P4.DECOMP` |
+| [x] `P4.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P4/slices/P4.DECOMP` |
+| [ ] `P4.S7` | `todo` | 첨부1 공모전 기획서 | `docs` | `works/phases/active/P4/slices/P4.S7` |
+| [ ] `P4.S1` | `todo` | Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam | `implementation` | `works/phases/active/P4/slices/P4.S1` |
+| [ ] `P4.S2` | `todo` | The real Mailer over SMTP, and the D-day notification send path | `implementation` | `works/phases/active/P4/slices/P4.S2` |
+| [ ] `P4.S3` | `todo` | Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook | `implementation` | `works/phases/active/P4/slices/P4.S3` |
+| [ ] `P4.S4` | `todo` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |
+| [ ] `P4.S5` | `todo` | SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD | `implementation` | `works/phases/active/P4/slices/P4.S5` |
+| [ ] `P4.S6` | `todo` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
+| [ ] `P4.S8` | `todo` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |
 | [ ] `P4.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

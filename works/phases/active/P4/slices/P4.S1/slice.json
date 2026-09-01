@@ -1,0 +1,32 @@
+{
+  "id": "P4.S1",
+  "phase_id": "P4",
+  "name": "Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam",
+  "kind": "implementation",
+  "status": "todo",
+  "order": 1,
+  "depends_on": [],
+  "created_at": "2026-09-02T06:20:06+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": null,
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "P4.S4",
+  "phase_id": "P4",
+  "name": "Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload",
+  "kind": "implementation",
+  "status": "todo",
+  "order": 4,
+  "depends_on": [
+    "P4.S3"
+  ],
+  "created_at": "2026-09-02T06:19:59+09:00",
+  "started_at": null,
+  "completed_at": null,
+  "risk": "high",
+  "source": {
+    "type": "deferred",
+    "id": "D15",
+    "path": "works/deferred/open/D15"
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": null,
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

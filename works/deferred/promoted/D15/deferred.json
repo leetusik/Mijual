@@ -1,11 +1,15 @@
 {
   "id": "D15",
   "title": "Take the R7 implementation rules off the /ops door",
-  "status": "deferred",
+  "status": "promoted",
   "source": "P8.REVIEW",
   "reason": "Four internal rules render as visible 11px text under the login button in production, two describing the security posture (uniform + constant-time failure, credential rotation from env/secrets). R7 record text on a signed round — a copy decision, not a cleanup; not to be fixed silently inside D6.",
   "trigger": "Before P4 Ship & Submit, or whenever D6 is promoted",
   "created_at": "2026-08-24T23:58:15+09:00",
-  "promoted_to": null,
+  "promoted_to": {
+    "phase_id": "P4",
+    "slice_id": "P4.S4",
+    "path": "works/phases/active/P4/slices/P4.S4"
+  },
   "dropped_reason": null
 }
