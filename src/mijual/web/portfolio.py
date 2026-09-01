@@ -323,18 +323,48 @@ def _sorted_chips(stored: Iterable[Any]) -> list[int]:
     return [day for day in LEAD_DAY_CHOICES if day in values]
 
 
-def set_lead_days(db: Session, account: Account, raw: Any) -> list[int]:
-    """Save the 시점 칩 selection, creating the row on first use."""
-    days = _validated_lead_days(raw)
-    pref = db.scalars(
+def _pref_of(db: Session, account: Account) -> NotificationPref | None:
+    return db.scalars(
         select(NotificationPref).where(NotificationPref.account_id == account.id)
     ).first()
-    if pref is None:
-        pref = NotificationPref(account_id=account.id, lead_days=days)
-        db.add(pref)
-    else:
+
+
+def set_lead_days(db: Session, account: Account, raw: Any) -> list[int]:
+    """Save the 시점 칩 selection, creating the row on first use. **An upsert.**
+
+    ``D-7``, fixed in ``P4.S2``: this was a read-then-insert against
+    ``uq_notification_pref_account``, so two saves racing on one account — two
+    tabs, a double-tapped 저장, a retried request — resolved as a
+    ``UniqueViolation`` 500 rather than as the second save winning. The window is
+    small and the surface is one reader's own settings, but this is the row the
+    D-day mail reads, and a save that failed is a reader who does not get the
+    mail they just asked for.
+
+    The recovery is dialect-neutral rather than an ``ON CONFLICT``: a savepoint
+    around the insert, and on collision a re-select and an update. One code path
+    on Postgres (the deployment) and SQLite (the tests), which matters more here
+    than the round trip an upsert would save — this endpoint runs at human speed.
+    The API contract does not change: same validation, same return value.
+    """
+    days = _validated_lead_days(raw)
+    pref = _pref_of(db, account)
+    if pref is not None:
         pref.lead_days = days
-    db.flush()
+        db.flush()
+        return days
+
+    try:
+        with db.begin_nested():
+            db.add(NotificationPref(account_id=account.id, lead_days=days))
+            db.flush()
+    except IntegrityError:
+        # Somebody else inserted this account's row between the select above and
+        # the flush. Their row is the row; this save is an update of it.
+        pref = _pref_of(db, account)
+        if pref is None:  # pragma: no cover - the constraint said it exists
+            raise
+        pref.lead_days = days
+        db.flush()
     return days
 
 

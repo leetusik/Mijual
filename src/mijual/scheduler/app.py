@@ -1,4 +1,4 @@
-"""The Celery app, its five tasks, and the beat schedule.
+"""The Celery app, its six tasks, and the beat schedule.
 
 Celery decides **when**; :mod:`mijual.scheduler.pipeline` decides **what**. That
 split is the point of this module's small size — everything a task does is one
@@ -43,7 +43,7 @@ from __future__ import annotations
 from celery import Celery
 from celery.schedules import crontab
 
-from mijual.beat import BEAT_ENTRIES, TIMEZONE, BeatEntry
+from mijual.beat import BEAT_ENTRIES, NOTIFY_LOCK_NAME, TIMEZONE, BeatEntry
 from mijual.config import load_settings
 from mijual.scheduler.config import PipelineConfig
 from mijual.scheduler.pipeline import run_pipeline
@@ -59,6 +59,7 @@ __all__ = [
     "extract_new",
     "gates_run",
     "make_app",
+    "notify_deadlines",
 ]
 
 
@@ -154,6 +155,27 @@ def extract_new(**kwargs) -> dict:
 def gates_run(**kwargs) -> dict:
     """Re-derive every gate verdict and every event's exposure. Free."""
     return _run(**{"stages": ("gates",), "label": "gates", **kwargs})
+
+
+@app.task(name="mijual.notify_deadlines")
+def notify_deadlines(**kwargs) -> dict:
+    """마감 임박 이메일 — the 08:30 D-day send (``P4.S2``). 0 requests, 0 calls.
+
+    Its own task **and its own lock**: the corpus lock is held by whatever the
+    07:30 run is still doing, and a mail job that skipped for that contention
+    would silently send nothing for the day and leave no run row saying so
+    (:data:`mijual.beat.NOTIFY_LOCK_NAME`). Everything else is an ordinary
+    pipeline run, so the ops 개요 renders it, joins it against its beat entry and
+    shows 「실행 기록 없음」 if the worker was down at 08:30.
+    """
+    return _run(
+        **{
+            "stages": ("notify",),
+            "label": "notify-deadlines",
+            "lock_name": NOTIFY_LOCK_NAME,
+            **kwargs,
+        }
+    )
 
 
 def describe_schedule(schedule: dict[str, dict] | None = None) -> str:

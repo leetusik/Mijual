@@ -4,9 +4,9 @@
 
 ## Summary
 
-- Open: `31`
+- Open: `30`
 - Promoted: `6`
-- Dropped: `2`
+- Dropped: `3`
 
 ## Open
 
@@ -25,7 +25,6 @@
 | `D20` | `deferred` | 마커 기하 두 표기의 불일치를 정리한다 | P9.REVIEW | A design round that touches the 추정 tag. | `works/deferred/open/D20` |
 | `D21` | `deferred` | 계산 error 블록이 실제로는 도달 불가능한 문제 | P9.REVIEW | If a reader reports a stuck calculation, or when the prompt is next revised. | `works/deferred/open/D21` |
 | `D22` | `deferred` | 암시적 프롬프트 캐시가 한 번도 적립되지 않는 이유를 조사 | P9.REVIEW | When per-turn cost matters, or before deploy. | `works/deferred/open/D22` |
-| `D23` | `deferred` | P4 mail subject still carries the retired name [미주알] | P10.DECOMP | When P4 implements the 마감 임박 mail, before the first send | `works/deferred/open/D23` |
 | `D24` | `deferred` | /ops has no 390px layout — the whole bar stacks, not just the mark | P10.S5 | Next ops design pass, or the first time /ops is needed from a phone | `works/deferred/open/D24` |
 | `D25` | `deferred` | Code comments and dev-tooling banners still name the retired product | P10.REVIEW | Next time a slice edits those files anyway, or if the identifier rename is ever taken on | `works/deferred/open/D25` |
 | `D26` | `deferred` | The AI 질문 launcher's open state is covered by the widget and can never be seen | P10.REVIEW | The next design round that opens the AI 질문 surface, or the next time the launcher's state table is edited | `works/deferred/open/D26` |
@@ -59,5 +58,6 @@
 
 | ID | Status | Title | Reason | Path |
 |---|---|---|---|---|
+| `D23` | `dropped` | P4 mail subject still carries the retired name [미주알] | Resolved by operator decision (intent.md, 2026-09-02): P4.S2 re-signed the mail subject to [주주의관제탑] {종목} — {마감명} {D-표기} ({date}); 미주알 appears nowhere in the mail layer | `works/deferred/dropped/D23` |
 | `D29` | `dropped` | 의견 카드가 다른 카드와 구별되지 않는다 | Superseded by P11.F1: the 의견 card is removed from the start screen at the operator's gate rejection, so a card that files a row in the reader's name no longer exists to be indistinguishable from the others. | `works/deferred/dropped/D29` |
 | `D34` | `dropped` | 프로덕션에서 React #418 하이드레이션 불일치가 한 번 관측됨 | Cause found and fixed at P11.F3. The production #418(text) was /_not-found being prerendered while RequestedPath renders usePathname(): reproducible 5/5 on a 404 route before the fix, 0 across 58 loads over 13 route/viewport combinations after. D34's single sighting came from a multi-route sweep that did not record which URL was in flight, so this cannot be proven to be that sighting — but the signature matches exactly and no other #418 source survives. Re-file if a third sighting appears. | `works/deferred/dropped/D34` |

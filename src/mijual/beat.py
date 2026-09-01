@@ -37,6 +37,8 @@ __all__ = [
     "BeatEntry",
     "DEFAULT_WINDOW_DAYS",
     "LOCK_KEY_PREFIX",
+    "NOTIFY_LOCK_NAME",
+    "NOTIFY_MAX_MAILS",
     "PIPELINE_LOCK_NAME",
     "RESYNC_WINDOW_DAYS",
     "TIMEZONE",
@@ -58,6 +60,21 @@ LOCK_KEY_PREFIX = "mijual:lock:"
 #: The lock every corpus-writing entry point takes, and the one the ops panel
 #: shows: ``mijual:lock:pipeline``.
 PIPELINE_LOCK_NAME = "pipeline"
+#: The D-day mail's **own** lock: ``mijual:lock:notify`` (``P4.S2``). A separate
+#: name rather than a second taker of the pipeline lock, because a notify run
+#: that skipped for contention with an over-running 07:30 collection would
+#: silently send nobody their mail that day *and* write no run row to say so —
+#: the pipeline deliberately does not log a skipped run. The two jobs also touch
+#: disjoint tables: the corpus stages write filings, the notify stage reads them
+#: and writes only ``notification_send``.
+NOTIFY_LOCK_NAME = "notify"
+
+#: How many mails one notify run may send. A **structural ceiling** in the same
+#: family as ``collect_max_requests`` and ``extract_max_calls``: the sender stops
+#: at it and reports it as a status rather than raising. It lives here, in the
+#: stdlib declaration module, so that :mod:`mijual.scheduler.config` can default
+#: to it without importing :mod:`mijual.notify` (which reaches the web layer).
+NOTIFY_MAX_MAILS = 200
 
 
 def lock_key(name: str = PIPELINE_LOCK_NAME) -> str:
@@ -143,6 +160,11 @@ class BeatEntry:
 #:   the board is current for the day that matters to a 청약 deadline.
 #: * **19:30** — after 공시 접수 closes (18:00) plus a margin: the day's filings
 #:   and 정정 land the same evening instead of waiting until the next morning.
+#: * **08:30** — 마감 임박 이메일 (``P4.S2``): an hour after the morning run, so
+#:   the D-days it mails about are the ones this morning's collection just
+#:   confirmed, and far enough after it that a slow run is not a missed send. On
+#:   its **own lock** and its own task, sending nothing when no reader has a
+#:   deadline at one of their 시점 칩.
 #: * **Sunday 04:30** — the straggler pass over a 90-day window: corrections
 #:   whose original sits outside the daily window, and events whose corp-scoped
 #:   pairing query only resolves once more filings exist.
@@ -171,6 +193,20 @@ BEAT_ENTRIES: tuple[BeatEntry, ...] = (
             "window_days": DEFAULT_WINDOW_DAYS,
             "label": "daily-evening",
             "trigger": "beat",
+        },
+    ),
+    BeatEntry(
+        name="notify-deadlines",
+        task="mijual.notify_deadlines",
+        hour=8,
+        minute=30,
+        kwargs={
+            "stages": ["notify"],
+            "label": "notify-deadlines",
+            "trigger": "beat",
+            # Its own lock: see NOTIFY_LOCK_NAME. Sharing the corpus lock would
+            # make a long morning collection cancel the day's mail in silence.
+            "lock_name": NOTIFY_LOCK_NAME,
         },
     ),
     BeatEntry(

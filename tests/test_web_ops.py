@@ -239,7 +239,12 @@ def test_the_overview_serves_both_halves_of_the_missing_beat_row_and_degrades(cl
     body = client.get("/ops/overview").json()
     assert body["beat"]["timezone"] == "Asia/Seoul"
     assert {e["name"] for e in body["beat"]["entries"]} == {
-        "daily-pipeline-morning", "daily-pipeline-evening", "weekly-resync"
+        # `notify-deadlines` (P4.S2) is here for a reason the panel makes
+        # load-bearing: the 개요 tab joins `beat.entries[].due` against the run
+        # log **by the entry's own kwargs label**, so a scheduled send that
+        # wrote no `pipeline_run` row would render as 「실행 기록 없음」 forever.
+        "daily-pipeline-morning", "daily-pipeline-evening", "weekly-resync",
+        "notify-deadlines",
     }
     assert all("due" in entry for entry in body["beat"]["entries"])
     run = body["runs"]["rows"][0]

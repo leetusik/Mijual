@@ -23,6 +23,7 @@ from mijual.db.models import (
     Extraction,
     Holding,
     LapseClaim,
+    NotificationPref,
     OfferingInput,
     PerformanceReport,
     RightsType,
@@ -268,6 +269,39 @@ def test_notifications_default_to_7_and_1_and_the_address_is_the_account(client)
     assert client.patch("/auth/account", json={"email": "New@Mijual.KR"}).status_code == 200
     assert client.get("/portfolio/notifications").json()["address"] == "new@mijual.kr"
     assert client.get("/auth/me").json()["account"]["email"] == "new@mijual.kr"
+
+
+def test_saving_the_chips_is_an_upsert_and_survives_a_racing_insert(client, monkeypatch) -> None:
+    """D-7, fixed in `P4.S2`: read-then-insert against a unique constraint.
+
+    Two saves racing on one account (two tabs, a double-tapped 저장, a retried
+    request) used to resolve as a ``UniqueViolation`` 500. The race is forced
+    here rather than hoped for: the pre-write lookup is made to miss a row that
+    is already there, which is exactly what the loser of the race sees, and the
+    save must land as an update.
+    """
+    from mijual.web import portfolio as service
+
+    _login(client)
+    assert client.put("/portfolio/notifications", json={"lead_days": [7]}).status_code == 200
+    assert len(client.db.scalars(select(NotificationPref)).all()) == 1
+
+    misses = {"left": 1}
+    real = service._pref_of
+
+    def _blind(db, account):
+        if misses["left"]:
+            misses["left"] -= 1
+            return None  # the row exists; this transaction has not seen it yet
+        return real(db, account)
+
+    monkeypatch.setattr(service, "_pref_of", _blind)
+    saved = client.put("/portfolio/notifications", json={"lead_days": [3, 0]})
+    assert saved.status_code == 200 and saved.json()["lead_days"] == [3, 0]
+    # One row, updated — not a second row and not a 500.
+    rows = client.db.scalars(select(NotificationPref)).all()
+    assert len(rows) == 1 and rows[0].lead_days == [3, 0]
+    assert client.get("/portfolio/notifications").json()["lead_days"] == [3, 0]
 
 
 def test_the_sample_is_anonymous_and_carries_no_account_fact(client) -> None:

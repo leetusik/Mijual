@@ -69,6 +69,7 @@ __all__ = [
     "Holding",
     "LapseClaim",
     "NotificationPref",
+    "NotificationSend",
     "OfferingInput",
     "OpsSession",
     "PasswordReset",
@@ -794,6 +795,9 @@ class Account(Base):
     notification_pref: Mapped["NotificationPref | None"] = relationship(
         back_populates="account", cascade="all, delete-orphan", uselist=False
     )
+    notification_sends: Mapped[list["NotificationSend"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - never log the address itself
         return f"<Account {self.id}>"
@@ -983,6 +987,84 @@ class NotificationPref(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<NotificationPref account={self.account_id} {self.lead_days}>"
+
+
+class NotificationSend(Base):
+    """One 마감 임박 이메일 that was actually sent. **The idempotency record.**
+
+    ``P4.S2`` — the D-day send. Until this table existed nothing in the product
+    remembered a mail, so a second run of the notify stage (a retried beat, a
+    hand-run smoke, a worker restarted at 08:31) would have mailed every reader
+    again. The record is therefore written **only after the transport accepted
+    the message**, and committed per message: a crash halfway through a batch
+    re-sends nothing it already sent.
+
+    **The key is one deadline occurrence per reader: ``(account, event, lead_day,
+    anchor_date)``.**
+
+    * ``lead_day`` is which 시점 칩 fired (7 / 3 / 1 / 0), so a reader who chose
+      7일 **and** 1일 gets two mails about the same deadline — which is what they
+      asked for — and never two for one chip;
+    * ``anchor_date`` is the governing 마감 as it stood when the mail went out
+      (``countdown.date``). **A 정정 that moves the date is a new deadline and
+      sends again**, deliberately: the whole point of the alert is the date, and
+      a reader told "D-7 = 9월 9일" who is never told the deadline moved to 9월
+      3일 has been actively misled. A 정정 that leaves the date alone re-uses the
+      same key and sends nothing.
+
+    ``rcept_no`` is carried beside the key as the **filing the mail cited** — the
+    footer's 출처 — and is not part of the key, because an ``rcept_no`` mutates to
+    its newest version when a 정정 lands (N2) and a key that moved with it would
+    re-send every deadline on every correction.
+
+    **The one caveat, stated rather than discovered later:** ``event_id`` is an
+    internal autoincrement, and a full corpus rebuild (``reset_schema``, N16) does
+    not preserve it — so a rebuild can cost one repeated mail per live deadline
+    per reader. That is the accepted trade for a key that is stable against 정정;
+    :class:`Holding` keeps ``corp_code`` un-FK'd for the opposite reason (a
+    holding must *survive* a rebuild), and a sent-mail record has no such duty.
+
+    **What is deliberately absent: the address, the subject and the body.** The
+    address is :attr:`Account.email` and is not copied here (`security`: stored
+    PII is exactly email + password hash), and storing what a mail *said* would
+    put reader-facing prose in a table nothing renders.
+    """
+
+    __tablename__ = "notification_send"
+    __table_args__ = (
+        UniqueConstraint(
+            "account_id",
+            "event_id",
+            "lead_day",
+            "anchor_date",
+            name="uq_notification_send_once",
+        ),
+        Index("ix_notification_send_account", "account_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id", ondelete="CASCADE"), nullable=False
+    )
+    #: The filing the mail's 출처 footer cited, at send time. Not part of the key.
+    rcept_no: Mapped[str | None] = mapped_column(String(14))
+    #: Which 시점 칩 fired: 7 / 3 / 1 / 0 (``mijual.web.portfolio.LEAD_DAY_CHOICES``).
+    lead_day: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The governing 마감 as an ISO calendar day, stored **exactly as the payload
+    #: served it** (``countdown.date``) so the key cannot drift on formatting.
+    anchor_date: Mapped[str] = mapped_column(String(10), nullable=False)
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    account: Mapped[Account] = relationship(back_populates="notification_sends")
+
+    def __repr__(self) -> str:  # pragma: no cover - never log the address
+        return (
+            f"<NotificationSend account={self.account_id} event={self.event_id} "
+            f"D-{self.lead_day} {self.anchor_date}>"
+        )
 
 
 class LapseClaim(Base):

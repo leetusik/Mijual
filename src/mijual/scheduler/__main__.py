@@ -11,7 +11,11 @@
     # 3. one stage
     .venv/bin/python -m mijual.scheduler once --stages gates
 
-    # 4. what beat is configured to do (imports Celery; needs no broker)
+    # 4. the D-day mail, by hand (no broker, its own lock, a chosen anchor day)
+    .venv/bin/python -m mijual.scheduler once --stages notify --no-lock \
+        --label smoke-notify --notify-today 20260909
+
+    # 5. what beat is configured to do (imports Celery; needs no broker)
     .venv/bin/python -m mijual.scheduler schedule
 
 Exit codes: ``0`` ran, ``1`` a stage errored, ``3`` skipped because another run
@@ -27,7 +31,9 @@ import sys
 from pathlib import Path
 
 from mijual.scheduler.config import (
+    DEFAULT_STAGES,
     DEFAULT_WINDOW_DAYS,
+    NOTIFY_MAX_MAILS,
     RIGHTS_BY_ID,
     STAGES,
     PipelineConfig,
@@ -44,7 +50,10 @@ def build_parser() -> argparse.ArgumentParser:
                       help=f"rolling discovery window in days (default: {DEFAULT_WINDOW_DAYS})")
     once.add_argument("--bgn", default=None, help="explicit window start, YYYYMMDD")
     once.add_argument("--end", default=None, help="explicit window end, YYYYMMDD")
-    once.add_argument("--stages", nargs="+", default=list(STAGES), choices=list(STAGES))
+    once.add_argument("--stages", nargs="+", default=list(DEFAULT_STAGES), choices=list(STAGES),
+                      help="default: the six corpus stages. 'notify' (the D-day mail) is a "
+                           "known stage but not a default one — it has its own 08:30 beat "
+                           "entry and its own lock")
     once.add_argument("--offline", action="store_true",
                       help="cache only, prompts built but never sent (0 requests, 0 calls)")
     once.add_argument("--cache-dir", default=None, help="response cache (default: var/dart-cache)")
@@ -58,6 +67,18 @@ def build_parser() -> argparse.ArgumentParser:
     once.add_argument("--rights", nargs="+", default=["R1", "R3"], choices=sorted(RIGHTS_BY_ID),
                       help="rights types the extraction stage reads (default: R1 R3)")
     once.add_argument("--no-corrections", action="store_true", help="skip §7 #10 정정 재추출")
+    once.add_argument(
+        "--notify-today",
+        default=None,
+        help="YYYYMMDD — anchor the notify stage's D-day arithmetic on this KST day "
+        "instead of today (an inspection/demo knob; beat never sets it)",
+    )
+    once.add_argument(
+        "--notify-max-mails",
+        type=int,
+        default=NOTIFY_MAX_MAILS,
+        help=f"outward-mail ceiling for the notify stage (default: {NOTIFY_MAX_MAILS})",
+    )
     once.add_argument("--no-lock", action="store_true", help="run without the overlap lock")
     once.add_argument("--lock-name", default="pipeline")
     once.add_argument("--label", default="cli")
@@ -95,6 +116,8 @@ def _config(args) -> PipelineConfig:
         extract_max_calls=args.max_calls,
         extract_rights=tuple(RIGHTS_BY_ID[r] for r in args.rights),
         extract_corrections=not args.no_corrections,
+        notify_today=args.notify_today,
+        notify_max_mails=args.notify_max_mails,
         use_lock=not args.no_lock,
         lock_name=args.lock_name,
         label=args.label,

@@ -25,6 +25,7 @@ else. See the re-aimed rule in :mod:`mijual.web`.
 
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Callable
 
@@ -33,7 +34,7 @@ from fastapi import FastAPI
 from mijual import __version__
 from mijual.agent.client import ModelClient
 from mijual.config import Settings, load_settings
-from mijual.mail import ConsoleMailer, Mailer
+from mijual.mail import Mailer, describe_transport, mailer_for
 from mijual.web.ask import TurnLimiter
 from mijual.web.conversations import Conversations
 from mijual.web.conversationstore import DbConversations
@@ -52,6 +53,8 @@ from mijual.web.routers import (
     site,
     stocks,
 )
+
+log = logging.getLogger(__name__)
 
 __all__ = ["app", "create_app"]
 
@@ -85,9 +88,13 @@ def create_app(
 ) -> FastAPI:
     """A fully wired app. Pass ``settings`` to point one at another database.
 
-    ``mailer`` is the seam :mod:`mijual.mail` describes: P5 defaults to the
-    console transport, which prints a password-reset link server-side and sends
-    nothing, and **P4** passes a real transport here without touching a route.
+    ``mailer`` is the seam :mod:`mijual.mail` describes, and **`P4.S2` filled
+    it without touching a route**, exactly as the seam was built for: the
+    transport is now chosen by :func:`mijual.mail.mailer_for` from ``Settings``
+    alone — :class:`~mijual.mail.SmtpMailer` when ``SMTP_HOST`` is set, the
+    console transport (prints server-side, sends nothing) when it is not — and
+    the app logs which one it got. Passing one explicitly still wins, which is
+    what the tests and the reset-flow suite do.
 
     ``conversations`` is the same shape of seam for the AI 질문 agent's storage
     (:mod:`mijual.web.conversations`). P5 defaulted it to
@@ -119,7 +126,14 @@ def create_app(
     app.state.settings = settings or load_settings()
     app.state.engine = None
     app.state.session_factory = None
-    app.state.mailer = mailer or ConsoleMailer()
+    # P4.S2: the seam is filled. ``SMTP_HOST`` set → the real transport, unset →
+    # the console one, and the process says which it got **once, at startup**,
+    # naming host and sender but never the password: a deployment that forgot the
+    # keys should learn it from its own log, not from a reader who never got a
+    # mail. An explicit ``mailer=`` (tests, a caller with its own) still wins.
+    app.state.mailer = mailer or mailer_for(app.state.settings)
+    if mailer is None:
+        log.info("mail transport: %s", describe_transport(app.state.settings))
     app.state.conversations = conversations or DbConversations(
         lambda: session_factory(app.state)()
     )

@@ -25,14 +25,20 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 
-from mijual.beat import DEFAULT_WINDOW_DAYS, RESYNC_WINDOW_DAYS
+from mijual.beat import (
+    DEFAULT_WINDOW_DAYS,
+    NOTIFY_MAX_MAILS,
+    RESYNC_WINDOW_DAYS,
+)
 from mijual.calc import today_kst
 from mijual.collect.discovery import DEFAULT_MARKETS
 from mijual.collect.targets import DEFAULT_ENDPOINTS
 from mijual.db.models import RightsType
 
 __all__ = [
+    "DEFAULT_STAGES",
     "DEFAULT_WINDOW_DAYS",
+    "NOTIFY_MAX_MAILS",
     "RESYNC_WINDOW_DAYS",
     "STAGES",
     "PipelineConfig",
@@ -50,7 +56,19 @@ __all__ = [
 #: and closes the one way this corpus could serve a stale number without saying
 #: so. ``reparse`` precedes ``snapshot`` because ``LapseRow`` is built from
 #: ``facts``.
-STAGES = ("collect", "bodydoc", "extract", "gates", "reparse", "snapshot")
+STAGES = ("collect", "bodydoc", "extract", "gates", "reparse", "snapshot", "notify")
+
+#: What a run does when nobody says otherwise: the **six corpus stages**, in
+#: order. ``notify`` is a known stage (above) but not a default one, and the
+#: distinction is the whole reason there are two tuples. ``P4.S2``'s D-day mail
+#: is not corpus work: it has a different failure mode (an outward action to a
+#: person), a different ceiling (mails, not requests), and — decisively — it must
+#: **not share the corpus lock**, because a notify run skipped for lock
+#: contention would silently send no mail that day and leave no run row to say
+#: so. It therefore runs as its own beat entry on ``lock_name="notify"``
+#: (:data:`mijual.beat.NOTIFY_LOCK_NAME`) rather than as a seventh step of the
+#: 07:30 pipeline.
+DEFAULT_STAGES = ("collect", "bodydoc", "extract", "gates", "reparse", "snapshot")
 
 #: Rights types whose prose fields are read by the scheduled extraction. ② is
 #: **deliberately absent**: it is collected by the same ``collect`` stage as
@@ -97,8 +115,19 @@ class PipelineConfig:
     #: §7 #10 (정정 재추출 + diff) shares ``extract_max_calls`` with the prose pass.
     extract_corrections: bool = True
 
+    # -- the notify stage (P4.S2) -------------------------------------------
+    #: The outward-mail ceiling for one run, the same **structural** shape as the
+    #: request and call ceilings above: :mod:`mijual.notify` stops at it and
+    #: reports ``budget_exhausted``, which is a status, not an exception.
+    notify_max_mails: int | None = NOTIFY_MAX_MAILS
+    #: ``YYYYMMDD`` — anchor the D-day arithmetic on another day instead of today
+    #: (KST). An **inspection knob**: it is how the gate demo and a smoke run
+    #: reach a deadline that is not exactly 7/3/1/0 days away right now. Unset in
+    #: every beat entry, because a scheduled send must anchor on the real day.
+    notify_today: str | None = None
+
     # -- execution ---------------------------------------------------------
-    stages: tuple[str, ...] = STAGES
+    stages: tuple[str, ...] = DEFAULT_STAGES
     offline: bool = False
     cache_dir: str | None = None
     database_url: str | None = None
@@ -162,6 +191,8 @@ class PipelineConfig:
             f"budgets collect<={self.collect_max_requests} req, "
             f"bodydoc<={self.bodydoc_max_requests} req, "
             f"extract<={self.extract_max_calls} calls"
+            + (f", notify<={self.notify_max_mails} mail(s)" if "notify" in self.stages else "")
+            + (f" notify_today={self.notify_today}" if self.notify_today else "")
             + (" [offline]" if self.offline else "")
         )
 

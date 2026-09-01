@@ -1,4 +1,4 @@
-"""The six stages, in order, under one lock and explicit ceilings.
+"""The six corpus stages in order under one lock, plus the outward notify stage.
 
 This module is the scheduler's whole behaviour, and it deliberately knows
 **nothing** about Celery: a task, the inline ``once`` CLI and a test all call the
@@ -38,13 +38,24 @@ Three properties every stage keeps:
   budget-exhausted stage is a *reported outcome*, not an exception that ends the
   run.
 * **no secret is ever in a summary line.** Stage summaries are counts.
+
+``P4.S2`` added a **seventh** stage, ``notify`` — the D-day 마감 임박 이메일 — and
+it is deliberately *not* in :data:`~mijual.scheduler.config.DEFAULT_STAGES`. It is
+the only stage that acts outward (a mail to a person rather than a row in this
+corpus), its ceiling counts mails rather than requests, and it runs on **its own
+lock** under its own 08:30 beat entry: a notify run skipped for contention with a
+long-running collection would send nobody their mail that day and, because a
+skipped run writes no row, would say so nowhere. It is a stage rather than a
+standalone job for everything this module already provides it — the run-log row
+the ops 개요 joins its beat entry against, the ▷ spend line, ``_stage``'s error
+containment, and the hand-run path ``once --stages notify``.
 """
 
 from __future__ import annotations
 
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from mijual.bodydoc.backfill import backfill_corrections, confirm_warrants
 from mijual.calc import today_kst
@@ -73,6 +84,7 @@ __all__ = [
     "stage_collect",
     "stage_extract",
     "stage_gates",
+    "stage_notify",
     "stage_reparse",
     "stage_snapshot",
     "session_factory_for",
@@ -524,6 +536,63 @@ def stage_snapshot(config, factory, result: StageResult, *, settings=None, log=N
     )
 
 
+# ---------------------------------------------------------------------------
+# the notify stage — the only stage that acts outward, on its own lock
+# ---------------------------------------------------------------------------
+@_stage("notify")
+def stage_notify(config, factory, result: StageResult, *, settings=None, log=None) -> None:
+    """마감 임박 이메일 (``P4.S2``). **0 requests, 0 model calls — and mail.**
+
+    It is a pipeline stage rather than a standalone job because everything a
+    scheduled outward action needs already exists here and would otherwise be
+    rebuilt worse: the run lock, the :class:`~mijual.db.models.PipelineRun` row
+    R7's 최근 실행 표 renders (without which the 개요 tab's 「실행 기록 없음」
+    derivation would mark the 08:30 beat as never having run, **forever**), the
+    verbatim ▷ spend line, ``_stage``'s error containment, and the manual path
+    ``python -m mijual.scheduler once --stages notify``.
+
+    It is **not** one of :data:`~mijual.scheduler.config.DEFAULT_STAGES`, and it
+    runs under ``lock_name="notify"`` — see
+    :data:`mijual.beat.NOTIFY_LOCK_NAME` for why sharing the corpus lock would
+    have made a slow morning collection cancel the day's mail in silence.
+
+    **A run with no SMTP configured is honest, not broken**: it uses the console
+    transport, sends nothing, and says ``transport console`` in this very
+    summary — which is exactly what a deployment that forgot ``SMTP_HOST`` needs
+    to see in the ops panel.
+    """
+    from mijual.mail import describe_transport, mailer_for
+    from mijual.notify import send_deadlines
+
+    settings = settings or load_settings()
+    today = _notify_anchor(config)
+    transport = describe_transport(settings)
+    report = send_deadlines(
+        factory,
+        mailer_for(settings),
+        today=today,
+        app_base_url=settings.app_base_url,
+        max_mails=config.notify_max_mails,
+        transport=transport,
+    )
+    result.status = "budget_exhausted" if report.budget_exhausted else "ok"
+    result.detail = report.as_dict()
+    result.summary = report.summary
+
+
+def _notify_anchor(config: PipelineConfig) -> date:
+    """The KST day the D-day arithmetic is anchored on (R5: 발송 앵커 KST).
+
+    ``--notify-today YYYYMMDD`` overrides it for an inspection or gate-demo run.
+    A malformed value falls back to today rather than crashing the stage: a
+    mistyped flag must not be the reason nobody got their mail.
+    """
+    raw = (config.notify_today or "").strip()
+    if len(raw) == 8 and raw.isdigit():
+        return date(int(raw[:4]), int(raw[4:6]), int(raw[6:]))
+    return today_kst()
+
+
 STAGE_FUNCTIONS = {
     "collect": stage_collect,
     "bodydoc": stage_bodydoc,
@@ -531,6 +600,7 @@ STAGE_FUNCTIONS = {
     "gates": stage_gates,
     "reparse": stage_reparse,
     "snapshot": stage_snapshot,
+    "notify": stage_notify,
 }
 
 

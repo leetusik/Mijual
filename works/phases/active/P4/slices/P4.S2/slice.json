@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "The real Mailer over SMTP, and the D-day notification send path",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 2,
   "depends_on": [
     "P4.S1"
   ],
   "created_at": "2026-09-02T06:19:59+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T07:38:50+09:00",
+  "completed_at": "2026-09-02T08:03:58+09:00",
   "risk": "high",
   "source": {
     "type": "deferred",
@@ -21,7 +21,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Real SMTP Mailer (stdlib, explicit TLS policy) + render/copy layer, the D-day send as a notify pipeline stage on its own lock behind a new 08:30 KST beat entry, notification_send idempotency table (19 tables), the D7 upsert and D23's subject re-signed to 주주의관제탑 — proven live against a local aiosmtpd sink (reset mail, ① and ② deadline mails, idempotency, off switch, ceiling), no real mail sent",
   "validation": {
     "required": [],
     "last_run": null,

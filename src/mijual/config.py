@@ -25,6 +25,7 @@ __all__ = [
     "DEFAULT_DATABASE_URL",
     "DEFAULT_REDIS_URL",
     "SPIKE_CACHE_DIR",
+    "mask_url_password",
 ]
 
 #: Local docker Postgres from ``compose.yaml`` (host port 5434 keeps other
@@ -59,6 +60,26 @@ DEFAULT_CACHE_DIR = ROOT / "var" / "dart-cache"
 #: The P1 spike's 1,002-response cache — byte-compatible with this package's
 #: cache scheme, so pointing a client here gives a full offline fixture path.
 SPIKE_CACHE_DIR = ROOT / "scripts" / "spike" / "samples"
+
+
+def mask_url_password(url: str) -> str:
+    """A database URL with its password replaced by ``***``.
+
+    ``Settings.__repr__`` masked every API key and password and then printed
+    ``database_url`` **verbatim, password included** — the one hole in the
+    "printing settings cannot leak a secret" property, found by ``P4.S1`` while
+    writing the deploy runbook (a runbook step that echoes settings is exactly
+    where it would have leaked). SQLAlchemy's own URL parser does the masking, so
+    there is no second dialect-aware URL parser in this codebase; a URL it cannot
+    parse is reported as unparseable rather than printed on the chance that it
+    holds no password.
+    """
+    try:
+        from sqlalchemy.engine import make_url
+
+        return make_url(url).render_as_string(hide_password=True)
+    except Exception:  # noqa: BLE001 - a repr must never raise, and never guess
+        return "<unparseable database url>"
 
 
 def _parse_dotenv(path: Path) -> dict[str, str]:
@@ -158,6 +179,33 @@ class Settings:
     #: for want of it, and nothing may substitute for it.
     operator_contact: str | None = None
 
+    # -- mail (P4.S2). The D-day 마감 임박 알림 and the password-reset link both
+    # travel over this one transport; see :mod:`mijual.mail`. **Unset is a real,
+    # supported state**: :func:`mijual.mail.mailer_for` falls back to
+    # :class:`~mijual.mail.ConsoleMailer`, which prints and sends nothing, and
+    # the process says which transport it got in one INFO line at startup. That
+    # is what keeps local development and the test suite credential-free.
+    #: ``SMTP_HOST`` — ``mail.privateemail.com`` in production. **Its presence is
+    #: the switch**: set = real mail, unset = the console transport.
+    smtp_host: str | None = None
+    #: ``SMTP_PORT`` — 587 (STARTTLS) or 465 (implicit TLS). It also *derives*
+    #: :meth:`smtp_tls_mode` when ``SMTP_TLS`` is not set explicitly.
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    #: ``SMTP_PASS`` — a **secret**, with the same handling as every other one
+    #: here: masked in ``__repr__``, never logged, raising only when used.
+    smtp_password: str | None = None
+    #: ``SMTP_FROM`` — the envelope/header sender **with a display name**
+    #: (``"주주의관제탑 <hi@hi2vi.com>"``). Gmail renders a bare address as its
+    #: local-part, so the display name is not decoration.
+    smtp_from: str | None = None
+    #: ``SMTP_TLS`` — ``ssl`` | ``starttls`` | ``none``. ``None`` means "derive
+    #: it from the port", which is the only mode a deployment should ever need.
+    #: ``none`` exists for a **local sink** (an ``aiosmtpd`` that speaks no TLS)
+    #: and must be set deliberately: the failure direction matters, so an unset
+    #: or misspelled value gives STARTTLS-required, never plaintext.
+    smtp_tls: str | None = None
+
     def require_dart_api_key(self) -> str:
         if not self.dart_api_key:
             raise MissingSecret(
@@ -203,6 +251,42 @@ class Settings:
             )
         return self.gemini_api_key
 
+    def smtp_tls_mode(self) -> str:
+        """``ssl`` | ``starttls`` | ``none`` — the explicit setting, else the port.
+
+        465 is implicit TLS and everything else is STARTTLS-required. There is no
+        "opportunistic" mode: a transport that would happily fall back to
+        plaintext when a server declines STARTTLS is a transport that can leak a
+        credential without saying so.
+        """
+        mode = (self.smtp_tls or "").strip().lower()
+        if mode in ("ssl", "starttls", "none"):
+            return mode
+        return "ssl" if self.smtp_port == 465 else "starttls"
+
+    def require_smtp(self) -> "Settings":
+        """Fail loudly for a caller that must not run without a real transport.
+
+        Names the **missing keys**, never a value — the same shape as
+        :meth:`require_dart_api_key`. Nothing in the product calls it on a
+        request path: the notify stage and ``create_app`` both *degrade* to the
+        console transport and say so, so a deployment that forgot the keys sends
+        no mail rather than failing to serve.
+        """
+        missing = [
+            name
+            for name, value in (
+                ("SMTP_HOST", self.smtp_host),
+                ("SMTP_FROM", self.smtp_from),
+            )
+            if not value
+        ]
+        if missing:
+            raise MissingSecret(
+                f"{', '.join(missing)} not found (deployment env or .env.prod)."
+            )
+        return self
+
     def with_cache_dir(self, cache_dir: Path | str) -> "Settings":
         return replace(self, cache_dir=Path(cache_dir))
 
@@ -212,7 +296,7 @@ class Settings:
 
         return (
             "Settings(dart_api_key={}, gemini_api_key={}, session_secret={}, "
-            "ops_id={}, ops_password={}, vocky_api_key={}, "
+            "ops_id={}, ops_password={}, vocky_api_key={}, smtp_password={}, "
             "database_url={!r}, redis_url={!r}, cache_dir={!r})"
         ).format(
             mark(self.dart_api_key),
@@ -221,7 +305,8 @@ class Settings:
             mark(self.ops_id),
             mark(self.ops_password),
             mark(self.vocky_api_key),
-            self.database_url,
+            mark(self.smtp_password),
+            mask_url_password(self.database_url),
             self.redis_url,
             str(self.cache_dir),
         )
@@ -239,6 +324,7 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
 
     cache_dir = pick("DART_CACHE_DIR")
     stale_after = pick("MIJUAL_STALE_AFTER_HOURS")
+    smtp_port = pick("SMTP_PORT")
     return Settings(
         dart_api_key=pick("DART_API_KEY"),
         gemini_api_key=pick("GEMINI_API_KEY"),
@@ -267,4 +353,15 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # 미정 until the operator supplies it (R6). Unset is a *state the product
         # states*, never a hole something else fills in.
         operator_contact=pick("MIJUAL_OPERATOR_CONTACT"),
+        # Mail (P4.S2). ``SMTP_HOST`` unset is the console transport — a
+        # supported state, announced in one INFO line, not an error. A
+        # non-numeric port is ignored rather than fatal, the same rule
+        # ``MIJUAL_STALE_AFTER_HOURS`` follows: a mistyped ops var must not take
+        # a process down.
+        smtp_host=pick("SMTP_HOST"),
+        smtp_port=int(smtp_port) if (smtp_port or "").isdigit() else 587,
+        smtp_user=pick("SMTP_USER"),
+        smtp_password=pick("SMTP_PASS"),
+        smtp_from=pick("SMTP_FROM"),
+        smtp_tls=pick("SMTP_TLS"),
     )
