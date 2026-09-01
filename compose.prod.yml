@@ -42,8 +42,33 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-    # Co-tenant guards. Placeholders: P4.S4 tunes every mem_limit in this file
-    # from the box's actual `free -m`.
+    # Co-tenant guards, MEASURED on the box by `P4.S4` (2026-09-02, R2 baseline).
+    #
+    # The rule: the sum of Mijual's concurrent limits must fit inside `free -m`'s
+    # `available` — which already nets out what the 22 co-tenant containers are
+    # using — with a wide margin left over, and the two processes that can actually
+    # grow (the worker's LLM extraction pass, and Node) get the headroom while
+    # redis/beat/schema stay small.
+    #
+    #   free -m on the box:  total 23719 · used 10368 · AVAILABLE 11619 (MB)
+    #   co-tenants measured: 5050 MiB across 22 containers (`docker stats`)
+    #   Mijual concurrent:   768 + 1024 + 1024 + 384 + 512 + 128 = 3840m (33% of
+    #                        available, ~7.6 GB still spare). `mijual-schema` is a
+    #                        one-shot that exits before the API starts, so its 256m
+    #                        never overlaps the API's.
+    #
+    # Two placeholders moved, each for a measured reason; the rest were already
+    # right and were left alone rather than churned:
+    #   - mijual-web 512m -> 1g: the box's closest analogue, hi2vi's Next container
+    #     (`hi2vi-hi2vi-web-1`, limit 1GiB), sits at 522.7MiB — ABOVE the old cap —
+    #     and the unconstrained `changple_web-web-1` at 870.9MiB. 512m was an OOM.
+    #   - mijual-beat 256m -> 384m: `changple5-celery_beat-1` measures 156.3MiB and
+    #     ours imports the whole API app, so 256m left almost no margin.
+    # Unchanged, with their basis: postgres 512m (changple5's much larger Postgres
+    # measures 489.2MiB; ours is small), api 768m (changple5-fastapi_agent-1 at
+    # 212.9MiB), worker 1g (changple5-celery_worker-1 at 420.7MiB, and ours runs a
+    # collection + LLM extraction pass), redis 128m (both redises on the box are
+    # under 19MiB), schema 256m (a one-shot `python -m mijual.db ensure`).
     mem_limit: 512m
 
   mijual-redis:
@@ -137,7 +162,7 @@ services:
     depends_on:
       mijual-api:
         condition: service_healthy
-    mem_limit: 512m
+    mem_limit: 1g
     networks:
       # BOTH: `default` to reach mijual-api, `edge` so edge-nginx can reach it.
       - default
@@ -195,7 +220,7 @@ services:
         condition: service_healthy
       mijual-schema:
         condition: service_completed_successfully
-    mem_limit: 256m
+    mem_limit: 384m
 
 networks:
   # The project-internal network. Compose creates it; everything not named `edge`

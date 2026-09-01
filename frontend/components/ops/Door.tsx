@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ApiError, opsLogin } from "@/lib/api";
 import {
   CREDENTIALS_INVALID_KO,
-  DOOR_RULES_KO,
   LOGIN_KO,
   OPERATOR_ID_KO,
   OPS_MARK,
@@ -106,12 +105,6 @@ export function Door() {
         </button>
 
         {failed && <p className={styles.doorError}>{CREDENTIALS_INVALID_KO}</p>}
-
-        <div className={styles.doorRules}>
-          {DOOR_RULES_KO.map((rule) => (
-            <div key={rule}>{rule}</div>
-          ))}
-        </div>
       </form>
     </div>
   );

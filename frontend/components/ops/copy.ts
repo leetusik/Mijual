@@ -96,25 +96,12 @@ export const PASSWORD_KO = "비밀번호";
  * rather than a sentence written here. Flagged for `P5.S19`. */
 export const LOGIN_KO = "로그인";
 
-/**
- * The door's 규칙 패널 (R7 result.md's Access card: "문의 규칙 패널 — 비링크 ·
- * 배포 발급 · 균일+상수시간 실패 · 세션 만료 복귀").
- *
- * The card is in the Claude Design project, so its four lines are transcribed
- * from the **build prompt's own sentences** about each rule rather than written
- * here — the same discipline every other string on this surface follows. Flagged
- * for `P5.S19`'s copy inspection against the card.
- */
-export const DOOR_RULES_KO = [
-  // §표면, first bullet.
-  "reader chrome 어디에서도 링크 금지 (nav·푸터·계정 메뉴·sitemap)",
-  // §인증, second bullet.
-  "자격은 배포 환경에서 발급·회전 (환경변수/시크릿) — 가입·재설정 UI 없음",
-  // §인증, third bullet.
-  "실패 응답 균일 + 상수 시간; 어느 필드가 틀렸는지 구분 금지",
-  // §인증, third bullet (continued).
-  "세션 만료 → 문으로 복귀, 로그인 후 있던 탭 복원",
-];
+// The door's 규칙 패널 (R7's four implementation-rule lines, `DOOR_RULES_KO`)
+// was removed here by D15 in `P4.S4`: they are rules addressed to us, and two of
+// them describe the security posture of a page that is now public. The rules
+// themselves are unchanged in the R7 record —
+// `docs/reference/design/rounds/07-admin/output/` (build-prompt §표면/§인증 and
+// result.md's Access card). No copy replaces them: R7 wrote none for that spot.
 
 // ---------------------------------------------------------------------------
 // 개요 (build-prompt §개요)
