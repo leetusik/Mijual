@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 3,
   "depends_on": [
     "P4.S1"
   ],
   "created_at": "2026-09-02T06:20:07+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T08:07:49+09:00",
+  "completed_at": "2026-09-02T08:37:12+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "deploy/ tree landed and rehearsed off-box: jujutower.conf edge vhost + edge-repo diffs, deploy.sh/rollback.sh tag-flip release with health gate and real auto-rollback, pg backup/restore, runbook R1-R7",
   "validation": {
     "required": [],
     "last_run": null,
