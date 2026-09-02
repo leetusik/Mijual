@@ -18,8 +18,8 @@ Nothing here spends money or writes data. Every request is a GET; there is no
 `POST /api/ask` (that one is a model call — `GET /api/ask/start-cards` is its
 free sibling), no account creation, no mutation of any kind.
 
-Four things that are easy to get wrong here, each of them measured (P4.S4, P4.S5,
-P4.S6) rather than assumed:
+Five things that are easy to get wrong here, each of them measured (P4.S4, P4.S5,
+P4.S6, P4.F2) rather than assumed:
 
 - **Send a User-Agent.** Bare urllib gets Cloudflare's `403 error 1010`.
 - **Probe with GET, never HEAD.** `HEAD /api/health` answers **405** — the Next
@@ -31,6 +31,13 @@ P4.S6) rather than assumed:
 - **Do not follow redirects** unless the check is *about* the redirect: `www` and
   `http-redirect` assert on the 301 itself, and everything else would silently
   pass on a redirected page.
+- **Fetch with `Accept: text/html` when the check is about what a BROWSER
+  receives.** Cloudflare injects its Web Analytics beacon
+  (`static.cloudflareinsights.com/beacon.min.js`) at the edge **only** into
+  responses to `Accept: text/html` requests — the User-Agent is irrelevant —
+  so a `*/*` fetch can never see an edge-injected script, whatever it claims
+  about third-party origins (measured 2026-09-02, P4.F2). `third-party` fetches
+  its own pages for exactly this reason; every other check keeps `*/*`.
 
 Exit status is 0 only when every check passed.
 """
@@ -107,9 +114,14 @@ _NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirect)
 _FOLLOW_OPENER = urllib.request.build_opener()
 
 
-def fetch(url: str, *, follow: bool = False) -> Resp:
-    """GET `url` with a User-Agent, never raising for a non-2xx status."""
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+def fetch(url: str, *, follow: bool = False, accept: str = "*/*") -> Resp:
+    """GET `url` with a User-Agent, never raising for a non-2xx status.
+
+    `accept` matters: the edge serves different HTML to `text/html` than to
+    `*/*` (see the module docstring's fifth bullet). Default `*/*` — only
+    `third-party` asks to be served what a browser is served.
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": accept})
     opener = _FOLLOW_OPENER if follow else _NO_REDIRECT_OPENER
     try:
         with opener.open(req, timeout=TIMEOUT) as r:
@@ -344,25 +356,35 @@ def check_noindex(ctx):
 
 
 def check_third_party(ctx):
-    html = ctx.get("landing_html")
-    if html is None:
-        r = fetch(ctx["base"] + "/")
-        need(r.status == 200, f"HTTP {r.status} (want 200)")
-        html = r.text()
+    # This check does its OWN fetches, with `Accept: text/html`, and never reuses
+    # `ctx["landing_html"]`: that body was fetched with `*/*`, and Cloudflare
+    # injects its Web Analytics beacon only into `text/html` responses, so the
+    # cheaper body is blind to exactly the thing this check exists to catch
+    # (measured 2026-09-02, P4.F2). `check_landing` keeps its `*/*` fetch — its
+    # assertions are about the origin's own HTML and its headers.
+    paths = ["/"]
+    if ctx.get("corp_code"):
+        paths.append(f'/stocks/{ctx["corp_code"]}')
     found = {}
-    for ref in re.findall(r'(?:src|href)\s*=\s*"([^"]+)"', html, re.I):
-        if ref.startswith("//"):
-            ref = ctx["scheme"] + ":" + ref
-        parts = urllib.parse.urlsplit(ref)
-        if parts.scheme in ("http", "https") and parts.hostname:
-            host = parts.hostname.lower()
-            if host != ctx["host"] and host not in ALLOWED_EXTERNAL_HOSTS:
-                found.setdefault(host, ref)
+    for path in paths:
+        r = fetch(ctx["base"] + path, accept="text/html")
+        need(r.status == 200, f"{path} → HTTP {r.status} (want 200)")
+        for ref in re.findall(r'(?:src|href)\s*=\s*"([^"]+)"', r.text(), re.I):
+            if ref.startswith("//"):
+                ref = ctx["scheme"] + ":" + ref
+            parts = urllib.parse.urlsplit(ref)
+            if parts.scheme in ("http", "https") and parts.hostname:
+                host = parts.hostname.lower()
+                if host != ctx["host"] and host not in ALLOWED_EXTERNAL_HOSTS:
+                    found.setdefault(host, f"{ref} on {path}")
     need(
         not found,
         "off-origin reference(s): " + "; ".join(f"{h} ({u})" for h, u in found.items()),
     )
-    return "no off-origin src/href beyond " + ", ".join(sorted(ALLOWED_EXTERNAL_HOSTS))
+    return (
+        f"{len(paths)} page(s) as text/html · no off-origin src/href beyond "
+        + ", ".join(sorted(ALLOWED_EXTERNAL_HOSTS))
+    )
 
 
 def check_cotenants(ctx):
@@ -376,8 +398,9 @@ def check_cotenants(ctx):
     return f"200 ×{len(CO_TENANTS)} — {hosts}"
 
 
-#: (name, function, in --light). Order matters: `board` feeds `event-page` and
-#: `stock-page`, `landing` feeds `third-party`.
+#: (name, function, in --light). Order matters: `board` feeds `event-page`,
+#: `stock-page` and the 종목 page `third-party` also scans. `third-party` fetches
+#: its own pages as `text/html` and does NOT reuse `landing`'s `*/*` body.
 CHECKS = [
     ("health", check_health, True),
     ("landing", check_landing, True),

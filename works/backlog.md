@@ -8,7 +8,7 @@
 - Current phase: `P4`
 - Current slice: `P4.F2`
 - Next slice: `P4.REVIEW`
-- Waiting on operator: `none`
+- Waiting on operator: `P4.F2`
 - Open deferred jobs: `34`
 
 ## Active Phases
@@ -84,5 +84,5 @@
 | [x] `P4.F1` | `done` | Sample portfolio picks live issuers per state at request time (start-card pattern), fixed list as fallback | `fix` | `works/phases/active/P4/slices/P4.F1` |
 | [x] `P4.S8` | `done` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |
 | [x] `P4.F3` | `done` | Runbook R7: record the installed backup cron, its GMT firing time (13:00 KST), and close open question 2 | `fix` | `works/phases/active/P4/slices/P4.F3` |
-| [ ] `P4.F2` | `in_progress` | Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim | `fix` | `works/phases/active/P4/slices/P4.F2` |
+| [~] `P4.F2` | `pending` | Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim | `fix` | `works/phases/active/P4/slices/P4.F2` |
 | [ ] `P4.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |
