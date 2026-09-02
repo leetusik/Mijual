@@ -365,9 +365,18 @@ ssh oracle-cloud 'docker ps --format "{{.Names}}\t{{.Status}}" | sort'          
 
 ## Open questions this runbook cannot answer
 
-1. **`www.jujutower.com` — yes or no?** It must be decided at **R1**, because it
-   changes the Origin CA cert's SAN list. `jujutower.conf` carries the alias
-   block commented out.
+1. ~~**`www.jujutower.com` — yes or no?**~~ **ANSWERED: yes** (operator,
+   2026-09-02). It needed no new certificate in the end — the Origin CA pair was
+   minted with a **wildcard** SAN (`DNS:*.jujutower.com, DNS:jujutower.com`), so
+   www was already covered. `P4.S4` enabled it: `www.jujutower.com` on the `:80`
+   `server_name` and the www `:443` block uncommented in `jujutower.conf`,
+   applied through the edge loop, verified grey (`301` →
+   `https://jujutower.com$request_uri`, path and query preserved). **The apex
+   stays canonical** — www serves nothing but that redirect. The one remaining
+   piece is the DNS record: `www` must be a **proxied** record at the box
+   (`A 140.245.64.173` or `CNAME jujutower.com`); until it is, Cloudflare answers
+   from the old imported record (a 525). See `deploy/edge/README.md` §
+   *The `www.jujutower.com` alias*.
 2. **The nightly backup cron — install it, or operator-run only?** R2 finds out
    whether cron exists at all; the decision is the operator's.
 

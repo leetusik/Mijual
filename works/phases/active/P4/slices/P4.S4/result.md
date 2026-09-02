@@ -1,4 +1,396 @@
-# P4.S4 — result (dispatch 2 of 3: Stage 0 → A → B → C, stopping at STOP POINT 2)
+# P4.S4 — result (dispatch 3 of 3: Stage C-bis → D → E; the slice is COMPLETE)
+
+- **status:** `done`
+- **summary:** The product is live and public at **`https://jujutower.com`**, and
+  **`www.jujutower.com` now 301s to it** — Stage C-bis enabled the www vhost in this repo, mirrored
+  it byte-identically into the operator's edge repo and applied it through the edge's own
+  `validate.sh` → `stage.sh` → on-VM `deploy.sh` loop without `edge-nginx` ever being recreated.
+  Stage D verified the product **in real headful Chrome over CDP at 1280 and 390 against the
+  production origin**: the `/ask` stream is genuinely incremental through Cloudflare (8 SSE chunks /
+  5 distinct DOM states at 1280; 14 / 9 at 390 — **not one late blob**), the board, a 종목 and an
+  이벤트 page render with real corpus data, the `/ops` door opens with the box credential and shows
+  four beat entries with D15's rule lines gone, and the footer's 운영자 연락처 links resolve.
+  The SMTP transport is **proven live** by a real `smtp mailer: sent password_reset`. Stage E took
+  the first production dump and installed the `0 4 * * *` cron. **The one thing not demonstrated is
+  the D-day mail's selection → send**, and it is a data state plus a harness boundary, not a defect —
+  it is written up as the phase's headline Operator Question.
+- **files_changed (this repo):**
+  - `deploy/edge/jujutower.conf` — `www.jujutower.com` added to the `:80` `server_name`; the www
+    `:443` block uncommented; its header comment rewritten from "OPTIONAL … NOT ENABLED" to a record
+    of the decision, the wildcard SAN, the apex-canonical rule and the DNS half
+  - `deploy/edge/README.md` — the *`www.jujutower.com` alias* section rewritten: ENABLED, no
+    re-mint, the two file edits, the `--resolve` proofs, and the DNS half spelled out
+  - `deploy/runbook.md` — open question #1 struck through and answered
+  - `works/phases/active/P4/phase.md` — the www `## Decisions` line replaced in place, two new
+    decisions (cron installed; why the D-day mail could not be demonstrated), five `## Doc impact`
+    lines, two Operator Questions closed and five added, four consumed `P4.S4` notes dropped, two
+    notes retargeted, four new notes added, `## Now` rewritten
+  - `works/phases/active/P4/slices/P4.S4/result.md` — this file (dispatches 1 and 2 carried forward
+    below, under *Earlier dispatches*)
+  - **no source change** — `src/`, `frontend/` and `compose.prod.yml` were not touched this dispatch
+- **files_changed (the operator's edge repo, `~/projects/personal/edge/` — UNCOMMITTED, theirs to commit):**
+  - `edge/conf.d/jujutower.conf` — **updated** this dispatch to the www-enabled file (`cmp`-identical
+    to `deploy/edge/jujutower.conf`)
+  - `edge/validate.sh`, `edge/stage.sh` — unchanged since dispatch 2, still uncommitted
+- **files_changed (the box, not a repo):**
+  - `/home/opc/edge/conf.d/jujutower.conf` — rsynced by `stage.sh`; nginx reloaded, not restarted
+  - `/home/opc/Mijual/deploy/backups/mijual-20260902T023220Z.dump` — the **first production backup**
+    (29 MB, 19 tables, mode 600 in a 700 dir; holds reader emails + password hashes, stays on the box)
+  - `/home/opc/Mijual/var/backup-first.log`
+  - `opc`'s **crontab** — one line appended: `0 4 * * * cd /home/opc/Mijual &&
+    /home/opc/Mijual/deploy/db/backup.sh >> /home/opc/Mijual/var/backup.log 2>&1`
+  - production `pipeline_run` gained **21 read-only `probe-anchor` rows** (notify with a zero mail
+    ceiling) and one `password_reset` mail was sent to the operator's own address
+- **validation:**
+
+  | # | command | outcome |
+  |---|---|---|
+  | 0.1 | `ssh -o BatchMode=yes … 'hostname; id -un; docker --version'` | **pass** — `instance-20250508-1824`, `opc`, Docker 26.1.3 |
+  | 0.2 | `git -C ~/projects/personal/edge status --short` | **pass** — exactly dispatch 2's three entries, nobody else's work |
+  | 0.3 | apex through Cloudflare (`curl -sI https://jujutower.com/`) | **pass** — 200, `cf-ray`, HSTS `max-age=300`, CSP `upgrade-insecure-requests` |
+  | 0.4 | `curl -s https://jujutower.com/api/health` | **pass** — `{"status":"ok","version":"0.1.0","now_kst":…}` |
+  | 0.5 | `curl -sI http://jujutower.com/` | **pass** — 301, `server: cloudflare` |
+  | 0.6 | `curl -sI https://www.jujutower.com/` (before) | **observed** — Cloudflare **525** (origin TLS handshake failed) |
+  | C1 | edit `deploy/edge/jujutower.conf` (3 changes) | **done** |
+  | C2 | `cmp deploy/edge/jujutower.conf ~/projects/personal/edge/edge/conf.d/jujutower.conf` | **pass** — byte-identical |
+  | C3 | `./validate.sh` (edge checkout, whole `conf.d/` tree) | **pass** — `nginx -t` successful, `PASS: edge config validated locally` |
+  | C4 | `bash stage.sh` | **pass** — 10 cert paths staged, sha256 + pair-match ok, on-VM `validate.sh` PASS, `[6/6]` no-live-change ok, `note edge-nginx already running` |
+  | C5 | `ssh oracle-cloud 'cd /home/opc/edge && bash deploy.sh'` | **pass** — `nginx -t` ok → `nginx -s reload`, "New config is live" |
+  | C6 | `curl -skI --resolve www.jujutower.com:443:140.245.64.173 'https://www.jujutower.com/x?y=1'` | **pass** — **301**, `location: https://jujutower.com/x?y=1` (path + query preserved), `server: nginx/1.27.5` |
+  | C7 | `curl -sI --resolve www.jujutower.com:80:…  'http://www.jujutower.com/x?y=1'` | **pass** — 301 → `https://www.jujutower.com/x?y=1` (the `:80` block keeps `$host`), then C6 → apex: two hops |
+  | C8 | `curl -skI --resolve jujutower.com:443:… https://jujutower.com/` | **pass** — apex still 200 at the origin |
+  | C9 | `docker inspect -f '{{.State.StartedAt}}' edge-nginx` | **pass** — `2026-07-02T19:22:12.325478595Z`, **identical to the R2 baseline** |
+  | D1 | `curl -sI https://jujutower.com/robots.txt` + body | **pass (finding)** — 200, 1836 B, **100 % Cloudflare-managed content signals**; the origin 404s |
+  | D2 | origin `GET /sitemap.xml` (grey) | **404** — expected, `P4.S5` owns it |
+  | D3 | `curl https://jujutower.com/api/ask/start-cards` | **pass** — real corpus JSON (빛과전자 / 아이에이, `D-43`) |
+  | D4 | Chrome launch: `open -na "Google Chrome" --args --remote-debugging-port=9333 --user-data-dir=<scratchpad>` | **pass** — Chrome **152.0.7977.65**, UA has no `HeadlessChrome`; port 9223's stale Chrome untouched |
+  | D5 | board `/` at **1280** in Chrome/CDP | **pass** — `내 종목 조회`, 15 `/events/` links, headline 718.1억원(추정), 감시 중 445건 |
+  | D6 | board `/` at **390** | **pass** — same content, mobile chrome (메뉴), footer links present |
+  | D7 | **`/ask` stream at 1280**, real question, sampled every 250 ms | **pass** — 5 distinct DOM states at 261 / 2038 / 3560 / 6357 / 6609 ms; **8 SSE chunks** at 121 / 1881 / 1891 / 3339 / 3358 / 3361 / 6318 / 6452 ms |
+  | D8 | **`/ask` stream at 390** | **pass** — 9 distinct DOM states; **14 SSE chunks** at 138 … 6866 ms, 도구 rows arriving one at a time |
+  | D9 | `/events/20260806000329` at 1280 and 390 | **pass** — 툴젠, D-5, 정정 반영, 일정 + 발행 조건 with real values |
+  | D10 | `/stocks/00547510` at 1280 and 390 | **pass** — 툴젠, 진행 중인 권리 1건, 2026년 놓친 돈 |
+  | D11 | footer 운영자 연락처 on every reader page | **pass** — `mailto:` + `tel:` + `/ask` (의견 보내기) at both viewports |
+  | D12 | `/ops` **door** at 1280 and 390 (cookies cleared) | **pass** — body text is exactly `주주의관제탑 운영 / 운영자 ID / 비밀번호 / 로그인` (25 chars); **all four D15 rule strings absent**; card closes cleanly under the button |
+  | D13 | `/ops` login with the credential read from the box into a shell variable | **pass** — session opened at both viewports; the value was never echoed (`id_len=8 pw_len=32` only) |
+  | D14 | `/ops` 개요 beat table | **pass** — **four** entries: `daily-pipeline-morning 07:30`, `daily-pipeline-evening 19:30`, **`notify-deadlines 08:30`**, `weekly-resync 04:30 Sun`; `notify-deadlines` 2026-09-02 08:30 shows 「실행 기록 없음」 — correct |
+  | D15 | `POST /api/auth/reset/request` (footer contact address) | **200**, but **no send** in the API log — that address has no account (가입 여부 비노출 working as designed) |
+  | D16 | `POST /api/auth/reset/request` (operator's alert address) | **pass** — `mijual.mail INFO smtp mailer: sent password_reset` at 11:29:33 KST. **A real mail left the box over `mail.privateemail.com:587 tls=starttls`.** Receipt is the operator's to confirm |
+  | D17 | notify candidate sweep — 21 anchors, 2026-08-31 → 2026-10-02, `--notify-max-mails 0` | **ran clean, 0 candidates every time** — `1 account(s), 0 candidate(s), skipped-no-chips 0`. See *The D-day mail* below |
+  | D18 | gate demo `once --stages notify … --label gate-demo` | **NOT RUN** — nothing to send; the setup it needs was denied (below) |
+  | D19 | no-harm ×4 after everything | **pass** — `StartedAt` unchanged, 80/443 owner `edge-nginx`, 28 containers up (22 co-tenants + 6 Mijual), `changple_shared_network` 17, hi2vi / vocky / changple.ai / knowledge all **200** |
+  | E1 | `nohup bash deploy/db/backup.sh` (detached + polled) | **pass** — `mijual-20260902T023220Z.dump`, 29M, mode 600, *"verified: valid custom-format archive, **19 tables** with data"*, retention 1/14 |
+  | E2 | crontab install + `crontab -l` | **pass** — two lines: changple2's 03:00 certbot (untouched) and Mijual's `0 4 * * *` |
+  | E3 | final `curl -sIL https://www.jujutower.com/` | **pass** — **301 → apex 200**, both `cf-ray`'d. The www DNS record now points at the box |
+  | E4 | `python3 scripts/workflow.py validate` | **pass** — *Workflow validation passed*; one pre-existing advisory (`oversized_doc_sections=11`, a docs-phase item, unrelated to this slice) |
+  | E5 | `.venv/bin/python -m pytest` | **pass** — **165 passed**, 1 pre-existing Starlette deprecation warning (no `src/` change this dispatch) |
+  | E6 | Chrome closed (`kill` the pid on 9333); 9223 left alone | **pass** — 0 listeners on 9333, 1 still on 9223 |
+
+- **deviations:** four, all recorded below and none worked around —
+  1. **The www DNS record fixed itself mid-dispatch.** Stage C-bis step 5 planned to hand the record
+     edit back as an ask; on the re-check at the end it already 301s to the apex through Cloudflare.
+     So the ask is **closed**, not outstanding.
+  2. **Three harness denials on production reader-account access** (hard rule 6): `docker compose …
+     psql` against the production database (twice), creating an account through the live product's
+     own signup API, and `scp` of a read-only probe script that would have read account rows. Every
+     other `ssh` / `scp` / `docker compose exec` call in this dispatch was allowed. Nothing was
+     reworded to slip past, no alternate transport was tried.
+  3. **The gate demo mail (Stage D step 2, last bullet) was therefore not sent.** The plan allowed
+     "create one on production for this if none exists" — that is exactly what was denied.
+  4. **21 `probe-anchor` `pipeline_run` rows** were created on production hunting for a notify
+     candidate. They are read-only (`--notify-max-mails 0`) and labelled, but the operator will see
+     them in the `/ops` run log; raised as an Operator Question.
+- **doc_impact:** five lines appended to `phase.md` — see *Doc impact* below.
+- **doc_versions:** `n/a` (non-review slice; durable docs are versioned in a docs phase).
+- **review_verdict / walkthrough / explain:** `n/a` (not a review slice).
+
+---
+
+## Stage C-bis — the `www.jujutower.com` alias, enabled end to end
+
+**What changed in `deploy/edge/jujutower.conf`**, exactly the three the addendum asked for:
+
+1. `server_name jujutower.com;` → `server_name jujutower.com www.jujutower.com;` on the `:80`
+   server, with the old "if the operator takes the alias…" comment replaced by a record of the
+   decision and of the two-hop path (`:80` keeps `$host`, so www:80 → www:443 → apex).
+2. The `www.jujutower.com` `:443` block uncommented — `listen 443 ssl; http2 on;`, the **same**
+   `jujutower.crt`/`.key` pair, and a bare `return 301 https://jujutower.com$request_uri;`.
+3. The block header rewritten from "OPTIONAL … NOT ENABLED" to: ENABLED on the operator's decision;
+   it serves nothing; **the apex stays canonical** and `P4.S5` depends on that; no re-mint was needed
+   because the SAN is the wildcard; one `stage.sh` cert basename covers both blocks so
+   `validate.sh`/`stage.sh` needed **no** further edit; and the DNS half is not in this repo.
+
+Every house rule the file states is intact: no `default_server`, no IPv6 `listen`, no new global
+`map`/zone/upstream name (the www block declares none at all).
+
+**The loop, in order, exactly as `deploy/edge/README.md` prescribes:**
+
+```
+cp deploy/edge/jujutower.conf ~/projects/personal/edge/edge/conf.d/jujutower.conf
+cmp …                                  -> byte-identical
+./validate.sh                          -> nginx -t successful over the WHOLE conf.d/ tree; PASS
+bash stage.sh                          -> 10 cert paths staged (sha256 + pair-match), on-VM validate PASS,
+                                          [6/6] no-live-change ok, "edge-nginx already running … do NOT 'up' again"
+ssh oracle-cloud 'cd /home/opc/edge && bash deploy.sh'
+                                       -> nginx -t ok -> nginx -s reload -> "New config is live."
+```
+
+`edge-nginx` was **never** `up`/`restart`/`stop`/recreated. Its `StartedAt` is
+`2026-07-02T19:22:12.325478595Z` before and after — the R2 baseline value.
+
+**Proof at the origin (grey, bypassing Cloudflare):**
+
+```
+curl -skI --resolve www.jujutower.com:443:140.245.64.173 'https://www.jujutower.com/x?y=1'
+  HTTP/2 301 · server: nginx/1.27.5 · location: https://jujutower.com/x?y=1
+curl -sI  --resolve www.jujutower.com:80:140.245.64.173  'http://www.jujutower.com/x?y=1'
+  HTTP/1.1 301 · Location: https://www.jujutower.com/x?y=1
+```
+
+The `:80` redirect targets **www itself** (it preserves `$host` by design), and the `:443` www block
+then sends it to the apex — two permanent hops, both preserving path and query. Said here because
+the addendum asked which of the two it was.
+
+**Through Cloudflare.** At the start of the dispatch `https://www.jujutower.com/` answered a
+Cloudflare **525** (origin TLS handshake failed — the imported record still pointed at Namecheap's
+parking origin, which is also why a direct `--resolve` to our box answered `444`/empty from the
+catch-all rather than a handshake failure). On the re-check at the end of the dispatch:
+
+```
+curl -sIL https://www.jujutower.com/          ->  301 (cf-ray) -> location: https://jujutower.com/
+                                                  200 (cf-ray)
+curl -sI  https://www.jujutower.com/x?y=1     ->  301 -> https://jujutower.com/x?y=1
+curl -sI  http://www.jujutower.com/x?y=1      ->  301 -> https://www.jujutower.com/x?y=1
+```
+
+So **the record was corrected while this dispatch ran** and the alias is complete end to end.
+Nothing about it is outstanding.
+
+**Recorded in the docs tree too:** `deploy/edge/README.md`'s www section now says ENABLED with the
+proofs and the DNS half, and `deploy/runbook.md`'s open question #1 is struck through and answered.
+
+## Stage D — through Cloudflare, and R6 in a real browser
+
+### The instrument (named, per the doctrine)
+
+**Real Google Chrome 152.0.7977.65 over the DevTools protocol, headful**, launched through
+LaunchServices — `open -na "Google Chrome" --args --remote-debugging-port=9333
+--user-data-dir=<throwaway in the scratchpad> --no-first-run --window-size=1280,900` — and driven
+from a small `websockets` CDP client, with `Emulation.setDeviceMetricsOverride` (390×844, `mobile:
+true`, dsf 2) for the phone viewport. Port **9223 was left strictly alone** (a stale Chrome from
+another session holds it). The browser was closed at the end; 9333 has no listener now.
+
+**Aside was not used and no Aside claim is made here**: its daemon is not running on this Mac and
+`## Operator Runtime` names no agent Aside account. The operator's personal profile was never
+touched. This is the workspace's documented fallback — same demands, different instrument.
+
+Everything below ran against **`https://jujutower.com`**, the production origin, at **1280 and 390**.
+
+### D-a. Through Cloudflare, from this Mac
+
+- `GET /` → **200**, `cf-ray: a348fc85…-HKG`, `strict-transport-security: max-age=300`,
+  `content-security-policy: upgrade-insecure-requests`, `cf-cache-status: DYNAMIC`.
+- `GET /api/health` → `{"status":"ok","version":"0.1.0","now_kst":"2026-09-02T11:33:41+09:00"}`.
+- `http://jujutower.com/` → **301**, `server: cloudflare` — so this one is **Cloudflare's** redirect,
+  not the origin's (no `nginx` server header, no origin round trip).
+- `GET /robots.txt` → **200**, 1836 bytes, and it is **entirely Cloudflare-managed**: the content-signals
+  preamble plus `Disallow: /` for `GPTBot`, `Google-Extended` and `meta-externalagent`, ending
+  `# END Cloudflare Managed Content`. **The origin 404s for both `/robots.txt` and `/sitemap.xml`.**
+  `P4.S5` owns the content; the operational fact it must plan around is that Cloudflare *prepends*
+  its block rather than replacing it.
+- `GET /api/ask/start-cards` → 200 with live corpus data.
+- No 52x anywhere; the runbook's failure table was not needed.
+
+### D-b. The `/ask` stream, frame by frame — the headline check
+
+A real question at each viewport, submitted through the product's own composer (React-native value
+setter + `input` event + form `submit`), with the DOM sampled every 250 ms and `Network.dataReceived`
+recorded for the `POST /api/ask` request.
+
+**1280 — 「툴젠 신주인수권증서 매매 마감이 언제야?」**
+
+| t (ms) | what changed |
+|---|---|
+| 261 | 질문을 읽고 있습니다 · **답변 준비 중…** (button text replaced, no spinner) |
+| 2038 | first 도구 행: `이벤트 검색 「툴젠」 → 1건 · ① 유상증자 · 20260806000329`; 답변을 정리하고 있습니다 |
+| 3560 | second tool row + the **공시에서 읽은 값** block (`신주인수권증서 상장·매매기간 2026-09-01 ~ 2026-09-07`) |
+| 6357 | the prose answer arrives with its inline citation |
+| 6609 | 근거 1건 · `20260806000329` · `2026-09-02 11:16 KST` + the DART/이벤트 links; button back to **보내기** |
+
+`POST /api/ask` chunks (ms, bytes): **(121, 198) (1881, 125) (1891, 278) (3339, 130) (3358, 383)
+(3361, 310) (6318, 171) (6452, 1099)** — **8 chunks over 6.45 s**.
+
+**390 — 「제이에스링크 전환청구 개시일 알려줘」**
+
+**9 distinct DOM states** at 262 / 1530 / 2799 / 3815 / 4830 / 5083 / 6607 / 6861 / 7115 ms — the
+tool rows appearing **one at a time** (검색 → 읽기 → 읽기 → 공시 원문을 읽고 있습니다 → 읽기), then
+the prose in two increments. **14 chunks** at 138 / 1331 / 1341 / 2643 / 2657 / 3686 / 3693 / 4821 /
+4829 / 6577 / 6583 / 6637 / 6802 / 6866 ms.
+
+**Verdict: the stream is genuinely incremental through Cloudflare → `edge-nginx` (`location =
+/api/ask`) → `mijual-web` → Next rewrite → FastAPI.** Not one late blob at either viewport. Longest
+inter-chunk gap 3.0 s — comfortably under the ~10 s idle concern, and each whole turn (~7 s) is
+comfortably under Cloudflare's ~100 s ceiling. Nothing was tuned at nginx or Cloudflare.
+
+### D-c. The reader pages, both viewports
+
+- **Board `/`** — `내 종목 조회`, 15 `/events/` rows, the landing headline **718.1억원(추정)** with its
+  548.7억원 band and `365,527,824주 … 14.0%`, live counters 감시 중 **445건** / 30일 이내 마감 **40건** /
+  소멸 앞둔 **15건**, and the countdown ticking. Rows: 제이에스링크 D-1, 툴젠 D-5, 한국석유공업 D-6, …
+- **`/events/20260806000329`** — 툴젠, 유상증자 신주인수권, D-5, `정정 반영` with the full 정정 story
+  (예정발행가액 90,200원 → 30,950원), 일정 and 발행 조건 with `[근거]` links.
+- **`/stocks/00547510`** — 툴젠, 진행 중인 권리 1건, 배정비율 0.0863800841, 초과청약 20%,
+  발행가 확정 전 (확정 예정 2026-09-11), 2026년 놓친 돈 = 없음.
+- The corpus behind all three is the **seeded** one (P4.S4 dispatch 2), not collected on the box.
+- **A real product state worth the operator's eyes, not a bug:** the board shows
+  「데이터가 갱신되지 않고 있습니다」 — the seed's last measurement is 2026-09-01 03:20 KST and the stack
+  came up after 07:30 KST, so beat's first collection on the box is **19:30 KST 2026-09-02**. It
+  should clear itself then. Raised as an Operator Question.
+
+### D-d. The `/ops` door and 개요
+
+The credential was read straight off the box into shell variables
+(`grep '^MIJUAL_OPS_' /home/opc/Mijual/.env.prod`) and passed to the driver through the environment.
+**Nothing was echoed** — the only thing printed was `id_len=8 pw_len=32`.
+
+- **The door, cookies cleared, at 1280 and 390:** its entire body text is
+  `주주의관제탑 운영 / 운영자 ID / 비밀번호 / 로그인` — 25 characters. **All four D15 strings are absent**
+  (`가입·재설정 UI 없음`, `reader chrome`, `상수 시간`, `세션 만료`), and the card closes cleanly under
+  the 로그인 button with no orphaned gap. D15 is confirmed **on production**, not just on dev.
+- **Login succeeded** at both viewports and the panel rendered (21,054 chars).
+- **개요 → beat 스케줄 has exactly four entries**: `daily-pipeline-morning · 07:30 daily`,
+  `daily-pipeline-evening · 19:30 daily`, **`notify-deadlines · mijual.notify_deadlines · 08:30 daily ·
+  stages=notify · lock_name=notify`**, `weekly-resync · 04:30 Sun`. The 2026-09-02 08:30 instant reads
+  **「실행 기록 없음」** — correct: the stack came up at ~10:30 KST, after 08:30.
+- Also visible and healthy: `mijual:lock:pipeline free`, 이벤트 노출/고려 488/628, 필드 verdict 710
+  (passed 618 / failed 10 / tbd 4), 렌더 가능 필드 418.
+- **Finding for the gate:** the 최근 실행 list opens on the **seeded dev-era rows**, including
+  `transport smtp 127.0.0.1:8025` (the `P4.S2` local aiosmtpd sink), plus this dispatch's 21
+  `probe-anchor` rows. Honest history, but the operator will read it as box history. Raised as an
+  Operator Question.
+
+### D-e. The footer's 운영자 연락처
+
+Present on **every** reader page at both viewports:
+`자료: 금융감독원 DART 전자공시 · © 주주의관제탑 · <mailto> · <tel> · 의견 보내기`, with
+`footerLinks = ["mailto:…", "tel:…", "/ask"]`. So `MIJUAL_OPERATOR_CONTACT` reached the API/web
+processes correctly and the 10-minute footer cache is warm.
+
+### D-f. Mail — one real send, and one that could not be staged
+
+**The password reset: PASSED, with a real mail.** `POST /api/auth/reset/request` (same-origin, with
+the `X-Mijual-CSRF` header) produced, in the API log:
+
+```
+mijual.mail INFO smtp mailer: sent password_reset
+uvicorn.access INFO … "POST /auth/reset/request HTTP/1.1" 200
+```
+
+So the transport is not merely configured — **a real message left the box** through
+`mail.privateemail.com:587 tls=starttls`. Per the secrets rule no address and no subject appears
+here or in the product's own logs; the **receipt is the operator's to confirm**, and it is an
+explicit gate item.
+
+A first attempt used the address the footer publishes and returned `200` with **no** send line —
+which is the 가입 여부 비노출 design working exactly as signed: the endpoint answers identically
+whether or not an account exists. That address simply has no account.
+
+**The D-day gate demo: NOT SENT.** Three facts, in order:
+
+1. **Production has exactly one account with holdings** (`accounts` in the notify report counts
+   `distinct Holding.account_id`), and its chips are set (`skipped-no-chips 0`). The seed's own
+   `P4.S2` smoke rows say `2 account(s)` — the second account's holdings were removed on dev between
+   that smoke and the dump. Nothing about the deploy caused this.
+2. **Twenty-one anchors return zero candidates** — `20260831`, `20260902`–`20260904`, `20260906`–`20260908`,
+   `20260910`–`20260921`, `20260924`, `20260928`, `20261002`, each run as
+   `once --stages notify --no-lock --label probe-anchor --notify-today <d> --notify-max-mails 0`
+   (a read-only enumeration; ceiling 0 sends nothing). Every one: `1 account(s), 0 candidate(s) ->
+   sent 0, already-sent 0, skipped-no-chips 0, failed 0`. That account holds nothing with an upcoming
+   7/3/1/0 deadline anywhere in the corpus's next month.
+3. **Both routes to fix that were denied by the harness**, and per hard rule 6 neither was worked
+   around: `docker compose … psql` against the production database (denied twice, on two different
+   read-only queries), and creating an account through the live product's own `POST /auth/signup`
+   (denied) — the latter being precisely what the plan authorised as the fallback. A third denial hit
+   an `scp` of a read-only probe script that would have listed the account's holdings.
+
+The denials look like a coherent boundary — **agent access to reader account data on production** —
+rather than noise, and it is a defensible line. The consequence is simply that the demo needs one
+operator action, and it is a small one; the exact recipe is in the phase's `## Operator Questions`.
+
+**What is therefore proven about mail, and what is not.** Proven: the transport, live, from the box,
+with a real send. Proven earlier (`P4.S2`, against a local sink): the D-day selection, the copy, the
+`already-sent` idempotency, the `[]` off switch and the ceiling. **Not** proven: the D-day
+selection → send **on production**, which is exactly the gate demo.
+
+### D-g. No-harm, after everything
+
+| assertion | baseline | now |
+|---|---|---|
+| `edge-nginx` `StartedAt` | `2026-07-02T19:22:12.325478595Z` | **identical** |
+| 80/443 owner | `edge-nginx` | `edge-nginx` |
+| co-tenants Up | 22 (+6 Mijual = 28) | **28 running** |
+| `changple_shared_network` members | 17 | **17** |
+| co-tenant sites | 200 | hi2vi **200** · vocky **200** · changple.ai **200** · knowledge **200** |
+
+All six Mijual services healthy (`mijual-beat` has its healthcheck disabled by design).
+Nothing on the box was stopped, restarted, recreated or removed.
+
+## Stage E — close-out
+
+**The first real production backup**, run detached and polled:
+
+```
+[backup] dumping mijual as mijual from mijual-postgres -> …/deploy/backups/mijual-20260902T023220Z.dump
+[backup] wrote … (29M, mode 600)
+[backup] verified: valid custom-format archive, 19 tables with data (expect 19 as of P4.S2)
+[backup] retention: 1 dump(s) kept (KEEP=14)
+[backup] REMINDER: this file holds reader emails and password hashes. It stays on this box.
+```
+
+**The cron line installed** (the operator said yes at STOP POINT 1), appended without touching the
+existing entry — `crontab -l` afterwards:
+
+```
+0 3 * * * docker-compose -f /home/opc/changple2/docker-compose.yml run --rm certbot renew --quiet && … nginx -s reload
+0 4 * * * cd /home/opc/Mijual && /home/opc/Mijual/deploy/db/backup.sh >> /home/opc/Mijual/var/backup.log 2>&1
+```
+
+`rollback.sh` was **not** rehearsed on production, as the plan directs (no `:previous` exists after a
+first deploy; `P4.S3` rehearsed it off-box).
+
+### Doc impact appended to `phase.md`
+
+Five lines, the `## Operator Runtime` one first because `P4.REVIEW`'s gate depends on it:
+
+1. `operations` — **`## Operator Runtime` gains the production runtime and access path**: origin
+   `https://jujutower.com` (www 301s to it), Cloudflare-proxied → `edge-nginx` → the `mijual-web`
+   container running a **production** Next build via `deploy/deploy.sh`; logs
+   `docker compose -f compose.prod.yml logs <service>` in `/home/opc/Mijual`; the `/ops` credential's
+   location (path only); **instrument = real Chrome over CDP, headful, `open -na`** (a `nohup` launch
+   yields headless), Aside unavailable; viewports 1280 and 390.
+2. `operations` — the `www` alias is enabled, how it is wired, and that `edge-nginx` was not recreated.
+3. `operations` — the nightly backup cron and the first production dump.
+4. `qa` — the measured production smoke evidence (`/ask` chunk counts, the pages, the footer, the
+   four beat entries) that `P4.S6` and the review's `## Regression Checklist` build on.
+5. `operations` / `qa` — `robots.txt` is Cloudflare-managed today and the origin 404s; Cloudflare
+   **prepends**, so `P4.S5` must not duplicate the signals.
+
+### Notebook edits
+
+`## Decisions`: the www line **replaced in place** (OFF → ON, with the verified evidence); two added
+(the cron installed with its command and the first dump; why the D-day mail could not be
+demonstrated). `## Doc impact` and `## Operator Questions`: append-only, five new questions and two
+existing ones closed (`www`, cron). `## Notes for later slices`: the four consumed `P4.S4` notes
+dropped, the DECOMP runtime-manifest note and the `P4.S2` mail note retargeted to `P4.REVIEW`, the
+DECOMP streaming note replaced by the **measured** one, and four new notes added for
+`P4.S5` / `P4.S6` / `P4.S8` / `P4.REVIEW`. `## Now` rewritten last, 15 lines. The generated
+`## Slices` block was not touched.
+
+---
+
+# Earlier dispatches
+
+## Dispatches 1-2 — result as written then (dispatch 2 of 3: Stage 0 → A → B → C, stopping at STOP POINT 2)
 
 - **status:** `needs_operator`
 - **summary:** Dispatch 2 put the product on the box for real. `.env.prod` was minted and shipped

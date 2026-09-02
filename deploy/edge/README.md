@@ -177,7 +177,38 @@ and the redirect loop.
 
 ## The `www.jujutower.com` alias
 
-Not enabled. It is an **open Operator Question**, because it changes the Origin
-CA certificate's SAN list (which must be decided *before* the cert is minted)
-and adds one DNS record. `jujutower.conf` carries the whole alias block
-commented out with the four steps to take it.
+**ENABLED** — operator decision, 2026-09-02 (`P4.S4`, dispatch 3). `www` exists
+only to **301 to the canonical apex**; the apex serves the product and stays the
+one indexable address (`P4.S5`'s `metadataBase`, canonicals and sitemap are
+apex-only and depend on that).
+
+What it took, and what it did *not*:
+
+- **No new certificate.** The Origin CA pair was minted with
+  `subjectAltName = DNS:*.jujutower.com, DNS:jujutower.com`, so the wildcard
+  already covered www. Both server blocks load the same
+  `/etc/nginx/certs/jujutower.{crt,key}` — **one** `CERT_NAMES` basename, so
+  neither `validate.sh` nor `stage.sh` needed a further edit for the alias.
+- **In `jujutower.conf`:** `www.jujutower.com` added to the `:80`
+  `server_name`, and the previously-commented www `:443` server block
+  uncommented (it is a bare `return 301 https://jujutower.com$request_uri;`).
+- **Applied the normal way** — `./validate.sh` → `bash stage.sh` → on-VM
+  `bash deploy.sh` (`nginx -t` → `nginx -s reload`). `edge-nginx` was not
+  recreated; its `StartedAt` stayed `2026-07-02T19:22:12.325478595Z`.
+
+Proof at the origin (grey, bypassing Cloudflare):
+
+```bash
+curl -skI --resolve www.jujutower.com:443:140.245.64.173 'https://www.jujutower.com/x?y=1'
+#   -> HTTP/2 301, location: https://jujutower.com/x?y=1     (path + query preserved)
+curl -sI  --resolve www.jujutower.com:80:140.245.64.173  'http://www.jujutower.com/x?y=1'
+#   -> 301 -> https://www.jujutower.com/x?y=1  (the :80 block keeps $host)
+#      then the line above -> the apex. Two hops, both permanent.
+```
+
+**The DNS half is separate and is not in this repo.** `www` needs a **proxied**
+Cloudflare record pointing at the box (`A 140.245.64.173`, or a proxied
+`CNAME jujutower.com`). While the record still points anywhere else, the vhost
+above is correct and simply unreachable and Cloudflare answers from the old
+origin — at the time of writing, a **525** (origin TLS handshake failed) from
+the record Cloudflare imported from Namecheap.
