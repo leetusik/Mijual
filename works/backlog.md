@@ -7,7 +7,7 @@
 
 - Current phase: `P4`
 - Current slice: `P4.F4`
-- Next slice: `P4.REVIEW`
+- Next slice: `P4.R1`
 - Waiting on operator: `P4.F4`
 - Open deferred jobs: `34`
 
@@ -86,4 +86,5 @@
 | [x] `P4.F3` | `done` | Runbook R7: record the installed backup cron, its GMT firing time (13:00 KST), and close open question 2 | `fix` | `works/phases/active/P4/slices/P4.F3` |
 | [x] `P4.F2` | `done` | Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim | `fix` | `works/phases/active/P4/slices/P4.F2` |
 | [~] `P4.F4` | `pending` | Relax the extract call ceiling in production: MIJUAL_EXTRACT_MAX_CALLS knob, 300 on the box, deploy before the freeze | `fix` | `works/phases/active/P4/slices/P4.F4` |
+| [ ] `P4.R1` | `todo` | Research: Core Web Vitals on production (LCP/INP/CLS) — Cloudflare RUM, lab attribution, fix breakdown | `research` | `works/phases/active/P4/slices/P4.R1` |
 | [ ] `P4.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

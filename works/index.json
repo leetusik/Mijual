@@ -45,12 +45,12 @@
       "path": "works/phases/active/P4",
       "review_status": "changes_requested",
       "current_slice": "P4.F4",
-      "slice_count": 14,
+      "slice_count": 15,
       "done_slice_count": 12
     }
   ],
   "deferred_open_count": 34,
   "deferred_promoted_count": 6,
   "deferred_dropped_count": 3,
-  "last_rebuilt_at": "2026-09-02T22:34:32+09:00"
+  "last_rebuilt_at": "2026-09-02T22:35:49+09:00"
 }
