@@ -83,16 +83,23 @@ def home(db: DbSession, account: ReadAccount) -> dict[str, Any]:
 
 @router.get("/portfolio/sample", summary="샘플 포트폴리오 (익명, 읽기 전용)")
 def sample(db: DbSession) -> dict[str, Any]:
-    """The fixed R5-4 composition, resolved live through the same composition.
+    """R5-4's four states, filled by whoever is in them **today**.
 
     Four real filings, four real states, and the 보유량 stated on the card as an
     example — so every number here is the corpus's, and only the portfolio itself
-    is illustrative. ``sample: true`` is the flag the banner, the nav 「샘플」 chip
-    and the 샘플 종료 control key on; ``claims`` is ``None``, so no row carries a
-    ``claimed`` key and no account fact appears anywhere in the payload.
+    is illustrative. The issuers are chosen per request
+    (:func:`mijual.web.reads.load_sample_composition`, the start cards' own rule)
+    rather than pinned, because a pinned ① stops counting down within a week and
+    the surface then shows three of its four states. The response shape is
+    unchanged; only *which* companies fill it moves.
+
+    ``sample: true`` is the flag the banner, the nav 「샘플」 chip and the 샘플 종료
+    control key on; ``claims`` is ``None``, so no row carries a ``claimed`` key and
+    no account fact appears anywhere in the payload.
     """
+    today = clock.now().date()
     payload = load_portfolio(
-        db, portfolio.sample_entries(), today=clock.now().date(), claims=None
+        db, portfolio.sample_entries(db, today), today=today, claims=None
     )
     payload["sample"] = True
     return payload

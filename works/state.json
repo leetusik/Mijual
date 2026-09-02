@@ -2,7 +2,7 @@
   "current_phase": "P4",
   "current_slice": "P4.F1",
   "next_slice": "P4.S8",
-  "waiting_on_operator": null,
-  "mode": "phase",
-  "updated_at": "2026-09-02T14:03:09+09:00"
+  "waiting_on_operator": "P4.F1",
+  "mode": "waiting",
+  "updated_at": "2026-09-02T14:26:34+09:00"
 }

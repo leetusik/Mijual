@@ -32,9 +32,11 @@ from mijual.db.models import (
 from mijual.db.repository import ensure_corp, ensure_event, ensure_version
 from mijual.web.app import create_app
 from mijual.web.csrf import CSRF_HEADER
+from mijual.web.reads import SAMPLE_FALLBACK, load_sample_composition
 from mijual.web.deps import get_session, get_write_session
 
 KEYANG, HANWHA, DAEDONG, SEGI = "00102618", "00162461", "00109310", "00133618"
+TOOLGEN = "00547510"
 LAPSE_RCEPT = "20260730000366"
 
 
@@ -319,3 +321,42 @@ def test_the_sample_is_anonymous_and_carries_no_account_fact(client) -> None:
     assert [row["rights_type"] for row in payload["upcoming"]] == ["R1", "R2"]
     assert payload["past"][0]["lapse"]["value"]["estimated"] is True
     assert client.db.scalars(select(Holding)).all() == []  # nothing was stored
+
+
+def test_the_sample_picks_a_live_issuer_per_state_and_falls_back_per_slot(client) -> None:
+    """P4.F1: the four **states** are R5-4's; the four **issuers** are today's.
+
+    A pinned list rots — an ① 매매기간 is about a week long, so the 2026-08-22
+    composition had no ① counting down by 2026-09-02. So the slots are filled from
+    the board's own reading, and `SAMPLE_FALLBACK` is what a slot uses when the
+    corpus has nobody in that state.
+    """
+    session, today = client.db, client.today
+
+    # A second ① 발행가 확정 전, this one in the comfortable D-day window: it
+    # outranks 계양전기's D-3 for slot ①, which is the whole point of the change.
+    ensure_corp(session, TOOLGEN, corp_name="툴젠", stock_code="199800")
+    _warrant(
+        session, corp_code=TOOLGEN, day="20260810",
+        start=today - timedelta(days=1), end=today + timedelta(days=30),
+        price_confirmed=False,
+        inputs={"rcept_no": "20260810000100", "allotment_ratio": "0.1100000000"},
+    )
+    session.flush()
+
+    picked = [(entry.corp_code, entry.shares) for entry in load_sample_composition(session, today=today)]
+    # One issuer per state, four distinct companies, R5-4's example 보유량 intact.
+    assert picked == [(TOOLGEN, 500), (DAEDONG, 300), (HANWHA, 500), (SEGI, 100)]
+    assert len({corp_code for corp_code, _ in picked}) == 4
+
+    # A corpus with nobody in any of the four states falls back slot by slot.
+    empty_engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    Base.metadata.create_all(empty_engine)
+    empty = sessionmaker(bind=empty_engine)()
+    assert [
+        (entry.corp_code, entry.shares)
+        for entry in load_sample_composition(empty, today=today)
+    ] == list(SAMPLE_FALLBACK)
+    empty.close()

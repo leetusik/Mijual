@@ -7,12 +7,23 @@ import {
   addHolding,
   deleteHolding,
   getPortfolio,
+  getSamplePortfolio,
   getStock,
   setClaim as setClaimRequest,
   updateHolding,
 } from "@/lib/api";
 import { readSessionHoldings } from "@/lib/holding";
-import { clearSample, readSample, useSample, writeSample } from "@/lib/sample";
+import {
+  clearSample,
+  ensureSample,
+  isRemoved,
+  removeSampleHolding,
+  restoreSampleHolding,
+  setSampleClaim,
+  setSampleShares,
+  sharesOf as sampleSharesOf,
+  useSample,
+} from "@/lib/sample";
 import type { Portfolio as PortfolioPayload, PortfolioHolding, RightsRow } from "@/lib/types";
 import { AddHolding, type ResolvedStock } from "./AddHolding";
 import { CarryOver, type CarryEntry } from "./CarryOver";
@@ -40,13 +51,18 @@ import styles from "./Portfolio.module.css";
  * endpoint, so the sections, their order and their D-days stay the server's.
  * Nothing here re-composes a row.
  *
- * **샘플** (R5-4) — the payload is the anonymous `GET /portfolio/sample` (the four
- * pinned filings, live), and the reader's edits live in `localStorage`
- * (`lib/sample.ts`): "편집 가능 + localStorage 저장(로그인 불요, 재방문 유지)".
- * The store holds *which issuers, with what count* and the browser's 챙긴 돈
- * marks; the rows, the factors and the D-days are still the server's, and the
- * client only overrides the two numbers it owns. **No anonymous write exists and
- * none is attempted** (`P5.S8` note 13).
+ * **샘플** (R5-4) — the payload is the anonymous `GET /portfolio/sample` (four
+ * live filings, one per state, chosen per request since `P4.F1`), and the
+ * reader's edits live in `localStorage` (`lib/sample.ts`): "편집 가능 +
+ * localStorage 저장(로그인 불요, 재방문 유지)".
+ *
+ * **The served composition is always what renders**, and the store holds only
+ * what the reader *did* to it — a 보유량 override, an explicit 삭제, a 챙긴 돈
+ * mark, each keyed by `corp_code`. The rows, the factors and the D-days are still
+ * the server's. Filtering the served rows *by* a stored list is what v1 did, and
+ * with a live composition it renders an empty sample the day the issuers move
+ * (`lib/sample.ts` § v2). **No anonymous write exists and none is attempted**
+ * (`P5.S8` note 13).
  *
  * ⚠ **종목 추가 is an account affordance and is not offered in 샘플 모드.** R5-4
  * signs the sample as a fixed composition that is *editable* (보유량, 삭제, and
@@ -77,34 +93,26 @@ export function Portfolio({
   const sample = useSample();
   const local = mode === "sample" ? sample : null;
 
-  // The sample's first load seeds the browser from the served composition; every
-  // later visit is the browser's own version of it.
+  // Entering the sample marks this browser as holding one — no composition is
+  // copied into it (that is v1's bug: see `lib/sample.ts` § v2). The store stays
+  // empty until the reader actually edits something, and R5-4's 이전 제안 and
+  // 샘플 종료 still key on its existence.
   useEffect(() => {
-    if (mode !== "sample" || readSample() !== null) return;
-    writeSample({
-      v: 1,
-      holdings: payload.holdings.map((row) => ({
-        corp_code: row.corp_code,
-        shares: row.shares,
-      })),
-      claims: [],
-    });
-  }, [mode, payload]);
+    if (mode !== "sample") return;
+    ensureSample();
+  }, [mode]);
 
-  const localShares = useMemo(
-    () => new Map((local?.holdings ?? []).map((row) => [row.corp_code, row.shares])),
-    [local],
-  );
-
+  // A row is shown unless this browser removed **that issuer**; an issuer the
+  // browser has never seen renders on sight.
   const shown = useCallback(
-    (corpCode: string) => (local === null ? true : localShares.has(corpCode)),
-    [local, localShares],
+    (corpCode: string) => !isRemoved(local, corpCode),
+    [local],
   );
 
   const sharesFor = useCallback(
     (corpCode: string, served: number | null | undefined) =>
-      localShares.get(corpCode) ?? served ?? null,
-    [localShares],
+      sampleSharesOf(local, corpCode, served),
+    [local],
   );
 
   const holdings: PortfolioHolding[] = useMemo(
@@ -171,19 +179,14 @@ export function Portfolio({
 
   const saveShares = useCallback(
     (row: PortfolioHolding, shares: number) => {
-      if (local !== null) {
-        writeSample({
-          ...local,
-          holdings: local.holdings.map((entry) =>
-            entry.corp_code === row.corp_code ? { ...entry, shares } : entry,
-          ),
-        });
+      if (mode === "sample") {
+        setSampleShares(row.corp_code, shares);
         return;
       }
       if (row.id === undefined) return;
       run(() => updateHolding(row.id as number, shares));
     },
-    [local, run],
+    [mode, run],
   );
 
   // 삭제 = 즉시 + 8초 되돌리기 (모달 없음). The row is really gone; what the
@@ -208,17 +211,14 @@ export function Portfolio({
     (row: PortfolioHolding) => {
       setEditing(null);
       armUndo({ corp_code: row.corp_code, corp_name: row.corp_name, shares: row.shares });
-      if (local !== null) {
-        writeSample({
-          ...local,
-          holdings: local.holdings.filter((entry) => entry.corp_code !== row.corp_code),
-        });
+      if (mode === "sample") {
+        removeSampleHolding(row.corp_code);
         return;
       }
       if (row.id === undefined) return;
       run(() => deleteHolding(row.id as number));
     },
-    [armUndo, local, run],
+    [armUndo, mode, run],
   );
 
   const restoreHolding = useCallback(() => {
@@ -227,11 +227,7 @@ export function Portfolio({
     setUndo(null);
     if (undoTimer.current !== null) window.clearTimeout(undoTimer.current);
     if (mode === "sample") {
-      const current = readSample() ?? { v: 1 as const, holdings: [], claims: [] };
-      writeSample({
-        ...current,
-        holdings: [...current.holdings, { corp_code: entry.corp_code, shares: entry.shares }],
-      });
+      restoreSampleHolding(entry.corp_code, entry.shares);
       return;
     }
     run(() => addHolding(entry.corp_code, entry.shares));
@@ -242,11 +238,7 @@ export function Portfolio({
       const key = row.lapse?.performance_rcept_no;
       if (!key) return;
       if (mode === "sample") {
-        const current = readSample() ?? { v: 1 as const, holdings: [], claims: [] };
-        const claims = claimed
-          ? [...new Set([...current.claims, key])]
-          : current.claims.filter((value) => value !== key);
-        writeSample({ ...current, claims });
+        setSampleClaim(key, claimed);
         return;
       }
       run(() => setClaimRequest(key, claimed));
@@ -273,6 +265,37 @@ export function Portfolio({
   // The two offers (R5-3, R5-4) — see `CarryOver.tsx`
   // ---------------------------------------------------------------------
 
+  // 계정 이전 (R5-4) needs the **sample's** composition, which is not this page's
+  // payload in 계정 mode — the store no longer carries it either (`P4.F1`), so the
+  // offer asks the anonymous endpoint for today's rows and merges this browser's
+  // edits over them: exactly what 샘플 mode renders, one request, only when this
+  // browser actually holds a sample.
+  const hasSample = sample !== null;
+  const [sampleServed, setSampleServed] = useState<PortfolioHolding[] | null>(null);
+  useEffect(() => {
+    if (mode !== "account" || !hasSample) return;
+    let live = true;
+    void getSamplePortfolio()
+      .then((page) => {
+        if (live) setSampleServed(page.holdings);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [mode, hasSample]);
+
+  const sampleForCarry = useMemo(() => {
+    if (mode !== "account" || sample === null || sampleServed === null) return NO_HOLDINGS;
+    const rows = sampleServed
+      .filter((row) => !isRemoved(sample, row.corp_code))
+      .map((row) => ({
+        corp_code: row.corp_code,
+        shares: sampleSharesOf(sample, row.corp_code, row.shares) ?? row.shares,
+      }));
+    return rows.length > 0 ? rows : NO_HOLDINGS;
+  }, [mode, sample, sampleServed]);
+
   const carry = useCarryOffer({
     mode,
     empty: holdings.length === 0,
@@ -280,7 +303,11 @@ export function Portfolio({
     // `NO_HOLDINGS` rather than a fresh `[]`: this value is a dependency two
     // levels down, and a new array identity on every render is a render loop
     // (see `useCarryOffer`).
-    sampleCorpCodes: sample?.holdings ?? NO_HOLDINGS,
+    sampleCorpCodes: sampleForCarry,
+    // The *variant* keys on whether this browser holds a sample at all, not on
+    // the fetched rows: the composition arrives a round trip later, and the offer
+    // must not spend that round trip pretending to be the 세션 이월 one.
+    hasSample,
   });
 
   const keepCarried = useCallback(
@@ -384,20 +411,27 @@ export function Portfolio({
  * for a stock: `sessionStorage` and the sample store both keep a `corp_code` and
  * a count and nothing else, because a stored name would be a second spelling of a
  * fact the corpus already owns.
+ *
+ * `sampleCorpCodes` arrives **already merged** — today's served sample composition
+ * with this browser's own overrides and removals applied (see the caller). The
+ * offer is therefore about rows the reader would recognise from the sample, not
+ * about a list the browser froze on some earlier visit.
  */
 function useCarryOffer({
   mode,
   empty,
   heldCorpCodes,
   sampleCorpCodes,
+  hasSample,
 }: {
   mode: "account" | "sample";
   empty: boolean;
   heldCorpCodes: ReadonlySet<string>;
   sampleCorpCodes: ReadonlyArray<{ corp_code: string; shares: number }>;
+  hasSample: boolean;
 }): { variant: "session" | "migrate"; entries: CarryEntry[]; dismiss: () => void } {
   const variant: "session" | "migrate" =
-    mode === "account" && sampleCorpCodes.length > 0 ? "migrate" : "session";
+    mode === "account" && hasSample ? "migrate" : "session";
   const [entries, setEntries] = useState<CarryEntry[]>([]);
   const [dismissed, setDismissed] = useState(true);
 

@@ -555,7 +555,10 @@ def get_portfolio(ctx: ToolContext) -> ToolResult:
     account = ctx.account
     if account is None:
         payload = load_portfolio(
-            ctx.session, portfolio_service.sample_entries(), today=ctx.today, claims=None
+            ctx.session,
+            portfolio_service.sample_entries(ctx.session, ctx.today),
+            today=ctx.today,
+            claims=None,
         )
         payload["sample"] = True
         payload["sample_label_ko"] = ko.PORTFOLIO_SAMPLE_LABEL_KO

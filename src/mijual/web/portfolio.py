@@ -38,6 +38,7 @@ would confirm that it does.
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from datetime import date
 from typing import Any
 
 from sqlalchemy import select
@@ -46,13 +47,18 @@ from sqlalchemy.orm import Session
 
 from mijual.db.models import Account, Corp, Holding, LapseClaim, NotificationPref, PerformanceReport
 from mijual.web.errors import ApiError, NotFound
-from mijual.web.reads import HoldingEntry, stock_by_code
+from mijual.web.reads import (
+    SAMPLE_FALLBACK,
+    HoldingEntry,
+    load_sample_composition,
+    stock_by_code,
+)
 
 __all__ = [
     "DEFAULT_LEAD_DAYS",
     "LEAD_DAY_CHOICES",
     "MAX_SHARES",
-    "SAMPLE_HOLDINGS",
+    "SAMPLE_FALLBACK",
     "add_holding",
     "claimed_reports",
     "delete_holding",
@@ -80,25 +86,13 @@ DEFAULT_LEAD_DAYS = (7, 1)
 #: a probe. Refusing it here keeps the column's own range honest.
 MAX_SHARES = 10_000_000_000
 
-#: The fixed R5-4 sample composition: four **real** filings covering the four
-#: states the surface can be in, with the 보유량 stated on the card as an example.
-#: The ``rcept_no`` beside each one is the filing R5 pinned; it is a comment
-#: rather than a lookup key, because a holding is an *issuer* and the sample must
-#: load whatever that issuer's rights actually are today (build prompt: "실제
-#: corpus 이벤트를 그대로 로드, 수치는 서버 contract에서"). Verified 2026-08-22 —
-#: all four still resolve to the event R5 named; see this slice's phase note for
-#: what each one carries now.
-SAMPLE_HOLDINGS = (
-    ("00102618", 500),  # 계양전기 · ① 발행가 확정 전   · 20260724000546
-    ("00109310", 300),  # 대동기어  · ② 전환청구 개시    · 20251016000315
-    ("00162461", 500),  # 한화솔루션 · ① 소멸 (놓친 돈)  · 20260720000067
-    ("00133618", 100),  # 세기상사  · ③ 통지 마감 지남   · 20260713000345
-)
+#: R5-4's four pinned issuers, now the **per-slot fallback** of a composition
+#: chosen at request time — re-exported from :mod:`mijual.web.reads`, which owns
+#: the selector and the four example 보유량 beside it. See
+#: :func:`mijual.web.reads.load_sample_composition` for why 「구성 (고정)」 was
+#: superseded (operator, 2026-09-02; the `/ask` start cards' own P11 precedent).
 
 
-# ---------------------------------------------------------------------------
-# holdings
-# ---------------------------------------------------------------------------
 def _validated_shares(raw: Any) -> int:
     """보유 주식 수: a positive whole number of shares, and nothing cleverer.
 
@@ -134,9 +128,15 @@ def entries_of(db: Session, account: Account) -> list[HoldingEntry]:
     ]
 
 
-def sample_entries() -> list[HoldingEntry]:
-    """The R5-4 sample composition. No ``holding_id`` — nothing is stored."""
-    return [HoldingEntry(corp_code=code, shares=shares) for code, shares in SAMPLE_HOLDINGS]
+def sample_entries(db: Session, today: date) -> list[HoldingEntry]:
+    """The R5-4 sample composition **as of today**. Nothing is stored, ever.
+
+    Four issuers, one per state, resolved against the corpus on every request
+    (:func:`mijual.web.reads.load_sample_composition`) with
+    :data:`~mijual.web.reads.SAMPLE_FALLBACK` behind each slot. No ``holding_id``:
+    a sample holding is the browser's, and the server stores none.
+    """
+    return load_sample_composition(db, today=today)
 
 
 def _holding(db: Session, account: Account, holding_id: int) -> Holding:

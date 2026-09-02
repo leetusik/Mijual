@@ -76,6 +76,7 @@ from mijual.present import (
     EventView,
     bare_name,
     board_bucket,
+    board_offering,
     board_row,
     board_summary,
     convertible_view,
@@ -94,6 +95,7 @@ __all__ = [
     "COUNTDOWN_FIELDS",
     "DEFAULT_CUTOFF_TIME",
     "LAPSE_COVERAGE_START",
+    "SAMPLE_FALLBACK",
     "STOCK_FIELDS",
     "Detail",
     "HoldingEntry",
@@ -105,6 +107,7 @@ __all__ = [
     "load_corp_events",
     "load_detail",
     "load_portfolio",
+    "load_sample_composition",
     "load_start_cards",
     "load_stock",
     "load_summary",
@@ -1644,3 +1647,241 @@ def load_start_cards(session: Session, *, today: date) -> dict[str, Any]:
         session, views, offerings, avoid=search["corp_code"] if search else None
     )
     return {"reference": today.isoformat(), "search_events": search, "calculate": calculate}
+
+
+# ---------------------------------------------------------------------------
+# 샘플 포트폴리오 — the composition, chosen at request time
+# ---------------------------------------------------------------------------
+#: The four states R5-4 draws the sample in, the 보유량 each card states as an
+#: **example**, and the issuer R5 pinned for that slot on 2026-08-22 — kept here
+#: as the slot's **fallback**, in R5-4's own order:
+#:
+#: ===================================  ==========  ==================
+#: 상태                                  예시 보유량   R5가 고정한 발행사
+#: ===================================  ==========  ==================
+#: ① 발행가 확정 전 (카운트다운 진행)        500주       계양전기 · 20260724000546
+#: ② 전환청구 개시                        300주       대동기어 · 20251016000315
+#: ① 소멸 — 놓친 돈                       500주       한화솔루션 · 20260720000067
+#: ③ 통지 마감 지남                       100주       세기상사 · 20260713000345
+#: ===================================  ==========  ==================
+#:
+#: **The share counts never move** — they are the signed examples the banner
+#: 「보유량은 예시입니다」 refers to. The issuers do: see
+#: :func:`load_sample_composition`.
+SAMPLE_FALLBACK = (
+    ("00102618", 500),
+    ("00109310", 300),
+    ("00162461", 500),
+    ("00133618", 100),
+)
+
+#: How many past ① candidates the 소멸 slot checks for a filed 실적보고서 before
+#: it gives up. A 실적보고서 lands weeks after the 매매 마감 it reports, so the most
+#: recent past ① usually has none yet and the scan has to walk back a little —
+#: bounded, like :data:`_CARD_CANDIDATES`, so the work cannot grow with the corpus.
+_SAMPLE_LAPSE_CANDIDATES = 24
+
+
+def _sample_offering_slot(
+    views: Mapping[str, list[EventView]],
+    offerings: Mapping[int, Mapping[str, Any]],
+    taken: frozenset[str],
+) -> EventView | None:
+    """Slot ① — an offering still counting down, 발행가 **확정 전** if one exists.
+
+    That state is the whole point of the slot: 발행가 확정 전 is the moment the
+    product exists for, and a fixed list stops showing it within a week (an ①
+    매매기간 is about that long). The predicate is the presenter's own —
+    :func:`mijual.present.board_offering`'s ``price_confirmed``, which is what the
+    signed 「발행가 확정 전」 chip renders from — so this picks what the row will say
+    rather than a second reading of the same inputs.
+
+    Order: 확정 전 first, then :func:`_dday_tier`'s comfortable window (a D-0 card
+    is a sample that expires while it is being read), then an issuer whose ① is
+    its only one, then the latest deadline inside the tier, then ``rcept_no``.
+    With no 확정 전 candidate at all the slot still fills — any upcoming ① — because
+    an ① counting down is more of R5-4's state than an empty slot is.
+    """
+    ranked: list[tuple[tuple[int, int, int, int, str], EventView]] = []
+    for corp_code, corp_views in views.items():
+        if corp_code in taken:
+            continue
+        offers = [view for view in corp_views if view.rights_type == "R1"]
+        for view in offers:
+            days = view.countdown.days
+            if view.countdown.date is None or days is None or days < 0:
+                continue
+            offering = board_offering(offerings.get(view.event_id))
+            pending = offering is not None and not offering.price_confirmed
+            tier = _dday_tier(days)
+            ranked.append(
+                (
+                    (
+                        0 if pending else 1,
+                        tier,
+                        0 if len(offers) == 1 else 1,
+                        days if tier == 1 else -days,
+                        view.rcept_no or "",
+                    ),
+                    view,
+                )
+            )
+    ranked.sort(key=lambda item: item[0])
+    return ranked[0][1] if ranked else None
+
+
+def _sample_convertible_slot(
+    views: Mapping[str, list[EventView]], taken: frozenset[str]
+) -> EventView | None:
+    """Slot ② — 전환청구 개시: the soonest one still ahead, else the newest open one.
+
+    Both are 진행 중 and neither is 종료 (`ui-traps` #5), which is exactly why the
+    fallback within the slot is *open* rather than *past*: an ② whose window has
+    fully closed would put the sample's ② row in 지나간 마감, and R5-4 draws it
+    among the live states.
+    """
+    ranked: list[tuple[tuple[int, int, str], EventView]] = []
+    for corp_code, corp_views in views.items():
+        if corp_code in taken:
+            continue
+        for view in corp_views:
+            if view.rights_type != "R2":
+                continue
+            countdown = view.countdown
+            days = countdown.days
+            if countdown.date is not None and days is not None and days >= 0:
+                key = (0, days, view.rcept_no or "")
+            elif countdown.is_open:
+                key = (1, -(days or 0), view.rcept_no or "")
+            else:
+                continue
+            ranked.append((key, view))
+    ranked.sort(key=lambda item: item[0])
+    return ranked[0][1] if ranked else None
+
+
+def _sample_lapsed_slot(
+    session: Session,
+    views: Mapping[str, list[EventView]],
+    taken: frozenset[str],
+    *,
+    today: date,
+) -> EventView | None:
+    """Slot ③ — a past ① whose 실적보고서 landed **and states the 놓친 돈**.
+
+    The slot's job is R5-4's 놓친 돈 lesson, so a row that can only say 「기간 지남」
+    does not fill it: the candidate must have a :func:`_lapse_by_event` row (which
+    is where the 2026 coverage boundary is applied, once, for every surface) whose
+    :func:`mijual.present.lapse_result` carries a ``value``. Most recent first,
+    over a bounded head of candidates.
+    """
+    ranked: list[tuple[tuple[int, str], EventView]] = []
+    for corp_code, corp_views in views.items():
+        if corp_code in taken:
+            continue
+        for view in corp_views:
+            days = view.countdown.days
+            if view.rights_type != "R1" or view.countdown.date is None:
+                continue
+            if days is None or days >= 0:
+                continue
+            ranked.append(((-days, view.rcept_no or ""), view))
+    ranked.sort(key=lambda item: item[0])
+    head = [view for _, view in ranked[:_SAMPLE_LAPSE_CANDIDATES]]
+    if not head:
+        return None
+
+    events = list(
+        session.scalars(
+            select(Event).where(Event.id.in_([view.event_id for view in head]))
+        ).all()
+    )
+    lapses = _lapse_by_event(session, events, today=today)
+    for view in head:
+        found = lapses.get(view.event_id)
+        if found is None:
+            continue
+        report, mapping = found
+        facts = report.facts if isinstance(report.facts, Mapping) else {}
+        if lapse_result(mapping, facts=facts).value is None:
+            continue
+        return view
+    return None
+
+
+def _sample_appraisal_slot(
+    views: Mapping[str, list[EventView]], taken: frozenset[str]
+) -> EventView | None:
+    """Slot ④ — a ③ whose 통지 마감 has passed, most recent first."""
+    ranked: list[tuple[tuple[int, str], EventView]] = []
+    for corp_code, corp_views in views.items():
+        if corp_code in taken:
+            continue
+        for view in corp_views:
+            days = view.countdown.days
+            if view.rights_type != "R3" or view.countdown.date is None:
+                continue
+            if days is None or days >= 0:
+                continue
+            ranked.append(((-days, view.rcept_no or ""), view))
+    ranked.sort(key=lambda item: item[0])
+    return ranked[0][1] if ranked else None
+
+
+def load_sample_composition(session: Session, *, today: date) -> list[HoldingEntry]:
+    """샘플 포트폴리오's four issuers, chosen **at request time** — one per state.
+
+    R5-4 asks the sample to show the surface in its four states at once (① 발행가
+    확정 전 · ② 전환청구 개시 · ① 소멸 · ③ 통지 마감 지남) and pinned four issuers
+    for them. A pinned list cannot hold those states: an ① 매매기간 lasts about a
+    week, so 「구성 (고정)」 was measured wrong within days — on 2026-09-02 the
+    pinned sample had **no ① counting down at all** and three of its four rows had
+    fallen into 지나간 마감. The `/ask` start cards had the identical problem and
+    the operator settled it at the P11 gate — 「real time catch. not fixed.」 — so
+    this is :func:`load_start_cards`'s rule applied to the other fixed surface
+    (operator, 2026-09-02; see the phase notebook's `## Decisions`).
+
+    **What is fixed and what is not.** The four *states* and the four *example
+    보유량* (500 · 300 · 500 · 100) are R5-4's and never move; the *issuers* are
+    whoever is in that state today. The banner 「종목·공시·마감은 실제, 계정·보유량은
+    예시입니다」 stays literally true, and more so than before.
+
+    Read from :func:`_board_views` — the board's own reading of the corpus, gated
+    by the persisted verdict *and* the derived contract — so the sample can only
+    name a company the board itself would show. An issuer that qualifies for two
+    slots takes the first and the next slot skips it, so the four rows are four
+    companies. A slot with no candidate falls back to :data:`SAMPLE_FALLBACK`'s
+    entry for that slot (dropped only if that issuer is already in the list, which
+    is the one way this returns fewer than four rows).
+
+    **Cost: one whole-board read per request** — the same read the board and
+    ``/ask/start-cards`` already pay, plus one bounded lookup of 실적보고서 rows for
+    the 소멸 slot. There is deliberately **no cache**: a cached composition is a
+    fixed list with an expiry date, which is the thing this replaces.
+    """
+    views: dict[str, list[EventView]] = {}
+    offerings: dict[int, Mapping[str, Any]] = {}
+    for view, offering in _board_views(session, today=today):
+        if view.state != "exposable":
+            continue
+        views.setdefault(view.corp_code, []).append(view)
+        if offering is not None:
+            offerings[view.event_id] = offering
+
+    slots = (
+        lambda taken: _sample_offering_slot(views, offerings, taken),
+        lambda taken: _sample_convertible_slot(views, taken),
+        lambda taken: _sample_lapsed_slot(session, views, taken, today=today),
+        lambda taken: _sample_appraisal_slot(views, taken),
+    )
+
+    entries: list[HoldingEntry] = []
+    taken: set[str] = set()
+    for (fallback_code, shares), pick in zip(SAMPLE_FALLBACK, slots):
+        view = pick(frozenset(taken))
+        corp_code = view.corp_code if view is not None else fallback_code
+        if corp_code in taken:
+            continue
+        taken.add(corp_code)
+        entries.append(HoldingEntry(corp_code=corp_code, shares=shares))
+    return entries
