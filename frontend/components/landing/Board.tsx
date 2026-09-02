@@ -9,7 +9,7 @@ import {
   RIGHTS_LABEL_KO,
   type RightsType,
 } from "@/lib/copy";
-import type { BoardResponse, BoardRow as Row, Freshness } from "@/lib/types";
+import type { Freshness, LandingBoard, LandingRow as Row } from "@/lib/types";
 import { BoardRow, type RowChange } from "./BoardRow";
 import {
   BOARD_TITLE_KO,
@@ -112,7 +112,7 @@ const REFRESH_INTERVAL_MS = 60_000;
  * focus — is not data and survives. `page.tsx` keeps its server fetch as the
  * first render, so the hero and the countdown never remount.
  */
-export function Board({ board: initial }: { board: BoardResponse }) {
+export function Board({ board: initial }: { board: LandingBoard }) {
   const [board, setBoard] = useState(initial);
   const [tab, setTab] = useState<RightsType | null>(null);
   const [shown, setShown] = useState(WINDOW_STEP);
@@ -137,7 +137,7 @@ export function Board({ board: initial }: { board: BoardResponse }) {
     setShown(WINDOW_STEP);
   };
 
-  const apply = useCallback((next: BoardResponse) => {
+  const apply = useCallback((next: LandingBoard) => {
     const previous = boardRef.current;
     // 기준시각 unchanged → the corpus has not moved, so nothing on the screen
     // may move either. Not even a flicker: a 0.2s blink is not information.
@@ -319,8 +319,8 @@ const extrasKey = (row: Row) =>
  * not an animation.
  */
 function diff(
-  previous: BoardResponse,
-  next: BoardResponse,
+  previous: LandingBoard,
+  next: LandingBoard,
   tab: RightsType | null,
   shown: number,
 ): ReadonlyMap<number, RowChange> {

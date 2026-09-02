@@ -234,6 +234,41 @@ export type BoardResponse = {
   freshness: Freshness;
 };
 
+/**
+ * The **landing's** narrowed board shapes — the same contract with four fields
+ * projected off, and never a second contract (`P4.F6`).
+ *
+ * `/board` is one payload read by four surfaces, and only the landing pays for
+ * every byte of it twice: `<Board>` is a client component, so the whole response
+ * is serialised into the document a second time as the RSC flight. `P4.R1`
+ * measured that flight at **78 % of a 354 KB landing document**, and found the
+ * lever is field width rather than row count — every row must ship (the tabs
+ * filter in the browser and the 60 s refresh diffs previous against next), but
+ * the board renders only `countdown.label_ko/date/dday/days` and `offering`,
+ * while `window`, `window_state`, `reference` and `source` (~135 B a row, ~35 %
+ * of it) are read by the event page, the 종목 lookup and 보유 종목 — never here.
+ *
+ * So these are `Pick`/`Omit` **over** `BoardRow`, not copies of it: the endpoint's
+ * contract, `BoardResponse` and every other reader stay exactly as they were, a
+ * field added to `BoardRow` reaches the landing without an edit here, and a
+ * `BoardResponse` remains structurally assignable to a `LandingBoard` — which is
+ * what lets `Board`'s refresh keep fetching the full `/board` unchanged.
+ *
+ * `app/page.tsx` holds the projection that produces them, and is the only place
+ * that may.
+ */
+export type LandingCountdown = Pick<Countdown, "label_ko" | "date" | "dday" | "days">;
+
+export type LandingRow = Omit<BoardRow, "countdown"> & { countdown: LandingCountdown };
+
+export type LandingStrip = Omit<BoardStrip, "rows"> & { rows: LandingRow[] };
+
+export type LandingBoard = Omit<BoardResponse, "rows" | "open_now" | "tbd"> & {
+  rows: LandingRow[];
+  open_now: LandingStrip;
+  tbd: LandingStrip;
+};
+
 export type EventDetail = EventView & {
   corrections?: { corrected: boolean; versions: number; summary?: string; schedule_impact?: string };
   offering?: OfferingInputs;

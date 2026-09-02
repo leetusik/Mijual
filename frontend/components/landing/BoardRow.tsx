@@ -2,7 +2,7 @@ import Link from "next/link";
 import { DDay, RightsChip, StateBadge } from "@/components";
 import { dartUrl } from "@/lib/api";
 import { eventPath } from "@/lib/routes";
-import type { BoardRow as Row } from "@/lib/types";
+import type { LandingRow as Row } from "@/lib/types";
 import { DART_LINK_KO, PRICE_PENDING_KO, SUBSCRIPTION_PREFIX_KO } from "./copy";
 import styles from "./Board.module.css";
 

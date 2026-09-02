@@ -4,6 +4,14 @@ import { Board, Cosmos, Hero, LapseNotice, RetrospectiveAnchor } from "@/compone
 import { getBoard, getBoardSummary } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { routeMetadata, SITE_DESCRIPTION_KO, TITLE_DEFAULT } from "@/lib/seo";
+import type {
+  BoardResponse,
+  BoardRow,
+  BoardStrip,
+  LandingBoard,
+  LandingRow,
+  LandingStrip,
+} from "@/lib/types";
 import styles from "./page.module.css";
 
 /**
@@ -51,6 +59,63 @@ export const metadata: Metadata = {
   title: { absolute: TITLE_DEFAULT },
 };
 
+/**
+ * Project `/board` down to what the landing actually renders, on the server,
+ * once (`P4.F6`).
+ *
+ * `<Board>` is a client component, so **everything handed to it is serialised
+ * into this document a second time** as the RSC flight — the props React needs
+ * to hydrate with. `P4.R1` measured the landing at 354,266 B, of which 277,870 B
+ * (78 %) is that flight, i.e. the whole board twice: once as 15 rendered rows and
+ * once as 445 rows of props. All the rows have to be there (the tabs filter in
+ * the browser by design, and the 60 s refresh diffs previous against next), so
+ * the only lever is **field width**.
+ *
+ * Four `countdown` fields are read by nobody on this page. `BoardRow` renders
+ * `label_ko`, `date`, `dday` and `days`; `Board`'s `diff()` compares those same
+ * three printed values plus `offering`. `window`, `window_state`, `reference` and
+ * `source` are the event page's, the 종목 lookup's and 보유 종목's — ~135 B of a
+ * 378 B row, ~35 % of it — and they were being parsed and hydrated by every
+ * reader of the landing for nothing.
+ *
+ * Three things this deliberately does **not** do:
+ *
+ * - **It does not touch `/board`.** The endpoint, its contract and `BoardResponse`
+ *   are unchanged; this is one surface declining bytes it does not read, not a
+ *   second API. `lib/types.ts`'s `Landing*` shapes are `Pick`/`Omit` over the
+ *   real ones for the same reason.
+ * - **It does not narrow the refresh.** `Board` keeps calling `getBoard()` and
+ *   feeding the full response to `apply()` — a `BoardResponse` is structurally a
+ *   `LandingBoard`, and a value fetched in the browser is never serialised into
+ *   a document, so there is nothing there to save.
+ * - **It does not introduce `undefined`.** Rows are rebuilt by rest-spread rather
+ *   than by naming every kept key, because an explicitly-`undefined` optional
+ *   (`offering` on ②/③) would be encoded in the flight as `$undefined` — bytes
+ *   spent to say a key is missing — and because a field added to `BoardRow`
+ *   should reach the landing without an edit here.
+ */
+const landingRow = ({ countdown, ...rest }: BoardRow): LandingRow => ({
+  ...rest,
+  countdown: {
+    label_ko: countdown.label_ko,
+    date: countdown.date,
+    dday: countdown.dday,
+    days: countdown.days,
+  },
+});
+
+const landingStrip = ({ rows, ...rest }: BoardStrip): LandingStrip => ({
+  ...rest,
+  rows: rows.map(landingRow),
+});
+
+const landingBoard = (board: BoardResponse): LandingBoard => ({
+  ...board,
+  rows: board.rows.map(landingRow),
+  open_now: landingStrip(board.open_now),
+  tbd: landingStrip(board.tbd),
+});
+
 export default async function BoardLanding() {
   await connection();
 
@@ -64,7 +129,7 @@ export default async function BoardLanding() {
         <div className={`content ${styles.stack}`}>
           <RetrospectiveAnchor summary={summary} />
           <LapseNotice summary={summary} />
-          <Board board={board} />
+          <Board board={landingBoard(board)} />
           {/* R5-4's landing sample entry stood here. **R8 removed it** (build-prompt
               §1: "랜딩의 「내 포트폴리오는 어떻게 보이나 — 샘플로 열어보기 →」 링크와
               그 빈 밴드 제거"), because the nav's 보유 종목 slot now opens the same
