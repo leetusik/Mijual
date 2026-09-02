@@ -82,6 +82,21 @@ def mask_url_password(url: str) -> str:
         return "<unparseable database url>"
 
 
+def _positive_int(name: str, raw: str | None) -> int | None:
+    """``raw`` as an integer ``>= 1``, or ``None`` when it is unset.
+
+    The message names the **key** and never the value — the same register every
+    other message in this module keeps — and the built-in ``int()`` error is not
+    chained for exactly that reason (it quotes the offending literal).
+    """
+    if raw is None:
+        return None
+    text = raw.strip()
+    if not text.isdigit() or int(text) < 1:
+        raise ValueError(f"{name} must be a positive integer (>= 1)")
+    return int(text)
+
+
 def _parse_dotenv(path: Path) -> dict[str, str]:
     """``KEY=value`` lines from a ``.env`` file. Values are never logged."""
     values: dict[str, str] = {}
@@ -119,6 +134,23 @@ class Settings:
     #: says so (default :data:`mijual.present.DEFAULT_STALE_AFTER_HOURS`, 18 h,
     #: derived from the beat schedule). The board never goes dark either way.
     stale_after_hours: int | None = None
+
+    # -- scheduled-run ceilings (P4.F4) -------------------------------------
+    #: ``MIJUAL_EXTRACT_MAX_CALLS`` — the LLM call ceiling of a scheduled run.
+    #: ``None`` (unset) means "use the stated default", which lives with its
+    #: reasoning in :class:`mijual.scheduler.config.PipelineConfig` (60) rather
+    #: than being duplicated here. It exists because the ceiling is the one knob
+    #: a corpus can outgrow: a 정정 backlog larger than one run's budget leaves
+    #: rows waiting for the next run (measured on production 2026-09-02 —
+    #: ``60 of 60 calls, BUDGET EXHAUSTED``), and raising it must not be a code
+    #: change. Read by the beat/worker path
+    #: (:meth:`~mijual.scheduler.config.PipelineConfig.from_kwargs`) and by
+    #: ``python -m mijual.scheduler once``, where an explicit ``--max-calls``
+    #: still wins. **Unparseable is fatal, not ignored** — unlike
+    #: ``MIJUAL_STALE_AFTER_HOURS`` above, this is a spend ceiling, and quietly
+    #: falling back to 60 would run a whole schedule at a budget the operator
+    #: believes they raised.
+    extract_max_calls: int | None = None
 
     # -- reader auth (P5.S7). See ``mijual.web.auth`` for what each one does.
     #: ``MIJUAL_SESSION_SECRET`` — the reader session key `security` names. It
@@ -336,6 +368,14 @@ def load_settings(*, env_file: Path | None = None) -> Settings:
         # A malformed value is ignored rather than crashing the service: a
         # mistyped ops env var must not take the board down.
         stale_after_hours=int(stale_after) if (stale_after or "").isdigit() else None,
+        # The one env value here that REFUSES to be mistyped (P4.F4): it is a
+        # spend ceiling, so "ignore it and use the default" would silently run a
+        # whole schedule at a budget the operator believes they raised. Every
+        # process that loads settings fails at startup instead, loudly and by key
+        # name — which `deploy/deploy.sh`'s health gate turns into a rollback.
+        extract_max_calls=_positive_int(
+            "MIJUAL_EXTRACT_MAX_CALLS", pick("MIJUAL_EXTRACT_MAX_CALLS")
+        ),
         # Off unless explicitly turned on: a truthy string is a decision, an
         # empty or misspelled one is not. The failure direction matters —
         # `secure` on a plain-http dev server makes the cookie silently vanish.

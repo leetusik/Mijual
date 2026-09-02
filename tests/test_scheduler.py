@@ -132,6 +132,21 @@ def test_the_defaults_are_ceilings_and_r2_is_not_scheduled_for_the_llm():
     assert config.trigger == "manual" and config.write_run_log is True
 
 
+def test_a_deployment_may_raise_the_extract_ceiling_but_never_lower_an_explicit_one(monkeypatch):
+    """P4.F4: the ceiling is the one knob a corpus can outgrow, and it is money.
+
+    Production ended its 2026-09-02 evening run at ``60 of 60 calls, BUDGET
+    EXHAUSTED`` with a 정정 backlog still waiting, so ``MIJUAL_EXTRACT_MAX_CALLS``
+    makes the ceiling deployment configuration. Every scheduled run reaches the
+    pipeline through ``from_kwargs``, and no beat entry names the ceiling — so a
+    wrong answer here is either a silent under-run or an unbounded spend.
+    """
+    monkeypatch.setenv("MIJUAL_EXTRACT_MAX_CALLS", "300")
+    assert PipelineConfig.from_kwargs(window_days=14).extract_max_calls == 300
+    # An explicit ceiling still says the last word.
+    assert PipelineConfig.from_kwargs(extract_max_calls=5).extract_max_calls == 5
+
+
 def test_the_beat_declaration_is_the_only_one_and_the_ops_panel_reads_it():
     """The schedule Celery fires and the schedule the panel renders are one object.
 

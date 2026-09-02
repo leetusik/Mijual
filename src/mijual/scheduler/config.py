@@ -31,11 +31,13 @@ from mijual.beat import (
     RESYNC_WINDOW_DAYS,
 )
 from mijual.calc import today_kst
+from mijual.config import load_settings
 from mijual.collect.discovery import DEFAULT_MARKETS
 from mijual.collect.targets import DEFAULT_ENDPOINTS
 from mijual.db.models import RightsType
 
 __all__ = [
+    "DEFAULT_EXTRACT_MAX_CALLS",
     "DEFAULT_STAGES",
     "DEFAULT_WINDOW_DAYS",
     "NOTIFY_MAX_MAILS",
@@ -78,6 +80,29 @@ DEFAULT_STAGES = ("collect", "bodydoc", "extract", "gates", "reparse", "snapshot
 #: urgency set only — ``python -m mijual.cb extract``.
 DEFAULT_EXTRACT_RIGHTS = (RightsType.SUBSCRIPTION_WARRANT, RightsType.APPRAISAL_RIGHT)
 
+#: How many model calls one run may spend when nobody says otherwise. It stayed a
+#: bare literal until ``P4.F4``, when the production corpus outgrew it: the
+#: 2026-09-02 evening run ended ``60 of 60 calls, BUDGET EXHAUSTED`` with a 정정
+#: backlog still waiting, and the operator asked for a relaxed ceiling. Raising it
+#: is now deployment configuration (``MIJUAL_EXTRACT_MAX_CALLS``) rather than a
+#: code change — but the **dataclass default stays 60**, so an offline test, a
+#: fixture run and this module's own reasoning are unaffected by the environment.
+DEFAULT_EXTRACT_MAX_CALLS = 60
+
+
+def env_extract_max_calls() -> int | None:
+    """``MIJUAL_EXTRACT_MAX_CALLS`` if the deployment sets one, else ``None``.
+
+    One reader for the two paths that may take it — :meth:`PipelineConfig.from_kwargs`
+    (beat and every Celery task) and ``python -m mijual.scheduler once`` — so the
+    key is spelled once and the two can never disagree about which wins. Neither
+    path lets it override an explicit ceiling: a beat entry that names
+    ``extract_max_calls`` and a CLI ``--max-calls`` both still say the last word.
+    An unparseable value raises here, in :func:`mijual.config.load_settings`, and
+    the process stops rather than running the schedule at a budget nobody chose.
+    """
+    return load_settings().extract_max_calls
+
 
 def window_for(days: int, *, today: date | None = None) -> tuple[str, str]:
     """``days`` back from today (KST) to today, as ``YYYYMMDD`` bounds.
@@ -110,7 +135,7 @@ class PipelineConfig:
     collect_max_documents: int | None = 150
     bodydoc_max_requests: int | None = 200
     bodydoc_max_documents: int | None = 100
-    extract_max_calls: int | None = 60
+    extract_max_calls: int | None = DEFAULT_EXTRACT_MAX_CALLS
     extract_rights: tuple[RightsType, ...] = DEFAULT_EXTRACT_RIGHTS
     #: §7 #10 (정정 재추출 + diff) shares ``extract_max_calls`` with the prose pass.
     extract_corrections: bool = True
@@ -171,7 +196,16 @@ class PipelineConfig:
 
         Beat entries and Celery messages are JSON, so ``markets=["Y","K"]`` and
         ``extract_rights=["R1"]`` have to survive the round trip.
+
+        This is also where a **deployment's** extract ceiling arrives (``P4.F4``):
+        every scheduled run reaches the pipeline through here, and none of the
+        beat entries names ``extract_max_calls``, so kwargs that carry no ceiling
+        take :func:`env_extract_max_calls` and kwargs that carry one keep it.
         """
+        if "extract_max_calls" not in kwargs:
+            ceiling = env_extract_max_calls()
+            if ceiling is not None:
+                kwargs["extract_max_calls"] = ceiling
         rights = kwargs.pop("extract_rights", None)
         if rights is not None:
             kwargs["extract_rights"] = tuple(

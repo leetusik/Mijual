@@ -31,12 +31,14 @@ import sys
 from pathlib import Path
 
 from mijual.scheduler.config import (
+    DEFAULT_EXTRACT_MAX_CALLS,
     DEFAULT_STAGES,
     DEFAULT_WINDOW_DAYS,
     NOTIFY_MAX_MAILS,
     RIGHTS_BY_ID,
     STAGES,
     PipelineConfig,
+    env_extract_max_calls,
 )
 from mijual.scheduler.pipeline import run_pipeline
 
@@ -63,7 +65,14 @@ def build_parser() -> argparse.ArgumentParser:
                       help="collect stage's live OpenDART ceiling (O-1 guard)")
     once.add_argument("--bodydoc-max-requests", type=int, default=200,
                       help="본문 stage's live OpenDART ceiling")
-    once.add_argument("--max-calls", type=int, default=60, help="LLM call ceiling for the run")
+    once.add_argument(
+        "--max-calls",
+        type=int,
+        default=None,
+        help="LLM call ceiling for the run (default: $MIJUAL_EXTRACT_MAX_CALLS "
+        f"if the environment sets one, else {DEFAULT_EXTRACT_MAX_CALLS}); an "
+        "explicit value here wins over the environment",
+    )
     once.add_argument("--rights", nargs="+", default=["R1", "R3"], choices=sorted(RIGHTS_BY_ID),
                       help="rights types the extraction stage reads (default: R1 R3)")
     once.add_argument("--no-corrections", action="store_true", help="skip §7 #10 정정 재추출")
@@ -113,7 +122,15 @@ def _config(args) -> PipelineConfig:
         redis_url=args.redis_url,
         collect_max_requests=args.max_requests,
         bodydoc_max_requests=args.bodydoc_max_requests,
-        extract_max_calls=args.max_calls,
+        # --max-calls → $MIJUAL_EXTRACT_MAX_CALLS → 60 (P4.F4). The flag is
+        # ``None`` by default so "the operator typed a ceiling" and "the operator
+        # typed nothing" are distinguishable; a typed 60 therefore still overrides
+        # a relaxed deployment value.
+        extract_max_calls=(
+            args.max_calls
+            if args.max_calls is not None
+            else (env_extract_max_calls() or DEFAULT_EXTRACT_MAX_CALLS)
+        ),
         extract_rights=tuple(RIGHTS_BY_ID[r] for r in args.rights),
         extract_corrections=not args.no_corrections,
         notify_today=args.notify_today,

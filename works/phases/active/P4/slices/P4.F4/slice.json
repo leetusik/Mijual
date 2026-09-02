@@ -3,7 +3,7 @@
   "phase_id": "P4",
   "name": "Relax the extract call ceiling in production: MIJUAL_EXTRACT_MAX_CALLS knob, 300 on the box, deploy before the freeze",
   "kind": "fix",
-  "status": "in_progress",
+  "status": "pending",
   "order": 8.7,
   "depends_on": [
     "P4.F2"
