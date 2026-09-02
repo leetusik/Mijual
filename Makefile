@@ -3,6 +3,7 @@
 #   make stack-up      start Postgres (docker), the API and the frontend
 #   make stack-down    stop the API and the frontend (Postgres stays up)
 #   make stack-status  what is running, and the URLs to open
+#   make smoke-prod    smoke the LIVE origin (https://jujutower.com), read-only
 #
 # The frontend binds 0.0.0.0, so the app is reachable both at
 # http://127.0.0.1:3010 and over Tailscale at http://<tailscale-ip>:3010.
@@ -41,7 +42,7 @@ WEB_PID := $(STACK)/web.pid
 API_LOG := $(STACK)/api.log
 WEB_LOG := $(STACK)/web.log
 
-.PHONY: stack-up stack-down stack-status db-up db-ensure api-up web-up
+.PHONY: stack-up stack-down stack-status db-up db-ensure api-up web-up smoke-prod
 
 stack-up: db-up db-ensure api-up web-up stack-status
 
@@ -114,3 +115,18 @@ stack-status:
 	@echo "open:  http://127.0.0.1:$(WEB_PORT)"
 	@if [ -n "$(TS_IP)" ]; then echo "tailscale:  http://$(TS_IP):$(WEB_PORT)"; \
 	else echo "tailscale:  (not up)"; fi
+
+# The production smoke suite: every check goes through Cloudflare -> the shared
+# edge nginx -> the mijual-web container -> (for /api/*) Next's rewrite ->
+# FastAPI, against the LIVE origin. Read-only and free — no POST /api/ask, no
+# account, no writes — so it is safe to run at any time, including right after a
+# deploy (runbook R6) and before one. Stdlib only, so it needs no venv.
+#
+#   make smoke-prod                       # the whole suite
+#   make smoke-prod ARGS="--light"        # only the two probe checks
+#   make smoke-prod ARGS="--no-cotenants" # skip the neighbouring sites
+#   make smoke-prod ARGS="--base https://jujutower.com"
+#
+# Non-zero exit on any failed check; the same script the uptime probe runs.
+smoke-prod:
+	@python3 scripts/smoke_production.py $(ARGS)

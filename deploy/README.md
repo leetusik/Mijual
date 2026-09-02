@@ -77,6 +77,20 @@ deploy/db/restore.sh <dump> --yes      # DESTRUCTIVE data restore
 - **Nothing here ever touches `edge-nginx`.** Both scripts record its
   `StartedAt` before and assert it unchanged at the end.
 
+**From a laptop, before and after every release** (read-only, stdlib only, no
+venv and no box access needed):
+
+```sh
+make smoke-prod                        # 17 checks against https://jujutower.com, ~7 s
+make smoke-prod ARGS="--light"         # the two checks the uptime probe runs
+```
+
+`scripts/smoke_production.py` is the production regression instrument — it
+asserts the whole chain through Cloudflare, including the three **co-tenant**
+sites (the R7 no-harm assertion in code), and exits non-zero on any failure. The
+same `--light` pair runs every 10 minutes from
+`.github/workflows/production-probe.yml`, which mails the operator on failure.
+
 The full operator + agent script — Cloudflare, box prep, the first deploy, the
 edge, the cut-over order and the post-deploy checks — is
 **[`runbook.md`](runbook.md)**.

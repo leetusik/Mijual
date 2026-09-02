@@ -29,6 +29,14 @@ in it has yet touched the box, Cloudflare or the edge.
    changple5, changple_web, hi2vi, knowledge and vocky. Mijual adds containers;
    it removes nothing.
 
+⚠ **DEPLOY FREEZE — 2026-09-07 11:00 → 2026-09-11 23:59 KST.** No deploy in that
+window, **`deploy/rollback.sh` excepted**. `deploy.sh` recreates `mijual-web`
+for a few seconds, and the 결격 rule the submitted URL is judged under
+(`operations.md` § Deployment) disqualifies on a single outage. Anything that
+wants to ship in those five days waits; anything already broken rolls back,
+because a rollback is a tag flip and the fastest way back to serving. Recorded
+by `P4.S6`; it is also a `## Decisions` entry in the phase notebook.
+
 ---
 
 ## R1 — provisioning (OPERATOR, in a browser + one box command)
@@ -270,6 +278,25 @@ The runtime and access path are whatever `## Operator Runtime` in
 production origin**, with a `## Doc impact` line, or `P4.REVIEW`'s acceptance
 gate has no manifest to walk and must stop for the operator.
 
+**Start with the smoke suite — one command, read-only, from a laptop:**
+
+```sh
+make smoke-prod                                  # or: python3 scripts/smoke_production.py
+make smoke-prod ARGS="--light"                   # just the two probe checks
+```
+
+Seventeen checks in ~7 s, all GETs, nothing spent and nothing written: health
+(body, not status), the landing's HSTS/CSP/`cf-ray`, the www and http 301s, the
+board plus one 종목 and one 이벤트 page built from its own rows, a bad
+`rcept_no` staying **404 and not 500**, `/api/ask/start-cards`, the `/ops` door
+**without** D15's four rule lines, robots/sitemap/manifest/OG/noindex, no
+off-origin `src`/`href` on the landing, and the three **co-tenant** sites still
+answering 200 (the R7 no-harm assertion, in code). Non-zero exit on any failure.
+Run it **before** a deploy as well, so a red check afterwards is attributable.
+
+It is the machine half of this section. The bullets below are the half only a
+human with a real browser can do:
+
 - **The `/ask` stream, in a real browser, frame by frame.** The instrument is
   Aside (`aside repl --account <id> "<js>"`) per the workspace rule, or whatever
   real browser the manifest names. Watch the answer *grow*: 도구 행 appearing as
@@ -302,6 +329,18 @@ gate has no manifest to walk and must stop for the operator.
 
 **Report back:** a browser observation of the stream (not a curl), the ops door,
 the mail actually received, and the `## Operator Runtime` Doc impact line.
+
+**And the standing watch, which needs no deploy step.**
+`.github/workflows/production-probe.yml` runs the suite's `--light` pair from
+GitHub every 10 minutes and, on failure, mails the operator's alert address
+over the same SMTP account the product uses. Both endpoints and the credential
+are **repository secrets** — `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`,
+`ALERT_TO` — so no address and no credential sits in this public repo. Its header carries
+the caveats — GitHub disables a scheduled workflow after 60 days of repo
+inactivity (a push re-arms it), the schedule only starts once the file is on the
+default branch, and cron can lag. `gh workflow run production-probe.yml -f
+base=https://jujutower.com/api/nope` is the failure drill: it exercises the
+alert path without touching production.
 
 ---
 

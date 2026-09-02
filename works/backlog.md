@@ -7,8 +7,8 @@
 
 - Current phase: `P4`
 - Current slice: `P4.S6`
-- Next slice: `P4.S8`
-- Waiting on operator: `none`
+- Next slice: `P4.F1`
+- Waiting on operator: `P4.S6`
 - Open deferred jobs: `30`
 
 ## Active Phases
@@ -80,6 +80,7 @@
 | [x] `P4.S3` | `done` | Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook | `implementation` | `works/phases/active/P4/slices/P4.S3` |
 | [x] `P4.S4` | `done` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |
 | [x] `P4.S5` | `done` | SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD | `implementation` | `works/phases/active/P4/slices/P4.S5` |
-| [ ] `P4.S6` | `todo` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
+| [~] `P4.S6` | `pending` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
+| [ ] `P4.F1` | `todo` | Sample portfolio picks live issuers per state at request time (start-card pattern), fixed list as fallback | `fix` | `works/phases/active/P4/slices/P4.F1` |
 | [ ] `P4.S8` | `todo` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |
 | [ ] `P4.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

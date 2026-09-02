@@ -1,0 +1,198 @@
+name: Production Probe
+
+# Ten-minutely SAFE synthetic probe of the live 주주의관제탑 origin — the external
+# uptime monitor with email alerting (P4.S6). It GETs two URLs through Cloudflare:
+#
+#   1. <base>/api/health  -> HTTP 200 whose BODY contains "status":"ok"
+#   2. <base>/            -> HTTP 200 whose BODY contains 주주의관제탑
+#
+# Between them they traverse every hop — Cloudflare -> the shared edge nginx ->
+# the mijual-web container -> Next's rewrite -> FastAPI — while consuming
+# nothing: both are GETs, neither touches the database and neither is a model
+# call (POST /api/ask would be). Same pair as `make smoke-prod ARGS="--light"`.
+#
+# **GET, never HEAD.** `HEAD /api/health` answers 405 (the Next route handler
+# exports GET only), so a HEAD-based monitor would alert forever on a perfectly
+# healthy product. And every request sends a User-Agent: bare clients get
+# Cloudflare's 403 error 1010.
+#
+# WHY INLINE curl AND NOT `scripts/smoke_production.py --light`: a monitor must
+# go red only when the PRODUCT is broken. Checking the repo out would let a bad
+# commit, a moved file or a Python error turn this red for a reason that has
+# nothing to do with the live site — and it would add a checkout to 4,320 runs a
+# month. The cost is that the two checks are defined twice; they are three lines
+# of curl and the smoke suite's `--light` mode documents the same pair, so the
+# duplication is cheap and visible. Change one, change the other.
+#
+# ALERTING: on failure the last step mails the operator itself, with stdlib
+# Python over the product's own SMTP account (see the five repository secrets
+# below) — nothing sensitive lives in this file, and the repo is PUBLIC. GitHub's
+# own "scheduled run failed" email to the repo owner remains a SECOND, independent
+# path, so a broken SMTP step still surfaces. There is deliberately NO
+# transition/recovery logic: while the site is down this mails every 10 minutes.
+# That is loud on purpose for the 결격 uptime window (2026-09-07 11:00 →
+# 09-11 23:59 KST), and "previous run was green" would make the alert depend on a
+# second API call that can itself fail or race — a new failure mode inside the
+# thing whose whole job is to be reliable.
+#
+# SECRETS (repository secrets on leetusik/Mijual, names only — set by P4.S6):
+#   SMTP_HOST  SMTP_USER  SMTP_PASS  SMTP_FROM  ALERT_TO
+# Port 587 + STARTTLS is fixed in the step below (the account's transport).
+#
+# COST/CAVEATS:
+#   - Every 10 minutes ~= 4,320 runs/month, each well under a minute. The repo is
+#     public, so Actions minutes are unlimited.
+#   - GitHub AUTO-DISABLES a scheduled workflow after 60 DAYS with no repo
+#     activity — a push re-arms it. If probe mail goes quiet, check the Actions tab.
+#   - The schedule only starts once this file is on the DEFAULT BRANCH.
+#   - Scheduled runs can LAG by minutes under GitHub load; the cron is off-minute
+#     (:3, :13, …) to dodge the top-of-minute congestion, but treat the cadence as
+#     "about every 10 minutes", not a guarantee. UptimeRobot's own 5-minute
+#     monitor is the belt-and-braces second observer with an independent clock.
+#   - FAILURE DRILL (exercises the alert path without touching production):
+#       gh workflow run production-probe.yml -R leetusik/Mijual \
+#          -f base=https://jujutower.com/api/nope
+
+on:
+  schedule:
+    - cron: "3,13,23,33,43,53 * * * *"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Origin to probe (point it at a URL that must fail to drill the alert path)"
+        required: false
+        default: "https://jujutower.com"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe /api/health + landing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: GET /api/health and / and assert 200 + body
+        id: probe
+        shell: bash
+        env:
+          BASE: ${{ inputs.base || 'https://jujutower.com' }}
+          UA: "Mijual-probe/1.0 (+https://jujutower.com; github-actions)"
+        run: |
+          set -uo pipefail
+          attempts=2
+          fail_check=""
+          fail_detail=""
+
+          probe_one() {
+            # $1 = check name, $2 = url, $3 = string the body must contain
+            local name="$1" url="$2" needle="$3" attempt resp code body
+            for attempt in $(seq 1 "$attempts"); do
+              resp="$(curl -sS -m 20 -A "$UA" -w $'\n%{http_code}' "$url" || true)"
+              code="${resp##*$'\n'}"
+              body="${resp%$'\n'*}"
+              if [ "$code" = "200" ] && printf '%s' "$body" | grep -qF -- "$needle"; then
+                echo "  ${name} OK (attempt ${attempt}): HTTP 200 containing ${needle}"
+                return 0
+              fi
+              echo "  ${name} attempt ${attempt}/${attempts}: status=${code:-none} (wanted 200 + ${needle})" >&2
+              [ "$attempt" -lt "$attempts" ] && sleep 10
+            done
+            fail_check="$name"
+            fail_detail="HTTP ${code:-none} from ${url} — body did not contain ${needle}"
+            return 1
+          }
+
+          echo "probing ${BASE}"
+          probe_one "health"  "${BASE}/api/health" '"status":"ok"' \
+            && probe_one "landing" "${BASE}/" '주주의관제탑'
+          rc=$?
+
+          if [ "$rc" -ne 0 ]; then
+            {
+              echo "PROBE_CHECK=${fail_check}"
+              echo "PROBE_DETAIL=${fail_detail}"
+              echo "PROBE_BASE=${BASE}"
+            } >> "$GITHUB_ENV"
+            echo "PRODUCTION PROBE FAILED: ${fail_check} — ${fail_detail} (${attempts} attempts)" >&2
+            exit 1
+          fi
+          echo "probe OK: both checks green"
+
+      - name: Mail the operator (stdlib SMTP, no third-party action)
+        if: failure()
+        shell: bash
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import smtplib
+          import sys
+          from datetime import datetime, timedelta, timezone
+          from email.message import EmailMessage
+          from email.utils import formatdate
+
+          host = os.environ.get("SMTP_HOST", "")
+          user = os.environ.get("SMTP_USER", "")
+          password = os.environ.get("SMTP_PASS", "")
+          sender = os.environ.get("SMTP_FROM", "") or user
+          to = os.environ.get("ALERT_TO", "")
+          if not (host and user and password and to):
+              # Loud, and non-zero: the job is already red, but a silent alert
+              # path is worse than a second red step. Names only, never values.
+              missing = [n for n in ("SMTP_HOST", "SMTP_USER", "SMTP_PASS", "ALERT_TO")
+                         if not os.environ.get(n)]
+              print("ALERT NOT SENT — missing repository secret(s): " + ", ".join(missing),
+                    file=sys.stderr)
+              sys.exit(1)
+
+          check = os.environ.get("PROBE_CHECK") or "unknown"
+          detail = os.environ.get("PROBE_DETAIL") or "no detail captured"
+          base = os.environ.get("PROBE_BASE") or "https://jujutower.com"
+          now_utc = datetime.now(timezone.utc)
+          now_kst = now_utc.astimezone(timezone(timedelta(hours=9)))
+
+          msg = EmailMessage()
+          msg["Subject"] = f"[jujutower] PRODUCTION PROBE FAILED — {check}"
+          msg["From"] = sender
+          msg["To"] = to
+          msg["Date"] = formatdate(localtime=True)
+          msg.set_content(
+              "The synthetic uptime probe could not confirm that the site is serving.\n"
+              "\n"
+              f"  failed check : {check}\n"
+              f"  detail       : {detail}\n"
+              f"  base URL     : {base}\n"
+              f"  when         : {now_utc:%Y-%m-%d %H:%M:%S} UTC  /  {now_kst:%Y-%m-%d %H:%M:%S} KST\n"
+              f"  trigger      : {os.environ.get('EVENT', '?')}\n"
+              f"  run          : {os.environ.get('RUN_URL', '?')}\n"
+              "\n"
+              "Two attempts ten seconds apart both failed, so this is not a single blip.\n"
+              "\n"
+              "First things to try:\n"
+              f"  1. open {base}/api/health in a browser\n"
+              "  2. make smoke-prod                       (the full 17-check suite)\n"
+              "  3. on the box: cd /home/opc/Mijual && docker compose -f compose.prod.yml ps\n"
+              "  4. if a recent release broke it: deploy/rollback.sh   (a tag flip, no rebuild)\n"
+              "\n"
+              "This mail repeats every 10 minutes while the check keeps failing.\n"
+              f"Sent by .github/workflows/production-probe.yml in {os.environ.get('REPO', '?')}.\n"
+          )
+
+          with smtplib.SMTP(host, 587, timeout=30) as smtp:
+              smtp.ehlo()
+              smtp.starttls()
+              smtp.ehlo()
+              smtp.login(user, password)
+              smtp.send_message(msg)
+          # Names and addresses only — never the body, never the credential.
+          print(f"alert mail sent: {check} -> {to} via {host}:587 (starttls)")
+          PY

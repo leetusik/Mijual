@@ -1,15 +1,15 @@
 {
-  "id": "P4.S6",
+  "id": "P4.F1",
   "phase_id": "P4",
-  "name": "Production smoke suite + uptime monitoring with email alerting",
-  "kind": "qa",
-  "status": "pending",
-  "order": 6,
+  "name": "Sample portfolio picks live issuers per state at request time (start-card pattern), fixed list as fallback",
+  "kind": "fix",
+  "status": "todo",
+  "order": 6.5,
   "depends_on": [
-    "P4.S4"
+    "P4.S6"
   ],
-  "created_at": "2026-09-02T06:20:07+09:00",
-  "started_at": "2026-09-02T12:12:14+09:00",
+  "created_at": "2026-09-02T13:45:06+09:00",
+  "started_at": null,
   "completed_at": null,
   "risk": "high",
   "source": {
