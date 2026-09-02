@@ -1,0 +1,34 @@
+{
+  "id": "P4.F5",
+  "phase_id": "P4",
+  "name": "Korean-capable font fallback metrics: kill the cold-cache layout shift",
+  "kind": "fix",
+  "status": "done",
+  "order": 8.81,
+  "depends_on": [
+    "P4.R1"
+  ],
+  "created_at": "2026-09-03T01:32:34+09:00",
+  "started_at": "2026-09-03T01:34:56+09:00",
+  "completed_at": "2026-09-03T02:19:27+09:00",
+  "risk": "high",
+  "source": {
+    "type": "manual",
+    "id": null
+  },
+  "paths": {
+    "plan": "plan.md",
+    "result": "result.md"
+  },
+  "outcome": "Measured Korean metric-matched fallback faces replace next/font's Arial fallback: cold-cache mobile CLS / 0.095→0.0002, /stocks 0.138→0.0003, /ask 0.089→0.0003 on a local production build; loaded-font rendering pixel-identical; not yet deployed",
+  "validation": {
+    "required": [],
+    "last_run": null,
+    "last_status": "pending"
+  },
+  "archive": {
+    "archived": false,
+    "archived_at": null,
+    "archive_path": null
+  }
+}

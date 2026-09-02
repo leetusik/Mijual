@@ -57,10 +57,14 @@ html {
  * superseded; this is that override, moved from a card into the product.
  *
  * `--font-noto-sans-kr` and `--font-plex-mono` are declared on `<html>` by
- * `next/font/local` (`app/fonts.ts`, wired in `app/layout.tsx`). The OS stacks
- * behind them are the fallbacks `next/font` cannot express through the variable
- * alone: a syllable outside the subset resolves through them, **composed**,
- * because the subset omits the conjoining-jamo block on purpose.
+ * `next/font/local` (`app/fonts.ts`, wired in `app/layout.tsx`), and each
+ * carries its own OS stack — since `P4.F5` that stack starts with the three
+ * metric-matched Korean fallback families declared below, so a syllable outside
+ * the subset still resolves **composed** (the subset omits the conjoining-jamo
+ * block on purpose) and now resolves at Noto's own metrics. The bare
+ * `"Apple SD Gothic Neo"` / `"Malgun Gothic"` entries that used to sit in this
+ * tail are gone deliberately: they named the same faces *without* the overrides,
+ * which is the layout shift `P4.F5` removed.
  *
  * The rule targets the document root rather than `.cosmos`, because the type
  * families are true of every surface — `/ops` is not a cosmos page and reads the
@@ -74,10 +78,149 @@ html {
  * no longer even downloadable). `html:root` is (0,1,1) against (0,1,0) and wins
  * regardless of order. Do not "simplify" it back to `:root`. */
 html:root {
-  --font-sans: var(--font-noto-sans-kr), "Noto Sans KR", system-ui, -apple-system,
-    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-sans: var(--font-noto-sans-kr), "Noto Sans KR", system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono",
     Consolas, monospace;
+}
+
+/* ── The three Korean fallback faces, metric-matched to Noto Sans KR (P4.F5) ───
+ *
+ * These exist because `next/font`'s own generated fallback could not: it is
+ * `src: local(Arial)`, and **Arial has no Hangul**, so on a cold cache Korean
+ * text painted in an *unadjusted* system face and the whole document re-wrapped
+ * when the 291,072-byte subset landed. Measured mobile CLS before this block:
+ * `/` 0.095 · `/stocks` 0.138 · `/ask` 0.089 (`P4.R1`). `app/fonts.ts` turns the
+ * generated face off (`adjustFontFallback: false`) and lists these three ahead
+ * of `system-ui`, so this is what a first, cold visit actually paints in.
+ *
+ * **THE NUMBERS ARE MEASURED, NOT CHOSEN.** Read from the font tables with
+ * fontTools and confirmed in real Chrome (`P4.F5`; `TextMetrics` at 100 px):
+ *
+ *   | face                       | upem | hhea asc / desc | Hangul advance |
+ *   | Noto Sans KR (this subset) | 1000 |  1160 / -288    |  920 (0.92 em)  |
+ *   | Apple SD Gothic Neo (all 8 weights) | 1000 | 900 / -300 | 865 (0.865 em) |
+ *   | Noto Sans CJK KR           | 1000 |  1160 / -288    |  920 (0.92 em)  |
+ *
+ * Every Hangul syllable in each of these faces has ONE advance width, so a
+ * single `size-adjust` matches Korean text exactly and no per-weight number is
+ * needed: `size-adjust = 920 / 865 = 106.36%` for Apple, `100%` for Noto CJK
+ * (it is the same design as the subset we ship). The vertical overrides are the
+ * subset's own metrics divided by that same `size-adjust`, because `size-adjust`
+ * scales them too: `ascent-override = 116% / 1.0636 = 109.06%`,
+ * `descent-override = 28.8% / 1.0636 = 27.08%`, `line-gap-override: 0%`.
+ *
+ * To re-derive after `scripts/subset_noto_sans_kr.sh` changes the subset: read
+ * `head.unitsPerEm`, `hhea.ascent/descent` and any Hangul `hmtx` advance out of
+ * the new woff2, and redo those four divisions.
+ *
+ * **`local()` matches a full name or a PostScript name, NOT a family name** —
+ * measured in Chrome 152: `local("Apple SD Gothic Neo")` fails to load while
+ * `local("AppleSDGothicNeo-Regular")` resolves. That is why every `src` below
+ * names PostScript and full names and never the bare family.
+ *
+ * The weights are the ones this product sets (400/500/600/700, the hero `h1` is
+ * 700): synthesised bold measured the same advance as the real face, so this is
+ * about the swap window *looking* right, not about layout.
+ *
+ * Windows is the one unclosed edge: Malgun Gothic is not installable here, so
+ * its `size-adjust` stays **100%** (no width claim we have not measured) and only
+ * the vertical metrics are matched. A Windows measurement would close it. */
+@font-face {
+  font-family: "notoSansKr Fallback Apple";
+  src: local("AppleSDGothicNeo-Regular"), local("Apple SD Gothic Neo Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 106.36%;
+  ascent-override: 109.06%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Apple";
+  src: local("AppleSDGothicNeo-Medium"), local("Apple SD Gothic Neo Medium");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 106.36%;
+  ascent-override: 109.06%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Apple";
+  src: local("AppleSDGothicNeo-SemiBold"), local("Apple SD Gothic Neo SemiBold");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 106.36%;
+  ascent-override: 109.06%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Apple";
+  src: local("AppleSDGothicNeo-Bold"), local("Apple SD Gothic Neo Bold");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 106.36%;
+  ascent-override: 109.06%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Noto";
+  src: local("NotoSansKR-Regular"), local("Noto Sans KR Regular"), local("NotoSansCJKkr-Regular"),
+    local("Noto Sans CJK KR Regular"), local("NotoSansCJK-Regular");
+  font-weight: 100 600;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 116%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Noto";
+  src: local("NotoSansKR-Bold"), local("Noto Sans KR Bold"), local("NotoSansCJKkr-Bold"),
+    local("Noto Sans CJK KR Bold"), local("NotoSansCJK-Bold");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 116%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Malgun";
+  src: local("MalgunGothic"), local("Malgun Gothic Regular"), local("Malgun Gothic");
+  font-weight: 100 600;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 116%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "notoSansKr Fallback Malgun";
+  src: local("MalgunGothicBold"), local("Malgun Gothic Bold");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 116%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
 }
 
 body {

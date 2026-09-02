@@ -38,6 +38,23 @@ import localFont from "next/font/local";
  * free and the weights R1 signed all stay reachable.
  *
  * `preload: true` — this is the face every visible glyph on every surface needs.
+ *
+ * ── `adjustFontFallback: false`, and why Next's generated fallback could not work (P4.F5) ────────
+ *
+ * Left at its default, `next/font/local` generates a second `@font-face` — `notoSansKr Fallback`,
+ * `src: local(Arial)`, `size-adjust: 98.63%`, `ascent-override: 117.61%` — and **Arial carries no
+ * Hangul**. So on a cold cache every Korean glyph painted in whatever came *next* in this array
+ * with no metric override at all, and the whole document re-wrapped when the 291,072-byte subset
+ * landed 3 s later. Measured in `P4.R1`: mobile CLS `/` 0.095, `/stocks` 0.138, `/ask` 0.089, and
+ * 0.000 on every route with the font blocked. Preloading was measured and does nothing — the
+ * request already starts at ~400 ms; the 3 s is transfer.
+ *
+ * The three families below are declared by hand in `app/shell.css` with **measured** overrides
+ * (one per platform face: Apple SD Gothic Neo, Noto Sans CJK KR, Malgun Gothic) and sit **ahead of
+ * `system-ui`** so they are what a cold visit paints in. `font-display` stays `swap`: the product's
+ * face is still Noto Sans KR and it still swaps in — it just no longer moves anything when it does.
+ * Do not put a bare "Apple SD Gothic Neo" / "Malgun Gothic" in front of them; that is the
+ * unadjusted face this fix exists to stop using.
  */
 export const notoSansKr = localFont({
   src: "./fonts/NotoSansKR.subset.woff2",
@@ -46,7 +63,15 @@ export const notoSansKr = localFont({
   display: "swap",
   preload: true,
   variable: "--font-noto-sans-kr",
-  fallback: ["system-ui", "-apple-system", "Apple SD Gothic Neo", "Malgun Gothic", "sans-serif"],
+  adjustFontFallback: false,
+  fallback: [
+    "notoSansKr Fallback Apple",
+    "notoSansKr Fallback Noto",
+    "notoSansKr Fallback Malgun",
+    "system-ui",
+    "-apple-system",
+    "sans-serif",
+  ],
 });
 
 /**
