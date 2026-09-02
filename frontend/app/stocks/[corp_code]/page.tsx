@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { LookupRail, StockView } from "@/components/lookup";
 import { ApiError, getBoardSummary, getStock } from "@/lib/api";
+import { stockPath } from "@/lib/routes";
+import { routeMetadata, stockDescriptionKo, stockTitleKo } from "@/lib/seo";
 import { PROVENANCE_KO } from "@/components/lookup/copy";
 import type { BoardSummary } from "@/lib/types";
 import styles from "@/components/lookup/Lookup.module.css";
@@ -33,6 +36,34 @@ import styles from "@/components/lookup/Lookup.module.css";
  * the *entry* page's — a reader holding a result does not need the page
  * explained to them a second time.
  */
+/**
+ * The issuer's own `<title>`, description and canonical.
+ *
+ * The title is the 종목명 alone — the template supplies 「| 주주의관제탑」 — and the
+ * description names the count of 진행 중인 권리 this page actually serves. The
+ * 놓친 권리 half of the page is **money**, and no meta string of this product
+ * carries a figure (`lib/seo.ts`).
+ *
+ * Same 404 handling and the same one-round-trip property as the event route: an
+ * unknown `corp_code` returns `{}` (default title, no canonical) and the page
+ * below owns the `notFound()`.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ corp_code: string }>;
+}): Promise<Metadata> {
+  const { corp_code: corpCode } = await params;
+  const page = await getStock(corpCode).catch(() => null);
+  if (!page) return {};
+
+  return routeMetadata({
+    title: stockTitleKo(page),
+    description: stockDescriptionKo(page),
+    path: stockPath(corpCode),
+  });
+}
+
 export default async function StockPage({
   params,
 }: {

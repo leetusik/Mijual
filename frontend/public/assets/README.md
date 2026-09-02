@@ -8,7 +8,7 @@ as untouchable, or an untouchable export gets "regenerated".
 |---|---|---|
 | **A — design-project export** | produced outside this repo, in the Claude Design project **"Mijual Design System"**, and **not regenerable here**. Copied in byte-for-byte. A diff is a design change. | **none remain in this directory.** The four `mijual-*.png` were class A and were deleted by `P10.S2`; `fonts/PretendardVariable.woff2` and `../foundations/fonts.css` were class A and were deleted by `P10.S7`. All are recorded below. `../foundations/tokens.css` is still class A and is still frozen. |
 | **B — operator delivery** | handed over directly by the operator, outside the design project. Landed byte-exact and never re-encoded. Also not regenerable here. | `juju2-logo-source.png`, `juju2-symbol-source.png` |
-| **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju2-wordmark-white.png`, `juju2-symbol-white.png`, and the three favicon tiles in `../../app/` |
+| **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file — or, once (the share card), from another class-C file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju2-wordmark-white.png`, `juju2-symbol-white.png`, the three favicon tiles in `../../app/`, and (`P4.S5`) `../../app/opengraph-image.png` + `juju2-icon-192.png` + `juju2-icon-512.png` |
 
 ## The brand mark (2026-08-31, `P10.S7`; re-derived by `P10.F1` for R18) — the second delivery
 
@@ -386,6 +386,111 @@ contrast is **2.94** against a white tab, **2.71** on Chrome light `#f1f3f4`, **
 `#202124` and **3.38** on cosmos — *below* the flat colour's 4.05/3.98 because a 16px downscale of a
 five-dot cluster leaves almost no fully opaque pixel (1 of 84 in `icon.png`, 0 of 37 in `icon1.png`).
 That softness is the same recorded limitation as the 1.2px dots, seen from the contrast side.
+
+## The share card and the two large manifest tiles — three class-C derivatives (`P4.S5`, 2026-09-02)
+
+`P4.S5` gave the site its SEO surface, and three of those pieces are **images**. All three are
+class C: produced in this repository by **one recorded ImageMagick command each**, from the class-C
+marks above, with no artwork drawn, cropped or invented. Same ImageMagick as everything else on this
+page — **7.1.2-27 Q16-HDRI aarch64**.
+
+| file | class | what it is | format |
+|---|---|---|---|
+| `../../app/opengraph-image.png` | C | the **share card** — the white wordmark centred on the cosmos paper `#0a1310`, served at `/opengraph-image.png` and named by every page's `og:image` / `twitter:image` | PNG 1200×630 sRGBA **opaque**, 32,679 b |
+| `juju2-icon-192.png` | C | the 192 manifest tile — the symbol in `#2b8e6c` on transparency, same recipe as the favicons | PNG 192×192 sRGBA, 3,037 b |
+| `juju2-icon-512.png` | C | the 512 manifest tile — the same, one size up | PNG 512×512 sRGBA, 11,095 b |
+
+**The share card is a *composition*, not a new mark.** It places `juju2-wordmark-white.png`
+unmodified — no recolour, no crop, no trim — on a rectangle of the design system's own dark paper.
+Nothing was drawn on it and **no text was set**: the only glyphs on the card are the wordmark's own
+raster. That is what keeps it inside this directory's rule rather than beside it.
+
+### Exactly how the three were produced
+
+Run from **`frontend/`** (one level up from this directory), like the favicon commands above — the
+share card lands in `app/`, the two tiles here:
+
+```sh
+# Share card. 1200x630 is the Open Graph 1.91:1 box. The wordmark is scaled to 720 wide
+# (60% of the card) and composited dead-centre on both axes:
+#   720 * 371/1247 = 214.2 -> 214 tall;  margins 240/240 horizontal and 208/208 vertical.
+# The canvas is OPAQUE (xc:'#0a1310'), so the result has a uniform alpha of 255 — a share
+# card is composited by someone else's UI and must not rely on transparency.
+magick -size 1200x630 xc:'#0a1310' \
+       \( public/assets/juju2-wordmark-white.png -resize 720x \) \
+       -gravity center -composite -depth 8 -define png:color-type=6 app/opengraph-image.png
+
+# The two large manifest tiles. Identical to the favicon recipe above — recolour to #2b8e6c
+# BEFORE the resize, transparent canvas, composite centred — at the two PWA sizes, with the
+# ink at the same 75% width R18 signed:
+#   192 -> 144 wide (75.0%); 144 * 165/222 = 107.0 -> 107 tall; margins 24/24 and 42/43
+#   512 -> 384 wide (75.0%); 384 * 165/222 = 285.4 -> 285 tall; margins 64/64 and 113/114
+magick -size 192x192 xc:none \
+       \( public/assets/juju2-symbol-white.png \
+          -channel RGB +level-colors '#2b8e6c','#2b8e6c' +channel \
+          -resize 144x \) \
+       -gravity center -composite -depth 8 -define png:color-type=6 public/assets/juju2-icon-192.png
+
+magick -size 512x512 xc:none \
+       \( public/assets/juju2-symbol-white.png \
+          -channel RGB +level-colors '#2b8e6c','#2b8e6c' +channel \
+          -resize 384x \) \
+       -gravity center -composite -depth 8 -define png:color-type=6 public/assets/juju2-icon-512.png
+```
+
+**The favicon section's four traps all still apply**, and the two tile commands inherit every one of
+them: no `-alpha off` (it is what makes a tile opaque, not the canvas colour), `png:color-type=6`
+never `2`, and **recolour before resize** so no foreign colour can bleed into the ink edge. The
+share card is the one file here that *is* opaque, and it is opaque because its canvas is a solid
+colour — still no `-alpha off` anywhere.
+
+### Verify (run from `frontend/`)
+
+```sh
+identify -format '%f %wx%h %[channels] opaque=%[opaque]\n' \
+  app/opengraph-image.png public/assets/juju2-icon-192.png public/assets/juju2-icon-512.png
+# 1200x630 srgba opaque=true / 192x192 srgba opaque=false / 512x512 srgba opaque=false
+
+# the composited artwork's box and offsets — NO +repage, or the offsets reset to +0+0
+magick app/opengraph-image.png -trim -format '%wx%h%O\n' info:              # 720x214+240+208
+magick public/assets/juju2-icon-192.png -trim -format '%wx%h%O\n' info:     # 144x107+24+42
+magick public/assets/juju2-icon-512.png -trim -format '%wx%h%O\n' info:     # 384x285+64+113
+
+# the share card carries exactly two colours and one alpha value: 20,211 pure-white ink px,
+# 723,582 paper px, 756,000 total, 1 distinct alpha.
+magick app/opengraph-image.png -depth 8 RGBA:- | python3 -c "
+import sys; b=sys.stdin.buffer.read()
+px=[tuple(b[i:i+4]) for i in range(0,len(b),4)]
+print(len({p[3] for p in px}), sum(1 for p in px if p[:3]==(255,255,255)), sum(1 for p in px if p[:3]==(10,19,16)))"
+
+# every visible pixel of both tiles is exactly #2b8e6c — the favicon section's colour check
+magick public/assets/juju2-icon-512.png -depth 8 RGBA:- | python3 -c "
+import sys; b=sys.stdin.buffer.read()
+px=[tuple(b[i:i+4]) for i in range(0,len(b),4)]
+print(sum(1 for p in px if p[3]>0 and p[:3]!=(43,142,108)))"   # 0
+```
+
+### Checksums
+
+```
+de6d4b2ddaeece55e42fa4895ade9cf2ebdd5f66e0e5eea5ad3de03ca098737c  ../../app/opengraph-image.png
+e35635697c32280545fa6797baac79c08d15982f3415feca2dadea10c696b94c  juju2-icon-192.png
+053d7b696aa2975802bb26a93a6017378ee936e217737bfeed3d18342b21723b  juju2-icon-512.png
+```
+
+Pixel signatures (`identify -format '%#'`) — the form that **survives** a re-derivation, because
+ImageMagick stamps a `png:tIME` chunk and the file hashes above do not:
+
+```
+c867309ebe662f57cc0069857472ae07e7b829e10433231eb68f4ec83195961a  ../../app/opengraph-image.png
+9da19a30a9e4bb4d6a40646ae31eb7c2df697f6fbc3494824ddbb44d99233ae1  juju2-icon-192.png
+ed3c23a25a8ceb07e780b1311f53e1cc062d6027466d8dcd23882aab64415dcb  juju2-icon-512.png
+```
+
+**The share card is a gate item.** It is the first image of this product a stranger sees — a link
+preview in KakaoTalk, X or Slack — and nothing in the signed design record specifies one, so it is a
+*proposal* on the same footing as `P4.S5`'s Korean meta copy: the operator accepts or rejects it at
+the P4 acceptance gate. Rejecting it is one file and one command; there is nothing else to unwind.
 
 ## Retired and **deleted** — what left, and why nothing loads it
 

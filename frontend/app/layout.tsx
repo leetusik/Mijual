@@ -1,7 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { SiteChrome } from "@/components/chrome";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getSiteContact } from "@/lib/api";
+import {
+  GOOGLE_SITE_VERIFICATION,
+  NAVER_SITE_VERIFICATION,
+  OG_IMAGE,
+  SITE_DESCRIPTION_KO,
+  SITE_NAME,
+  SITE_URL,
+  THEME_COLOR,
+  TITLE_DEFAULT,
+  TITLE_TEMPLATE,
+} from "@/lib/seo";
 import { notoSansKr, plexMono } from "./fonts";
 import "./shell.css";
 
@@ -30,8 +42,30 @@ import "./shell.css";
  */
 export const metadata: Metadata = {
   // The product's own name, unspaced (`docs/current/product.md`; P10 renamed it).
-  // No tagline, no description: the signed design writes no document-level copy,
-  // and inventing a Korean sentence would be a design change.
+  //
+  // **This block used to say "no tagline, no description", and that is no longer
+  // the rule.** It was true of every slice before this one: the signed design
+  // record writes no document-level copy, so inventing a Korean sentence here
+  // would have been a design change made in an implementation slice. What changed
+  // is not the constraint but the *route* — `P4.DECOMP` settled that a phase may
+  // **draft** this copy and the operator **approves the exact strings literally at
+  // the P4 acceptance gate**, which is a decision the operator takes on the
+  // running product rather than one an executor takes alone. It is the same
+  // ruling `src/mijual/mailcopy.py` ships the D-day mail's copy under.
+  //
+  // So none of the Korean below is written here. Every string, with its
+  // provenance line — transcribed from a signed round, or drafted by `P4.S5` and
+  // derived from one — lives in **`lib/seo.ts`**, the single typed source this
+  // file, `app/robots.ts`, `app/sitemap.ts`, `app/manifest.ts`,
+  // `components/seo/json-ld.tsx` and both `generateMetadata` routes all read.
+  //
+  // **`alternates` is deliberately absent from this object.** `alternates` is
+  // inherited *as a whole* by every child segment, so an `alternates: { canonical:
+  // "/" }` here would make every route that does not set its own claim the home
+  // page as its canonical — the single most damaging thing a metadata block can
+  // do, and invisible in review because the tag looks correct on `/`. Canonicals
+  // are set **per indexable route** instead (the three static pages and the two
+  // `generateMetadata` routes).
   //
   // **No `icons` key, and that is not the old gap.** The favicon question the
   // assets README held open ("this mark does not become one") was answered at the
@@ -56,8 +90,53 @@ export const metadata: Metadata = {
   // `app/icon1.png` (16), `app/apple-icon.png` (180) — so Next emits the `<link
   // rel="icon">` / `<link rel="apple-touch-icon">` tags itself, with hashed URLs
   // and correct `sizes`. Hand-written tags here would be a second source of truth
-  // for the same files.
-  title: "주주의관제탑",
+  // for the same files. `manifest.ts` is the same arrangement — a file convention
+  // whose `<link rel="manifest">` Next emits itself.
+  //
+  // `app/opengraph-image.png` is the one **exception**, and `lib/seo.ts` measured
+  // why: a file-convention image attaches to its own segment only, so left
+  // implicit it reached `/` and no other route. The file still serves the image;
+  // its tags are declared below and in `routeMetadata`, from one `OG_IMAGE`.
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE_DEFAULT, template: TITLE_TEMPLATE },
+  description: SITE_DESCRIPTION_KO,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "/",
+    siteName: SITE_NAME,
+    title: TITLE_DEFAULT,
+    description: SITE_DESCRIPTION_KO,
+    images: [OG_IMAGE],
+  },
+  // `images` is stated rather than left to the `app/opengraph-image.png` file
+  // convention, and `lib/seo.ts` explains why at length: the convention attaches
+  // the image to **this segment only**, while a child that sets `openGraph`
+  // replaces the whole object — so left implicit, `/` had a share card and every
+  // other route had none (measured on the production build, `P4.S5`).
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE_DEFAULT,
+    description: SITE_DESCRIPTION_KO,
+    images: [OG_IMAGE],
+  },
+  // The product's default posture. The four non-reader surfaces override it with
+  // `index: false, follow: false` on their own segments; `app/robots.ts` disallows
+  // the same four prefixes.
+  robots: { index: true, follow: true },
+  // Search-engine ownership, HTML-tag method, and **each token is spread in only
+  // when set** — an unset *or* empty value must render no tag at all, never a
+  // blank `content=""`. Google's property is a DNS-TXT domain property held at
+  // Cloudflare and needs nothing here; Naver Search Advisor is the one that would
+  // need a token, and whether to register is an open operator question. Both are
+  // build args (`NEXT_PUBLIC_*`), so adding one is a rebuild.
+  verification: {
+    ...(GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : {}),
+    ...(NAVER_SITE_VERIFICATION
+      ? { other: { "naver-site-verification": NAVER_SITE_VERIFICATION } }
+      : {}),
+  },
 };
 
 export const viewport: Viewport = {
@@ -65,6 +144,11 @@ export const viewport: Viewport = {
   // `user-scalable=no` — pinch zoom stays available.
   width: "device-width",
   initialScale: 1,
+  // The cosmos `--paper`. `<html class="cosmos">` below is unconditional, so the
+  // browser chrome around the page matches the page in every context; D5 named
+  // the missing theme-color and this is it. One value, no `media` variants,
+  // because there is no light surface of this product to switch to.
+  themeColor: THEME_COLOR,
 };
 
 /** How long a served 운영자 연락처 stays good. The value changes almost never and
@@ -129,6 +213,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <head>
         <link rel="stylesheet" href="/foundations/tokens.css" />
+        {/* Organization + WebSite structured data, **inline** — the one shape of
+            structured data that does not cost this product its measured
+            no-third-party-origin property. It reads the 운영자 연락처 already
+            fetched below rather than fetching anything of its own. */}
+        <JsonLd contact={contact} />
       </head>
       {/* R2 designs the landing *and* the global chrome every later surface
           lives in, so the nav/footer/mobile sheet wrap every route from here —

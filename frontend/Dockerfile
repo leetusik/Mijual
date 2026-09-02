@@ -35,6 +35,32 @@ ARG MIJUAL_API_ORIGIN
 RUN test -n "$MIJUAL_API_ORIGIN" || { echo "ERROR: MIJUAL_API_ORIGIN build arg required (see compose.prod.yml build.args)" >&2; exit 1; }
 ENV MIJUAL_API_ORIGIN=$MIJUAL_API_ORIGIN
 
+# NEXT_PUBLIC_SITE_URL is the product's own public origin — https://jujutower.com,
+# apex-only (www 301s to it). It is BUILD-ONLY, unlike MIJUAL_API_ORIGIN above:
+# Next inlines NEXT_PUBLIC_* at build time, so the value is baked into the image
+# and changing it needs a rebuild, not a restart. That is why it appears in
+# compose.prod.yml's build.args and NOT in .env.prod / .env.prod.example — the web
+# container has no env_file at all.
+#
+# Asserted non-empty for the same reason MIJUAL_API_ORIGIN is, and the failure it
+# prevents is worse: `metadataBase`, every canonical, every sitemap URL and the OG
+# image URL resolve from it, so a build that forgot the arg would ship a site
+# telling search engines its pages live somewhere else. lib/seo.ts throws at module
+# load in a production build too — this line is the earlier, clearer of the two.
+ARG NEXT_PUBLIC_SITE_URL
+RUN test -n "$NEXT_PUBLIC_SITE_URL" || { echo "ERROR: NEXT_PUBLIC_SITE_URL build arg required (see compose.prod.yml build.args)" >&2; exit 1; }
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+
+# Search-engine ownership verification, both OPTIONAL and both build args for the
+# same inlining reason. Unset (or empty) renders NO <meta> at all — never a blank
+# content="" — so they are deliberately NOT asserted. Google's property is a
+# DNS-TXT domain property held at Cloudflare and needs nothing here; Naver Search
+# Advisor would need a token, and whether to register is an operator decision.
+ARG NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=""
+ARG NEXT_PUBLIC_NAVER_SITE_VERIFICATION=""
+ENV NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=$NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION \
+    NEXT_PUBLIC_NAVER_SITE_VERIFICATION=$NEXT_PUBLIC_NAVER_SITE_VERIFICATION
+
 # Nothing in the app is prerendered (`await connection()` on every reader route),
 # so this build needs no running API and makes no request.
 RUN npm run build

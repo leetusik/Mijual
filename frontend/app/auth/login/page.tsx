@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthPanel } from "@/components/auth";
 import { ROUTES } from "@/lib/routes";
+import { LOGIN_TITLE_KO } from "@/lib/seo";
 import { readAuthState } from "@/lib/session.server";
 
 /**
@@ -24,6 +26,18 @@ import { readAuthState } from "@/lib/session.server";
  * cookie (`P5.S10` note 13 — `credentials` does nothing in Node), and it opts
  * this route into request-time rendering, which a session-dependent page must be.
  */
+/**
+ * **`noindex, nofollow`** — this surface is not part of the product's public,
+ * indexable face. `app/robots.ts` disallows the same prefix, so a well-behaved
+ * crawler never fetches this page at all; this tag is what a crawler that fetches
+ * anyway reads, and it is the only one of the two that can get an already-indexed
+ * URL *removed*.
+ */
+export const metadata: Metadata = {
+  title: LOGIN_TITLE_KO,
+  robots: { index: false, follow: false },
+};
+
 export default async function LoginPage() {
   const auth = await readAuthState();
   if (auth.authenticated) redirect(ROUTES.portfolio);

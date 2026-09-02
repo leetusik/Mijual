@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { AskPage } from "@/components/ask";
 import { startChips } from "@/components/ask/copy";
 import { getAskStartCards } from "@/lib/api";
+import { ROUTES } from "@/lib/routes";
+import { ASK_TITLE_KO, routeMetadata, SITE_DESCRIPTION_KO } from "@/lib/seo";
 
 /** How long the start screen waits for its cards before drawing the static set.
  * The empty state is the product's flagship surface: a reader looking at a blank
@@ -51,6 +54,16 @@ const CARDS_TIMEOUT_MS = 2500;
  *    sentences are templates in `copy.ts`, where every Korean string this product
  *    renders lives.
  */
+/** The surface's own signed name (`ASK_LABEL_KO`, R6 — which retired the
+ * provisional 해설) and its canonical. The description is the site's: the page's
+ * own content is a reader's conversation, which is neither indexable nor
+ * describable in advance. */
+export const metadata: Metadata = routeMetadata({
+  title: ASK_TITLE_KO,
+  description: SITE_DESCRIPTION_KO,
+  path: ROUTES.ask,
+});
+
 export default async function AskRoute() {
   await connection();
 

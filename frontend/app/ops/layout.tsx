@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Door } from "@/components/ops/Door";
 import { OpsChrome } from "@/components/ops/OpsChrome";
@@ -28,11 +29,24 @@ import { getOpsLock } from "@/lib/api";
  * and the authenticated surface carries the **ops** chrome instead. Nothing here
  * links back to a reader surface either.
  */
-export const metadata = {
+export const metadata: Metadata = {
   // 운영자 전용: the panel says what it is, and the reader product's own title
   // does not belong on it. P10 retired the latin mark — same shape, the product
   // name plus 운영, matching `OPS_MARK`.
-  title: "주주의관제탑 운영",
+  //
+  // **`absolute`, and that is not a style choice.** `P4.S5` gave the root layout
+  // a `title.template` of `%s | 주주의관제탑`, which applies to every child
+  // segment — this one included. Left as a plain string the panel would title
+  // itself 「주주의관제탑 운영 | 주주의관제탑」. `absolute` opts out of the
+  // template and keeps the string exactly as it was written.
+  title: { absolute: "주주의관제탑 운영" },
+  // **`noindex, nofollow`.** R7's first rule for this surface is that the reader
+  // chrome links it from nowhere — 「nav·푸터·계정 메뉴·sitemap」 — and a search
+  // result is the one link that rule cannot forbid structurally. `app/robots.ts`
+  // disallows `/ops` as well; the two controls do different jobs, because a
+  // crawler that never fetches the page never reads this tag, and a URL already
+  // in an index is dropped by this tag and not by the disallow.
+  robots: { index: false, follow: false },
 };
 
 export default async function OpsLayout({ children }: { children: ReactNode }) {

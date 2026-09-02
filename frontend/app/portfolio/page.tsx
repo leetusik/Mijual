@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Portfolio } from "@/components/portfolio";
 import type { ResolvedStock } from "@/components/portfolio/AddHolding";
 import { ApiError, getPortfolio, getSamplePortfolio, getStock } from "@/lib/api";
+import { PORTFOLIO_TITLE_KO } from "@/lib/seo";
 import type { Portfolio as PortfolioPayload } from "@/lib/types";
 import styles from "@/components/portfolio/Portfolio.module.css";
 
@@ -49,6 +51,18 @@ import styles from "@/components/portfolio/Portfolio.module.css";
  * code that resolves to nothing is simply dropped — the panel opens empty, and no
  * Korean is invented for a link that went stale.
  */
+/**
+ * **`noindex, nofollow`** — this surface is not part of the product's public,
+ * indexable face. `app/robots.ts` disallows the same prefix, so a well-behaved
+ * crawler never fetches this page at all; this tag is what a crawler that fetches
+ * anyway reads, and it is the only one of the two that can get an already-indexed
+ * URL *removed*.
+ */
+export const metadata: Metadata = {
+  title: PORTFOLIO_TITLE_KO,
+  robots: { index: false, follow: false },
+};
+
 export default async function PortfolioPage({
   searchParams,
 }: {

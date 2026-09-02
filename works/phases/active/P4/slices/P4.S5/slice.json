@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 5,
   "depends_on": [
     "P4.S4"
   ],
   "created_at": "2026-09-02T06:19:59+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T11:44:30+09:00",
+  "completed_at": "2026-09-02T12:10:11+09:00",
   "risk": "high",
   "source": {
     "type": "deferred",
@@ -21,7 +21,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "SEO shipped from one typed source (frontend/lib/seo.ts): robots, sitemap (800 apex URLs), manifest, OG image + explicit OG tags, JSON-LD, generateMetadata on both dynamic routes, noindex on five non-reader surfaces, per-route canonicals, NEXT_PUBLIC_SITE_URL asserted build arg; verified on a standalone production build; strings + share card queued for gate approval; deploy owed by S6",
   "validation": {
     "required": [],
     "last_run": null,

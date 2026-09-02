@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { CoveragePanel, LookupHeader, LookupRail, WatchPanel } from "@/components/lookup";
 import { getBoardSummary, lookupStock } from "@/lib/api";
-import { stockPath } from "@/lib/routes";
+import { ROUTES, stockPath } from "@/lib/routes";
+import { routeMetadata, SITE_DESCRIPTION_KO, STOCKS_TITLE_KO } from "@/lib/seo";
 import { PROVENANCE_KO } from "@/components/lookup/copy";
 import type { BoardSummary } from "@/lib/types";
 import styles from "@/components/lookup/Lookup.module.css";
@@ -44,6 +46,22 @@ import styles from "@/components/lookup/Lookup.module.css";
  * `connection()` marks the page request-time, so `next build` needs no API and no
  * D-day is a build-time snapshot served hours later.
  */
+/**
+ * The surface's own signed name as its title (`STOCKS_LABEL_KO`, R4), and the
+ * canonical **without `?q=`** — a query is one reader's search, not a page worth
+ * indexing separately, and every hit redirects onto `/stocks/{corp_code}` anyway.
+ *
+ * This route matters to a crawler more than any other static one: the R8 nav has
+ * two slots and 내 종목 조회 is not one of them, so `/stocks` is reachable only
+ * from the landing hero and from `app/sitemap.ts`. That is by design; adding a
+ * nav link would be a design change.
+ */
+export const metadata: Metadata = routeMetadata({
+  title: STOCKS_TITLE_KO,
+  description: SITE_DESCRIPTION_KO,
+  path: ROUTES.stocks,
+});
+
 export default async function StocksPage({
   searchParams,
 }: {

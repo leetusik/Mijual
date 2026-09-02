@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { NotificationsView } from "@/components/portfolio";
 import { ApiError, getNotifications } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
+import { NOTIFICATIONS_TITLE_KO } from "@/lib/seo";
 import type { Notifications } from "@/lib/types";
 import styles from "@/components/portfolio/Portfolio.module.css";
 
@@ -26,6 +28,18 @@ import styles from "@/components/portfolio/Portfolio.module.css";
  * that links here is not rendered at all while a sample is loaded. A direct visit
  * without a session is the ordinary gate.
  */
+/**
+ * **`noindex, nofollow`** — this surface is not part of the product's public,
+ * indexable face. `app/robots.ts` disallows the same prefix, so a well-behaved
+ * crawler never fetches this page at all; this tag is what a crawler that fetches
+ * anyway reads, and it is the only one of the two that can get an already-indexed
+ * URL *removed*.
+ */
+export const metadata: Metadata = {
+  title: NOTIFICATIONS_TITLE_KO,
+  robots: { index: false, follow: false },
+};
+
 export default async function NotificationsPage() {
   const cookie = (await cookies()).toString();
   const headers = cookie ? { cookie } : undefined;

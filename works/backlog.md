@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P4`
-- Current slice: `P4.S5`
-- Next slice: `P4.S6`
+- Current slice: `P4.S6`
+- Next slice: `P4.S8`
 - Waiting on operator: `none`
 - Open deferred jobs: `30`
 
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.S5` | `works/phases/active/P4` |
+| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.S6` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -79,7 +79,7 @@
 | [x] `P4.S2` | `done` | The real Mailer over SMTP, and the D-day notification send path | `implementation` | `works/phases/active/P4/slices/P4.S2` |
 | [x] `P4.S3` | `done` | Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook | `implementation` | `works/phases/active/P4/slices/P4.S3` |
 | [x] `P4.S4` | `done` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |
-| [ ] `P4.S5` | `todo` | SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD | `implementation` | `works/phases/active/P4/slices/P4.S5` |
+| [x] `P4.S5` | `done` | SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD | `implementation` | `works/phases/active/P4/slices/P4.S5` |
 | [ ] `P4.S6` | `todo` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
 | [ ] `P4.S8` | `todo` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |
 | [ ] `P4.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

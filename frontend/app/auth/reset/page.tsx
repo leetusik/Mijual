@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { ResetConfirmPanel } from "@/components/auth";
 import { ROUTES } from "@/lib/routes";
+import { RESET_TITLE_KO } from "@/lib/seo";
 
 /**
  * `/auth/reset?token=…` — the page the emailed 재설정 link lands on.
@@ -23,6 +25,18 @@ import { ROUTES } from "@/lib/routes";
  * `connection()` marks the route request-time, so `next build` prerenders no page
  * that would otherwise bake a `searchParams` read into a static shell.
  */
+/**
+ * **`noindex, nofollow`** — this surface is not part of the product's public,
+ * indexable face. `app/robots.ts` disallows the same prefix, so a well-behaved
+ * crawler never fetches this page at all; this tag is what a crawler that fetches
+ * anyway reads, and it is the only one of the two that can get an already-indexed
+ * URL *removed*.
+ */
+export const metadata: Metadata = {
+  title: RESET_TITLE_KO,
+  robots: { index: false, follow: false },
+};
+
 export default async function ResetPage({
   searchParams,
 }: {

@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Board, Cosmos, Hero, LapseNotice, RetrospectiveAnchor } from "@/components/landing";
 import { getBoard, getBoardSummary } from "@/lib/api";
+import { ROUTES } from "@/lib/routes";
+import { routeMetadata, SITE_DESCRIPTION_KO, TITLE_DEFAULT } from "@/lib/seo";
 import styles from "./page.module.css";
 
 /**
@@ -25,6 +28,29 @@ import styles from "./page.module.css";
  * board is never a build-time snapshot served hours later — and so `next build`
  * needs no API to build against.
  */
+/**
+ * The home page's own canonical, and the one place the site title is **not**
+ * templated.
+ *
+ * `routeMetadata` gives every indexable route the same field set — title,
+ * description, canonical, the whole Open Graph block (which Next replaces rather
+ * than merges per segment) and the Twitter card. The canonical lives here rather
+ * than in the root layout on purpose: `alternates` **is** inherited as a whole,
+ * so a canonical in the layout would make every route claim this page.
+ *
+ * `title.absolute` because the template is `%s | 주주의관제탑` and this route's
+ * own title *is* 주주의관제탑 — templated it would read 「주주의관제탑 |
+ * 주주의관제탑」. Every other route wants the template and gets it.
+ */
+export const metadata: Metadata = {
+  ...routeMetadata({
+    title: TITLE_DEFAULT,
+    description: SITE_DESCRIPTION_KO,
+    path: ROUTES.board,
+  }),
+  title: { absolute: TITLE_DEFAULT },
+};
+
 export default async function BoardLanding() {
   await connection();
 

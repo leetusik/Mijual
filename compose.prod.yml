@@ -149,6 +149,20 @@ services:
         # non-empty so a forgotten arg cannot ship a container pointed at its own
         # empty loopback.
         MIJUAL_API_ORIGIN: "http://mijual-api:8010"
+        # The public origin, baked in at build time (P4.S5). NEXT_PUBLIC_* is
+        # inlined by `next build`, so this is a build arg and NOT an .env.prod key
+        # — the web container has no env_file — and changing it means rebuilding
+        # the image. Apex only: www.jujutower.com 301s here, and no canonical or
+        # sitemap URL may ever name www. The Dockerfile asserts it non-empty, and
+        # lib/seo.ts throws in a production build without it: wrong canonicals are
+        # invisible in the HTML and visible months later in a search index.
+        NEXT_PUBLIC_SITE_URL: "https://jujutower.com"
+        # Optional, and empty on purpose: an unset or empty token renders no
+        # <meta> at all. Google is verified by DNS TXT at Cloudflare (nothing in
+        # the HTML); Naver Search Advisor is the open question. Filling either one
+        # in is a rebuild, not a restart.
+        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ""
+        NEXT_PUBLIC_NAVER_SITE_VERIFICATION: ""
     image: mijual-web:latest
     restart: unless-stopped
     # No env_file: the frontend container holds no secret and must not be able to.

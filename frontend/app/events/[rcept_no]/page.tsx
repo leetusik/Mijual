@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { EventDetail } from "@/components/event";
 import { ApiError, getEvent } from "@/lib/api";
+import { eventPath } from "@/lib/routes";
+import { eventDescriptionKo, eventTitleKo, routeMetadata } from "@/lib/seo";
 
 /**
  * `/events/{rcept_no}` — one event's detail page (R3).
@@ -33,6 +36,43 @@ import { ApiError, getEvent } from "@/lib/api";
  * `connection()` marks the page request-time, so `next build` needs no API and a
  * countdown is never a build-time snapshot served hours later.
  */
+/**
+ * The event's own `<title>`, description and canonical, from the event itself.
+ *
+ * Shapes are `lib/seo.ts`'s — 「{종목} — {마감명}」 for the title (the same shape
+ * `P4.S2`'s mail subject uses, so the two surfaces name one event the same way)
+ * and a description that branches on 철회 / 추후결정 / 일정 있음 and carries **no
+ * won amount and no D-day**. The file says why for each.
+ *
+ * **A 404 must not become a 500 here.** `getEvent` throws `ApiError(404)` for
+ * every non-renderable event, and an unhandled throw inside `generateMetadata`
+ * is a server error rather than a not-found. So this catches and returns `{}` —
+ * an empty object inherits the root layout's default title and, because the root
+ * sets no `alternates`, contributes **no canonical**, which is exactly right for
+ * a page that does not exist. `notFound()` is legal in `generateMetadata` in this
+ * version and would work too; leaving the 404 decision to the page below keeps
+ * one place deciding it, and that place already explains itself at length.
+ *
+ * The `getEvent` call is the same one the page makes, with the same argument, so
+ * Next's per-render `fetch` memoization serves both from one round trip —
+ * **measured** in `var/stack/api.log`, not assumed (`P4.S5`).
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ rcept_no: string }>;
+}): Promise<Metadata> {
+  const { rcept_no: rceptNo } = await params;
+  const detail = await getEvent(rceptNo).catch(() => null);
+  if (!detail) return {};
+
+  return routeMetadata({
+    title: eventTitleKo(detail),
+    description: eventDescriptionKo(detail),
+    path: eventPath(rceptNo),
+  });
+}
+
 export default async function EventPage({
   params,
 }: {
