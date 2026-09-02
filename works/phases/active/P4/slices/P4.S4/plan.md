@@ -390,3 +390,56 @@ public with data. Report back: the SSL/TLS mode as set and the external `curl -s
   on the notebook; every co-tenant is exactly as it was.
 
 Anything short of that at a stop point is a `needs_operator`, never a `done`.
+
+## Dispatch 2 — operator inputs and facts as of 2026-09-02 (orchestrator addendum)
+
+Everything STOP POINT 1 asked for is answered or done. Read this section as an override wherever
+it contradicts the ladder above.
+
+**Done, verified by the orchestrator over `ssh`/`scp` (both went through the harness cleanly):**
+
+- **R1 is complete.** The Origin CA pair is at `/home/opc/jujutower_tls/jujutower.com.crt` (644)
+  and `.key` (600), `opc:opc`, directory 700. `subjectAltName = DNS:*.jujutower.com,
+  DNS:jujutower.com`, valid 2026-09-02 → 2041-08-29, key matches cert (`REMOTE PAIR OK`). The
+  **wildcard covers `www`**, so the www question no longer gates anything; the alias stays **off**
+  (apex canonical, the vhost's www block stays commented) unless the operator asks later.
+- **Nameservers are Cloudflare's** (`mack.ns.cloudflare.com`, `rihana.ns.cloudflare.com`) and the
+  zone resolves through Cloudflare, i.e. it is Active.
+- **`main` is pushed.** GitHub `refs/heads/main` = `bcdde73`, which carries the whole deploy
+  tree, the measured `mem_limit`s and D15. The box's clone must reach **`bcdde73` or later**
+  (`git -C /home/opc/Mijual pull --ff-only`); local `HEAD` here may be one workspace-only commit
+  ahead of that, which is expected and needs nothing on the box.
+- **A proxied DNS record already exists** — Cloudflare imported Namecheap's parking `A` record
+  (and, most likely, a `www` record) when the zone was added. Observed from outside:
+  `https://jujutower.com/` → Cloudflare **522**, `http://jujutower.com/` → **302** to
+  `http://www.jujutower.com/` (the parking server's behaviour). So the SSL mode is already not
+  Flexible (the https fetch went to the origin's 443), and nothing on our box is being reached
+  yet. Consequence for **STOP POINT 2's ask**: R5 becomes (1) SSL/TLS → **Full (Strict)** set
+  explicitly, then (2) **edit** the existing `A jujutower.com` record to `140.245.64.173`,
+  Proxied — not "create" — and (3) **delete the imported `www` record** (a proxied `www` pointed
+  at the box with no www vhost would answer 444 → a Cloudflare 520). Write the ask that way.
+
+**Operator decisions (2026-09-02):**
+
+1. **Corpus seed: seed from the dev database, keeping the dev accounts.** Stage B step 2 and step 4
+   apply as written: `pg_dump -Fc` of the dev Postgres on this Mac (its URL comes from
+   `compose.yaml` / `Makefile` / `mijual.config` defaults — find it by name, never print it), copy
+   to `/home/opc/Mijual/deploy/backups/seed-<UTC>.dump`, `rm -P` the local copy, restore with
+   `deploy/db/restore.sh … --yes` **after** the stack is up and **before** the R5 ask. **Do not
+   truncate anything.** Also carry the DART response cache (`var/dart-cache/` on this Mac) into
+   the `mijual-var` volume — check the volume's real name with `docker volume ls` on the box first.
+   Report the restored table count (19 after `schema ok`) and the row counts of `event`,
+   `account` and `pipeline_run` (counts only).
+2. **Nightly backup cron: install it** — the runbook R7 line at `0 4 * * *`, in dispatch 3 after
+   the first real `backup.sh` run (Stage E as written). Cron exists on the box with one entry
+   (changple2 certbot at 03:00).
+3. **D15: applied; accept/reverse at the gate.** Nothing to do.
+4. **ssh permission:** the orchestrator's `ssh oracle-cloud` and `scp` calls were allowed. No
+   allow rule was added. Hard rule 6 still stands: a denial is recorded and becomes an ask, never
+   worked around.
+
+**Scope of this dispatch:** Stage 0 → Stage A steps 1–5 (`.env.prod`, as one uninterrupted
+sequence — nothing was minted in dispatch 1) → Stage B (first deploy, the runbook's hand checks,
+the seed restore + cache, no-harm) → Stage C (edge: copy, diffs, `validate.sh`, `stage.sh`,
+on-VM `deploy.sh`, origin-grey proofs, no-harm) → STOP POINT 2 with the amended R5 ask above.
+Return `needs_operator` there. Dispatch 3 remains Stage D + Stage E.
