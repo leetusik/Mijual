@@ -443,3 +443,62 @@ sequence — nothing was minted in dispatch 1) → Stage B (first deploy, the ru
 the seed restore + cache, no-harm) → Stage C (edge: copy, diffs, `validate.sh`, `stage.sh`,
 on-VM `deploy.sh`, origin-grey proofs, no-harm) → STOP POINT 2 with the amended R5 ask above.
 Return `needs_operator` there. Dispatch 3 remains Stage D + Stage E.
+
+## Dispatch 3 — operator inputs and facts as of 2026-09-02 11:10 KST (orchestrator addendum)
+
+**R5 is done for the apex** (orchestrator-verified from outside, 2026-09-02 11:09 KST):
+`https://jujutower.com/` → **200**, `cf-ray` present, `strict-transport-security: max-age=300`
+and `content-security-policy: upgrade-insecure-requests` served through Cloudflare;
+`https://jujutower.com/api/health` → the health JSON (`now_kst` 11:09); `http://jujutower.com/` →
+**301** to https. The SSL mode is therefore Full or Full (Strict) — ask the operator to confirm
+which in the final report, but do not block on it.
+
+**The operator wants the `www` alias** (answered 2026-09-02: "I want www as well"). This closes
+the open Operator Question. The Origin CA cert already carries `*.jujutower.com`, so nothing is
+re-minted. `www.jujutower.com` currently resolves to Cloudflare (the imported record, proxied)
+and answers a Cloudflare **525** — the TLS handshake fails against whatever it points at today.
+
+**Stage C-bis — enable www, first thing in this dispatch, before Stage D:**
+
+1. In **this repo**, `deploy/edge/jujutower.conf`: (a) add `www.jujutower.com` to the `:80`
+   server's `server_name`; (b) uncomment the `www.jujutower.com` `:443` server block (it 301s
+   every request to `https://jujutower.com$request_uri` — the apex stays canonical, which is
+   what `P4.S5`'s canonical/sitemap work assumes); (c) rewrite the block's header comment from
+   "OPTIONAL … NOT ENABLED" to a record that it is enabled as of `P4.S4` on the operator's
+   decision, cert SAN wildcard, and that the apex is canonical. Keep every house rule the file
+   already states (no `default_server`, no IPv6 listen, no global names).
+2. Mirror the resulting file **byte-identically** into `~/projects/personal/edge/edge/conf.d/jujutower.conf`
+   (`cmp` them). Leave the edge repo uncommitted, as before.
+3. Run the loop from the edge checkout: `./validate.sh` (whole tree) → `bash stage.sh` → on-VM
+   `bash deploy.sh` (`nginx -t` → reload). `edge-nginx`'s `StartedAt` must stay
+   `2026-07-02T19:22:12.325478595Z`.
+4. Prove it grey: `curl -skI --resolve www.jujutower.com:443:140.245.64.173 https://www.jujutower.com/x?y=1`
+   → **301** with `Location: https://jujutower.com/x?y=1`; and
+   `curl -sI --resolve www.jujutower.com:80:140.245.64.173 http://www.jujutower.com/` → 301 to
+   https (the `:80` server now matches www too — check that its redirect target is the apex or
+   the same host, and say which; either lands on the apex within two hops).
+5. Then through Cloudflare: `curl -sI https://www.jujutower.com/`. **If 301 → apex:** the
+   record already points at the box; done. **If still 525/526/520/522:** the imported `www`
+   record still points at the parking server — that is the one remaining operator action:
+   **edit `www` to `A 140.245.64.173`, Proxied** (or a proxied `CNAME jujutower.com`). Put it
+   in the final report as a one-line ask **and still return `done`** if everything else in
+   Stage D/E passed — the vhost side is complete and verified grey, and the record edit needs no
+   agent step after it. Re-check once more right before returning, in case the operator does it
+   while you work.
+6. Update `deploy/edge/README.md`'s www section and `deploy/runbook.md`'s open question #1 to
+   record the decision (taken; apex canonical; the DNS record for www). One `## Decisions` line
+   in the notebook, and a note **(from P4.S4, for P4.S5)**: `www` 301s to the apex, so the
+   canonical, `metadataBase` and sitemap are apex-only.
+
+**Then Stage D and Stage E exactly as the plan states**, with these facts: the `/ops` credential
+location and the seed state are in `## Now`; the corpus is seeded (1359 events), so the board,
+a 종목 page and an 이벤트 page have real data; two accounts exist from the dev seed — use the
+operator's own for the reset mail and the gate demo mail if it is one of them (say which account
+id, never the address), otherwise create one on production and say so. The `## Operator Runtime`
+Doc impact line is owed **in this dispatch** (production origin `https://jujutower.com`, the
+instrument you used, 1280 and 390). The backup cron: **install** the runbook's `0 4 * * *` line
+after the first real `backup.sh`, and show `crontab -l`.
+
+**Return `done`** when Stage C-bis, D and E are complete — with the www DNS ask, if still
+outstanding, as a one-liner in the report — or `needs_operator` if Stage D finds something only
+the operator can resolve.
