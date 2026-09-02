@@ -40,17 +40,17 @@
       "id": "P4",
       "name": "Ship & Deploy",
       "objective": "Prepare both official 양식 documents (첨부1 공모전 기획서, 첨부2 기능명세서 — English body, Korean headings, not submitted); deploy to the operator's Oracle Cloud box additively behind the shared nginx edge and Cloudflare at jujutower.com; set up SEO; ship the email D-day notification channel; and add a production smoke suite with uptime monitoring.",
-      "status": "planned",
+      "status": "in_progress",
       "order": 4,
       "path": "works/phases/active/P4",
-      "review_status": "pending",
-      "current_slice": "P4.REVIEW",
-      "slice_count": 11,
+      "review_status": "changes_requested",
+      "current_slice": "P4.F3",
+      "slice_count": 13,
       "done_slice_count": 10
     }
   ],
-  "deferred_open_count": 30,
+  "deferred_open_count": 34,
   "deferred_promoted_count": 6,
   "deferred_dropped_count": 3,
-  "last_rebuilt_at": "2026-09-02T18:36:09+09:00"
+  "last_rebuilt_at": "2026-09-02T20:46:54+09:00"
 }

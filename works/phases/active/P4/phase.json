@@ -2,16 +2,16 @@
   "id": "P4",
   "name": "Ship & Deploy",
   "objective": "Prepare both official 양식 documents (첨부1 공모전 기획서, 첨부2 기능명세서 — English body, Korean headings, not submitted); deploy to the operator's Oracle Cloud box additively behind the shared nginx edge and Cloudflare at jujutower.com; set up SEO; ship the email D-day notification channel; and add a production smoke suite with uptime monitoring.",
-  "status": "planned",
+  "status": "in_progress",
   "order": 4,
   "created_at": "2026-08-19T17:41:27+09:00",
   "started_at": null,
   "completed_at": null,
   "review": {
-    "status": "pending",
-    "reviewed_at": null,
-    "reviewer": null,
-    "note": null
+    "status": "changes_requested",
+    "reviewed_at": "2026-09-02T20:46:54+09:00",
+    "reviewer": "slice-executor-high",
+    "note": "1) MATERIAL: Cloudflare Web Analytics is ON — every production page loads static.cloudflareinsights.com/beacon.min.js in a real browser (invisible to curl), falsifying the phase decision, security.md's no-third-party-origin property and 첨부2 §4 → P4.F2 (fix/high: operator turns it off, re-measure in real Chrome, harden check_third_party, re-date the printed claim). 2) deploy/runbook.md R7 + open question 2 still call the installed backup cron an open decision and argue 04:00 KST on a GMT box (fires 13:00 KST) → P4.F3 (fix/low, docs). 3) GitHub delivered 1 scheduled probe run in ~5 h against a 10-min cron — no fix slice; UptimeRobot becomes required before the 결격 window (walkthrough). Objective shipped; gate not opened."
   },
   "acceptance": {
     "required": true,

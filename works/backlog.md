@@ -6,10 +6,10 @@
 ## Pointer
 
 - Current phase: `P4`
-- Current slice: `P4.REVIEW`
-- Next slice: `none`
+- Current slice: `P4.F3`
+- Next slice: `P4.F2`
 - Waiting on operator: `none`
-- Open deferred jobs: `30`
+- Open deferred jobs: `34`
 
 ## Active Phases
 
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [ ] `P4` | `planned` | `pending` | Ship & Deploy | `P4.REVIEW` | `works/phases/active/P4` |
+| [ ] `P4` | `in_progress` | `changes_requested` | Ship & Deploy | `P4.F3` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -83,4 +83,6 @@
 | [x] `P4.S6` | `done` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
 | [x] `P4.F1` | `done` | Sample portfolio picks live issuers per state at request time (start-card pattern), fixed list as fallback | `fix` | `works/phases/active/P4/slices/P4.F1` |
 | [x] `P4.S8` | `done` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |
-| [ ] `P4.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |
+| [ ] `P4.F3` | `todo` | Runbook R7: record the installed backup cron, its GMT firing time (13:00 KST), and close open question 2 | `fix` | `works/phases/active/P4/slices/P4.F3` |
+| [ ] `P4.F2` | `todo` | Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim | `fix` | `works/phases/active/P4/slices/P4.F2` |
+| [ ] `P4.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

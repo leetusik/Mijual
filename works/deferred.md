@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `30`
+- Open: `34`
 - Promoted: `6`
 - Dropped: `3`
 
@@ -39,6 +39,10 @@
 | `D37` | `deferred` | 404가 한글 주소를 퍼센트 인코딩된 채로 보여준다 | P11.REVIEW | The next 404/error-surface work (natural pair with D35), or before the P4 demo | `works/deferred/open/D37` |
 | `D38` | `deferred` | 답변 푸터가 근거 5건 중 3건만 링크한다 | P11.REVIEW | The next AI 질문 answer-footer work | `works/deferred/open/D38` |
 | `D39` | `deferred` | 404 라우트에만 폰트 preload 링크가 없다 | P11.REVIEW | The next font or 404 work, or any Next upgrade | `works/deferred/open/D39` |
+| `D40` | `deferred` | Decide the 정정 해석 thinking preset (D-4) | P4.REVIEW | The first production run whose extract stage hits the call ceiling, or before any backfill. | `works/deferred/open/D40` |
+| `D41` | `deferred` | Harden what the public repo publishes (box IP/user/paths in deploy/**, the operator's alert address in works/**) | P4.REVIEW | Before the URL is circulated beyond the judges, or immediately if the repo stays public after the contest. | `works/deferred/open/D41` |
+| `D42` | `deferred` | Settle the harness's production boundary (ssh oracle-cloud reads, docker compose over ssh, .env.prod credential read) | P4.REVIEW | The next slice that needs box inspection or an /ops login. | `works/deferred/open/D42` |
+| `D43` | `deferred` | This Mac's MagicDNS answer for www.jujutower.com (false-red make smoke-prod www line) | P4.REVIEW | The next red www line — check dig @1.1.1.1 before believing it; fix the local resolver or split-DNS. | `works/deferred/open/D43` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D8` | `deferred` | Strip the // eyebrow from the accessible name on 조회 and 보유 종목 (Q21) | P8.REVIEW | Each surface next round, or as one small cross-surface job before P4 | `works/deferred/open/D8` |
 | `D9` | `deferred` | Carry the ③ 반대의사 통지 procedure fields onto GET /stocks/{corp_code} (Q30b) | P8.REVIEW | When 조회 and 상세 disagreeing about the same filing becomes a reported problem | `works/deferred/open/D9` |

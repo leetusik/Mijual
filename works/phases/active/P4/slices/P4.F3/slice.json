@@ -1,23 +1,24 @@
 {
-  "id": "P4.REVIEW",
+  "id": "P4.F3",
   "phase_id": "P4",
-  "name": "phase review",
-  "kind": "review",
-  "status": "changes_requested",
-  "order": 9999,
+  "name": "Runbook R7: record the installed backup cron, its GMT firing time (13:00 KST), and close open question 2",
+  "kind": "fix",
+  "status": "todo",
+  "order": 8.5,
   "depends_on": [],
-  "created_at": "2026-08-19T17:41:27+09:00",
-  "started_at": "2026-09-02T18:41:11+09:00",
+  "created_at": "2026-09-02T20:46:54+09:00",
+  "started_at": null,
   "completed_at": null,
-  "risk": "high",
+  "risk": "low",
   "source": {
-    "type": "new_phase",
-    "id": "P4"
+    "type": "manual",
+    "id": null
   },
   "paths": {
     "plan": "plan.md",
     "result": "result.md"
   },
+  "outcome": null,
   "validation": {
     "required": [],
     "last_run": null,
