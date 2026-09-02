@@ -1,0 +1,11 @@
+{
+  "id": "D44",
+  "title": "board 자동 갱신 re-downloads the whole board every 60 s per open tab (no ETag/304, no delta endpoint)",
+  "status": "deferred",
+  "source": "P4.R1",
+  "reason": "One request of 18,360 B br / 164 KB raw per tab-minute straight to the origin; origin load and Oracle egress scale with concurrent readers, not with data change (the corpus moves at 07:30/19:30 KST). Measured by P4.R1.",
+  "trigger": "When concurrent readers or egress start to matter, or when a 정정 makes a delta endpoint worth having anyway",
+  "created_at": "2026-09-03T01:32:00+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

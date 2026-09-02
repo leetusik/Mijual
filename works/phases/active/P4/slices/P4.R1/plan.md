@@ -166,3 +166,21 @@ in-process cache keyed on `as_of` cut it?), what part is the 345 KB HTML, what p
 event page (`facts`), with a lab CLS number per route; (3) whether `/ops`'s 5 s LCP is the table's
 SSR or the agent's throttled sessions (low priority: operator-only). INP needs no fix unless the
 lab contradicts RUM. Then the fix list, ranked, with the freeze arithmetic.
+
+## Addendum 2 (orchestrator, 2026-09-03 00:55 KST) — state at dispatch
+
+- **Production is now at `1a93d7b`** (`P4.F4` deployed 2026-09-03 00:26 KST; rollback point
+  `96f7141`), not `96f7141` as the F2-era notes say. The frontend did not change in that release, so
+  every landing/route measurement above still describes what is live. Measure production as it is.
+- **It is 2026-09-03**, so "last 7 days" now spans two calendar days; the RUM sample is still the
+  workspace's own traffic (the F4 deploy's smoke runs are `curl`, which never fires the beacon).
+  Re-query with `cf_cwv.py` for the day split if it is cheap; do not spend the slice on it.
+- **Local target:** the dev API answers on `127.0.0.1:8010` (its health is `/health`, not
+  `/api/health`; the Next rewrite maps `/api/*` onto it), the operator's dev frontend is on `3010`.
+  Your production build goes on **3014**, additively; the dev API's data predates `P4.F1`'s sample
+  portfolio, which is irrelevant to rendering-cost attribution but means `/portfolio?sample=1`
+  locally may not match production's content — say so if it matters, measure production for it.
+- **No beat window is near for the lab** (next `daily-pipeline-morning` 07:30 KST) — irrelevant to
+  a read-only lab, noted only so you do not wait for one.
+- The fix list you propose is cut by the orchestrator as `fix` slices **`P4.F5`, `P4.F6`, …**
+  ordered before `P4.REVIEW`; give each a one-line name the orchestrator can use verbatim.

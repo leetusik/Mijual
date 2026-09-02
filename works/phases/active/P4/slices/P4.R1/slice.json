@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Research: Core Web Vitals on production (LCP/INP/CLS) — Cloudflare RUM, lab attribution, fix breakdown",
   "kind": "research",
-  "status": "todo",
+  "status": "done",
   "order": 8.8,
   "depends_on": [
     "P4.F4"
   ],
   "created_at": "2026-09-02T22:35:49+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-03T00:49:35+09:00",
+  "completed_at": "2026-09-03T01:32:00+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "CWV reproduced in real Chrome (72 loads + Lighthouse): LCP/INP good everywhere; the only defect is the cold-cache Korean webfont-swap CLS (proved by blocking the font); RUM CLS is an integer 0/1, not a score; ranked fix list P4.F5-F9 landed in phase.md",
   "validation": {
     "required": [],
     "last_run": null,
