@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Sample portfolio picks live issuers per state at request time (start-card pattern), fixed list as fallback",
   "kind": "fix",
-  "status": "pending",
+  "status": "done",
   "order": 6.5,
   "depends_on": [
     "P4.S6"
   ],
   "created_at": "2026-09-02T13:45:06+09:00",
   "started_at": "2026-09-02T14:04:12+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-02T18:07:46+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "샘플 포트폴리오 picks four live issuers per state at request time (start-card pattern, fixed tuple as fallback), browser store v2 always shows the served composition; deployed to production (96f7141, both images rebuilt, no-harm intact), live sample shows an upcoming ① at D-43",
   "validation": {
     "required": [],
     "last_run": null,

@@ -133,3 +133,19 @@ what to click). Rewrite `## Now` (≤ 15 lines) last; never touch the generated 
 Return the verdict block: `status`, `summary`, `files_changed`, `validation`, `deviations`,
 `doc_impact`, `doc_versions: n/a`, `review_verdict: n/a`, `walkthrough: none`, `explain: n/a`,
 `operator_need`.
+
+## Dispatch 2 — facts as of 2026-09-02 (orchestrator addendum)
+
+- **The push is done:** GitHub `main` = local `HEAD` = `96f7141` (operator, `git push origin main`,
+  `811dec5..96f7141`). The box's `deploy.sh` releases `origin/main` by default.
+- Expect **both** images rebuilt (`src/` and `frontend/lib` changed); `:previous` tags written first
+  — `mijual-web:previous` becomes the SEO image, `mijual-api:previous` the pre-F1 api. Poll the
+  detached log to its final summary; a rollback means `blocked` with the state, no hand fixes.
+- After the deploy: the four no-harm assertions against the R2 baseline in `## Now`;
+  `make smoke-prod` 17/17; `curl -s https://jujutower.com/api/portfolio/sample` → four distinct
+  `corp_code`s and ≥ 1 `upcoming` row with `rights_type == "R1"` and `days >= 0`; one real-browser
+  look at `https://jujutower.com/portfolio?sample=1` at 390 (and 1280 if cheap) — the composition
+  renders, a share edit persists across reload. Then the `operations` Doc impact line for the
+  deploy, the notebook (`## Now` last), `validate`, pytest, and `done`.
+- **Deploy freeze opens 2026-09-07 11:00 KST.** This is the last planned deploy before it; say so
+  in `## Now` so `P4.S8` and `P4.REVIEW` know nothing else ships without `rollback.sh`.
