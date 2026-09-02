@@ -61,7 +61,18 @@ import styles from "./Event.module.css";
  * refusal family the agent would answer with — 「답할 수 없는 질문은 프리셋으로
  * 제안하지 않음」.
  */
-export function EventDetail({ detail }: { detail: Detail }) {
+export function EventDetail({
+  detail,
+  initialAuthenticated,
+}: {
+  detail: Detail;
+  /** Whether this **request** carried a session, resolved on the server by the
+   * page (`P4.F10`) and passed straight through to `DeadlineOffer`, which is the
+   * only thing on this page that reads it. It is a bare boolean on purpose — the
+   * reader's `Account` never enters this page's HTML. `undefined` is legal and
+   * means "nobody resolved it", which puts the line back on its client probe. */
+  initialAuthenticated?: boolean;
+}) {
   const withdrawn = detail.state === "withdrawn";
   const fieldCount = Object.keys(detail.fields).filter(
     (key) => key !== "correction_interpretation",
@@ -81,7 +92,7 @@ export function EventDetail({ detail }: { detail: Detail }) {
       </Link>
 
       <CraftPanel className={styles.card}>
-        <EventHeader detail={detail} />
+        <EventHeader detail={detail} initialAuthenticated={initialAuthenticated} />
 
         {scope ? (
           <div className={styles.qstrip}>

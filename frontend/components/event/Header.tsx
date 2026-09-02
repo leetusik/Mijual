@@ -59,7 +59,15 @@ import styles from "./Event.module.css";
  * A **withdrawn** event gets no countdown side at all: "no fields, no countdown,
  * no old dates" is R3's rule and `P5.S3` already empties the payload to match.
  */
-export function EventHeader({ detail }: { detail: EventDetail }) {
+export function EventHeader({
+  detail,
+  initialAuthenticated,
+}: {
+  detail: EventDetail;
+  /** Passed through to `DeadlineOffer` and read by nothing else here — the page
+   * resolved it from the request's own session (`P4.F10`). */
+  initialAuthenticated?: boolean;
+}) {
   const countdown = detail.countdown;
   const name = detail.corp_name ?? detail.corp_code;
   const withdrawn = detail.state === "withdrawn";
@@ -142,7 +150,11 @@ export function EventHeader({ detail }: { detail: EventDetail }) {
               itself is signed, and R10 confirms it ("담기 줄은 마감이 아직 남은
               건에만"). */}
           {countdown.date && countdown.days !== null && countdown.days >= 0 ? (
-            <DeadlineOffer corpCode={detail.corp_code} className={styles.offer} />
+            <DeadlineOffer
+              corpCode={detail.corp_code}
+              className={styles.offer}
+              initialAuthenticated={initialAuthenticated}
+            />
           ) : null}
         </div>
       )}

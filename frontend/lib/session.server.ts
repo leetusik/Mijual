@@ -26,11 +26,23 @@ import type { AuthState } from "./types";
  * Reading cookies opts the route into request-time rendering, which is what
  * every auth-dependent page wants anyway — a session state must never be a build
  * artifact.
+ *
+ * **A request carrying no cookie at all is answered without asking** (`P4.F10`).
+ * This session lives in a cookie and nowhere else (`mj_session`, set by
+ * `mijual.web.auth`), so a request with an empty `Cookie` header cannot be
+ * authenticated and `GET /auth/me` could only answer `{authenticated: false}`.
+ * The short-circuit names **no cookie**, deliberately: keying on the cookie's
+ * *name* would duplicate a backend constant here, and a rename would then make
+ * this read answer "anonymous" for readers who are very much logged in — the one
+ * failure this whole line is built to avoid. Emptiness cannot go stale that way.
+ * What it buys: `/events/{rcept_no}` now reads the session on every render, and
+ * the crawler — 445 event pages, never a cookie — adds no API request at all.
  */
 export async function readAuthState(): Promise<AuthState> {
   try {
     const cookie = (await cookies()).toString();
-    return await getAuthState({ headers: cookie ? { cookie } : undefined });
+    if (!cookie) return ANONYMOUS;
+    return await getAuthState({ headers: { cookie } });
   } catch {
     return ANONYMOUS;
   }

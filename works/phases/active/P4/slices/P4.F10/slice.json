@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Event page: render 이 마감 알림 받기 from the request's own session, not after GET /auth/me",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 8.84,
   "depends_on": [
     "P4.F5"
   ],
   "created_at": "2026-09-03T02:41:49+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-03T03:02:07+09:00",
+  "completed_at": "2026-09-03T03:25:31+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Event page resolves the session server-side and passes one boolean to DeadlineOffer: the correct 알림/담기 line is in the server HTML, the probe is skipped there; cold-cache mobile CLS 0.0328→0.0003, settled rendering pixel-identical; not yet deployed",
   "validation": {
     "required": [],
     "last_run": null,

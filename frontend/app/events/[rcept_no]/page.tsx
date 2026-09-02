@@ -5,6 +5,7 @@ import { EventDetail } from "@/components/event";
 import { ApiError, getEvent } from "@/lib/api";
 import { eventPath } from "@/lib/routes";
 import { eventDescriptionKo, eventTitleKo, routeMetadata } from "@/lib/seo";
+import { readAuthState } from "@/lib/session.server";
 
 /**
  * `/events/{rcept_no}` — one event's detail page (R3).
@@ -73,6 +74,34 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * ## The session is resolved **here**, on the server, and travels as one boolean
+ *
+ * R5-2's 「이 마감 알림 받기 →」 / 「보유 종목에 담기 →」 line has two states
+ * and `DeadlineOffer` renders **neither** until it knows which — showing the
+ * anonymous label first would tell a logged-in reader for a moment that they have
+ * no account. That reading is unchanged and still right; what moved is *when* the
+ * answer exists. It used to arrive in the browser, from `GET /auth/me` after
+ * hydration, and inserting a 44px line above the fold at ~2.4s cost this route a
+ * **0.0325 mobile CLS** — the last route above P4's 0.01 target (`P4.F5`
+ * measured it; `P4.F10` is this).
+ *
+ * `readAuthState()` is the same server read `app/auth/login/page.tsx` makes: it
+ * forwards this request's own `cookie` header and **never throws** (a service
+ * that is down is answered as anonymous). It runs in `Promise.all` **beside**
+ * `getEvent`, not after it, so the page pays one round trip's latency rather than
+ * two — and for a reader carrying no cookie at all it costs no request at all
+ * (`lib/session.server.ts` short-circuits, which is what keeps a crawl of 445
+ * event pages exactly as cheap as it was).
+ *
+ * **Only a boolean goes down the tree.** `AuthState` carries the reader's
+ * `Account` — email included — and passing the object would serialise it into the
+ * HTML of a page that has no use for it. The line needs one bit and gets one bit.
+ *
+ * `connection()` above already makes this route request-time, so nothing about
+ * caching changes: a session state must never be a build artifact, and this page
+ * was never one.
+ */
 export default async function EventPage({
   params,
 }: {
@@ -82,12 +111,13 @@ export default async function EventPage({
   const { rcept_no: rceptNo } = await params;
 
   let detail;
+  let auth;
   try {
-    detail = await getEvent(rceptNo);
+    [detail, auth] = await Promise.all([getEvent(rceptNo), readAuthState()]);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
 
-  return <EventDetail detail={detail} />;
+  return <EventDetail detail={detail} initialAuthenticated={auth.authenticated} />;
 }
