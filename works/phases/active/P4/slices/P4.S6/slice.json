@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Production smoke suite + uptime monitoring with email alerting",
   "kind": "qa",
-  "status": "pending",
+  "status": "done",
   "order": 6,
   "depends_on": [
     "P4.S4"
   ],
   "created_at": "2026-09-02T06:20:07+09:00",
   "started_at": "2026-09-02T12:12:14+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-02T14:03:09+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Production smoke suite (scripts/smoke_production.py, make smoke-prod, 17/17 live) + GitHub Actions uptime probe every 10 min mailing hi@hi2vi.com → operator via repo secrets, proven green and red; S5's SEO deployed to the box (811dec5) and re-checked live; deploy freeze recorded; UptimeRobot monitor + alert-mail receipt left to the gate",
   "validation": {
     "required": [],
     "last_run": null,

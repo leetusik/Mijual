@@ -276,10 +276,15 @@ def check_sitemap(ctx):
     need(len(set(locs)) == len(locs), f"{len(locs) - len(set(locs))} duplicate <loc> entries")
     prefix = ctx["base"] + "/"
     stray = [u for u in locs if u != ctx["base"] and not u.startswith(prefix)]
-    need(not stray, f"{len(stray)} URL(s) off the apex, e.g. {stray[0]}")
+    # `raise Fail` and not `need(...)`: the f-string argument is evaluated
+    # BEFORE the call, so `stray[0]` on the empty (passing) list would raise
+    # IndexError. Same below. Measured on the first green sitemap, P4.S6.
+    if stray:
+        raise Fail(f"{len(stray)} URL(s) off the apex, e.g. {stray[0]}")
     for banned in ("www.", "/ops", "/auth", "/portfolio"):
         hits = [u for u in locs if banned in u]
-        need(not hits, f"{len(hits)} URL(s) contain {banned!r}, e.g. {hits[0]}")
+        if hits:
+            raise Fail(f"{len(hits)} URL(s) contain {banned!r}, e.g. {hits[0]}")
     norm = {u.rstrip("/") for u in locs}
     missing = [
         p for p in ("", "/stocks", "/ask") if (ctx["base"] + p).rstrip("/") not in norm

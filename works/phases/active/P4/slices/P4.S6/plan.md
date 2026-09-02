@@ -206,3 +206,21 @@ return **`done`**.
   image, an event page's head, the third-party grep).
 - The UptimeRobot monitor is written up as the gate's to-do; the deploy freeze is recorded.
 - `edge-nginx` untouched; co-tenants unchanged; the box left exactly as documented.
+
+## Dispatch 2 — facts as of 2026-09-02 (orchestrator addendum)
+
+- **The push is done:** GitHub `main` = local `HEAD` = `811dec5` (operator, `git push origin main`,
+  `bcdde73..811dec5`). Everything dispatch 2 needs is on the default branch: S5's SEO, this slice's
+  smoke suite, `production-probe.yml`, the Makefile target, and the `deploy/` pointers.
+- **Six, not five**: the expected-failure set from dispatch 1 is `robots`, `sitemap`, `manifest`,
+  `og-image`, `noindex`, **`event-page`** — all six must be green after the deploy, and
+  `make smoke-prod` must exit 0 with 17/17.
+- **`P4.F1` now exists** (order 6.5, after this slice, before S8): the R5-4 sample portfolio's four
+  fixed issuers have aged out, and F1 makes the sample pick live issuers per state at request time.
+  It will carry its **own** push + `deploy.sh` stop afterwards — do not wait for it, do not fold it
+  in; this dispatch deploys `origin/main` as it is now.
+- The deploy tags `:previous` first, so a bad release rolls back on its own; poll the detached log
+  until the script's final summary. After it: no-harm ×4 against the R2 baseline in `## Now`.
+- The failure drill uses the `workflow_dispatch` `base` input (`https://jujutower.com/api/nope`);
+  the alert mail's **receipt** is the operator's to confirm (gate walkthrough item) — the log shows
+  only that the SMTP step succeeded, never the message.
