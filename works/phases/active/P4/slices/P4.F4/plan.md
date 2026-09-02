@@ -85,3 +85,59 @@ Production additive-only (never `edge-nginx`; `StartedAt 2026-07-02T19:22:12.325
 no secret values in any file or transcript (the `.env.prod` append writes a number, not a secret,
 but never `cat` the file); ssh only via `oracle-cloud`; long remote commands via nohup + log + poll;
 no `git commit`/`push`; no workflow state commands; `uv run` without `--with`; the repo is public.
+
+## Addendum — Dispatch 2 is GO (orchestrator, 2026-09-03 00:25 KST)
+
+**The push landed.** The operator ran `git push origin main` (`96f7141..1a93d7b`); `origin/main` ==
+local `main` == `1a93d7b`, which carries dispatch 1's code (`391cdf0`) and everything since the
+production release at `96f7141`. Re-check it yourself first (`git fetch origin && git rev-parse
+origin/main main`). The slice is `in_progress` again. Do the **Dispatch 2** section above exactly,
+with these specifics:
+
+- **Timing.** It is ~00:25 KST Thursday; the next beat window is `daily-pipeline-morning` at 07:30
+  KST (22:30 GMT Wed on the box clock). You have hours; still assert no run is in flight before
+  deploying (`docker compose -f compose.prod.yml exec -T mijual-worker celery -A mijual.scheduler.app
+  inspect active` or the `pipeline_run` log through `/ops` — whichever `P4.F1`'s result used).
+- **The four R7 no-harm assertions** are in `deploy/runbook.md` § *The standing no-harm assertions*
+  (the three co-tenant `HTTP` lines, `edge-nginx`'s `StartedAt` = `2026-07-02T19:22:12.325478595Z`,
+  the `:80/:443` owner, the sorted `docker ps` status list). Record them **before** and **after**.
+- **Launch pattern** (from `P4.F1`'s result — reuse it, and expect its quirk): `ssh oracle-cloud 'cd
+  /home/opc/Mijual && nohup deploy/deploy.sh > var/deploy-$(date -u +%Y%m%dT%H%M%S).log 2>&1
+  < /dev/null &'`. In `P4.F1` that local call was killed by the harness's Bash timeout while the
+  remote run carried on under `nohup` — if that happens again, **do not relaunch**; poll the log
+  (`tail -5`, then `grep -n 'DONE\|ROLLBACK\|healthy on poll' …`) until it reports the release or
+  a rollback. A rollback is a `needs_operator` return with the log excerpt, not something to retry.
+- **Both images rebuild** (`src/` and `frontend/`-adjacent files changed since `96f7141`? — `src/`
+  did; `frontend/` did not, but `deploy.sh` builds both). Record the new image ids and confirm
+  `mijual-api:previous` / `mijual-web:previous` now name the `96f7141` pair (the rollback point).
+- **Verify the knob twice**: `docker compose -f compose.prod.yml exec -T mijual-worker printenv
+  MIJUAL_EXTRACT_MAX_CALLS` → `300`, and the drain run's `budgets` line → `extract<=300 calls`
+  (only the second proves the code path took it — dispatch 1's own note).
+- **The drain**: `ssh oracle-cloud 'cd /home/opc/Mijual && nohup docker compose -f compose.prod.yml
+  exec -T mijual-worker python -m mijual.scheduler once --stages extract --label f4-drain --trigger
+  operator > var/f4-drain-$(date -u +%Y%m%dT%H%M%S).log 2>&1 < /dev/null &'`, then poll. It takes
+  the normal lock, so a beat run cannot overlap it. Report calls used, tokens, cost, rows extracted,
+  and whether the stage still ends `BUDGET EXHAUSTED` — dispatch 1 priced the backlog at 69 calls,
+  so it should end well under 300; if it exhausts at 300 anyway, report it and stop (the next value
+  is the operator's, not yours).
+- **After**: the four assertions again, `docker compose -f compose.prod.yml ps` (six up, `mijual-schema`
+  exited 0), `curl -s https://jujutower.com/api/health`, and from the laptop `make smoke-prod` →
+  17/17. Check `/ops` (read-only GET) shows the `f4-drain` run row with its numbers.
+- **`result.md`**: keep it one file — rewrite the verdict block at the top to `done` covering both
+  dispatches (dispatch 1's block content moves under a `## Dispatch 1` heading unchanged), then a
+  `## Dispatch 2` section: the log path, image ids, poll counts, the before/after assertions, the
+  drain numbers, deviations. **`phase.md`**: `## Decisions` — the 300 ceiling is **applied on
+  production as of <timestamp>** (replace the "pending push" wording); `## Doc impact` — one
+  `operations` line for this deploy (log path, image ids, `:previous` = the `96f7141` pair,
+  assertions held); drop the `(from P4.F4 dispatch 1, for P4.F4 dispatch 2)` note you consumed;
+  `## Now` (≤ 15 lines) → **`P4.R1` next** (the Core Web Vitals research slice, already cut, plan in
+  `slices/P4.R1/plan.md`), then the fix slices it proposes, then the re-review; keep the freeze line
+  (2026-09-07 11:00 KST) and the gate-shut line; state production's new commit (`1a93d7b`) and that
+  the rollback point is `96f7141`.
+- **Validate**: `python3 scripts/workflow.py validate` passes; `git diff --stat` → `phase.md` and
+  this slice's `result.md` only. No repo code changes in this dispatch.
+
+Everything under **Hard rules** stands: production additive-only, never `edge-nginx`, no secret
+values (never `cat .env.prod`; `printenv` of the one non-secret key is fine), ssh only via
+`oracle-cloud`, long remote commands via nohup + log + poll, no `git commit`/`push`, no workflow
+state commands. Model calls in this dispatch: **only the drain's own extract calls** (≤ 300).

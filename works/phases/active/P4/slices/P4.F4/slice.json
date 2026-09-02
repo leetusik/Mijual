@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Relax the extract call ceiling in production: MIJUAL_EXTRACT_MAX_CALLS knob, 300 on the box, deploy before the freeze",
   "kind": "fix",
-  "status": "pending",
+  "status": "done",
   "order": 8.7,
   "depends_on": [
     "P4.F2"
   ],
   "created_at": "2026-09-02T22:24:38+09:00",
   "started_at": "2026-09-02T22:24:38+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-03T00:48:59+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "MIJUAL_EXTRACT_MAX_CALLS knob landed and deployed (release 1a93d7b); production ceiling 300 verified by printenv and the run's budgets line; f4-drain used 34/300 calls, $0.39, no BUDGET EXHAUSTED",
   "validation": {
     "required": [],
     "last_run": null,
