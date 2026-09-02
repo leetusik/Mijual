@@ -8,7 +8,7 @@
 - Current phase: `P4`
 - Current slice: `P4.S4`
 - Next slice: `P4.S5`
-- Waiting on operator: `none`
+- Waiting on operator: `P4.S4`
 - Open deferred jobs: `30`
 
 ## Active Phases
@@ -78,7 +78,7 @@
 | [x] `P4.S1` | `done` | Containerize: Dockerfile(s), compose.prod.yml, schema bootstrap, production config seam | `implementation` | `works/phases/active/P4/slices/P4.S1` |
 | [x] `P4.S2` | `done` | The real Mailer over SMTP, and the D-day notification send path | `implementation` | `works/phases/active/P4/slices/P4.S2` |
 | [x] `P4.S3` | `done` | Deploy artifacts: the jujutower.conf edge vhost, deploy.sh/rollback.sh, runbook | `implementation` | `works/phases/active/P4/slices/P4.S3` |
-| [ ] `P4.S4` | `in_progress` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |
+| [~] `P4.S4` | `pending` | Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload | `implementation` | `works/phases/active/P4/slices/P4.S4` |
 | [ ] `P4.S5` | `todo` | SEO: metadata, robots, sitemap, canonicals, OG, JSON-LD | `implementation` | `works/phases/active/P4/slices/P4.S5` |
 | [ ] `P4.S6` | `todo` | Production smoke suite + uptime monitoring with email alerting | `qa` | `works/phases/active/P4/slices/P4.S6` |
 | [ ] `P4.S8` | `todo` | 첨부2 기능명세서 | `docs` | `works/phases/active/P4/slices/P4.S8` |

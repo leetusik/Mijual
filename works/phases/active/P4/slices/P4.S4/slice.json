@@ -3,7 +3,7 @@
   "phase_id": "P4",
   "name": "Execute the deploy on the Oracle box; Cloudflare zone, DNS, Origin CA, edge reload",
   "kind": "implementation",
-  "status": "in_progress",
+  "status": "pending",
   "order": 4,
   "depends_on": [
     "P4.S3"
