@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim",
   "kind": "fix",
-  "status": "pending",
+  "status": "done",
   "order": 8.6,
   "depends_on": [
     "P4.F3"
   ],
   "created_at": "2026-09-02T20:46:54+09:00",
   "started_at": "2026-09-02T20:50:26+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-02T22:24:38+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Cloudflare Web Analytics kept ON by operator decision: the beacon's only off-origin host (static.cloudflareinsights.com, same-origin /cdn-cgi/rum report) measured in real Chrome on five routes at 1280/390; check_third_party fetches as a browser and allows exactly that host (make smoke-prod 17/17); 첨부2 §4's printed claim corrected and PDF re-rendered; UptimeRobot dropped by operator decision",
   "validation": {
     "required": [],
     "last_run": null,

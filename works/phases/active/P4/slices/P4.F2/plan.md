@@ -120,3 +120,57 @@ Cloudflare injects the tag only into responses to requests that carry **`Accept:
   (`third-party`, naming `static.cloudflareinsights.com`)**; the direct check against the local
   production build → green; `python3 scripts/workflow.py validate` → passes; `git diff --stat` →
   `scripts/smoke_production.py`, `phase.md`, this slice's `result.md` only.
+
+## Dispatch 2 — branch taken: KEEP (orchestrator addendum, 2026-09-02 ~22:10 KST)
+
+The operator answered dispatch 1's ask with **「And I enabled the analytics.」** — Cloudflare Web
+Analytics is on by the operator's own choice and stays on. Take the **keep branch** above, with
+these specifics (they override the generic keep paragraph where they differ):
+
+1. **Measure what the beacon actually contacts**, once, in real Chrome over CDP (headful, throwaway
+   profile, fresh port) at 1280 and 390 on five production routes (`/`, `/stocks`,
+   `/stocks/00547510`, one live `/events/{rcept_no}`, `/portfolio?sample=1`): capture
+   `Network.requestWillBeSent` per load and list every off-origin host — expect
+   `static.cloudflareinsights.com` (the script) and the beacon's own report endpoint (likely
+   `cloudflareinsights.com/cdn-cgi/rum`, possibly on the apex under `/cdn-cgi/…`). Record the exact
+   host set per route in `result.md`; the claims below name exactly those hosts. No `/api/ask` turn.
+2. **`scripts/smoke_production.py`**: add the measured beacon host(s) to `ALLOWED_EXTERNAL_HOSTS`
+   with a comment that says why — *operator-enabled Cloudflare Web Analytics, 2026-09-02; injected at
+   the edge for `Accept: text/html` responses; any other off-origin host is still a failure* — and
+   make the `third-party` check's return line name the allowance. `make smoke-prod` → **17/17**.
+   Nothing else in the script changes.
+3. **The printed claim**: edit `docs/reference/challenge/submission/drafts/02_기능명세서.md` §4 (the
+   sentence at ~line 302) so it is true: no page contacts a third-party origin **except Cloudflare's
+   Web Analytics beacon** (`static.cloudflareinsights.com`, cookieless, enabled by the operator at
+   the edge, not by the application), measured in real Chrome 152 on 2026-09-02; the application's
+   own HTML references no external host but the DART 원문 links. Also `grep -n 'third-party\|제3자'`
+   in `01_공모전기획서.md` and fix the same claim there if it appears. Re-render the PDF(s) with
+   `python3 scripts/render_submission_pdf.py <md> <pdf>`; report page counts.
+4. **`phase.md`**:
+   - `## Decisions`: replace the 「Cloudflare Web Analytics stays OFF」 entry (already corrected in
+     place by the review) with the operator's decision: **ON, deliberately, 2026-09-02** — the
+     no-third-party-origin property is now *「no third-party origin except the operator-enabled
+     Cloudflare beacon」*; the application itself still references none.
+   - `## Operator Questions`: mark dispatch 1's entry **ANSWERED AND DONE: keep** with the hosts.
+     And mark the `P4.S6` entry about UptimeRobot / the probe **ANSWERED (operator, 2026-09-02):
+     「drop uptime bot and system up checker. just fine if it works now.」** — no UptimeRobot, the
+     probe's cadence (review finding 3) is closed by operator decision, the Actions workflow stays as
+     it is. Add the same as a `## Decisions` line so the re-review does not re-raise it.
+   - `## Doc impact` (append, tag `(P4.F2)`): `security` — the signed 「No page contacts a
+     third-party origin」 property gains one operator-enabled exception (name the hosts; the
+     application emits nothing off-origin; the checkbox must be re-worded, not simply re-ticked;
+     only a real-browser or `Accept: text/html` fetch can observe it); `qa` — the checklist line
+     「제3자 origin 0건」 becomes 「0건 beyond the operator-enabled Cloudflare beacon on production;
+     still 0 in dev and the local production build」, and `check_third_party` now fetches as a
+     browser and allows exactly that host; `operations` — Cloudflare Web Analytics is ON as a
+     zone/dashboard setting (on/off needs no deploy) and UptimeRobot is dropped by operator decision.
+   - `## Now` (≤ 15 lines): `P4.F2` done; **`P4.F4` next** — the operator's 2026-09-02 instruction
+     「give relaxed extract max call to the prod, I don't want to miss a thing」: a
+     `MIJUAL_EXTRACT_MAX_CALLS` env knob (code) + `.env.prod` value + deploy before the freeze; then
+     the re-review (from the top, gate stages included; its walkthrough must **not** carry
+     UptimeRobot, the Cloudflare toggle, or the runbook item).
+5. **Validate**: `python3 -m py_compile scripts/smoke_production.py`; `make smoke-prod` 17/17;
+   the drafts' forbidden-word greps still 0; `python3 scripts/workflow.py validate`; `git diff
+   --stat` → the smoke script, the draft(s) + PDF(s), `phase.md`, `result.md`.
+6. **`result.md`**: rewrite the verdict block first for dispatch 2 (`status: done`), keep dispatch
+   1's log under `## Dispatch 1`. No deploy, nothing on the box, no commit.

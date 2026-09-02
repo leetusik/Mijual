@@ -37,7 +37,9 @@ P4.S6, P4.F2) rather than assumed:
   responses to `Accept: text/html` requests — the User-Agent is irrelevant —
   so a `*/*` fetch can never see an edge-injected script, whatever it claims
   about third-party origins (measured 2026-09-02, P4.F2). `third-party` fetches
-  its own pages for exactly this reason; every other check keeps `*/*`.
+  its own pages for exactly this reason; every other check keeps `*/*`. The
+  beacon itself is **allowed** (the operator turned Web Analytics on, 2026-09-02
+  — see `ALLOWED_EXTERNAL_HOSTS`); any *other* off-origin host is still a fail.
 
 Exit status is 0 only when every check passed.
 """
@@ -75,10 +77,22 @@ OPS_FORBIDDEN = (
     "세션 만료",
 )
 
-#: The only external host any reader page may reference (the DART 원문 links).
+#: The only external hosts any reader page may reference. Everything else is a
+#: failure — that is the whole point of the check.
+#:
+#: - `dart.fss.or.kr` — the 원문 links, the application's own markup.
+#: - `static.cloudflareinsights.com` — **operator-enabled Cloudflare Web
+#:   Analytics, 2026-09-02**. Injected at the EDGE into `Accept: text/html`
+#:   responses (the application emits nothing off-origin); cookieless; its
+#:   report endpoint is same-origin `POST /cdn-cgi/rum`, so this one host is the
+#:   whole footprint. Measured in real Chrome 152 over CDP on five production
+#:   routes at 1280 and 390 — every load contacted `jujutower.com` and this host
+#:   and nothing else. Turning the zone setting off is what removes it; until
+#:   then it is an allowance, not an amnesty.
+#:
 #: `schema.org` appears in the JSON-LD as an `@context` *string* and is never
 #: fetched, so it is not a `src`/`href` and does not belong here.
-ALLOWED_EXTERNAL_HOSTS = {"dart.fss.or.kr"}
+ALLOWED_EXTERNAL_HOSTS = {"dart.fss.or.kr", "static.cloudflareinsights.com"}
 
 
 class Fail(Exception):
@@ -384,6 +398,7 @@ def check_third_party(ctx):
     return (
         f"{len(paths)} page(s) as text/html · no off-origin src/href beyond "
         + ", ".join(sorted(ALLOWED_EXTERNAL_HOSTS))
+        + " (the DART 원문 links + the operator-enabled Cloudflare beacon, edge-injected)"
     )
 
 
