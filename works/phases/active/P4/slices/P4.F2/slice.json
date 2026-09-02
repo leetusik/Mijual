@@ -3,13 +3,13 @@
   "phase_id": "P4",
   "name": "Cloudflare Web Analytics off: re-measure the no-third-party-origin property in a real browser, harden check_third_party, re-date the printed claim",
   "kind": "fix",
-  "status": "todo",
+  "status": "in_progress",
   "order": 8.6,
   "depends_on": [
     "P4.F3"
   ],
   "created_at": "2026-09-02T20:46:54+09:00",
-  "started_at": null,
+  "started_at": "2026-09-02T20:50:26+09:00",
   "completed_at": null,
   "risk": "high",
   "source": {

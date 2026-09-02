@@ -381,15 +381,23 @@ explicit `--yes`. After restoring it runs the schema bootstrap (so a dump older
 than the code still gets its missing tables/columns) and health-gates. **Take a
 fresh backup before restoring, even when the database looks broken.**
 
-**Nightly backup — an open decision for `P4.S4`.** If the box has cron
-(`crontab -l` in R2 answers this), a reasonable line is:
+**Nightly backup — installed.** The box has cron (`crontab -l`, confirmed in
+R2: one prior entry, changple2's 03:00 certbot line). `P4.S4` added the second
+line:
 
 ```cron
 0 4 * * * cd /home/opc/Mijual && /home/opc/Mijual/deploy/db/backup.sh >> /home/opc/Mijual/var/backup.log 2>&1
 ```
 
-04:00 KST sits between the 19:30 evening pipeline and the 07:30 morning one. The
-alternative is operator-run only, before each deploy. **Ask; do not assume.**
+It fires at **04:00 GMT = 13:00 KST**, not at 04:00 local time — the box's
+system clock is GMT (`timedatectl` → `Time zone: GMT (GMT, +0000)`), while the
+app containers log in KST. 13:00 KST still sits between the 07:30 and 19:30
+KST pipeline collections, so there is no operational harm; the line just sits
+in a different gap than the earlier draft argued. (For a run at 04:00 local
+time (KST) instead, the line is `0 19 * * *` — 19:00 GMT — recorded here as
+the alternative, not applied.) The first cron run produced
+`deploy/backups/mijual-20260902T040001Z.dump` (30,356,321 B, mode 600);
+`KEEP=14` rotation; log `var/backup.log`.
 
 ### The standing no-harm assertions (run after ANY box work)
 
@@ -416,7 +424,12 @@ ssh oracle-cloud 'docker ps --format "{{.Names}}\t{{.Status}}" | sort'          
    (`A 140.245.64.173` or `CNAME jujutower.com`); until it is, Cloudflare answers
    from the old imported record (a 525). See `deploy/edge/README.md` §
    *The `www.jujutower.com` alias*.
-2. **The nightly backup cron — install it, or operator-run only?** R2 finds out
-   whether cron exists at all; the decision is the operator's.
+2. ~~**The nightly backup cron — install it, or operator-run only?**~~
+   **ANSWERED: install it** (operator, 2026-09-02). `opc`'s crontab carries
+   exactly one Mijual line, `0 4 * * *` → `deploy/db/backup.sh`, the second
+   line after changple2's 03:00 certbot entry. The box's system clock is GMT,
+   so it fires at 04:00 GMT = **13:00 KST**, not at 04:00 local time. The
+   first cron run produced `deploy/backups/mijual-20260902T040001Z.dump`.
 
-Both are on the phase's `## Operator Questions` list in `phase.md`.
+Both are answered; the record is in `phase.md`'s `## Operator Questions` list,
+both entries marked DONE.

@@ -3,12 +3,12 @@
   "phase_id": "P4",
   "name": "Runbook R7: record the installed backup cron, its GMT firing time (13:00 KST), and close open question 2",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 8.5,
   "depends_on": [],
   "created_at": "2026-09-02T20:46:54+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-02T20:47:37+09:00",
+  "completed_at": "2026-09-02T20:50:26+09:00",
   "risk": "low",
   "source": {
     "type": "manual",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Runbook R7 now records the installed backup cron (0 4 * * * fires 04:00 GMT = 13:00 KST on the GMT box), the first cron dump, KEEP=14 and the 04:00-local alternative; open question 2 struck as answered; correcting Doc impact line filed",
   "validation": {
     "required": [],
     "last_run": null,
