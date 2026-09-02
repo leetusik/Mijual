@@ -11,22 +11,26 @@ import { BRAND_ALT_KO, WORDMARK_NATURAL, WORDMARK_WHITE } from "./copy";
  * Two rules still govern the file, and only one of them has the same reason it
  * used to:
  *
- * - **Never re-encoded.** This binary is *not* a design-project export copied in
- *   byte-for-byte — that was true of the retired `mijual-*` set. It is a
- *   repo-generated derivative of the operator's delivered PNG (class C in
- *   `public/assets/README.md`), and the README proves it by **pixel signature**,
- *   not by file hash. Re-compressing it therefore breaks the one proof that
- *   links it to the operator's file. So this stays a plain `<img>`: `next/image`
- *   would serve a re-compressed derivative, which is exactly what that proof
- *   forbids.
- * - **Height-constrained rendering only.** The intrinsic 1247×371 (3.3612:1)
- *   travels as the `width`/`height` attributes so the browser knows the ratio and
- *   reserves the right box before the PNG arrives (no layout shift in a 52px
- *   bar); CSS then sets the height and lets the width follow. **R18 re-derived
- *   the file from 1292×371 to 1247×371** by cutting the quarter-em space between
- *   「의」 and 「관」; only the width changed, so the rendered mark is 90.75px at
- *   h27 and 80.67px at h24 (was 94.03 / 83.58). No layout consequence — `.brand`
- *   is `flex:none` with no fixed width.
+ * - **Never re-encoded — by an unrecorded encoder.** This binary is *not* a
+ *   design-project export copied in byte-for-byte; that was true of the retired
+ *   `mijual-*` set. It is a repo-generated derivative of the operator's delivered
+ *   PNG (class C in `public/assets/README.md`), and the README proves it by
+ *   **pixel signature**, not by file hash. So this stays a plain `<img>`:
+ *   `next/image` would serve a re-compressed derivative that no README records,
+ *   which is exactly what that proof forbids. `P4.F8` shrinks the *shipped* file
+ *   the way this directory permits instead — one more recorded ImageMagick
+ *   command, at display size, with its own signature in the README, so the chain
+ *   from the operator's file to the bytes a reader downloads is still unbroken.
+ * - **Height-constrained rendering only.** The intrinsic box (**273×81 since
+ *   `P4.F8`**, 3.3704:1 — it was the master's 1247×371 / 3.3612:1, and 1292×371
+ *   before R18) travels as the `width`/`height` attributes so the browser knows
+ *   the ratio and reserves the right box before the PNG arrives (no layout shift
+ *   in a 52px bar); CSS then sets the height and lets the width follow. Only
+ *   widths have ever moved here — R18's splice took the rendered mark from 94.03
+ *   to 90.75px at h27 and from 83.58 to 80.67 at h24, and `P4.F8`'s integer
+ *   raster puts them at **91.00 / 80.89** (+0.25 / +0.22px, measured). No layout
+ *   consequence — `.brand` is `flex:none` with no fixed width, and the mark is
+ *   flush-left in both surfaces, so its ink starts on the same pixel it did.
  *
  * ## The two heights, and the offset that comes with them
  *

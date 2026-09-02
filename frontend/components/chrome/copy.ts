@@ -40,18 +40,48 @@ import { ROUTES } from "@/lib/routes";
  * symbol — the one mark that does need to change colour — is painted with a CSS
  * `mask` instead. See the assets README.
  *
- * It is still **never re-encoded** — the reason is now provenance rather than
- * byte-for-byte design-project output: the README proves this file by pixel
+ * It is still **never re-encoded**, and the reason is provenance rather than
+ * byte-for-byte design-project output: the README proves that file by pixel
  * signature, and any re-compression breaks that proof. Which is why the consumer
  * is a plain `<img>` and not `next/image` (that would ship a re-compressed
- * derivative). */
-export const WORDMARK_WHITE = "/assets/juju2-wordmark-white.png";
-/** The file's intrinsic box. **1292 was the pre-R18 value** — the artwork carried
- * a quarter-em space between 「의」 and 「관」, and the derivation command now cuts
- * those **45 dead columns** (`x=530..574`, inside a 70-column, full-height
- * transparent band) before writing the PNG, so the box is 1247×371. `P10.review`
- * (R18 §①). Nothing vertical moved: see `Wordmark.tsx` for the offset. */
-export const WORDMARK_NATURAL = { width: 1247, height: 371 } as const;
+ * derivative with no record anywhere).
+ *
+ * **What the chrome loads is no longer that master — it is a recorded
+ * display-size derivative of it** (`P4.F8`). The master is 1247×371 while the
+ * mark paints at 91×27 (nav) and 81×24 (footer), i.e. at most **273×81 device
+ * px** on a DPR-3 phone: 21,920 bytes downloaded on every cold page load, on
+ * every route, to draw 22,113 pixels (Lighthouse flags exactly this,
+ * `uses-responsive-images`). So one more class-C step — one recorded ImageMagick
+ * command, 3× the largest render, its own pixel signature in the README, the
+ * same class-C-from-class-C move `P4.S5`'s share card made from the same master
+ * — gives `juju2-wordmark-white-273-73c23508.png` at **6,405 bytes**. The master
+ * stays in `public/assets/` as the ancestor every other brand file derives from;
+ * it is simply not the file a browser downloads any more.
+ *
+ * **The name carries the first eight hex of the file's own pixel signature**, and
+ * that is not decoration: `next.config.ts` serves this one path `immutable` for a
+ * year, and only a name that changes with its pixels can keep that promise.
+ * Re-derive it into different pixels and it gets a different name — in the
+ * README, here, and in `next.config.ts`. */
+export const WORDMARK_WHITE = "/assets/juju2-wordmark-white-273-73c23508.png";
+/** The shipped file's intrinsic box — **273×81 since `P4.F8`**, 3× the largest
+ * render. The master it is derived from is 1247×371, and **1292×371 was the
+ * pre-R18 value**: the artwork carried a quarter-em space between 「의」 and
+ * 「관」 and the derivation command cuts those **45 dead columns** (`x=530..574`,
+ * inside a 70-column, full-height transparent band) before writing the PNG
+ * (`P10.review`, R18 §①).
+ *
+ * These two numbers travel as the `<img>`'s `width`/`height` so the browser
+ * reserves the right box before the PNG arrives. **Nothing vertical moved** —
+ * again: the glyph band is still bottom-flush and still 47.4 % of the box, so
+ * `Wordmark.tsx`'s two `INK_OFFSET_PX` values are untouched and the mark sits
+ * exactly where it sat. The one figure that does move is the rendered *width*:
+ * an integer raster cannot hold both aspects, so 273/81 = 3.3704:1 against the
+ * master's 3.3612:1, and the mark renders **+0.25px** wider at h27 and
+ * **+0.22px** at h24 (measured in Chrome at DPR 1/2/3, `P4.F8`). `.brand` is
+ * `flex:none` with no fixed width and the mark is flush-left in both surfaces,
+ * so no ink moves and nothing reflows; it is recorded because it is real. */
+export const WORDMARK_NATURAL = { width: 273, height: 81 } as const;
 
 /** The wordmark's text equivalent — the product's own name in Korean, unspaced
  * (`docs/current/product.md`). Not a new string: it is the name of the thing,

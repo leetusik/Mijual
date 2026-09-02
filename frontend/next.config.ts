@@ -59,6 +59,50 @@ const DEV_ORIGINS = [
     .filter(Boolean),
 ];
 
+/**
+ * How long a reader's browser may keep what we serve out of `public/` (`P4.F8`).
+ *
+ * Next sets **no** `Cache-Control` on `public/` at all. Hashed `/_next/static/*`
+ * gets `public, max-age=31536000, immutable` from the framework, and everything
+ * else falls through to whatever the CDN in front decides. Measured on production
+ * before this slice: `/assets/*` and `/foundations/*` came back
+ * `public, max-age=14400` with `cf-cache-status: REVALIDATED` — that is
+ * **Cloudflare's default browser TTL**, not a number this repo chose, and under it
+ * every returning reader re-validates the brand mark, the launcher's symbol mask
+ * and the frozen token sheet every four hours.
+ *
+ * Two rules, and the split between them is the whole decision:
+ *
+ * - **A year + `immutable` goes only on a name that changes with its bytes.**
+ *   `juju2-wordmark-white-273-73c23508.png` carries the first eight hex of its own
+ *   pixel signature (`public/assets/README.md` records the command and the rule),
+ *   so re-deriving it into different pixels *renames* it. That matters because an
+ *   `immutable` response cannot be recalled: a Cloudflare purge reaches the edge,
+ *   never a browser cache that was told not to ask for a year.
+ * - **Every other name under `/assets/*` and `/foundations/*` gets one week**,
+ *   with a day of `stale-while-revalidate`. `juju2-symbol-white.png` (the
+ *   launcher's CSS mask), the two manifest tiles and `foundations/tokens.css` are
+ *   *fixed* names whose bytes can change under the same URL, so a year would be a
+ *   promise this repo cannot keep. One week still removes ~42 revalidations a
+ *   fortnight per reader, and the recovery for an urgent change stays honest:
+ *   rename the file, or purge at Cloudflare and accept that browsers hold the old
+ *   copy for up to a week.
+ *
+ * **Order is load-bearing.** Next applies every matching entry in order and a
+ * later one overwrites the same header name, so the exact-path `immutable` rule
+ * sits *after* the directory rule that would otherwise cap it at a week. Verified
+ * with `curl -sI` against the local production build, per path, including that
+ * `/_next/static/*` is unchanged. Cloudflare honours an origin `Cache-Control`,
+ * so these are also the numbers the edge and the reader get once `P4.S9` ships.
+ */
+const PUBLIC_DIR_CACHE = "public, max-age=604800, stale-while-revalidate=86400";
+const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+
+/** Every file under `public/` whose *name* changes when its bytes do — the only
+ * kind of name the rule above may serve `immutable`. Adding one means adding it
+ * here and to the component that references it, together. */
+const NAME_VERSIONED_PUBLIC_FILES = ["/assets/juju2-wordmark-white-273-73c23508.png"];
+
 const nextConfig: NextConfig = {
   // P4.S1 — the deploy ships this app as a container, and `standalone` is what
   // makes that image small and self-contained: `next build` traces the server's
@@ -68,6 +112,17 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: DEV_ORIGINS,
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${API_ORIGIN}/:path*` }];
+  },
+  async headers() {
+    return [
+      { source: "/assets/:path*", headers: [{ key: "Cache-Control", value: PUBLIC_DIR_CACHE }] },
+      { source: "/foundations/:path*", headers: [{ key: "Cache-Control", value: PUBLIC_DIR_CACHE }] },
+      // Last, deliberately — see the block above: this overwrites the week.
+      ...NAME_VERSIONED_PUBLIC_FILES.map((source) => ({
+        source,
+        headers: [{ key: "Cache-Control", value: IMMUTABLE_CACHE }],
+      })),
+    ];
   },
 };
 

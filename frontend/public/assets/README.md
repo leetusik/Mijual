@@ -8,7 +8,7 @@ as untouchable, or an untouchable export gets "regenerated".
 |---|---|---|
 | **A — design-project export** | produced outside this repo, in the Claude Design project **"Mijual Design System"**, and **not regenerable here**. Copied in byte-for-byte. A diff is a design change. | **none remain in this directory.** The four `mijual-*.png` were class A and were deleted by `P10.S2`; `fonts/PretendardVariable.woff2` and `../foundations/fonts.css` were class A and were deleted by `P10.S7`. All are recorded below. `../foundations/tokens.css` is still class A and is still frozen. |
 | **B — operator delivery** | handed over directly by the operator, outside the design project. Landed byte-exact and never re-encoded. Also not regenerable here. | `juju2-logo-source.png`, `juju2-symbol-source.png` |
-| **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file — or, once (the share card), from another class-C file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju2-wordmark-white.png`, `juju2-symbol-white.png`, the three favicon tiles in `../../app/`, and (`P4.S5`) `../../app/opengraph-image.png` + `juju2-icon-192.png` + `juju2-icon-512.png` |
+| **C — repo-generated derivative** | produced **in this repository** by one recorded ImageMagick command from a class-B file — or, once (the share card), from another class-C file. **Regenerable here** — that is the trust: re-run the command and compare. | `juju2-wordmark-white.png`, `juju2-symbol-white.png`, the three favicon tiles in `../../app/`, (`P4.S5`) `../../app/opengraph-image.png` + `juju2-icon-192.png` + `juju2-icon-512.png`, and (`P4.F8`) `juju2-wordmark-white-273-73c23508.png` — **the file the chrome actually loads** |
 
 ## The brand mark (2026-08-31, `P10.S7`; re-derived by `P10.F1` for R18) — the second delivery
 
@@ -31,7 +31,8 @@ wordmark: both measure **2,481 ink pixels**, which is how we know it was not red
 |---|---|---|---|
 | `juju2-logo-source.png` | B | the operator's wordmark delivery, byte-exact and **unreferenced** — kept only as the ancestor | PNG 1614×1076 sRGBA, 239,858 b |
 | `juju2-symbol-source.png` | B | the operator's symbol delivery, byte-exact and **unreferenced** — same role | PNG 278×278 sRGBA, 31,674 b |
-| `juju2-wordmark-white.png` | C | the wordmark trimmed to its ink, recoloured **white**, and **spliced** to drop the quarter-em space inside it (R18) — **the only image the chrome loads** | PNG 1247×371 sRGBA, 21,920 b |
+| `juju2-wordmark-white.png` | C | the wordmark trimmed to its ink, recoloured **white**, and **spliced** to drop the quarter-em space inside it (R18) — the **master**, and every other wordmark file's ancestor. It was 「the only image the chrome loads」 until `P4.F8`; the chrome now loads the display-size derivative below, and this file is not requested by any page | PNG 1247×371 sRGBA, 21,920 b |
+| `juju2-wordmark-white-273-73c23508.png` | C | **what the chrome loads since `P4.F8`** — the master resized to 3× its largest render, name-versioned by its own pixel signature. Same mark, same place, same size on screen; 6,405 bytes instead of 21,920 | PNG 273×81 sRGBA, 6,405 b |
 | `juju2-symbol-white.png` | C | the symbol **cropped** to its real ink and recoloured white — the launcher paints it with a CSS `mask`, and the favicon tiles are composited from it | PNG 222×165 sRGBA, 3,232 b |
 
 **There is no black variant, and that is deliberate.** The retired first mark had one for light
@@ -492,6 +493,140 @@ preview in KakaoTalk, X or Slack — and nothing in the signed design record spe
 *proposal* on the same footing as `P4.S5`'s Korean meta copy: the operator accepts or rejects it at
 the P4 acceptance gate. Rejecting it is one file and one command; there is nothing else to unwind.
 
+## The display-size wordmark — the file the chrome loads (`P4.F8`, 2026-09-03)
+
+`juju2-wordmark-white.png` is **1247×371 / 21,920 b** and the chrome paints it at **91×27** (nav)
+and **80.88×24** (footer) — at most **273×81 device px** on a DPR-3 phone. So every cold page load,
+on every route, downloaded 21,920 bytes to draw 22,113 pixels; Lighthouse flagged exactly this file
+(`uses-responsive-images`). `P4.F8` ships a **class-C derivative of the class-C master** — the same
+move `P4.S5`'s share card made from the same file — at **3× the largest render**:
+
+| file | class | what it is | format |
+|---|---|---|---|
+| `juju2-wordmark-white-273-73c23508.png` | C | the master at display size — `WORDMARK_WHITE` in `../../components/chrome/copy.ts` | PNG 273×81 sRGBA, **6,405 b** (−15,515 b, −70.8 %) |
+
+**The name carries the first eight hex of the file's own pixel signature, and that is load-bearing.**
+`../../next.config.ts` serves this one path `Cache-Control: public, max-age=31536000, immutable`,
+and an `immutable` response cannot be recalled — a Cloudflare purge reaches the edge, never a browser
+that was told not to ask for a year. Only a name that changes with its pixels can carry that header
+honestly, so **re-deriving this file into different pixels renames it**, in three places at once:
+here, `copy.ts`, and `next.config.ts`. Every *other* name under `/assets/` and `/foundations/` is
+fixed and gets one week instead — see the header block in `next.config.ts`.
+
+### Exactly how it was produced
+
+Run from **`frontend/`** (one level up), same ImageMagick as everything else here —
+**7.1.2-27 Q16-HDRI aarch64**:
+
+```sh
+# 3x the largest render: the nav paints 91 CSS px wide, so 273 device px at DPR 3.
+# -resize 273x keeps the master's ratio: 273 * 371/1247 = 81.2 -> 81 tall.
+magick public/assets/juju2-wordmark-white.png -filter Lanczos -resize 273x \
+       -channel RGB +level-colors white,white +channel \
+       -strip -depth 8 -quality 95 -define png:color-type=6 \
+       public/assets/juju2-wordmark-white-273-73c23508.png
+```
+
+Nothing was cropped, re-drawn, re-coloured or re-composed: this is the master, scaled, and the
+filename's hash is read off the result (`identify -format '%#'`, first eight hex).
+
+**Why each flag, all four measured rather than assumed:**
+
+- **`-filter Lanczos` — because the default here is *not* Lanczos.** ImageMagick picks Mitchell for
+  an image with an alpha channel, and it is not a small difference: the unspecified form is
+  pixel-identical to `-filter Mitchell` (`compare -metric AE` = 0) and visibly different from this
+  one. Lanczos is the sharper of the two and the one that keeps the glyph band's ink weight, which
+  is the property R18 was re-cut for (「previous one was so thin」).
+- **`-channel RGB +level-colors white,white +channel` — the resize breaks this directory's own
+  white-everywhere invariant, and this puts it back.** Measured on the unguarded output: the
+  transparent region comes back **RGB (0,0,0)** on 13,516 px (plus one stray `#767676`), where the
+  master is `#FFFFFF` on *every* pixel, transparent ones included. That invariant is not decoration —
+  it is the reason a hard downscale of this mark cannot bleed a dark halo into the ink edge. With the
+  guard the file is back to **1 distinct RGB**, and its alpha channel is **bit-identical** to the
+  unguarded resize, so the guard changed no visible pixel (`compare -metric AE` = 0).
+- **`-strip` — and it buys something no other file on this page has.** It drops the `png:tIME`
+  chunk, so **this derivation is byte-reproducible**: two runs a second apart give the same sha256.
+  The rule elsewhere in this README (「verify a derivation by pixel signature, never by file hash」)
+  still governs — it is what a future ImageMagick's different zlib output would need — but here the
+  file hash happens to reproduce too, and the verify block below shows both.
+- **`-quality 95` — lossless, and worth 377 bytes.** It is zlib level 9 with adaptive PNG filtering;
+  the pixels are identical to the unspecified form (`AE` 0, same pixel signature) and the file is
+  6,405 b instead of 6,782 b.
+
+### The geometry, and the one number that moved
+
+| | display-size file | the master |
+|---|---|---|
+| box | **273×81** | 1247×371 |
+| aspect | **3.3704 : 1** | 3.3612 : 1 |
+| trim | `273x81+0+0` — ink flush on all four sides | `1247x371+0+0` |
+| non-transparent px | **5,713** of 22,113 | 78,212 of 462,637 |
+| fully opaque px | **1,577** | 69,630 |
+| distinct alpha / RGB values | **255 / 1** | 154 / 1 |
+
+**Nothing vertical moved, which is what `Wordmark.tsx`'s two `INK_OFFSET_PX` values depend on.** The
+glyph band is still bottom-flush and the sparkle cluster still flush to the top and right; the band's
+own edge lands at row **42.57 of 81**, exactly the master's 195/371 = 52.56 %, split across rows 42
+and 43 by antialiasing.
+
+**An integer raster cannot hold both aspects, so the rendered *width* moves by a quarter of a
+pixel.** 273/81 is 3.3704 against the master's 3.3612, so Chrome reports **91.000 × 27** in the nav
+(was 90.750) and **80.883 × 24** in the footer (was 80.664) — **+0.250 / +0.219 px**, measured at
+1280 and 390 and at DPR 1, 2 and 3. `.brand` is `flex:none` with no fixed width and the mark is
+flush-left in both surfaces, so nothing reflows and no ink moves left, up or down. Measured
+consequence in the rendered pixels (`P4.F8`, real Chrome, `/stocks`): the ink bounding box is
+**identical** in the nav at DPR 1/2/3 and in the footer at DPR 1, and the footer's **right** edge —
+the outermost sparkle dot — sits **one device pixel** further right at DPR 2 and 3. Left, top and
+bottom are identical everywhere.
+
+**Lanczos rings, and the ring is invisible.** The master's 30 fully-transparent rows between the
+cluster and the band become one fully-transparent row plus faint overshoot in the rest: **peak alpha
+4/255 (1.6 %)**, against 255 for the ink it borders.
+
+### Verify (run from `frontend/`)
+
+```sh
+identify -format '%f %wx%h %[channels] opaque=%[opaque] %B bytes\n' \
+  public/assets/juju2-wordmark-white-273-73c23508.png
+# juju2-wordmark-white-273-73c23508.png 273x81 srgba 4.0 opaque=False 6405 bytes
+
+magick public/assets/juju2-wordmark-white-273-73c23508.png -trim -format '%wx%h%O\n' info:
+# 273x81+0+0 — the ink is flush on all four sides, exactly as the master is
+
+# re-derive into a scratch file and compare PIXELS (the rule), then bytes (a bonus of -strip)
+magick public/assets/juju2-wordmark-white.png -filter Lanczos -resize 273x \
+       -channel RGB +level-colors white,white +channel \
+       -strip -depth 8 -quality 95 -define png:color-type=6 /tmp/w273.png
+compare -metric AE public/assets/juju2-wordmark-white-273-73c23508.png /tmp/w273.png null:   # 0
+shasum -a 256 /tmp/w273.png          # ae29fe47… — identical, because -strip drops png:tIME
+identify -format '%#\n' /tmp/w273.png # 73c23508… — the first eight hex ARE the filename
+
+# one distinct RGB (#FFFFFF everywhere, transparent pixels included), 255 alphas, and the ink counts
+magick public/assets/juju2-wordmark-white-273-73c23508.png -depth 8 RGBA:- | python3 -c "
+import sys; b=sys.stdin.buffer.read()
+px=[tuple(b[i:i+4]) for i in range(0,len(b),4)]
+print(len({p[:3] for p in px}), len({p[3] for p in px}),
+      sum(1 for p in px if p[3]>0), sum(1 for p in px if p[3]==255))"   # 1 255 5713 1577
+```
+
+### Checksums
+
+```
+ae29fe47fe3f716e44547b49e84e47a7ea7551b1a73a32560c4b178dcd3f8d98  juju2-wordmark-white-273-73c23508.png
+```
+
+Pixel signature (`identify -format '%#'`) — **and the source of the eight hex in the filename**:
+
+```
+73c235084d3f0f539568b95a0a4c020d7b1913d1188902b5c178b35cb24c5728  juju2-wordmark-white-273-73c23508.png
+```
+
+**The master stays.** `juju2-wordmark-white.png` is the ancestor of the share card, of this file and
+of anything else the mark is ever cut into, and this README's whole proof chain runs through it. It
+is simply not requested by a page any more — measured on the local production build, `/`, `/stocks`
+and `/ask` fetch exactly `juju2-wordmark-white-273-73c23508.png` (and the launcher's
+`juju2-symbol-white.png`) out of this directory, and nothing else.
+
 ## Retired and **deleted** — what left, and why nothing loads it
 
 Class A and class B files are *not regenerable here*, so these tables are the only in-repo record of
@@ -584,6 +719,11 @@ that say what a thing replaced. A `grep` hit is expected and is **never** a live
   update the command, the file hash *and* the pixel signature in this README together.
 - **Verify a derivation by pixel signature, never by file hash.** Re-deriving changes the container,
   not the pixels.
+- **A file served `immutable` carries its own pixel signature in its name.** `P4.F8` gives
+  `/assets/*` and `/foundations/*` real cache lifetimes, and the year-long, unrecallable one is
+  allowed **only** on a name that changes when the pixels do — today exactly
+  `juju2-wordmark-white-273-73c23508.png`. Re-derive such a file and it is renamed here, in the
+  component that references it and in `../../next.config.ts`, together. Every fixed name gets a week.
 - **No image is substituted, generated or placeheld anywhere.** A slice that needs a missing asset
   renders the real file or nothing. This is what kept the favicon unshipped until the operator
   delivered a real symbol export — and it is why the favicon tiles are a *composite of that
