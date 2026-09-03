@@ -93,5 +93,6 @@
 | [x] `P4.F10` | `done` | Event page: render 이 마감 알림 받기 from the request's own session, not after GET /auth/me | `fix` | `works/phases/active/P4/slices/P4.F10` |
 | [x] `P4.S9` | `done` | Release the CWV batch (F5+F6+F8) to production — frontend-only deploy | `implementation` | `works/phases/active/P4/slices/P4.S9` |
 | [x] `P4.F7` | `done` | Cut the landing starfield's continuous main-thread cost with the same visual effect (RESPECT THE DESIGN) | `fix` | `works/phases/active/P4/slices/P4.F7` |
+| [x] `P4.F11` | `done` | Landing idle cost: the Hero orbiter as a composited transform, and the star twinkle without iteration events (same effect) | `fix` | `works/phases/active/P4/slices/P4.F11` |
 | [~] `P4.S10` | `pending` | Release P4.F7 (the starfield cost cut) to production — frontend-only deploy | `implementation` | `works/phases/active/P4/slices/P4.S10` |
 | [ ] `P4.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

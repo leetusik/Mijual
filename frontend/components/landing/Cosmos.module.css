@@ -111,6 +111,25 @@
   }
 }
 
+/* `StarTwinkle` sets this attribute once it has taken all 240 twinkles over
+   with the Web Animations API, at the phase each had reached (`P4.F11`). The
+   picture does not change: same two literals, same `ease-in-out` per segment,
+   same per-star duration and delay. What changes is that a WAAPI animation
+   fires no CSS `animationiteration` event, and those ~56 events a second were
+   each forcing a main-thread frame, because React registers a delegated
+   `animationiteration` listener on the hydration root and Blink must dispatch
+   every event once ANY listener for the type exists in the document. Measured
+   over 8s idle windows at 1280: 467 `UpdateLayoutTree` with the CSS twinkle,
+   134 after the handover. Only RENDERED stars are handed over: see StarTwinkle.
+
+   The CSS animation above is not redundant and must stay: it is what paints and
+   animates the field from the server-rendered FIRST PAINT, before any JS runs.
+   The handover is also reversible — under `prefers-reduced-motion` the
+   attribute is removed and the freeze below takes over again. */
+.field[data-twinkle="waapi"] .star::before {
+  animation: none;
+}
+
 /* ≤480px is the mobile field: the last 80 stars leave, the first 160 stay
    (R2: ≈240 desktop / 160 mobile). */
 @media (max-width: 480px) {

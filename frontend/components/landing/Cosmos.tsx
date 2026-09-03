@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+
+import { StarTwinkle } from "./StarTwinkle";
 import styles from "./Cosmos.module.css";
 
 /**
@@ -35,6 +37,18 @@ import styles from "./Cosmos.module.css";
  * of this page's idle style recalculation. The reasoning, the measurements and
  * the two shapes that turned out worse are all in `Cosmos.module.css` beside the
  * rules.
+ *
+ * ## The twinkle moves to the Web Animations API after hydration (`P4.F11`)
+ *
+ * The CSS above is what paints and animates the field from the server-rendered
+ * first paint; `StarTwinkle` then takes each star's animation over at the phase
+ * it had reached and switches the CSS one off. Nothing about the picture
+ * changes — the point is that a WAAPI animation fires no CSS
+ * `animationiteration` event, and those events (~56 a second, all dispatched
+ * because React registers a delegated listener on the hydration root) were
+ * forcing a main-thread frame on every display frame. Why it is a handover and
+ * not "just render it with JS": a canvas or a JS-built field cannot paint
+ * before hydration, and a starless first paint is not the same effect.
  *
  * ## Reduced motion
  *
@@ -114,7 +128,10 @@ export function Cosmos() {
     <div className="backdrop" aria-hidden="true">
       <div className={styles.glow} />
 
-      <div className={styles.field} data-motion="tick">
+      {/* `data-starfield` is `StarTwinkle`'s handle on this element. It is an
+          attribute rather than the hashed module class so that renaming a class
+          cannot silently disconnect the handover. */}
+      <div className={styles.field} data-motion="tick" data-starfield="">
         {STARS.map((star, index) => (
           <span
             key={index}
@@ -137,6 +154,7 @@ export function Cosmos() {
           />
         ))}
       </div>
+      <StarTwinkle />
 
       <div className={styles.shooters} data-motion="ambient">
         {SHOOTERS.map((shooter, index) => (
