@@ -5,10 +5,10 @@
 
 ## Pointer
 
-- Current phase: `P4`
-- Current slice: `none`
-- Next slice: `none`
-- Waiting on operator: `P4`
+- Current phase: `P12`
+- Current slice: `P12.DECOMP`
+- Next slice: `P12.REVIEW`
+- Waiting on operator: `none`
 - Open deferred jobs: `37`
 
 ## Active Phases
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [~] `P4` | `pending` | `changes_requested` | Ship & Deploy | `P4.REVIEW` | `works/phases/active/P4` |
+| [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
 | [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.DECOMP` | `works/phases/active/P12` |
 
 ## Phase P9: Smart Mijual Assistant
@@ -96,7 +96,7 @@
 | [x] `P4.F7` | `done` | Cut the landing starfield's continuous main-thread cost with the same visual effect (RESPECT THE DESIGN) | `fix` | `works/phases/active/P4/slices/P4.F7` |
 | [x] `P4.F11` | `done` | Landing idle cost: the Hero orbiter as a composited transform, and the star twinkle without iteration events (same effect) | `fix` | `works/phases/active/P4/slices/P4.F11` |
 | [x] `P4.S10` | `done` | Release P4.F7 (the starfield cost cut) to production — frontend-only deploy | `implementation` | `works/phases/active/P4/slices/P4.S10` |
-| [ ] `P4.REVIEW` | `in_progress` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |
+| [x] `P4.REVIEW` | `done` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |
 
 ## Phase P12: Flicker polish
 
