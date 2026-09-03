@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `35`
+- Open: `36`
 - Promoted: `6`
 - Dropped: `3`
 
@@ -44,6 +44,7 @@
 | `D42` | `deferred` | Settle the harness's production boundary (ssh oracle-cloud reads, docker compose over ssh, .env.prod credential read) | P4.REVIEW | The next slice that needs box inspection or an /ops login. | `works/deferred/open/D42` |
 | `D43` | `deferred` | This Mac's MagicDNS answer for www.jujutower.com (false-red make smoke-prod www line) | P4.REVIEW | The next red www line — check dig @1.1.1.1 before believing it; fix the local resolver or split-DNS. | `works/deferred/open/D43` |
 | `D44` | `deferred` | board 자동 갱신 re-downloads the whole board every 60 s per open tab (no ETag/304, no delta endpoint) | P4.R1 | When concurrent readers or egress start to matter, or when a 정정 makes a delta endpoint worth having anyway | `works/deferred/open/D44` |
+| `D45` | `deferred` | Measure Malgun Gothic's Hangul advance and close the Windows half of the font fallback | P4.REVIEW | The next time a Windows machine is available, or the first Windows-sourced report of a cold-cache re-wrap | `works/deferred/open/D45` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D8` | `deferred` | Strip the // eyebrow from the accessible name on 조회 and 보유 종목 (Q21) | P8.REVIEW | Each surface next round, or as one small cross-surface job before P4 | `works/deferred/open/D8` |
 | `D9` | `deferred` | Carry the ③ 반대의사 통지 procedure fields onto GET /stocks/{corp_code} (Q30b) | P8.REVIEW | When 조회 and 상세 disagreeing about the same filing becomes a reported problem | `works/deferred/open/D9` |

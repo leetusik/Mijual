@@ -579,7 +579,7 @@
       ]
     },
     "operations": {
-      "latest": "v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit",
+      "latest": "v0014_p4_the_production_runtime_and_access_path_join_the_operator_runtime_manifest_jujutower.com_through_cloudflare_and_the_shared_edge_the_standalone_build_the_browser_instrument_and_the_freeze",
       "current_path": "docs/current/operations.md",
       "versions": [
         {
@@ -685,6 +685,15 @@
           "source": "P11.REVIEW",
           "summary": "P11.F2: MIJUAL_OPERATOR_CONTACT is set and must travel to wherever the API runs — it now feeds the global footer as well as the agent's answer, and .env carries it in no commit",
           "previous": "v0012_p10_round_2_the_web_fonts_are_regenerated_by_three_dev-only_scripts_from_a_pinned_google_fonts_commit_and_the_operator_runtime_carries_the_ops-credential_step_every_gate_walkthrough_needs"
+        },
+        {
+          "id": "v0014_p4_the_production_runtime_and_access_path_join_the_operator_runtime_manifest_jujutower.com_through_cloudflare_and_the_shared_edge_the_standalone_build_the_browser_instrument_and_the_freeze",
+          "path": "docs/versions/operations/v0014_p4_the_production_runtime_and_access_path_join_the_operator_runtime_manifest_jujutower.com_through_cloudflare_and_the_shared_edge_the_standalone_build_the_browser_instrument_and_the_freeze.md",
+          "created_at": "2026-09-03T10:12:30+09:00",
+          "commit": "388f47c7cf69354c79f8714ad8d4a46fa2624e76",
+          "source": "P4.REVIEW",
+          "summary": "P4: the production runtime and access path join the Operator Runtime manifest — jujutower.com through Cloudflare and the shared edge, the standalone build, the browser instrument and the freeze",
+          "previous": "v0013_p11.f2_mijual_operator_contact_is_set_and_must_travel_to_wherever_the_api_runs_it_now_feeds_the_global_footer_as_well_as_the_agent_s_answer_and_.env_carries_it_in_no_commit"
         }
       ]
     },
@@ -767,7 +776,7 @@
       ]
     },
     "qa": {
-      "latest": "v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument",
+      "latest": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -889,6 +898,15 @@
           "source": "P11.REVIEW",
           "summary": "P11 third pass: the production 404 echoes the reader's own address with no #418, the P11 block is re-cut and re-measured, and Aside is now the instrument",
           "previous": "v0014_p11_fixes_the_start-card_checklist_rows_are_re-cut_to_four_live-corpus_cards_the_footer_row_admits_the_operator_s_mono_phone_and_the_p11_block_gains_the_contact_fallback_and_dynamic-route_checks"
+        },
+        {
+          "id": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes",
+          "path": "docs/versions/qa/v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes.md",
+          "created_at": "2026-09-03T10:11:59+09:00",
+          "commit": "388f47c7cf69354c79f8714ad8d4a46fa2624e76",
+          "source": "P4.REVIEW",
+          "summary": "P4: the production regression block joins the checklist — smoke, the beacon exception, cold-cache CLS, the extract ceiling, backups and the wordmark's new bytes",
+          "previous": "v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument"
         }
       ]
     },
@@ -1003,5 +1021,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-09-02T07:05:32+09:00"
+  "last_rebuilt_at": "2026-09-03T10:13:06+09:00"
 }

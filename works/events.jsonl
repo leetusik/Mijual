@@ -717,3 +717,9 @@
 {"ts": "2026-09-03T03:25:32+09:00", "type": "slice_status_changed", "slice": "P4.S9", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-09-03T08:24:41+09:00", "type": "slice_status_changed", "slice": "P4.S9", "old_status": "pending", "new_status": "in_progress"}
 {"ts": "2026-09-03T09:02:36+09:00", "type": "slice_status_changed", "slice": "P4.S9", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-09-03T09:05:42+09:00", "type": "slice_status_changed", "slice": "P4.REVIEW", "old_status": "changes_requested", "new_status": "in_progress"}
+{"ts": "2026-09-03T10:11:59+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes", "source": "P4.REVIEW"}
+{"ts": "2026-09-03T10:12:30+09:00", "type": "doc_version_created", "doc": "operations", "version": "v0014_p4_the_production_runtime_and_access_path_join_the_operator_runtime_manifest_jujutower.com_through_cloudflare_and_the_shared_edge_the_standalone_build_the_browser_instrument_and_the_freeze", "source": "P4.REVIEW"}
+{"ts": "2026-09-03T10:17:42+09:00", "type": "phase_status_changed", "phase": "P4", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-09-03T10:17:42+09:00", "type": "acceptance_opened", "phase": "P4"}
+{"ts": "2026-09-03T10:17:42+09:00", "type": "deferred_created", "deferred": "D45", "source": "P4.REVIEW"}
