@@ -3,14 +3,14 @@
   "phase_id": "P12",
   "name": "Research: flicker hunt across every user-facing page, 1280 + 390, dev + local production build, watched over time",
   "kind": "research",
-  "status": "todo",
+  "status": "done",
   "order": 2,
   "depends_on": [
     "P12.S1"
   ],
   "created_at": "2026-09-03T22:09:52+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-04T01:26:13+09:00",
+  "completed_at": "2026-09-04T02:27:20+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Walked all 10 user-facing routes in Aside (u2) at 1280/390/412-cold, signed out and in, across dev, the production build and read-only production — 28 hypotheses settled (13 confirmed, 8 refuted with controls, 6 clean, 1 artefact) plus 3 unlisted findings, delivered as ranked F1–F14 in four root-cause families; no product code",
   "validation": {
     "required": [],
     "last_run": null,
