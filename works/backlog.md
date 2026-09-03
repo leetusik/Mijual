@@ -6,9 +6,9 @@
 ## Pointer
 
 - Current phase: `P4`
-- Current slice: `P4.S9`
-- Next slice: `P4.REVIEW`
-- Waiting on operator: `P4.S9`
+- Current slice: `P4.REVIEW`
+- Next slice: `none`
+- Waiting on operator: `none`
 - Open deferred jobs: `35`
 
 ## Active Phases
@@ -18,7 +18,7 @@
 | [x] `P9` | `done` | `pass` | Smart Mijual Assistant | `none` | `works/phases/active/P9` |
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
-| [ ] `P4` | `in_progress` | `changes_requested` | Ship & Deploy | `P4.S9` | `works/phases/active/P4` |
+| [ ] `P4` | `in_progress` | `changes_requested` | Ship & Deploy | `P4.REVIEW` | `works/phases/active/P4` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -91,5 +91,5 @@
 | [x] `P4.F6` | `done` | Trim the four unread countdown fields out of the landing's RSC payload | `fix` | `works/phases/active/P4/slices/P4.F6` |
 | [x] `P4.F8` | `done` | Ship the wordmark at display size and stop serving public/ at max-age 4 h | `fix` | `works/phases/active/P4/slices/P4.F8` |
 | [x] `P4.F10` | `done` | Event page: render 이 마감 알림 받기 from the request's own session, not after GET /auth/me | `fix` | `works/phases/active/P4/slices/P4.F10` |
-| [~] `P4.S9` | `pending` | Release the CWV batch (F5+F6+F8) to production — frontend-only deploy | `implementation` | `works/phases/active/P4/slices/P4.S9` |
+| [x] `P4.S9` | `done` | Release the CWV batch (F5+F6+F8) to production — frontend-only deploy | `implementation` | `works/phases/active/P4/slices/P4.S9` |
 | [ ] `P4.REVIEW` | `changes_requested` | phase review | `review` | `works/phases/active/P4/slices/P4.REVIEW` |

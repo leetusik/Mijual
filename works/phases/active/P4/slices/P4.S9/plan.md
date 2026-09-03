@@ -76,3 +76,20 @@ validate`; `uv run` without `--with`; never the operator's Chrome profile; model
 
 `git diff --stat` → `phase.md` and this slice's `result.md` only; `python3 scripts/workflow.py
 validate` passes; `make smoke-prod` 17/17; the R7 assertions identical before/after; the CLS table.
+
+## Addendum — GO (orchestrator, 2026-09-03 08:24 KST)
+
+**The push landed**: the operator ran `git push origin main` (`1a93d7b..4aa8ddd`); `origin/main` ==
+local `main` == `4aa8ddd`, which carries F5 (`70daeaf`), F6 (`a8d327b`), F8 (`fd21529`) and F10
+(`4e6a921`). Re-check it yourself first. Production is at `1a93d7b` (F4's release); this deploy makes
+`4aa8ddd` live. Nothing under `src/` changed since `1a93d7b`, so expect `mijual-api` to be a
+build-cache hit and `mijual-web` to rebuild. The next beat window is 19:30 KST today; check it is
+not within 15 minutes when you launch. Everything in **Do** and **Hard rules** above stands.
+
+**Timing at dispatch (08:24 KST):** the beat entries are `daily-pipeline-morning` 07:30,
+`notify-deadlines` **08:30**, `daily-pipeline-evening` 19:30, `weekly-resync` Sun 04:30 (all KST; the
+box clock is GMT). The 08:30 mail send is minutes away and the morning pipeline may still be
+finishing — do the read-only preparation first (fetch check, the four assertions before, the
+image ids), then **launch no earlier than 08:45 KST and only with `inspect active` empty**; poll it
+if a task is still running. Recreating the worker mid-run is exactly what this precondition exists
+to prevent.
