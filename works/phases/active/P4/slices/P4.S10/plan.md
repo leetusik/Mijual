@@ -86,3 +86,21 @@ yes, the orchestrator appends that slice to **What ships** above before this dep
 production idle-cost measurement in **Do** then has a floor worth measuring against (R1's "stars
 hidden + orbiter off" line: ~20 `UpdateLayoutTree` per 8 s). Either way this slice waits for the
 operator's `git push origin main` first.
+
+## Addendum — GO (orchestrator, 2026-09-03 19:30 KST)
+
+**Pushed**: the orchestrator ran `git push origin main` on the operator's instruction 「you deploy and
+finish this phase with the report」 (`4aa8ddd..a74c58a`); `origin/main` == local `main` == `a74c58a`,
+carrying F7 (`a608b86`) and F11 (`be3230b`). Re-check it yourself. This deploy makes `a74c58a` live;
+production is at `4aa8ddd`.
+
+**Timing — read this before anything else.** It is **19:30 KST**: `daily-pipeline-evening` is
+starting **now** on the box. Do all read-only preparation first (fetch check, the four assertions
+before, image ids), then **wait for that run to finish** — poll `docker compose -f compose.prod.yml
+exec -T mijual-worker celery -A mijual.scheduler.app inspect active` until it is `- empty -` **and**
+the worker log shows the evening run's final line (a `pipeline_run` row for tonight with its stages
+done) — and only then launch `deploy/deploy.sh`. A run can take from a few minutes (nothing new to
+extract) to ~30 min; do not launch while anything is active. The next window after that is
+tomorrow 07:30 KST, hours away, so once the run is done you have all night. Only `mijual-web`
+should be recreated (frontend-only release); the worker is not touched by the rebuild, but the
+health gate and the image tag flip happen while the stack is live, so the rule stands.

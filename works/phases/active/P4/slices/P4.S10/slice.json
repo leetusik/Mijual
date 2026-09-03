@@ -3,14 +3,14 @@
   "phase_id": "P4",
   "name": "Release P4.F7 (the starfield cost cut) to production — frontend-only deploy",
   "kind": "implementation",
-  "status": "pending",
+  "status": "done",
   "order": 8.87,
   "depends_on": [
     "P4.F7"
   ],
   "created_at": "2026-09-03T13:40:23+09:00",
   "started_at": "2026-09-03T13:40:23+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-03T20:09:55+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "F7 + F11 released as a74c58a on 2026-09-03 19:47 KST after the evening run, frontend-only, no rollback; production idle cost on /: style recalc 6.2→0.42 s (1280) and 5.0→0.15 s (390+4×) per 70 s, total Chrome CPU −31 % / −6.5 %, UpdateLayoutTree 480→14/8, animationiteration and compositeFailed 0; mobile hero without the orbit; smoke-prod 17/17",
   "validation": {
     "required": [],
     "last_run": null,
