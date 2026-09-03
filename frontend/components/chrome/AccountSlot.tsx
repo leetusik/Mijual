@@ -20,7 +20,7 @@ import styles from "./AccountSlot.module.css";
  * <button class=frame aria-haspopup="menu" aria-expanded title={email}>
  *   <Identicon seed={email} size={20} />
  *   <span class="mono email">{email}</span>
- *   <span aria-hidden>▾</span>
+ *   <span aria-hidden>▾</span>   <!-- 열림 시 같은 글리프를 뒤집어 ▴로 읽힌다 -->
  * </button>
  * ```
  *
@@ -83,9 +83,21 @@ function useLogout(): { pending: boolean; run: () => void } {
   return { pending, run };
 }
 
-/** 열림 시 ▴ — a glyph pair, not copy (the same reading `CLOSE_GLYPH` records). */
-const CARET_CLOSED = "▾";
-const CARET_OPEN = "▴";
+/**
+ * **One** caret glyph, in both states — not copy (the same reading `CLOSE_GLYPH`
+ * records). 열림 시의 ▴ 읽힘은 이 ▾를 그대로 세로로 뒤집어 만든다 (`.caret`의
+ * `transform`, `AccountSlot.module.css`), 새 문자가 아니다.
+ *
+ * Why one glyph and not the ▾/▴ pair this used to render: neither U+25BE nor
+ * U+25B4 is in `app/fonts/NotoSansKR.subset.woff2` (nor in
+ * `scripts/korean-charset.txt`), so both were fallback glyphs picked out of
+ * whatever system face `--font-sans` reached next — and the two landed in faces
+ * with different advances (5.67px vs 11.05px at 12px), which moved the frame
+ * **239.67 → 245.05px** on every toggle, with its right edge anchored. A second
+ * code point is a second, platform-dependent box; a flipped first one is not
+ * (P12.S1).
+ */
+const CARET = "▾";
 
 export function AccountSlotDesktop() {
   const account = useAccount();
@@ -157,8 +169,10 @@ export function AccountSlotDesktop() {
       >
         <Identicon seed={email} size={20} />
         <span className={`mono ${styles.email}`}>{email}</span>
+        {/* The glyph never changes; `aria-expanded` on the frame carries the
+            state for assistive tech and flips this span in CSS. */}
         <span aria-hidden="true" className={styles.caret}>
-          {open ? CARET_OPEN : CARET_CLOSED}
+          {CARET}
         </span>
       </button>
 

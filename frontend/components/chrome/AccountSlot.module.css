@@ -85,6 +85,25 @@
   line-height: 1;
 }
 
+/* 열림 상태의 ▴는 두 번째 문자가 아니라 **같은 ▾를 세로로 뒤집은 것**이다
+   (`AccountSlot.tsx`의 `CARET`). U+25BE/U+25B4 모두 서브셋 폰트에 없어 각각 다른
+   폴백 페이스에서 그려졌고 advance가 5.67px / 11.05px로 달라, 우변이 고정된
+   프레임이 토글마다 239.67 → 245.05px로 움직였다. 글리프가 하나면 박스도 하나고,
+   `transform`은 레이아웃에 영향을 주지 않으므로 두 상태의 폭이 픽셀 단위로 같다
+   — 플랫폼(Windows/Android 폴백)이 달라져도 마찬가지다. R8이 서명한 것은 즉각적인
+   전환이므로 **transition 없음** (P12.S1). */
+.frame[aria-expanded="true"] .caret {
+  /* 뒤집는 축은 **줄 상자의 중심이 아니라 글리프 잉크의 중심**이다. ▾의 잉크는
+     베이스라인 쪽으로 치우쳐 12px 상자의 위에서 8px 지점에 중심을 두므로, 기본
+     축(50% 50%)으로 뒤집으면 캐럿이 위로 3.5px 튄다 (실측 1280·dsf1: 잉크 행
+     25–29 → 22–25). 8/12 = 66.7%를 축으로 잡으면 잉크가 제자리에 사상된다 —
+     실측 26–29, 완전한 제자리 반사 대비 0.64px (상자 중심 기준 0.5px), Chromium이
+     변환 레이어를 정수 픽셀로 스냅하므로 64.6%–66.7% 구간이 모두 같은 행에
+     떨어진다. 퍼센트라 `--text-sm`이 바뀌어도 따라간다. */
+  transform-origin: 50% 66.7%;
+  transform: scaleY(-1);
+}
+
 /* 메뉴: 프레임 우변 기준 right:0, 최소 폭 = 프레임 폭, 오프셋 8px, **불투명**
    `#0e1a15` — the cosmos reading through a list of destinations is exactly what
    R8 fixed (result.md §2-11, the same judgement P3.S7 made for the widget). */

@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P12`
-- Current slice: `P12.S1`
-- Next slice: `P12.R1`
+- Current slice: `P12.R1`
+- Next slice: `P12.DECOMP2`
 - Waiting on operator: `none`
 - Open deferred jobs: `37`
 
@@ -19,7 +19,7 @@
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
-| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.S1` | `works/phases/active/P12` |
+| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.R1` | `works/phases/active/P12` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -103,7 +103,7 @@
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
 | [x] `P12.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P12/slices/P12.DECOMP` |
-| [ ] `P12.S1` | `todo` | Account dropdown: one caret box in both states — stop the +5.38px width jump, keep the R8 caret reading | `fix` | `works/phases/active/P12/slices/P12.S1` |
+| [x] `P12.S1` | `done` | Account dropdown: one caret box in both states — stop the +5.38px width jump, keep the R8 caret reading | `fix` | `works/phases/active/P12/slices/P12.S1` |
 | [ ] `P12.R1` | `todo` | Research: flicker hunt across every user-facing page, 1280 + 390, dev + local production build, watched over time | `research` | `works/phases/active/P12/slices/P12.R1` |
 | [ ] `P12.DECOMP2` | `todo` | Second decomposition: cut the fix slices from P12.R1's findings | `decomposition` | `works/phases/active/P12/slices/P12.DECOMP2` |
 | [ ] `P12.S2` | `todo` | Release P12 to production — frontend-only deploy before the 2026-09-07 11:00 KST freeze | `implementation` | `works/phases/active/P12/slices/P12.S2` |
