@@ -1,13 +1,16 @@
-# P4.REVIEW — re-review of P4 "Ship & Deploy" (gated: `acceptance.required: true`) — dispatch 2, from the top
+# P4.REVIEW — re-review of P4 "Ship & Deploy" (gated: `acceptance.required: true`) — dispatch 3, from the top
 
-You are `slice-executor-high` executing the phase review **again**. The first dispatch (2026-09-02)
-returned `changes_requested` with three findings; the operator took two of them as decisions and the
-third became `P4.F3`, then `P4.F4` (an operator instruction), `P4.R1` (research), the four CWV fixes
-`P4.F5`/`P4.F6`/`P4.F8`/`P4.F10` and their release `P4.S9` landed. **This is a full review, not a
-delta**: every stage below runs again, because the product on production has changed twice since
-the first walk (`96f7141` → `1a93d7b` → `4aa8ddd`). Where a later slice measured something on the
-deployed build and tagged it `for P4.REVIEW`, you may **cite instead of re-derive** — the notes say
-which — but the gate stages (spot-check, fresh eyes, the whole checklist) are yours to walk.
+You are `slice-executor-high` executing the phase review **a third time**. Dispatch 1 (2026-09-02)
+returned `changes_requested`; dispatch 2 (2026-09-03 morning) returned **`pass`** and the gate was
+opened with its walkthrough; the operator answered walkthrough item **3n** (the landing starfield:
+「find best way to reduce starfield cost. same effect only reduce the cost.」, then 「both do as your
+recommendations. cost saving first.」, then for mobile 「just remove the orbit … not only the star
+but the orbit itself also」), which the orchestrator recorded as an operator-reported
+`changes_requested`; `P4.F7`, `P4.F11` and their release `P4.S10` landed. **This is again a full
+review, not a delta**: production changed (`4aa8ddd` → `a74c58a`), the landing's hero is different
+on mobile by operator decision, and the star twinkle is driven differently. Where dispatch 2 or a
+later slice measured something on a surface that did not change and tagged it for you, you may
+**cite instead of re-derive** — the notes say which — but the gate stages are yours to walk again.
 
 The contract is `.claude/skills/review-phase/SKILL.md` — read it first and follow it to the letter;
 this plan adds the P4-specific facts, order, budgets and hard rules. You are not the last word: on a
@@ -27,12 +30,11 @@ the gate. Out of scope: the submission itself, the demo video, the deck. Added b
 instruction during the phase: the relaxed extract ceiling (`P4.F4`) and the Core Web Vitals work
 (`P4.R1` → the fixes → `P4.S9`).
 
-Eighteen slices are `done`: `P4.DECOMP`, `P4.S7`, `P4.S1`–`P4.S6`, `P4.F1`, `P4.S8`, `P4.F3`,
-`P4.F2`, `P4.F4`, `P4.R1`, `P4.F5`, `P4.F6`, `P4.F8`, `P4.F10`, `P4.S9`. `P4.F7` and `P4.F9` were
-**never cut** (both wait on operator decisions — route them, do not treat them as missing work).
-Production runs `origin/main` = **`4aa8ddd`** (released 2026-09-03 08:45 KST); the commits after it
-on `main` are workspace only. Rollback point: `mijual-web:previous` = `b82aaa9c5b20` (the api half is
-a no-op, `:previous` == `:latest`). Today is 2026-09-03 (KST).
+Twenty-one slices are `done`: `P4.DECOMP`, `P4.S7`, `P4.S1`–`P4.S6`, `P4.F1`, `P4.S8`, `P4.F3`,
+`P4.F2`, `P4.F4`, `P4.R1`, `P4.F5`, `P4.F6`, `P4.F8`, `P4.F10`, `P4.S9`, `P4.F7`, `P4.F11`, `P4.S10`.
+`P4.F9` (landing TTFB) was never cut and waits on walkthrough item 3o. Production runs
+`origin/main` = **`a74c58a`** (released by `P4.S10` on 2026-09-03 evening — its `result.md` has the
+exact time, the image table and the rollback point). Today is 2026-09-03 (KST).
 
 ## Read (in this order, just in time)
 
@@ -44,17 +46,18 @@ a no-op, `:previous` == `:latest`). Today is 2026-09-03 (KST).
    now long), `## Operator Questions` (**28 entries**; several marked ANSWERED AND DONE), `## Notes
    for later slices` (every block tagged `for P4.REVIEW` or `for the passing re-review` was written
    for you — `P4.F5`, `P4.F10`, `P4.F8`, `P4.S9`, the first review, `P4.F2`, `P4.F4`), `## Now`.
-4. **Your own first dispatch**: `slices/P4.REVIEW/result.md` (614 lines) — the Stage A–C tables,
-   the 21 not-clean checklist lines and why, the **parked P4 regression block** (§ Stage C-4), the
-   routing table, the `## Walkthrough`. Reuse what still holds; re-measure what the product changed.
-   **Before you overwrite it**, move what you still cite under a trailing `## Earlier dispatch
-   (2026-09-02, changes_requested)` heading, trimmed — the new verdict block goes first.
+4. **Your own dispatch 2**: `slices/P4.REVIEW/result.md` (761 lines; dispatch 1 trimmed at its tail) — the Stage A–C tables,
+   the 23 not-clean checklist lines and why, the routing table, the `## Walkthrough` (15 decisions
+   3a–3p, six operator-only checks 2a–2f). Reuse what still holds; re-measure what the product
+   changed. **Before you overwrite it**, move what you still cite under a trailing `## Earlier
+   dispatches` heading, trimmed — the new verdict block goes first.
 5. Every slice's `slice.json` and `result.md`, **head-first** (verdict block), whole where the detail
-   matters. The eight since the first dispatch — `P4.F3`, `P4.F2` (two dispatches), `P4.F4` (two),
-   `P4.R1`, `P4.F5`, `P4.F6`, `P4.F8`, `P4.F10`, `P4.S9` — are the ones you have not judged yet;
-   the ten earlier ones you judged once and re-validate.
-6. `docs/current/operations.md` `## Operator Runtime`; `docs/current/qa.md` `## Regression
-   Checklist` (123 `- [ ]` lines) — read it whole, you re-run all of it. Other `docs/current/`
+   matters. The three since dispatch 2 — `P4.F7`, `P4.F11`, `P4.S10` — are the ones you have not
+   judged yet; the eighteen earlier ones you judged and re-validate.
+6. `docs/current/operations.md` `## Operator Runtime` (now **v0014**, carrying the production
+   runtime — written by dispatch 2); `docs/current/qa.md` `## Regression Checklist` (now **v0016**:
+   144 `- [ ]` lines including the P4 production block dispatch 2 appended) — read it whole, you
+   re-run all of it. Other `docs/current/`
    sections **only** where a `## Doc impact` line names them, and only to judge. Every doc P4
    touched is behind the code **by design** (the deferral to a docs phase), not a defect.
 7. The two 양식 drafts and their PDFs (`docs/reference/challenge/submission/drafts/`), and
@@ -150,11 +153,12 @@ run of each; record every command and its outcome in `result.md`:
   third-party origin」 unqualified).
 - `python3 scripts/workflow.py validate` (the `oversized_doc_sections` warning is pre-existing).
 - On the box (read-only): six services up + `mijual-schema` exited 0; `edge-nginx` `StartedAt`
-  unchanged; `/home/opc/Mijual` at `4aa8ddd`; `docker compose -f compose.prod.yml exec -T
+  unchanged; `/home/opc/Mijual` at `a74c58a`; `docker compose -f compose.prod.yml exec -T
   mijual-worker printenv MIJUAL_EXTRACT_MAX_CALLS` → 300; `crontab -l` carries the `0 4 * * *`
   backup line; `deploy/backups/` holds a dump younger than 24 h (mode 600); the API log announces
   `mail transport: smtp mail.privateemail.com:587 tls=starttls`; the worker log shows the 07:30
-  morning run and the 08:30 notify run of 2026-09-03 completing.
+  morning, the 08:30 notify and the 19:30 evening runs of 2026-09-03 completing, and `P4.S10`
+  launched the deploy only after the evening run (its log has the times).
 - GitHub: `gh secret list -R leetusik/Mijual` shows the five names (never values); the probe
   workflow's latest scheduled runs (`gh run list -w production-probe.yml -L 5`) — report their
   state; a red one is a finding only if it is red for a product reason (the operator dropped
@@ -167,7 +171,15 @@ run of each; record every command and its outcome in `result.md`:
   departure (a malformed ceiling is fatal — recorded as a decision, argue against it only with the
   trade-off), `P4.F6`'s smaller-than-estimated gain (reported honestly, the R1 note corrected in
   place), `P4.F8`'s one-device-pixel footer edge at DPR 2/3 (deviation 7 — is it acceptable under
-  RESPECT THE DESIGN? say so either way), `P4.F10`'s account created and deleted on **dev**.
+  RESPECT THE DESIGN? say so either way), `P4.F10`'s account created and deleted on **dev**; and the three newest: `P4.F7` (the stars were
+  already composited; candidate A rejected on total CPU; the canvas refused), `P4.F11` (the orbiter as
+  93 generated arc-length `transform` stops — 32 of 261 sampled instants exceed the plan's 0.25 px, max
+  0.41 px, attributed to `offset-distance`'s own progress wobble: judge whether that is acceptable
+  under RESPECT THE DESIGN on a 5 px dot and say so; the **whole orbit block removed at ≤767px by
+  operator instruction**, recorded verbatim in `## Decisions` — an operator-decided design change, not
+  a finding; the `StarTwinkle.tsx` client component and its rendered-stars-only rule; declarative
+  shadow DOM refuted by measurement), `P4.S10` (the release, timed after the 19:30 run; the
+  production idle-cost numbers).
 - **Cross-check the notebook against the logs**: a decision or constraint recorded in any
   `result.md` that appears nowhere in `phase.md` is a finding; so is a durable-truth change a log
   describes that has no `## Doc impact` line. Candidates to check explicitly, on top of the first
@@ -177,7 +189,11 @@ run of each; record every command and its outcome in `result.md`:
   public/ cache headers and the immutable-name rule (frontend + operations), the event page's
   request-time session read and the one-bit rule (frontend + security), how to read this site's
   Cloudflare RUM (operations), the production CWV baseline (qa), the P10 wordmark checklist line
-  now false (qa), the analytics beacon allowance (security + qa), the backup cron's GMT firing time.
+  now false (qa), the analytics beacon allowance (security + qa), the backup cron's GMT firing time,
+  the orbit keyframe generator as provenance and its regenerate-never-hand-edit rule (frontend), the
+  WAAPI handover and why CSS must keep painting first paint (frontend), the **mobile hero without the
+  orbit** (frontend — a signed-design departure by operator decision that the docs phase must carry),
+  the landing's new idle-cost baseline (qa).
 - **Notebook-only findings you close yourself** (append to `phase.md`, tag `(P4.REVIEW)`, report as
   closed). Product/code/deploy/draft findings become numbered findings with a proposed fix slice
   (`P4.F11`, …) and `changes_requested`.
@@ -186,12 +202,14 @@ run of each; record every command and its outcome in `result.md`:
   **walkthrough decision** / **deferred job (title / reason / trigger)** / **answered — nothing
   outstanding**. Already filed by the orchestrator, so cite rather than re-propose: **D40** (정정
   해석 thinking preset), **D41** (public-repo hardening), **D42** (harness production boundary),
-  **D43** (MagicDNS www), **D44** (the 60 s whole-board poll). Answered by the operator and out of
+  **D43** (MagicDNS www), **D44** (the 60 s whole-board poll), **D45** (Malgun Gothic's
+  Hangul advance for the Windows fallback). Answered by the operator and out of
   the walkthrough: analytics **KEEP**, UptimeRobot **dropped**, the backup cron (installed), www
   (yes), D23 (re-signed), corpus seed, the ssh permission entry. New since the first dispatch and
   yours to route: the accepted extract cost (≈ $3.5 bound per full run, measured $0.0115/call —
   walkthrough, one line to accept), D40's fired trigger (keep deferred, or fold into the same
-  line), the **starfield CPU** decision (a/b/c — walkthrough; `P4.F7` is cut only on the answer),
+  line), the **starfield CPU** decision (**answered** — `P4.F7`/`P4.F11` shipped and both `P4.F7`
+  questions are marked answered; only the confirmation at the gate remains),
   the **landing TTFB** decision (walkthrough, recommend-defer; `P4.F9`), and the Windows Malgun
   fallback width (deferred job candidate — list it for the orchestrator).
 
@@ -210,7 +228,13 @@ run of each; record every command and its outcome in `result.md`:
    is there at first paint; the off-origin host set on load is `static.cloudflareinsights.com` only
    (P4.S9 measured 16 loads — one route first-hand is enough); a cold-cache mobile load of `/` shows
    no visible re-wrap when the font lands (you need not re-measure CLS to four decimals — `P4.S9`
-   did — but say what you saw). `/ops`: the door (마크 + 운영자 ID + 비밀번호 + 로그인, `noindex`)
+   did — but say what you saw); **the landing after `P4.F11`**: the served CSS has no
+   `offset-distance` and carries the generated `@keyframes orbit`; at 1280 the star rides the ring at
+   the same speed (one lap ≈ 26 s — time it); at 390 the hero shows **no orbit at all** (rings and
+   star gone, the rest of the hero as before); the stars twinkle from first paint and keep
+   twinkling after hydration with no visible step; one 8 s idle trace of your own at each viewport
+   shows `compositeFailed` 0, `animationiteration` 0 and `UpdateLayoutTree` in the single digits
+   per 8 s (`P4.S10` measured it on production — cite its numbers beside yours). `/ops`: the door (마크 + 운영자 ID + 비밀번호 + 로그인, `noindex`)
    from outside; the 개요 with four beat entries and the `f4-drain` run row only if you log in (see
    Hard rules). The staleness banner state at the time of your walk.
 3. **Fresh-eyes walkthrough** as a first-time Korean reader on production at both viewports: land
@@ -222,19 +246,13 @@ run of each; record every command and its outcome in `result.md`:
    a table in `result.md` (line → dev / prod-build / production, one-word result, a note where not
    a clean pass; a line whose precondition no longer exists is recorded as such with what you
    checked instead). The first dispatch's 21 not-clean lines are listed in its result — re-check
-   them, do not assume. Then compose this phase's **P4 block** to append: start from the **parked
-   block** in the earlier result (§ Stage C-4) and apply the two re-wordings the notes demand — the
-   「제3자 origin」 line now allows the origin, `dart.fss.or.kr` **and** `static.cloudflareinsights.com`
-   on production (absent on dev and on a local production build); the P10 rebrand line's wordmark
-   facts are `P4.F8`'s (`juju2-wordmark-white-273-73c23508.png`, natural 273×81, 91.00×27 /
-   80.88×24) — the P10 line itself is edited in place, not duplicated — and add the lines the later
-   slices earned: `make smoke-prod` 17/17 with the two allowed hosts named; the extract ceiling
-   `printenv` = 300 and a run's `extract<=300 calls`; the production cold-cache mobile CLS ≤ 0.01
-   on `/`, `/stocks`, `/ask` and a live event (measured 0.0000 / 0.0003 / 0.0003 / 0.0000 at
-   `4aa8ddd`); the served CSS's three fallback faces; the landing's `grep -c window_state` → 0;
-   the wordmark file + `immutable`, `tokens.css` a week; the event page's 알림/담기 line in the
-   server HTML (1 on a deadline-ahead event, 0 on 추후결정); the four R7 no-harm assertions after
-   a deploy; a backup dump younger than 24 h; the backup cron at 04:00 GMT.
+   them, do not assume. The **P4 block already exists** in `qa` v0016 (dispatch 2 appended its 21
+   lines, corrected the P10 wordmark line in place and moved the counts to 167 / 22) — re-run those
+   21 lines too, they are part of the 144. Then compose the **two or three lines `P4.F11`/`P4.S10`**
+   **earned**, in the same shape, to add to that block: the landing's idle trace (0 `compositeFailed`,
+   0 `animationiteration`, `UpdateLayoutTree` ≤ ~30 per 8 s at 1280 and 390); the hero orbit present
+   at 1280 on the generated keyframes and **absent at 390** with hero geometry unchanged; the twinkle
+   painted from first paint and handed to WAAPI after hydration. Nothing else in the block changes.
 
 ## Stage D — route every operator question; build the walkthrough
 
@@ -242,13 +260,15 @@ Every one of the 28 entries lands in exactly one of: walkthrough decision / defe
 orchestrator files it; or already filed — cite the D-id) / answered. Write the routing table into
 `result.md`. Then write the **walkthrough** — the script the operator runs. Constraints: English
 prose, Korean product strings verbatim; **≤ ~90 lines**; no secret values; numbered so the operator
-can reply "1 ok, 4 change X". Start from the first dispatch's `## Walkthrough` (13 decisions
-3a–3l, operator-only checks 2a–2g) and edit: **remove** the UptimeRobot item, the Cloudflare toggle
-item and the runbook item (all decided); **add** the F10 logged-in variant (signed in, an event
-page with a deadline ahead shows 「보유 종목에 담기 →」 with no flicker of the anonymous label), the
-`/ops` 개요 `f4-drain` row and the four beat entries (if you did not log in), the extract-cost
-acceptance, the starfield decision (a / b / c, with what each costs), the landing TTFB decision
-(recommend-defer), and anything Stage 3 surfaced. Shape:
+can reply "1 ok, 4 change X". Start from **dispatch 2's** `## Walkthrough` (15 decisions 3a–3p,
+operator-only checks 2a–2f) and edit: **3n is answered** — replace it with a one-line confirmation
+item: at desktop the landing feels exactly as before (the star rides the ring, the field twinkles)
+and the mobile hero now has **no orbit**, as the operator decided, with the measured result in one
+line (main-thread frames 60/s → ~1/s; total Chrome CPU −25 % desktop / −7 % throttled mobile
+locally, plus `P4.S10`'s production numbers). Keep 3o (landing TTFB, recommend-defer). Keep every
+other item the operator has not answered **exactly as dispatch 2 worded it** — the only reply was
+about 3n. Add anything Stage 3 surfaced on the changed landing. Update section 0 (what is already
+verified) and section 4 (D45 is filed). Shape:
 
 1. **Open** — the URLs and clicks, 1280 and a phone: board · 툴젠 · one event · `[근거]` · `/ask` one
    question · `/portfolio?sample=1` edit/reload · `/ops` login · robots/sitemap/share card · `http://`
@@ -276,17 +296,13 @@ by a blank line, ending at the next `## ` heading (the orchestrator extracts it 
 (a) Verify the `## Doc impact` list covers every durable-truth change (Stage B), and report
 `doc_versions: none — deferred to a docs phase` for consolidation.
 (b) The two named sections, each through the engine and nothing else in those docs:
-- `python3 scripts/workflow.py doc-new-version --doc qa --summary "P4: production regression block appended" --source P4.REVIEW`
-  → edit **only** `## Regression Checklist` in the returned `edit_path`: append the P4 block after
-  the P11 block; edit the P10 wordmark line in place to `P4.F8`'s facts; update the first line's
-  counts (pytest **167**, frontend smoke **22/22**) — that line is inside the section.
-- `python3 scripts/workflow.py doc-new-version --doc operations --summary "P4: the production runtime joins the Operator Runtime manifest" --source P4.REVIEW`
-  → edit **only** `## Operator Runtime`: add the production runtime and access path from `P4.S4`'s
-  Doc impact line (origin, Cloudflare → `edge-nginx` → `mijual-web`, standalone build released by
-  `deploy/deploy.sh` from `/home/opc/Mijual`, logs command, where the `/ops` credential lives —
-  by path, never value — the browser instrument fallback and why, viewports 1280/390, the freeze
-  pointer to `deploy/runbook.md`, the local production-build recipe on 3014 from a copy of
-  `frontend/`). Keep the dev paragraphs as they are.
+- `python3 scripts/workflow.py doc-new-version --doc qa --summary "P4: the landing idle-cost lines join the P4 regression block" --source P4.REVIEW`
+  → edit **only** `## Regression Checklist` in the returned `edit_path`: add the `P4.F11`/`P4.S10`
+  lines to the existing P4 block (Stage C-4); nothing else in the section changes (the counts are
+  already 167 / 22).
+- `## Operator Runtime` in `operations` **v0014** was written by dispatch 2 and nothing about the
+  runtime changed since; **do not write a second operations version** unless you find the section
+  wrong — say in the return that it stands.
 - `python3 scripts/workflow.py rebuild-docs`, then `python3 scripts/workflow.py validate`.
 On `changes_requested` or `blocked`: **none of (a)/(b)** — stop and hand back.
 
@@ -319,3 +335,17 @@ next step, the machine state you left — Chrome pid/port, which servers are up)
 `status: done` with `review_verdict: n/a — partial, resume at <stage/step>`. The orchestrator
 re-dispatches you from `## Progress`; the final dispatch rewrites the verdict block. Never form a
 verdict from a partial picture.
+
+## Addendum — state at dispatch 3 (orchestrator, 2026-09-03 evening)
+
+- Production is **`a74c58a`**, released by `P4.S10` at **19:47 KST** after the evening pipeline
+  (`daily-evening` succeeded 19:31:02). Rollback point: `mijual-web:previous` = `028b480a7b37`
+  (the `4aa8ddd` image); the api tags are equal, so the pre-CWV image is reachable only through
+  `REF=<sha> deploy/deploy.sh`. `P4.S10`'s production numbers, paired against a same-evening
+  pre-deploy baseline (70 s idle on `/`): style recalculation **6.235 → 0.416 s** at 1280 and
+  **5.021 → 0.153 s** at 390 + 4×; total Chrome CPU **−31 % / −6.5 %**; `UpdateLayoutTree` **480 →
+  14 / 8** per 8 s; `animationiteration` and `compositeFailed` **0**; cold-cache CLS on `/` 0.0000 ×3;
+  `make smoke-prod` 17/17. Cite them; run one trace and one look of your own.
+- The next beat windows are 07:30 / 08:30 KST tomorrow — irrelevant to a read-only review.
+- Time budget: the freeze opens 2026-09-07 11:00 KST; nothing here deploys, but if you return
+  `changes_requested` with a code fix, say so in the finding.

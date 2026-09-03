@@ -776,7 +776,7 @@
       ]
     },
     "qa": {
-      "latest": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes",
+      "latest": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -907,6 +907,15 @@
           "source": "P4.REVIEW",
           "summary": "P4: the production regression block joins the checklist — smoke, the beacon exception, cold-cache CLS, the extract ceiling, backups and the wordmark's new bytes",
           "previous": "v0015_p11_third_pass_the_production_404_echoes_the_reader_s_own_address_with_no_418_the_p11_block_is_re-cut_and_re-measured_and_aside_is_now_the_instrument"
+        },
+        {
+          "id": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block",
+          "path": "docs/versions/qa/v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block.md",
+          "created_at": "2026-09-03T21:52:57+09:00",
+          "commit": "b09cf6689cffe19cd89e1482e6efab71f603214e",
+          "source": "P4.REVIEW",
+          "summary": "P4: the landing idle-cost lines join the P4 regression block",
+          "previous": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes"
         }
       ]
     },
@@ -1021,5 +1030,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-09-03T10:13:06+09:00"
+  "last_rebuilt_at": "2026-09-03T21:53:28+09:00"
 }

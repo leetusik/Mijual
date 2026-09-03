@@ -1,0 +1,11 @@
+{
+  "id": "D46",
+  "title": "Cut the landing's residual idle main-thread frame: the IntersectionObserver that forces a style update on every serviced rendering opportunity",
+  "status": "deferred",
+  "source": "P4.REVIEW",
+  "reason": "After P4.F11 the landing no longer produces a main-thread frame per display frame, but it still services ~1 in 6 of the compositor's rendering opportunities, each running IntersectionObserverController::computeIntersections twice and one UpdateLayoutTree over ~200 elements (122–159 UpdateLayoutTree per 8 s at 120 Hz, ~2 ms each, against 0 on the Cosmos-free /stocks). It sits outside Cosmos and is now the largest remaining idle cost on the route.",
+  "trigger": "The next time landing idle cost is on the table, or the first battery/heat report from a reader on a high-refresh display",
+  "created_at": "2026-09-03T21:56:30+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

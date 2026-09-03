@@ -738,3 +738,7 @@
 {"ts": "2026-09-03T20:09:55+09:00", "type": "slice_status_changed", "slice": "P4.S10", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-09-03T20:10:00+09:00", "type": "slice_status_changed", "slice": "P4.REVIEW", "old_status": "changes_requested", "new_status": "in_progress"}
 {"ts": "2026-09-03T20:57:00+09:00", "type": "phase_created", "phase": "P12"}
+{"ts": "2026-09-03T21:52:57+09:00", "type": "doc_version_created", "doc": "qa", "version": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block", "source": "P4.REVIEW"}
+{"ts": "2026-09-03T21:56:30+09:00", "type": "phase_status_changed", "phase": "P4", "old_status": "in_progress", "new_status": "pending"}
+{"ts": "2026-09-03T21:56:30+09:00", "type": "acceptance_opened", "phase": "P4"}
+{"ts": "2026-09-03T21:56:30+09:00", "type": "deferred_created", "deferred": "D46", "source": "P4.REVIEW"}
