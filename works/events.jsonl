@@ -758,3 +758,14 @@
 {"ts": "2026-09-04T01:23:08+09:00", "type": "slice_status_changed", "slice": "P12.S1", "old_status": "in_progress", "new_status": "done"}
 {"ts": "2026-09-04T01:26:13+09:00", "type": "slice_status_changed", "slice": "P12.R1", "old_status": "todo", "new_status": "in_progress"}
 {"ts": "2026-09-04T02:27:20+09:00", "type": "slice_status_changed", "slice": "P12.R1", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-09-04T02:30:47+09:00", "type": "slice_status_changed", "slice": "P12.DECOMP2", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-09-04T02:32:45+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F1"}
+{"ts": "2026-09-04T02:32:46+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F2"}
+{"ts": "2026-09-04T02:32:46+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F3"}
+{"ts": "2026-09-04T02:32:53+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F4"}
+{"ts": "2026-09-04T02:32:53+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F5"}
+{"ts": "2026-09-04T02:32:53+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F6"}
+{"ts": "2026-09-04T02:32:59+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F7"}
+{"ts": "2026-09-04T02:32:59+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F8"}
+{"ts": "2026-09-04T02:32:59+09:00", "type": "slice_created", "phase": "P12", "slice": "P12.F9"}
+{"ts": "2026-09-04T02:36:09+09:00", "type": "slice_status_changed", "slice": "P12.DECOMP2", "old_status": "in_progress", "new_status": "done"}

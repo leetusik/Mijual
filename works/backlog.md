@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P12`
-- Current slice: `P12.DECOMP2`
-- Next slice: `P12.S2`
+- Current slice: `P12.F1`
+- Next slice: `P12.F2`
 - Waiting on operator: `none`
 - Open deferred jobs: `37`
 
@@ -19,7 +19,7 @@
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
-| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.DECOMP2` | `works/phases/active/P12` |
+| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.F1` | `works/phases/active/P12` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -105,6 +105,15 @@
 | [x] `P12.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P12/slices/P12.DECOMP` |
 | [x] `P12.S1` | `done` | Account dropdown: one caret box in both states — stop the +5.38px width jump, keep the R8 caret reading | `fix` | `works/phases/active/P12/slices/P12.S1` |
 | [x] `P12.R1` | `done` | Research: flicker hunt across every user-facing page, 1280 + 390, dev + local production build, watched over time | `research` | `works/phases/active/P12/slices/P12.R1` |
-| [ ] `P12.DECOMP2` | `todo` | Second decomposition: cut the fix slices from P12.R1's findings | `decomposition` | `works/phases/active/P12/slices/P12.DECOMP2` |
+| [x] `P12.DECOMP2` | `done` | Second decomposition: cut the fix slices from P12.R1's findings | `decomposition` | `works/phases/active/P12/slices/P12.DECOMP2` |
+| [ ] `P12.F1` | `todo` | Chrome first paint I: the server seeds the account state so the 로그인 link or account frame is in the first painted HTML (R1 F1, account half) | `fix` | `works/phases/active/P12/slices/P12.F1` |
+| [ ] `P12.F2` | `todo` | Chrome first paint II: the AI 질문 launcher rendered on the server behind a ≤767 CSS guard, unmounted after hydration exactly as today (R1 F1, launcher half) | `fix` | `works/phases/active/P12/slices/P12.F2` |
+| [ ] `P12.F3` | `todo` | /portfolio's two late bands: the signed-in 계정 이전 carry-over (215.28px) and the anonymous 전환 제안 offer (130px, 2.2s late) (R1 F2, F6) | `fix` | `works/phases/active/P12/slices/P12.F3` |
+| [ ] `P12.F4` | `todo` | /stocks/[corp_code] revisit: the three holding cells inserted from sessionStorage after paint, CLS 0.048 in both runtimes (R1 F3) | `fix` | `works/phases/active/P12/slices/P12.F4` |
+| [ ] `P12.F5` | `todo` | /auth/login: the 로그아웃되었습니다 flash lands after paint and pushes the form 56.6px (R1 F4) | `fix` | `works/phases/active/P12/slices/P12.F5` |
+| [ ] `P12.F6` | `todo` | Family B ghost, three components: the ask send button's three widths, the auth panel's 로그인 ↔ 계정 만들기 growth, the 정정 이력 ↔ 접기 toggle (R1 F8, F10, F12) | `fix` | `works/phases/active/P12/slices/P12.F6` |
+| [ ] `P12.F7` | `todo` | The feedback dialog's three body heights and the ≤480 sheet's top edge jumping 91.46px (R1 F9) | `fix` | `works/phases/active/P12/slices/P12.F7` |
+| [ ] `P12.F8` | `todo` | Search-miss page: the no-match line collapsing on the first keystroke lifts the page 30.6px (R1 F7) | `fix` | `works/phases/active/P12/slices/P12.F8` |
+| [ ] `P12.F9` | `todo` | Family C: metric-matched local fallback faces for IBM Plex Mono, the P4.F5 route applied to the mono face (R1 F5) | `fix` | `works/phases/active/P12/slices/P12.F9` |
 | [ ] `P12.S2` | `todo` | Release P12 to production — frontend-only deploy before the 2026-09-07 11:00 KST freeze | `implementation` | `works/phases/active/P12/slices/P12.S2` |
 | [ ] `P12.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P12/slices/P12.REVIEW` |
