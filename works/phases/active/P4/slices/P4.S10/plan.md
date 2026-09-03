@@ -1,4 +1,4 @@
-# P4.S10 — Release P4.F7 (the starfield cost cut) to production — frontend-only deploy
+# P4.S10 — Release P4.F7 + P4.F11 (the landing idle-cost cut) to production — frontend-only deploy
 
 `kind: implementation`, `risk: high`, `slice-executor-high`. One dispatch, **after the operator has
 pushed `main`** (the orchestrator stops this slice `pending` for the push and appends the
@@ -7,10 +7,14 @@ otherwise it waits for 09-12.
 
 ## What ships (all `frontend/`; `src/` untouched since `1a93d7b`)
 
-- `P4.F7` — the landing starfield's twinkle no longer runs on the main thread
-  (`components/landing/Cosmos.tsx`, `Cosmos.module.css`); the mechanism, the trace finding and
-  the measured before/after are in `slices/P4.F7/result.md` and `phase.md` `## Decisions`. Same
-  effect by design: paused-frame `AE` and the reduced-motion / ≤480px renderings unchanged.
+- `P4.F7` — the star twinkle on `.star::before` with literal keyframes (`components/landing/
+  Cosmos.tsx`, `Cosmos.module.css`): byte-identical field, 2.4 kB less markup.
+- `P4.F11` — the Hero orbiter as a composited `transform` animation (93 generated stops,
+  `Hero.module.css`, provenance `frontend/scripts/gen_orbiter_keyframes.py`) on desktop and the
+  **whole orbit block removed at ≤767px** (operator, 2026-09-03); the twinkles handed CSS → WAAPI
+  after hydration (`components/landing/StarTwinkle.tsx`). Measured locally: `UpdateLayoutTree`
+  480 → 8 per 8 s at 1280 and 390, `animationiteration` → 0, `compositeFailed` → 0, total Chrome
+  CPU −25 % / −7 % over 70 s idle. Detail: `slices/P4.F11/result.md`.
 
 Production is at `4aa8ddd` (the CWV batch, `P4.S9`). Only `frontend/` changed since, so
 `deploy/deploy.sh` rebuilds **`mijual-web`** and `mijual-api` is a build-cache hit — the `P4.S9`
