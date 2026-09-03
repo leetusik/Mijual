@@ -4,9 +4,10 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { AskProvider, AskSurface } from "@/components/ask";
 import { isOpsPath } from "@/components/ops/routes";
-import type { SiteContact } from "@/lib/types";
+import type { AuthState, SiteContact } from "@/lib/types";
 import { SiteFooter } from "./Footer";
 import { SiteNav } from "./Nav";
+import { InitialAccountContext } from "./useAccount";
 import styles from "./SiteChrome.module.css";
 
 /**
@@ -65,25 +66,48 @@ import styles from "./SiteChrome.module.css";
  * have changed which layout the framework's own 404 renders inside, a surface
  * `P5.S13` already verified. The children are server-rendered and passed in as a
  * prop, so nothing about the pages themselves moves to the client.
+ *
+ * ## And why the session arrives the same way (`P12.F1`)
+ *
+ * `initialAccount` is the second value with that shape, and for the same reason:
+ * the account slot is client code two levels down inside the nav, so the session
+ * it renders can only be resolved by a server component above it — this layout's
+ * `RootLayout`, which reads it from the request's own cookie. It is provided here
+ * through `InitialAccountContext` rather than threaded as a prop because neither
+ * `SiteNav` nor the mobile sheet has any use for the value; only
+ * `useAccount()` reads it, and it reads it to render the 로그인 link or the account
+ * frame **in the first painted HTML** instead of inserting it 45–293 ms later
+ * (`P12.R1` F1). The seam — and the rule that the server never writes the module
+ * store — is documented in `useAccount.ts`.
+ *
+ * `/ops` provides nothing, so the hook there sees `null` and probes exactly as it
+ * always has.
  */
 export function SiteChrome({
   children,
   contact = null,
+  initialAccount = null,
 }: {
   children: ReactNode;
   contact?: SiteContact | null;
+  /** The session as the **server** resolved it for this request (`P12.F1`), or
+   * `null` when no host resolved one — in which case `useAccount()` probes from
+   * the browser exactly as it always has. */
+  initialAccount?: AuthState | null;
 }) {
   const pathname = usePathname();
   if (isOpsPath(pathname ?? "")) return <>{children}</>;
 
   return (
-    <AskProvider>
-      <div className={styles.frame}>
-        <SiteNav />
-        <div className={styles.page}>{children}</div>
-        <SiteFooter contact={contact} />
-        <AskSurface />
-      </div>
-    </AskProvider>
+    <InitialAccountContext value={initialAccount}>
+      <AskProvider>
+        <div className={styles.frame}>
+          <SiteNav />
+          <div className={styles.page}>{children}</div>
+          <SiteFooter contact={contact} />
+          <AskSurface />
+        </div>
+      </AskProvider>
+    </InitialAccountContext>
   );
 }

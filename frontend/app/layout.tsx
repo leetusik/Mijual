@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { SiteChrome } from "@/components/chrome";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getSiteContact } from "@/lib/api";
+import { readAuthState } from "@/lib/session.server";
 import {
   GOOGLE_SITE_VERIFICATION,
   NAVER_SITE_VERIFICATION,
@@ -175,10 +176,37 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   //
   // A failure is `null`, and `null` is a rendered state: the footer simply
   // carries no contact line. Nothing here throws and nothing renders a spinner.
-  const contact = await getSiteContact({
-    next: { revalidate: CONTACT_REVALIDATE_S },
-    signal: AbortSignal.timeout(CONTACT_TIMEOUT_MS),
-  }).catch(() => null);
+  //
+  // **The session is read here for exactly the same reason** (`P12.F1`), and it is
+  // the `P4.F10` route lifted from one page to the whole chrome: the account slot
+  // is client code inside `SiteNav`, so before this it learned who the reader was
+  // from a `GET /auth/me` the browser fired after mount — and `P12.R1` measured the
+  // 로그인 link / account frame being inserted into the nav **45–293 ms after first
+  // contentful paint** (dev; 3–165 ms on the production build) on 10/10 reader
+  // routes. This layout is the nearest server component and it already awaits one
+  // thing, so the two reads run **together** in `Promise.all` and the session costs
+  // no extra wall time.
+  //
+  // What it costs in requests: **nothing at all for an anonymous reader** —
+  // `readAuthState()` short-circuits a request carrying no cookie without asking
+  // the API (`P4.F10`), which is also what keeps the 445-page event crawl at zero
+  // added requests. A signed-in reader pays one server-side `GET /auth/me` per page
+  // render, and that request **replaces** the browser's boot probe rather than
+  // adding to it (`useAccount()` marks the initial path answered).
+  //
+  // Reading cookies keeps every route request-time. They already were — nothing in
+  // this app is prerendered (`frontend` doc v0014, `P11.F3`) — so this changes no
+  // route's rendering mode; `npm run build` still reports every one dynamic.
+  //
+  // It never throws either: `readAuthState()` answers a service that is down as
+  // anonymous, which is the state the chrome renders for a reader with no session.
+  const [contact, auth] = await Promise.all([
+    getSiteContact({
+      next: { revalidate: CONTACT_REVALIDATE_S },
+      signal: AbortSignal.timeout(CONTACT_TIMEOUT_MS),
+    }).catch(() => null),
+    readAuthState(),
+  ]);
 
   return (
     // Korean-only product surface. `class="cosmos"` on the page root is R2.1's
@@ -224,7 +252,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           one nav, one footer, and vocky's script loaded once for the whole app
           (`components/chrome/`). A page still renders its own `<main>`. */}
       <body>
-        <SiteChrome contact={contact}>{children}</SiteChrome>
+        <SiteChrome contact={contact} initialAccount={auth}>
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

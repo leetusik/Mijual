@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useSyncExternalStore } from "react";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
 import { fetchAuthState } from "@/lib/session";
 import type { AuthState } from "@/lib/types";
 
@@ -61,6 +61,64 @@ import type { AuthState } from "@/lib/types";
  * cost one request, not two: `lib/session.ts` shares the in-flight probe.
  */
 
+/**
+ * ## The server already knows, and now it says so (`P12.F1`)
+ *
+ * Everything above describes a store that learns the answer **after** the browser
+ * has painted. `P12.R1` measured what that costs: the 로그인 link (37.27 px) or the
+ * account frame (261.28 px) is inserted into the nav **+45 to +293 ms after first
+ * contentful paint** in dev and **+3 to +165 ms** on the production build, on
+ * 10/10 reader routes — a pop-in on every single desktop load (CLS 0: the nav's
+ * right group grows leftward from a pinned right edge, so nothing else moves).
+ *
+ * The remedy is the route `P4.F10` already took on `/events/{rcept_no}`, lifted to
+ * the layout: `app/layout.tsx` is an `async` server component that already awaits
+ * the 운영자 연락처, `lib/session.server.ts` `readAuthState()` forwards the
+ * request's own cookie and never throws, so the layout resolves the session there
+ * and hands it down through `SiteChrome` into `InitialAccountContext`. **Nothing
+ * about the reading changed** — neither state is shown before the session is
+ * known; it is simply known earlier, and by the half of the app that can know it
+ * first. `AccountSlot.tsx`'s "renders nothing until the probe answers" is still
+ * literally true, the answer just arrives with the HTML.
+ *
+ * ### The seam: the server must never write this store
+ *
+ * `state` and `probedPath` are **module** scope, and a Node process serves every
+ * concurrent request out of one module registry — a server render that wrote them
+ * would leak one reader's session into another reader's page, which is the worst
+ * bug this file could possibly have. So the server only ever *reads* `initial`:
+ *
+ * - `getServerSnapshot` is `() => initial` — the server render and the hydrating
+ *   client render both return the context value, so the markup carries the right
+ *   slot and hydration matches.
+ * - `getSnapshot` is `() => state ?? initial` — after the seed the two are the same
+ *   reference, so the value never changes identity across that boundary.
+ * - the seed itself is a **client-only, idempotent, once-per-store** write in a
+ *   lazy `useState` initializer, guarded by `typeof window !== "undefined"`. It
+ *   runs before the boot effect can and marks `probedPath = pathname`, which is
+ *   what skips the boot probe for the initial path. StrictMode's double invocation
+ *   is harmless because the second pass finds `state !== null` and does nothing —
+ *   the lesson `P7.S2` learned above, applied to a different hook.
+ *
+ * Everything downstream is untouched: every **later** client-side navigation
+ * re-probes exactly as before (`probedPath !== pathname`), and `setAccountState`
+ * still publishes 로그아웃 / 계정 삭제 / 수신 주소 변경 — a client answer always
+ * wins over the server's, because after the first `setAccountState` `state` is
+ * non-null and `initial` is never consulted again. A host that provides no
+ * context — `/ops`, or any other tree — leaves `initial` at `null` and the hook
+ * behaves byte-for-byte as it did before this note.
+ */
+
+/**
+ * The session as the **server** resolved it for this request, or `null` when no
+ * host resolved one. Provided by `SiteChrome`; read by `useAccount()` only.
+ *
+ * It is a context rather than a prop threaded through `Nav.tsx` because the two
+ * consumers (`AccountSlotDesktop`, `AccountSlotSheet`) are two levels down inside
+ * the nav, and neither the nav nor the sheet has any use for the value itself.
+ */
+export const InitialAccountContext = createContext<AuthState | null>(null);
+
 let state: AuthState | null = null;
 let probedPath: string | null = null;
 const listeners = new Set<() => void>();
@@ -90,7 +148,27 @@ export function setAccountState(next: AuthState | null): void {
 
 export function useAccount(): AuthState | null {
   const pathname = usePathname();
-  const value = useSyncExternalStore(subscribe, snapshot, () => null);
+  const initial = useContext(InitialAccountContext);
+
+  // The seed (`P12.F1`). A lazy `useState` initializer is the earliest point in a
+  // render that runs **once per mount and never on a re-render**, and the
+  // `typeof window` guard is what keeps it off the server entirely — see the seam
+  // note above. The returned state is deliberately unused: this call is here for
+  // its timing, not its value.
+  useState(() => {
+    if (typeof window === "undefined") return null;
+    if (state === null && initial !== null) {
+      state = initial;
+      probedPath = pathname;
+    }
+    return null;
+  });
+
+  const value = useSyncExternalStore(
+    subscribe,
+    () => snapshot() ?? initial,
+    () => initial,
+  );
 
   useEffect(() => {
     if (probedPath === pathname) return;

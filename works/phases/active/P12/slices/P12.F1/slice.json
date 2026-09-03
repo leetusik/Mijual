@@ -3,14 +3,14 @@
   "phase_id": "P12",
   "name": "Chrome first paint I: the server seeds the account state so the 로그인 link or account frame is in the first painted HTML (R1 F1, account half)",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 3.1,
   "depends_on": [
     "P12.R1"
   ],
   "created_at": "2026-09-04T02:32:45+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-04T02:37:37+09:00",
+  "completed_at": "2026-09-04T08:18:01+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "The chrome's account state is server-seeded (readAuthState in RootLayout → SiteChrome's InitialAccountContext → useAccount's server snapshot, client-only idempotent seed) — the 로그인 link / account frame is in the first painted HTML on 10/10 routes in dev and the production build, 15–60 ms before FCP where it used to land 7–257 ms after; resting layout AE = 0, downstream behaviour unchanged",
   "validation": {
     "required": [],
     "last_run": null,
