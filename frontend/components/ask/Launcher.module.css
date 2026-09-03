@@ -54,6 +54,22 @@
     border-color var(--dur-base) var(--ease);
 }
 
+/* **Pre-hydration guard only** (`P12.F2`). The ≤767 rule — 「위젯·런처 없음」 — is
+ * still a render decision in `AskSurface`, which unmounts the launcher as soon as
+ * `useDesktop`'s media-query effect runs; this rule covers the ~100 ms before that,
+ * now that `AskSurface` asks for `useDesktop(true)` so the server can put the
+ * launcher in the first painted HTML instead of popping it in 44–288 ms after it.
+ * `display: none` is what makes that safe rather than merely invisible: the element
+ * is in no tab order and cannot be clicked or activated, so a ≤767 reader can
+ * neither see it nor reach it in that window. Do not turn it into `visibility` or
+ * an opacity — both would leave a reachable button — and do not delete it thinking
+ * the component already handles the width: it does, but only after React runs. */
+@media (max-width: 767px) {
+  .launcher {
+    display: none;
+  }
+}
+
 /* 우하단 꼬리 11×11 (45° 회전, right 12 / bottom −6). It carries the frame's own
  * fill so it covers the bottom hairline where the two meet, and the frame's own
  * border on the two edges that stay outside — which is what makes the whole

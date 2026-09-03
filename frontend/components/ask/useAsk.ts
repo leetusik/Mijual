@@ -42,15 +42,31 @@ export function useAskState(): AskState {
  * same full-width `/ask` page a phone does. `Ask.module.css` and `AskPage.module.css` draw the
  * same 767/768 line, and `AskSurface` is where it becomes a render.
  *
- * Server-rendered as `false` and corrected on mount, the same shape
- * `lib/motion.ts`'s `useReducedMotion` uses and for the same reason: a media
- * query is a client fact, and prerendering the wrong side of it would flash a
- * launcher onto a phone.
+ * A media query is a client fact, so the answer is **decided on mount** in an
+ * effect — the same shape `lib/motion.ts`'s `useReducedMotion` uses. What the
+ * server renders in the meantime is the caller's choice, because the two callers
+ * want opposite defaults (`P12.F2`):
+ *
+ * - **`QuestionStrip` keeps the `false` default**, and must: it reads this value
+ *   inside a press handler rather than in render, and a chip pressed at 390 while
+ *   the effect has not run yet has to route to `/ask` rather than open a widget
+ *   that does not exist at that width.
+ * - **`AskSurface` passes `true`**, so the launcher is in the server's HTML and in
+ *   the first paint instead of being inserted 44–288 ms after it (`P12.R1` F1).
+ *   The guard that used to live in this comment — "prerendering the wrong side of
+ *   it would flash a launcher onto a phone" — moved to `Launcher.module.css`'s
+ *   `@media (max-width: 767px) { .launcher { display: none } }`, which covers
+ *   exactly the pre-hydration window. The effect below then **unmounts** the
+ *   launcher at ≤767 as it always did, so the signed 「위젯·런처 없음」 end state is
+ *   unchanged — see `AskSurface`'s own header for why that survives the move.
+ *
+ * `initial` is both the server snapshot and the first client render's value, so
+ * the two agree and hydration never mismatches.
  */
 export const DESKTOP_QUERY = "(min-width: 768px)";
 
-export function useDesktop(): boolean {
-  const [desktop, setDesktop] = useState(false);
+export function useDesktop(initial = false): boolean {
+  const [desktop, setDesktop] = useState(initial);
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_QUERY);
