@@ -47,10 +47,22 @@
       "current_slice": "P4.REVIEW",
       "slice_count": 23,
       "done_slice_count": 22
+    },
+    {
+      "id": "P12",
+      "name": "Flicker polish",
+      "objective": "Fix the account dropdown's caret swap (▾/▴ differ in width so the frame jumps on toggle); hunt and fix other visible flicker across every user-facing page, desktop and mobile, in the operator runtime and production.",
+      "status": "planned",
+      "order": 5,
+      "path": "works/phases/active/P12",
+      "review_status": "pending",
+      "current_slice": "P12.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
     }
   ],
   "deferred_open_count": 36,
   "deferred_promoted_count": 6,
   "deferred_dropped_count": 3,
-  "last_rebuilt_at": "2026-09-03T20:09:55+09:00"
+  "last_rebuilt_at": "2026-09-03T20:57:00+09:00"
 }
