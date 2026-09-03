@@ -47,23 +47,67 @@
   }
 }
 
+/* The star is its own alpha and nothing else: `opacity: var(--star-opacity)`,
+   static, never animated. The twinkle lives on its `::before`, which paints the
+   white and animates ITS opacity between two literals, 1 and 0.28. Alpha
+   composes multiplicatively, so the painted result is the same number at every
+   instant — base × twinkle — and the keyframes hold no `var()`.
+
+   `P4.F7` measured why that shape matters, and the answer is not the obvious
+   one: these 240 animations were ALREADY running on the compositor (proved by
+   blocking the renderer's main thread for 2.5s — they keep twinkling). What
+   costs is that the landing produces a main frame on EVERY display frame
+   whatever the stars do — the Hero orbiter animates `offset-distance`, the one
+   animation on this page Chrome reports `compositeFailed` for, and the twinkles
+   themselves dispatch ~61 `animationiteration` events a second — and Blink
+   re-resolves every animating element's style inside each of those frames. A
+   keyframe that resolves `var()`/`calc(var())` cannot use Blink's
+   base-computed-style cache, so those 240 resolutions cost ~4.7us per star per
+   frame instead of ~3.2us. Measured on a local production build over 70s idle
+   windows, medians of 3 interleaved runs: style recalculation 5.87s → 4.75s at
+   1280 (−21%) and 5.07s → 3.47s at 390 + 4x CPU (−31%), for a picture that is
+   byte-identical (AE = 0 at four paused instants x two viewports, and under
+   prefers-reduced-motion). Total machine CPU is unchanged — this buys
+   main-thread style time, not machine time; the levers that would buy machine
+   time are a canvas field and the Hero orbiter, and both are operator calls.
+
+   So: NEVER put a `var()` or a `calc()` back inside `twinkle`. A per-star value
+   belongs in the element (its static `opacity`, or a custom property read by a
+   property that is not animated), never inside a keyframe. Two shapes that were
+   tried and are worse, both measured over 40s idle windows: painting the base
+   alpha into `background-color` and animating `opacity: 1 → 0.28` on the star
+   itself (identical output, but a translucent star layer costs +17% TOTAL Chrome
+   CPU — it buys main-thread time with more GPU time), and giving each star its
+   own literal `@keyframes` (same win as this, but 240 generated rules add 43 kB
+   to the landing document / +6 kB on the wire). */
 .star {
   position: absolute;
-  background: #ffffff;
   opacity: var(--star-opacity);
+}
+
+.star::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
   animation-name: twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+  /* Per star, from the inline custom properties `Cosmos.tsx` writes. These are
+     read once into the cached base style, not per frame — that is the whole
+     difference from a `var()` inside the keyframes. */
+  animation-duration: var(--star-duration);
+  animation-delay: var(--star-delay);
 }
 
 @keyframes twinkle {
   0%,
   100% {
-    opacity: var(--star-opacity);
+    opacity: 1;
   }
 
   50% {
-    opacity: calc(var(--star-opacity) * 0.28);
+    opacity: 0.28;
   }
 }
 
@@ -126,11 +170,11 @@
 
 /* Reduced motion: the drift and the shooting stars are handled by the shell's
    own `data-motion` rules; the per-star twinkle needs this, because that rule
-   reaches an element and its pseudo-elements, not 240 children. Frozen means the
-   star's own base opacity — the value it animates around. */
+   reaches an element and its pseudo-elements, not 240 children's pseudo-elements.
+   Frozen means the star's own base opacity — which is `.star`'s static
+   `opacity` with the pseudo-element back at its own 1. */
 @media (prefers-reduced-motion: reduce) {
-  .star {
+  .star::before {
     animation: none !important;
-    opacity: var(--star-opacity);
   }
 }

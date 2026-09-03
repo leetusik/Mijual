@@ -25,6 +25,17 @@ import styles from "./Cosmos.module.css";
  * a fixed seed is the whole fix: the same 240 stars, in the same order, in every
  * process — module scope, computed once per process rather than once per render.
  *
+ * ## The twinkle is on the star's `::before`, with literal keyframes (`P4.F7`)
+ *
+ * `.star` is nothing but its own alpha (`opacity: var(--star-opacity)`, static);
+ * its pseudo-element paints the white and animates ITS opacity between 1 and
+ * 0.28. Alpha composes multiplicatively, so base × twinkle is the same number at
+ * every instant and the picture is unchanged (`AE = 0`) — what changes is that
+ * no keyframe resolves a custom property any more, which is a fifth to a third
+ * of this page's idle style recalculation. The reasoning, the measurements and
+ * the two shapes that turned out worse are all in `Cosmos.module.css` beside the
+ * rules.
+ *
  * ## Reduced motion
  *
  * The convention `app/shell.css` fixes: `data-motion="tick"` **freezes** (the
@@ -114,9 +125,13 @@ export function Cosmos() {
                 top: `${star.y}%`,
                 width: `${star.size}px`,
                 height: `${star.size}px`,
-                animationDuration: `${star.duration}s`,
-                animationDelay: `${star.delay}s`,
+                // The three per-star values the stylesheet reads. The twinkle
+                // itself is on `.star::before` with LITERAL keyframes — see
+                // `Cosmos.module.css`; putting a per-star value back inside
+                // those keyframes is what `P4.F7` removed.
                 "--star-opacity": star.opacity,
+                "--star-duration": `${star.duration}s`,
+                "--star-delay": `${star.delay}s`,
               } as CSSProperties
             }
           />

@@ -723,3 +723,8 @@
 {"ts": "2026-09-03T10:17:42+09:00", "type": "phase_status_changed", "phase": "P4", "old_status": "in_progress", "new_status": "pending"}
 {"ts": "2026-09-03T10:17:42+09:00", "type": "acceptance_opened", "phase": "P4"}
 {"ts": "2026-09-03T10:17:42+09:00", "type": "deferred_created", "deferred": "D45", "source": "P4.REVIEW"}
+{"ts": "2026-09-03T10:28:04+09:00", "type": "slice_status_changed", "slice": "P4.REVIEW", "old_status": "in_progress", "new_status": "changes_requested"}
+{"ts": "2026-09-03T10:28:04+09:00", "type": "phase_reviewed", "phase": "P4", "verdict": "changes_requested", "reviewer": "slice-executor-high"}
+{"ts": "2026-09-03T10:28:04+09:00", "type": "slice_created", "phase": "P4", "slice": "P4.F7"}
+{"ts": "2026-09-03T10:30:16+09:00", "type": "slice_status_changed", "slice": "P4.F7", "old_status": "todo", "new_status": "in_progress"}
+{"ts": "2026-09-03T13:40:22+09:00", "type": "slice_status_changed", "slice": "P4.F7", "old_status": "in_progress", "new_status": "done"}
