@@ -25,6 +25,12 @@ Follow-ups during intake, verbatim:
 
 > oh find out it works. the kakaotalk. you can only handle flickering on the p12
 
+Follow-ups after the phase was created, verbatim:
+
+> maybe no design round is required. just use aside claude2 profile. fix it directly.
+
+> no I like the phase. but the context is skip the design round fix it directly in the phase.
+
 ## Confirmed Intent (refined + clarified)
 
 P12 is a **flicker-polish** phase and nothing else. Two things, in this order of certainty:
@@ -56,8 +62,12 @@ UA through Cloudflare). Before any diagnosis slice was cut the operator reported
 the image, and said the current image is enough. **No OG work, no design round, no Kakao diagnosis
 in this phase.** If the blank Kakao card recurs, it is a new request.
 
-**Not a visual-design phase.** There is no `## Design Style` section on purpose: nothing here is a
-design round, and the dropdown fix works inside the already-signed R8 chrome.
+**Not a visual-design phase, and the dropdown is fixed directly inside the phase.** There is no
+`## Design Style` section on purpose: nothing here is a design round. The operator's instruction
+after creation — "skip the design round, fix it directly in the phase" — means the dropdown fix is
+an ordinary `fix` slice of P12 (no `co-work` slice, no handoff, no mockup gate), working inside the
+already-signed R8 chrome and verified in Aside on the agent profile `claude2` (`--account u2`).
+It does **not** mean an ad hoc edit outside the phase workflow; the phase is the route.
 
 **Sequential, not parallel.** The operator's opening line said parallel, but the intake settled on
 queueing P12 behind P4 (see Clarifications). `new-phase` printed the advisory
@@ -81,9 +91,23 @@ queueing P12 behind P4 (see Clarifications). `new-phase` printed the advisory
 - Q (confirmation): name "Kakao share preview and flicker polish" + the two-part objective? — A:
   the Kakao half was withdrawn ("you can only handle flickering on the p12"), so the phase was
   created as **"Flicker polish"** with the flicker half of that objective unchanged.
+- After creation: "maybe no design round is required. just use aside claude2 profile. fix it
+  directly." — read at first as an ad hoc fix outside the phase; the operator corrected it: **"no I
+  like the phase. but the context is skip the design round fix it directly in the phase."** → the
+  dropdown fix is a plain `fix` slice inside P12, no design round, verified in Aside `--account u2`.
+  No product code was changed before the correction; the one throwaway test account the
+  measurement needed was created and deleted through the product's own 계정 삭제 (qa hygiene rule).
 
 ## Notes
 
+- **The jump is measured, not guessed** (dev runtime, 1280-wide desktop, Aside `--account u2`,
+  2026-09-03). The caret renders in `notoSansKr` at 12px. Advance widths there: `▾` 5.67px,
+  `▴` 11.05px (`▼` and `▲` are both 11.05px too). So the frame goes **239.67px closed → 245.05px
+  open (+5.38px)** with its right edge anchored, i.e. the whole control's left edge slides on every
+  toggle; height stays 32px in both states. It is width only, and it is the glyph pair, nothing
+  else in the frame changes. Any fix that gives the caret one constant box in both states ends it —
+  a single glyph flipped by `transform` (layout-neutral), or a fixed-width centered caret box — the
+  slice picks, keeping the ▾/▴ reading R8 signed.
 - **Where the caret lives:** `AccountSlotDesktop` renders `{open ? CARET_OPEN : CARET_CLOSED}`
   (`"▴"` / `"▾"`) in a `<span class={styles.caret}>` with `flex: none; font-size: var(--text-sm);
   line-height: 1` (`AccountSlot.module.css`). The frame is `max-width: 280px` with an ellipsised
