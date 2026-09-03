@@ -14,7 +14,7 @@
     "note": null
   },
   "acceptance": {
-    "required": null,
+    "required": true,
     "walkthrough": null,
     "requested_at": null,
     "cleared_at": null,
