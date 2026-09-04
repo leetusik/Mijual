@@ -527,6 +527,44 @@
    자동 저장 없음 — 담지 않기는 브라우저의 값을 지우지 않는다.
    --------------------------------------------------------------------------- */
 
+/* 이월 · 이전 제안's **slot** — the band's place, held before the band exists
+   (P12.F3).
+
+   `display: contents` is the whole trick: a filled slot is no box at all, so the
+   band is laid out as a direct `.surface` grid item exactly as it was before this
+   slot existed, and an empty slot with no reservation takes not even a grid gap —
+   the resting layout of a browser holding no sample is pixel-identical.
+
+   An empty slot **with** a reservation is the pre-hydration window: the mirror's
+   inline script (`Portfolio.tsx`'s `carryReservationCode`) has counted the rows
+   this browser will actually see and stamped them on <html>, and these two rules
+   turn that count into the band's exact height before anything paints. The
+   component then fills the slot and the reservation stops applying (`:empty`),
+   which is why the numbers below need to be right to the pixel and not merely
+   close.
+
+   The numbers are **measured**, not derived — 1280 and 390, dev and the local
+   production build, four rows: `.carry` is 195.28125 px tall, of which 2 px is its
+   border, 28 px its padding, 16 px its two 8 px gaps, 44 px the 담기/담지 않기 row,
+   18.59375 px the 계정 이전 label (12 px × 1.55, snapped to Chrome's 1/64 px), and
+   4 × 18.671875 + 3 × 4 px the list. A 계정 이전 row is 0.078125 px taller than the
+   label because it carries a `.mono` count whose face makes the line box taller —
+   which is exactly the kind of thing deriving these from the tokens would have got
+   wrong. 세션 이월 has no label and no `.mono` in its sentence, so it is the same
+   arithmetic without the label row and with a 18.59375 px line. */
+.carrySlot {
+  display: contents;
+}
+
+html[data-mj-carry-rows] .carrySlot:empty {
+  display: block;
+  height: calc(104.59375px + var(--mj-carry-rows) * 22.671875px);
+}
+
+html[data-mj-carry-kind="session"] .carrySlot:empty {
+  height: calc(78px + var(--mj-carry-rows) * 22.59375px);
+}
+
 .carry {
   display: grid;
   gap: var(--space-2);

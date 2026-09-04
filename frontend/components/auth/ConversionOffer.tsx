@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 import { useAuthState } from "./useAuthState";
@@ -77,27 +77,73 @@ import styles from "./Auth.module.css";
  * — every anonymous surface behaves identically whether the band is there,
  * dismissed or never shown — and the nav's 로그인 slot stays exactly as R8 signed
  * it, unhighlighted (`AccountSlot.tsx` is untouched).
+ *
+ * ## `P12.F3`: on 보유 종목 the band is in the **first painted HTML**
+ *
+ * `P12.R1` measured this band being inserted **+53 ms after first paint** in dev
+ * and, on a cold throttled mobile load, at **t = 2,981 ms against an FCP of
+ * 772 ms** — 130 px of document appearing two seconds into the read, which is the
+ * flicker `P12.F3` closes.
+ *
+ * Two of the four conditions were always the server's to answer, and on
+ * `/portfolio` it now answers them: the surface is in 샘플 mode because the reader
+ * is **anonymous** (a 401 from `GET /portfolio`, or no cookie at all), and
+ * **값 계산 직후** is `holdings.length > 0` on the payload it just served. So the
+ * page hands both down as `initialAnonymous` — the `P4.F10` shape `DeadlineOffer`
+ * already uses — the probe is switched **off**, and the band is server-rendered.
+ *
+ * The fourth condition, **세션당 1회**, is the one only the browser knows, and it
+ * is answered **before first paint** by the pre-hydration mirror
+ * (`components/chrome/PreHydration.tsx`): an inline `<head>` script stamps
+ * `data-mj-offer-seen` when this session has already seen the offer, `Auth.module.css`
+ * hides `.offerPre` under it, React's first client render still renders the band
+ * (matching the server, so no hydration mismatch), and the effect below then calls
+ * `markSeen()` exactly as it always did — `false` unmounts an element that was
+ * never painted, `true` keeps the one that was. **The flag is still written at the
+ * same moment, by the same function, and nothing about it reaches the server.**
+ *
+ * 조회's `lead` variant passes nothing, keeps the probe, and behaves exactly as
+ * before — its host cannot know `ready` on the server, since a 조회 holding is
+ * typed into `sessionStorage`.
  */
 export function ConversionOffer({
   ready,
   lead = true,
+  initialAnonymous,
 }: {
   ready: boolean;
   /** R13 Q-E — `false` on 보유 종목's 샘플 surface, where R12's session line is
    * not true. Defaults to R12's signed band. */
   lead?: boolean;
+  /** The session as the **server** already resolved it for this request, when the
+   * host surface can (보유 종목's 샘플 mode does — `P12.F3`). Defined means "known
+   * before first paint": the band renders immediately and asks nobody. `undefined`
+   * means no host resolved it and the client probe runs exactly as it always has —
+   * the two hosts differ in *when* the answer exists, never in what is rendered
+   * from it. */
+  initialAnonymous?: boolean;
 }) {
-  const [eligible, setEligible] = useState(false);
+  const server = initialAnonymous !== undefined;
+  // Server-resolved: the band starts **shown**, which is what the server rendered,
+  // so the first client render matches it. Probe path: unchanged — nothing until
+  // the probe answers and this call claims the session's single showing.
+  const [showing, setShowing] = useState(initialAnonymous === true);
   const [dismissed, setDismissed] = useState(false);
-  const auth = useAuthState(ready && !dismissed);
+  const probed = useAuthState(!server && ready && !dismissed);
+  const anonymous = initialAnonymous ?? (probed === null ? null : !probed.authenticated);
 
+  // 세션당 1회 is claimed **once per mount**, and the ref is what makes that true:
+  // `markSeen()` is not idempotent — a second call answers `false` — so under
+  // Strict Mode's double-invoked effect the un-guarded version would claim the
+  // session and then immediately hide the band it had just claimed it for.
+  const claimed = useRef(false);
   useEffect(() => {
-    if (!ready || eligible || dismissed) return;
-    if (auth === null || auth.authenticated) return;
-    if (markSeen()) setEligible(true);
-  }, [ready, eligible, dismissed, auth]);
+    if (!ready || dismissed || anonymous !== true || claimed.current) return;
+    claimed.current = true;
+    setShowing(markSeen());
+  }, [ready, dismissed, anonymous]);
 
-  if (!eligible || !ready || dismissed) return null;
+  if (!showing || !ready || dismissed) return null;
 
   const dismiss = (
     <button className={styles.dismiss} type="button" onClick={() => setDismissed(true)}>
@@ -106,7 +152,11 @@ export function ConversionOffer({
   );
 
   return (
-    <div className={styles.offer}>
+    // `.offerPre` is the pre-hydration hide hook and is carried **only** by an
+    // instance whose eligibility the server already resolved: it is what
+    // `data-mj-offer-seen` selects, and 조회's probe-gated band must never be
+    // selected by an attribute that outlives the paint it was stamped for.
+    <div className={server ? `${styles.offer} ${styles.offerPre}` : styles.offer}>
       {lead ? (
         <>
           <div className={styles.offerHead}>

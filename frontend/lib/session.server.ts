@@ -13,6 +13,7 @@
  * very much logged in.
  */
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { getAuthState } from "./api";
 import { ANONYMOUS } from "./session";
@@ -37,8 +38,16 @@ import type { AuthState } from "./types";
  * failure this whole line is built to avoid. Emptiness cannot go stale that way.
  * What it buys: `/events/{rcept_no}` now reads the session on every render, and
  * the crawler — 445 event pages, never a cookie — adds no API request at all.
+ *
+ * **Memoised per request** (`cache`, `P12.F3`). Two callers now ask on one render
+ * — the root layout seeds the chrome's account slot with it (`P12.F1`) and a page
+ * may need the same answer for its own surface (`/events/{rcept_no}` since
+ * `P4.F10`, `/portfolio?sample=1` since `P12.F3`) — and a session cannot change
+ * between two reads of one request, so the second read is waste, not diligence.
+ * React's request-scoped memo collapses them into one `GET /auth/me`; the cache is
+ * per render pass, so nothing is shared between two readers.
  */
-export async function readAuthState(): Promise<AuthState> {
+export const readAuthState = cache(async (): Promise<AuthState> => {
   try {
     const cookie = (await cookies()).toString();
     if (!cookie) return ANONYMOUS;
@@ -46,4 +55,4 @@ export async function readAuthState(): Promise<AuthState> {
   } catch {
     return ANONYMOUS;
   }
-}
+});

@@ -17,3 +17,6 @@ export { SiteNav } from "./Nav";
 export { SiteFooter } from "./Footer";
 export { FeedbackDialog, FeedbackEntry, type FeedbackDialogProps } from "./Feedback";
 export { Wordmark, type WordmarkProps } from "./Wordmark";
+/** The pre-hydration mirror (`P12.F3`) — see `PreHydration.tsx` for the
+ * `data-mj-*` contract every reserving surface reads. */
+export { PreHydrationMirror, InlineScript, jsonLiteral, clearMirror } from "./PreHydration";

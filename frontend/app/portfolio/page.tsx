@@ -4,6 +4,7 @@ import { Portfolio } from "@/components/portfolio";
 import type { ResolvedStock } from "@/components/portfolio/AddHolding";
 import { ApiError, getPortfolio, getSamplePortfolio, getStock } from "@/lib/api";
 import { PORTFOLIO_TITLE_KO } from "@/lib/seo";
+import { readAuthState } from "@/lib/session.server";
 import type { Portfolio as PortfolioPayload } from "@/lib/types";
 import styles from "@/components/portfolio/Portfolio.module.css";
 
@@ -73,10 +74,19 @@ export default async function PortfolioPage({
   const add = typeof params.add === "string" ? params.add : undefined;
 
   if (sample) {
-    const payload = await getSamplePortfolio();
+    // `?sample=1` is the one entry a **signed-in** reader can take into 샘플 mode
+    // (R5-4), so anonymity is a question here rather than a given — and it is the
+    // server's to answer, not a probe's (`P12.F3`). `readAuthState()` is
+    // request-memoised, so this costs the root layout's read and nothing more.
+    const [payload, auth] = await Promise.all([getSamplePortfolio(), readAuthState()]);
     return (
       <main className={`content ${styles.page}`}>
-        <Portfolio payload={payload} mode="sample" preselect={null} />
+        <Portfolio
+          payload={payload}
+          mode="sample"
+          preselect={null}
+          anonymous={!auth.authenticated}
+        />
       </main>
     );
   }
@@ -95,20 +105,46 @@ export default async function PortfolioPage({
     const example = await getSamplePortfolio();
     return (
       <main className={`content ${styles.page}`}>
-        <Portfolio payload={example} mode="sample" preselect={null} />
+        {/* The 401 **is** the answer: a request whose session the API refused is
+            anonymous, so the 전환 제안 band's audience is known here with no extra
+            read at all, and it is server-rendered rather than inserted 53 ms —
+            2.2 s on a cold mobile load — after first paint (`P12.F3`). */}
+        <Portfolio payload={example} mode="sample" preselect={null} anonymous />
       </main>
     );
   }
 
-  const preselect: ResolvedStock | null = add
-    ? await getStock(add, { headers })
-        .then((page) => page.stock)
-        .catch(() => null)
-    : null;
+  // 계정 이전 (R5-4) is offered to a signed-in reader whose **browser** holds a
+  // sample, and until `P12.F3` this client fetched today's served composition
+  // itself, after mount — which is why the band could only ever be inserted into a
+  // painted page (215.28 px of push, `P12.R1`'s worst measured shift). The server
+  // cannot know whether this browser holds a sample (and must not be told — see
+  // `security.md`), but the composition is anonymous, cheap and exactly what it
+  // already fetches for 샘플 mode, so it is read **here**: the client then has the
+  // rows and the names at hydration, and the pre-hydration mirror can size the
+  // band's slot from the same composition before anything paints.
+  //
+  // A failure is `null`, and `null` is a state: `Portfolio` falls back to the
+  // client-side read it always did, and the band simply lands the old way.
+  const [preselect, sampleServed] = await Promise.all([
+    add
+      ? getStock(add, { headers })
+          .then((page) => page.stock)
+          .catch(() => null)
+      : Promise.resolve(null),
+    getSamplePortfolio()
+      .then((page) => page.holdings)
+      .catch(() => null),
+  ]);
 
   return (
     <main className={`content ${styles.page}`}>
-      <Portfolio payload={payload} mode="account" preselect={preselect} />
+      <Portfolio
+        payload={payload}
+        mode="account"
+        preselect={preselect as ResolvedStock | null}
+        sampleServed={sampleServed}
+      />
     </main>
   );
 }

@@ -3,14 +3,14 @@
   "phase_id": "P12",
   "name": "/portfolio's two late bands: the signed-in 계정 이전 carry-over (215.28px) and the anonymous 전환 제안 offer (130px, 2.2s late) (R1 F2, F6)",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 3.3,
   "depends_on": [
     "P12.R1"
   ],
   "created_at": "2026-09-04T02:32:46+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-04T08:44:37+09:00",
+  "completed_at": "2026-09-04T09:38:58+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "/portfolio's two late bands fixed by a pre-hydration mirror of the browser's own storage (components/chrome/PreHydration.tsx, data-mj-* on <html>) plus an SSR-consistent first render — the 전환 제안 offer is server-rendered from the session the server knows and hidden pre-paint by the seen-flag mirror; the 계정 이전·세션 이월 band fills a slot sized before the holdings parse: +215.28 px / CLS 0.101 and +130 px at +2.4 s → 0 px moved, CLS 0, resting layouts AE = 0, nothing browser-only reaches the server",
   "validation": {
     "required": [],
     "last_run": null,

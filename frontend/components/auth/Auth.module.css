@@ -332,6 +332,21 @@
   border: 1px solid var(--border-soft);
 }
 
+/* 세션당 1회, **before first paint** (P12.F3).
+   On 보유 종목 the band is server-rendered, because the server knows three of its
+   four conditions (anonymous, 값 계산 직후, and R13's placement). The fourth —
+   "this session has already seen it" — lives in `sessionStorage`, so the
+   pre-hydration mirror stamps `data-mj-offer-seen` on <html> before the body is
+   parsed and this rule keeps the band from ever painting. React still renders it
+   (so the first client render matches the server), and `markSeen()` then unmounts
+   an element that occupied nothing: no shift either way.
+   `.offerPre` is on the server-resolved instance only — 조회's probe-gated band is
+   inserted after mount and must not be caught by an attribute that is still on
+   <html> from an earlier paint. See `components/chrome/PreHydration.tsx`. */
+html[data-mj-offer-seen] .offerPre {
+  display: none;
+}
+
 .offerHead {
   display: flex;
   align-items: flex-start;

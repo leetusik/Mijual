@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { SiteChrome } from "@/components/chrome";
+import { PreHydrationMirror, SiteChrome } from "@/components/chrome";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getSiteContact } from "@/lib/api";
 import { readAuthState } from "@/lib/session.server";
@@ -240,6 +240,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       suppressHydrationWarning
     >
       <head>
+        {/* **First in the head, on purpose** (`P12.F3`): the pre-hydration mirror
+            is a parser-blocking inline script that reads this browser's own
+            storage and stamps what it learned onto `<html>`, so the CSS below can
+            reserve or hide a band *before* the body paints. It reads named keys
+            only, writes nothing, sends nothing and loads nothing — the browser
+            state stays in the browser, which is what `security.md`'s 「anonymous
+            state never reaches the server」 requires and what rules a cookie out.
+            The contract and the attribute table are in `PreHydration.tsx`. */}
+        <PreHydrationMirror />
         <link rel="stylesheet" href="/foundations/tokens.css" />
         {/* Organization + WebSite structured data, **inline** — the one shape of
             structured data that does not cost this product its measured
