@@ -83,7 +83,28 @@ export const notoSansKr = localFont({
  * request asked for (`…IBM+Plex+Mono:wght@400;500;600`), so no weight R1 signed is silently lost.
  *
  * `preload: false` — mono is numerals and chips, not the body face, and it must not compete with
- * the Korean subset for the critical font budget.
+ * the Korean subset for the critical font budget. **Unchanged by `P12.F9`**, and so is
+ * `display: "swap"`: the fix below costs no network at all.
+ *
+ * ── `adjustFontFallback: false`, and why Arial could not work here either (P12.F9) ───────────────
+ *
+ * Left at its default, `next/font/local` generated `plexMono Fallback` — `src: local(Arial)`,
+ * `size-adjust: 131.49%` — and **Arial is proportional**. There is no single number that maps a
+ * proportional face onto a monospace one, so every numeral painted ~15 % too wide until the 12 kB
+ * Regular and 13 kB SemiBold subsets landed and re-flowed it: 「0.0863800841」 **113.53 → 97.20 px**
+ * on a cold mobile load, measured by `P12.R1` on the production build *and* on jujutower.com. It was
+ * Noto's pre-`P4.F5` state, one face over — and the remedy is the same one, with one difference in
+ * its favour: a **monospace** fallback has one advance for every glyph, so a single `size-adjust`
+ * matches every string exactly rather than on average.
+ *
+ * The faces below are declared by hand in `app/shell.css` with **measured** overrides (Menlo, which
+ * is what Chrome actually paints this stack in — `ui-monospace` / `SFMono-Regular` / `"SF Mono"`
+ * resolve to nothing there, and SF Mono is unreachable through `local()`; plus Consolas for
+ * Windows, vertical metrics only). They are restricted by `unicode-range` to our Latin-only
+ * subsets' own coverage, and `"plexMono Fallback Arial"` re-declares Next's generated face verbatim
+ * behind them, so the `←` and `→` that only ever painted in Arial still do. Read that block before
+ * changing anything here. Do not put a bare `ui-monospace` / `Consolas` in front of them; that is
+ * the unadjusted face this fix exists to stop using.
  */
 export const plexMono = localFont({
   src: [
@@ -94,5 +115,15 @@ export const plexMono = localFont({
   display: "swap",
   preload: false,
   variable: "--font-plex-mono",
-  fallback: ["ui-monospace", "SFMono-Regular", "SF Mono", "Consolas", "monospace"],
+  adjustFontFallback: false,
+  fallback: [
+    "plexMono Fallback Apple",
+    "plexMono Fallback Windows",
+    "plexMono Fallback Arial",
+    "ui-monospace",
+    "SFMono-Regular",
+    "SF Mono",
+    "Consolas",
+    "monospace",
+  ],
 });

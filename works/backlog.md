@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P12`
-- Current slice: `P12.F9`
-- Next slice: `P12.S2`
+- Current slice: `P12.S2`
+- Next slice: `P12.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `37`
 
@@ -19,7 +19,7 @@
 | [x] `P10` | `done` | `pass` | Rebrand to 주주의관제탑 | `none` | `works/phases/active/P10` |
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
-| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.F9` | `works/phases/active/P12` |
+| [ ] `P12` | `planned` | `pending` | Flicker polish | `P12.S2` | `works/phases/active/P12` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -115,6 +115,6 @@
 | [x] `P12.F6` | `done` | Family B ghost, three components: the ask send button's three widths, the auth panel's 로그인 ↔ 계정 만들기 growth, the 정정 이력 ↔ 접기 toggle (R1 F8, F10, F12) | `fix` | `works/phases/active/P12/slices/P12.F6` |
 | [x] `P12.F7` | `done` | The feedback dialog's three body heights and the ≤480 sheet's top edge jumping 91.46px (R1 F9) | `fix` | `works/phases/active/P12/slices/P12.F7` |
 | [x] `P12.F8` | `done` | Search-miss page: the no-match line collapsing on the first keystroke lifts the page 30.6px (R1 F7) | `fix` | `works/phases/active/P12/slices/P12.F8` |
-| [ ] `P12.F9` | `todo` | Family C: metric-matched local fallback faces for IBM Plex Mono, the P4.F5 route applied to the mono face (R1 F5) | `fix` | `works/phases/active/P12/slices/P12.F9` |
+| [x] `P12.F9` | `done` | Family C: metric-matched local fallback faces for IBM Plex Mono, the P4.F5 route applied to the mono face (R1 F5) | `fix` | `works/phases/active/P12/slices/P12.F9` |
 | [ ] `P12.S2` | `todo` | Release P12 to production — frontend-only deploy before the 2026-09-07 11:00 KST freeze | `implementation` | `works/phases/active/P12/slices/P12.S2` |
 | [ ] `P12.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P12/slices/P12.REVIEW` |

@@ -223,6 +223,161 @@ html:root {
   line-gap-override: 0%;
 }
 
+/* ── The mono fallback faces, metric-matched to IBM Plex Mono (P12.F9) ────────
+ *
+ * The same defect as the block above, one face over, and it was still live on
+ * production: `next/font` generated `@font-face { font-family: plexMono Fallback;
+ * src: local(Arial); size-adjust: 131.49% }` for the mono face, and **Arial is
+ * proportional**. A proportional face cannot be metric-matched to a monospace
+ * one string by string — no single number exists — so on a cold cache every
+ * numeral painted ~15 % too wide and re-flowed when the 12 kB + 13 kB subsets
+ * landed: `/stocks/[corp_code]` 「0.0863800841」 **113.53 → 97.20 px** (x +16.33),
+ * `DDay__dday` 106.13 → 92.42, `/portfolio` 「300주」 42.31 → 36.70, `/` 「445건」
+ * 50.41 → 43.06 (`P12.R1`, measured on the production build **and** on
+ * jujutower.com; CLS reads ~0.001 only because the motion is horizontal inside
+ * the line box — the px deltas are the evidence). A **monospace** fallback has
+ * ONE advance for every glyph, so one `size-adjust` matches every string exactly.
+ *
+ * **THE NUMBERS ARE MEASURED, NOT CHOSEN.** Read from the font tables with
+ * fontTools and confirmed in real Chrome (`TextMetrics` / laid-out rects at
+ * 100 px):
+ *
+ *   | face                          | upem | hhea asc / desc | advance (every glyph) |
+ *   | IBM Plex Mono 400/500/600 (our subsets) | 1000 | 1025 / -275 | 600 (0.6 em)      |
+ *   | Menlo Regular / Bold          | 2048 | 1901 / -483     | 1233 (0.602051 em)     |
+ *
+ * Plex's advance is one value across all three weights and every glyph in the
+ * subset; Menlo's is one value across its 210 of those 211 codepoints (it lacks
+ * only U+2044 ⁄, which the product never renders). So:
+ *
+ *   size-adjust      = 600/1000 ÷ 1233/2048  =  99.66%
+ *   ascent-override  = (1025/1000) / 0.9966  = 102.85%
+ *   descent-override = ( 275/1000) / 0.9966  =  27.59%
+ *   line-gap-override= 0%
+ *
+ * (`size-adjust` scales the vertical overrides too, which is why both are
+ * divided by it — the same arithmetic Next did for its Arial face.) To re-derive
+ * after `scripts/subset_plex_mono.sh` changes the subsets: read `head.unitsPerEm`,
+ * `hhea.ascent/descent` and any `hmtx` advance out of the new woff2 and redo the
+ * four divisions.
+ *
+ * **The face is Menlo, and that was measured, not assumed.** With the webfont
+ * blocked, CDP `CSS.getPlatformFontsForNode` says Chrome paints the product's
+ * generic mono stack in **Menlo-Regular**: `ui-monospace`, `SFMono-Regular` and
+ * `"SF Mono"` all resolve to *nothing* in Chrome on macOS (they measure
+ * identically to a deliberately bogus family) and only the `monospace` keyword
+ * lands, on Menlo. SF Mono itself is unreachable: it ships as the hidden
+ * `.SF NS Mono`, and `local()` fails for `.SFNSMono-Regular`, `.SF NS Mono`,
+ * `SFMono-Regular` and `SF Mono` alike — so no SF Mono face is declared here.
+ * `local()` matches a full name or a PostScript name, never a family name
+ * (`P4.F5`, re-proved here: `local("Menlo")` fails, `local("Menlo-Regular")` and
+ * `local("Menlo Regular")` resolve). Menlo carries only 400 and 700, so 500 takes
+ * Regular and 600–900 takes Bold — the nearest real faces. That is about the swap
+ * window *looking* right: the advance is 1233 in both, at every weight, and
+ * synthesised bold changes it in neither face (measured: Plex at 700 is
+ * synthesised from 600 and stays 0.6 em).
+ *
+ * **`unicode-range` is load-bearing, and this is the one thing the block above
+ * does not need.** Our Plex Mono subsets are Latin-only (211 codepoints), so the
+ * characters *outside* them that the product renders inside `.mono` — `←` and `→`
+ * — never painted in Plex at all: they painted, warm and cold, in the generated
+ * Arial face at 131.49 % (measured: the `Lookup__arw` `→` is 15.78 px, ArialMT).
+ * Metric-matching them to Menlo would have *changed the resting product*
+ * (7.23 px), which this phase's bar forbids. So the two matched faces are
+ * restricted to exactly the subset's coverage, and `"plexMono Fallback Arial"`
+ * below re-declares Next's own generated face, byte-for-byte, to keep serving
+ * everything else exactly as it does today. Warm rendering is therefore
+ * unchanged, and in the swap window *nothing* moves: matched glyphs paint at
+ * Plex's own advance, unmatched ones paint in the face they already used.
+ *
+ * Windows is the one unclosed edge, exactly as Malgun is above: Consolas is not
+ * installable here (it measures identically to the bogus control), so its
+ * `size-adjust` stays **100%** — no width claim we have not measured — and only
+ * the vertical metrics are matched. A Windows measurement would close it. */
+@font-face {
+  font-family: "plexMono Fallback Apple";
+  src: local("Menlo-Regular"), local("Menlo Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 99.66%;
+  ascent-override: 102.85%;
+  descent-override: 27.59%;
+  line-gap-override: 0%;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022,
+    U+2026, U+2030, U+2032-2033, U+2039-203A, U+2044, U+20A9, U+20AC;
+}
+
+@font-face {
+  font-family: "plexMono Fallback Apple";
+  src: local("Menlo-Regular"), local("Menlo Regular");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 99.66%;
+  ascent-override: 102.85%;
+  descent-override: 27.59%;
+  line-gap-override: 0%;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022,
+    U+2026, U+2030, U+2032-2033, U+2039-203A, U+2044, U+20A9, U+20AC;
+}
+
+@font-face {
+  font-family: "plexMono Fallback Apple";
+  src: local("Menlo-Bold"), local("Menlo Bold");
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 99.66%;
+  ascent-override: 102.85%;
+  descent-override: 27.59%;
+  line-gap-override: 0%;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022,
+    U+2026, U+2030, U+2032-2033, U+2039-203A, U+2044, U+20A9, U+20AC;
+}
+
+@font-face {
+  font-family: "plexMono Fallback Windows";
+  src: local("Consolas");
+  font-weight: 100 500;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022,
+    U+2026, U+2030, U+2032-2033, U+2039-203A, U+2044, U+20A9, U+20AC;
+}
+
+@font-face {
+  font-family: "plexMono Fallback Windows";
+  src: local("Consolas Bold"), local("Consolas-Bold");
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022,
+    U+2026, U+2030, U+2032-2033, U+2039-203A, U+2044, U+20A9, U+20AC;
+}
+
+/* Next's own generated face, re-declared by hand and unchanged in every number,
+ * because `adjustFontFallback: false` deletes it and the two faces above
+ * deliberately do not cover what it covers. It is what `←` and `→` paint in
+ * today, warm and cold, and keeping it keeps them exactly where they are. It
+ * sits *after* the matched faces, so it never sees a glyph the subset has. */
+@font-face {
+  font-family: "plexMono Fallback Arial";
+  src: local("Arial");
+  ascent-override: 77.95%;
+  descent-override: 20.91%;
+  line-gap-override: 0%;
+  size-adjust: 131.49%;
+}
+
 body {
   background: var(--paper);
   font-family: var(--font-sans);
