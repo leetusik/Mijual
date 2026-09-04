@@ -50,8 +50,9 @@
  * |---|---|---|
  * | `data-mj-offer-seen` | `sessionStorage["mijual.convert.offer"]` | 전환 제안 has already been shown this session, so the server-rendered band must not paint (`P12.F3`, `components/auth/ConversionOffer.tsx`) |
  * | `data-mj-carry-rows` / `data-mj-carry-kind` (+ the `--mj-carry-rows` custom property) | `localStorage["mijual.portfolio.sample"]`, `sessionStorage["mijual.portfolio.migrate"]` / `["mijual.portfolio.carry"]` / `["mijual.lookup.holdings"]` | how many rows the 계정 이전 · 세션 이월 band will have, so its slot can be sized before it exists (`P12.F3`, page-level — it needs `/portfolio`'s own served composition beside it) |
+ * | `data-mj-lookup-holding` | `sessionStorage["mijual.lookup.holdings"]` | this browser remembers a count for **this** stock, so ①'s 환산 row will draw its four-cell shape and its foot will lose the prompt — `Lookup.module.css` holds both at that geometry until the effect fills them (`P12.F4`, page-level: the memory is per issuer, so the script needs the page's own `corp_code`). Presence only; the count itself is never stamped, because no rule reads it |
  *
- * **Adding one** (`P12.F4`'s lookup holding cells, `P12.F5`'s 로그아웃 flash): read
+ * **Adding one** (`P12.F5`'s 로그아웃 flash): read
  * the key here if the fact is page-independent, or with {@link InlineScript} beside
  * the element if the computation needs the page's server data; name the attribute
  * `data-mj-<thing>`; put the CSS that reads it in the component's own module; add a

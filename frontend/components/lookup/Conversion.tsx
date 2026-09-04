@@ -214,6 +214,30 @@ export function ConversionChain({
   // `price_confirmed: false` could never reach the page as a won amount.
   const priced = factors.price_confirmed === false ? undefined : confirmedPrice;
 
+  // ------------------------------------------------------------------
+  // The pre-hydration reservation (`P12.F4`) — two facts the **server**
+  // already holds, handed to `Lookup.module.css` so it can hold this row's
+  // with-holding geometry before the browser's own `sessionStorage` has been
+  // read. Neither is a number the browser knows: how many cells a holding will
+  // draw follows from the served factors alone, and so does whether the foot's
+  // note is the same in both states. See `components/chrome/PreHydration.tsx`.
+  // ------------------------------------------------------------------
+
+  /** How many cells this row draws **once a holding exists**: 보유 always, 배정비율
+   * and 배정 신주 wherever a 배정비율 was served, 초과청약 한도 where an
+   * 초과청약비율 was too. 4, 3 or 1 — and the reserved height differs per count,
+   * because 3 cells are wider than 4 and the 배정 신주 caption then wraps less. */
+  const reservedCells = 1 + (ratio ? 2 : 0) + (ratio && excessRatio ? 1 : 0);
+
+  /** Whether `.chainfoot` carries the **same** note with and without a holding.
+   * It does unless a money line is coming (which needs a confirmed price, a
+   * `unit_value` and a 배정비율 all at once) — and where it does, hiding the
+   * prompt pre-paint lands the foot at exactly its filled height. Where a money
+   * line *is* coming, the foot's own height is a number no one has measured
+   * (this product has served no priced ① yet), so the reservation says nothing
+   * about it and the prompt stays: today's behaviour, not a guess. */
+  const footSteady = !(priced && factors.unit_value !== undefined && ratio !== undefined);
+
   const cells: CellSpec[] =
     shares !== null
       ? [
@@ -248,9 +272,9 @@ export function ConversionChain({
   if (cells.length === 0 && !priced && !finalPriceDate && !prompt) return null;
 
   return (
-    <div className={styles.chainwrap}>
+    <div className={styles.chainwrap} data-mj-foot={footSteady ? "steady" : undefined}>
       {cells.length > 0 ? (
-        <div className={styles.chain}>
+        <div className={styles.chain} data-mj-cells={reservedCells}>
           {cells.map((cell) => (
             <div key={cell.label} className={styles.cell}>
               <p className={styles.clab}>{cell.label}</p>

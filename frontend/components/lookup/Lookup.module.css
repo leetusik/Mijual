@@ -426,6 +426,66 @@
   grid-auto-columns: minmax(0, 1fr);
 }
 
+/* ---------------------------------------------------------------------------
+   The row's **with-holding geometry, reserved before the holding is known**
+   (`P12.F4`, the pre-hydration mirror of `components/chrome/PreHydration.tsx`).
+
+   The count is this browser's alone (`sessionStorage`, per issuer, R4-6), so the
+   server can only render the no-holding row — two short cells and a prompt — and
+   the mount effect used to *insert* the four-cell row into a page that had
+   already painted: +35 px at 1280, +111 px at 390, and everything below the
+   panel moved (`P12.R1` F3, CLS 0.04785 in both runtimes).
+
+   `StockView`'s inline script has read that session before this row was parsed
+   and stamped `data-mj-lookup-holding` on `<html>` when this stock has a count.
+   These rules then hold the row at the height it is about to be, so the cells
+   *fill* a box that does not move; `clearMirror` drops the stamp once the
+   component's own state has taken over, which is what gives the box back to a
+   reader who clears the field.
+
+   **`data-mj-cells` is the server's own count** — 보유 always, 배정비율 and 배정
+   신주 wherever a 배정비율 was served, 초과청약 한도 where an 초과청약비율 was too —
+   and it matters because the heights are not proportional to it: three cells are
+   wider than four, so the 배정 신주 caption wraps less and the row is *shorter*
+   than the four-cell one by more than a cell.
+
+   The numbers are **measured**, never derived (dev and the local production
+   build, 1280 and 390, 툴젠 00547510 at 300주, cross-checked on 이렘 00116426).
+   `n=4` is the shape every ① the product serves today has; `n=3` and `n=1` were
+   measured by removing the cells the missing factors would not have drawn, which
+   is the same layout their render produces. `min-height`, not `height`: a
+   caption that wraps one line further — a ten-digit count at 390 — makes the row
+   taller than the reservation instead of being clipped by it. */
+html[data-mj-lookup-holding] .chain[data-mj-cells="4"] {
+  min-height: 201.25px;
+}
+
+html[data-mj-lookup-holding] .chain[data-mj-cells="3"] {
+  min-height: 155px;
+}
+
+html[data-mj-lookup-holding] .chain[data-mj-cells="1"] {
+  min-height: 45.25px;
+}
+
+/* The foot's other half of the same shift: the prompt leaves when a holding
+   arrives, and the foot shrinks under it (65 → 42.05 at 1280, 139.23 → 83.23 at
+   390). Hidden pre-paint, the foot is already at its filled height — and a
+   `display: none` element leaving moves nothing (`P12.F2`'s launcher, `P12.F3`'s
+   offer). `[data-mj-foot="steady"]` is the server's own guarantee that the rest
+   of the foot is the same in both states; where a money line is coming instead,
+   the wrap carries no attribute and the prompt stays put, because nobody has
+   measured that foot.
+
+   Scoped to the chain deliberately: 놓친 돈's head draws the same prompt, on a
+   stock whose chain is absent, but its own row cells and 계산 근거 bands change
+   with the holding too, so hiding the prompt there would rearrange a shift
+   nobody has measured rather than remove one. That surface is recorded for the
+   review, not half-fixed here. */
+html[data-mj-lookup-holding] .chainwrap[data-mj-foot="steady"] .prompt {
+  display: none;
+}
+
 .cell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1445,6 +1505,58 @@
 
   .chain {
     grid-auto-flow: column;
+  }
+
+  /* The desktop half of `P12.F4`'s reservation: one row of cells, so the height
+     is the tallest cell's — the 배정 신주 one, whose caption wraps under a value
+     that is 217 px wide at four cells and 289 px at three. Measured, at 1280. */
+  html[data-mj-lookup-holding] .chain[data-mj-cells="4"] {
+    min-height: 101.75px;
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="3"] {
+    min-height: 86.25px;
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="1"] {
+    min-height: 66.75px;
+  }
+
+  /* And the cells' own **columns**, which is what takes the desktop shift to
+     zero rather than merely small. The row is column-flow here, so the 배정비율
+     cell a holding keeps is the *first* of two before the fill and the *second*
+     of four after it: reserving only the height still slid that cell 217 px
+     sideways inside the box (measured: CLS 0.00654, y unchanged at 437). Naming
+     the columns the row is about to have, and putting the cells that survive
+     into the ones they are about to occupy, leaves them where they already are.
+
+     Every selector counts the cells that are actually there — `:nth-last-child`
+     pins **only** while the row still holds its pre-fill pair (or its lone
+     배정비율 at three cells), so the moment React fills it these rules stop
+     matching, one commit before `clearMirror` drops the stamp. A pinning rule
+     that outlived the fill would put 보유 in the second column for a frame. */
+  html[data-mj-lookup-holding] .chain[data-mj-cells="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="4"] > .cell:first-child:nth-last-child(2) {
+    grid-column: 2;
+    /* Pinned into the second column, it is no longer the row's left edge — and
+       `.cell:first-child`'s `border-left: 0` would otherwise draw it without the
+       hairline it wears one commit later, which is 1 px of content on the move. */
+    border-left: 1px dashed var(--border-soft);
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="4"] > .cell:nth-child(2):nth-last-child(1) {
+    grid-column: 4;
+  }
+
+  html[data-mj-lookup-holding] .chain[data-mj-cells="3"] > .cell:first-child:nth-last-child(1) {
+    grid-column: 2;
   }
 
   .cell {
