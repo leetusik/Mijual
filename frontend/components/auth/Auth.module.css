@@ -109,6 +109,41 @@
   color: var(--ink-2);
 }
 
+/* 로그아웃되었습니다's **slot** — the band's place, held before the band exists
+   (P12.F5, the pre-hydration mirror's fourth use).
+
+   `display: contents` is the whole trick (P12.F3's shape): a filled slot is no box
+   at all, so the `<p>` below is laid out as a direct `.panel` grid item exactly as
+   it was before this slot existed, and an empty slot with no stamp takes not even
+   a grid gap — the login page of a reader who did **not** just log out is
+   byte-identical to what it was.
+
+   An empty slot **with** the stamp is the pre-hydration window: the `<head>` half
+   of the mirror (`components/chrome/PreHydration.tsx`) has already read
+   `sessionStorage["mijual.auth.flash"]` and stamped `data-mj-auth-flash="logout"`
+   on <html>, and this rule turns that into the band's exact height before anything
+   paints. `AuthPanel`'s mount effect then fills the slot — `:empty` stops matching
+   in the same commit — and releases the stamp, which is what gives the box back
+   when the reader's first keystroke retires the band.
+
+   `min-height`, never `height` (P12.F4's rule): the sentence is one line at both
+   widths today, and a box that grew a line would be clipped by a fixed height.
+
+   The number is **measured** on the filled band, not derived: 40.59375 px at 1280
+   *and* at 390 — 10 px × 2 padding, 1 px × 2 hairline, and an 18.59375 px line box
+   (--text-sm 12 px × 1.55, snapped to Chrome's 1/64 px). 「로그아웃되었습니다」 is
+   one line in the 480 px column and in the ≤767 panel alike, so one number serves
+   both; the 56.6 px the band used to push is this 40.59 px plus the panel's 16 px
+   gap. */
+.flashSlot {
+  display: contents;
+}
+
+html[data-mj-auth-flash="logout"] .flashSlot:empty {
+  display: block;
+  min-height: 40.59375px;
+}
+
 /* 로그아웃되었습니다 (R12 finding 10) — the previous action's receipt, so it lands
    **above** the title in its own band. The line under the form belongs to *this*
    form's answers; a notice about a logout sitting there would read as a response

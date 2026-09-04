@@ -3,14 +3,14 @@
   "phase_id": "P12",
   "name": "/auth/login: the 로그아웃되었습니다 flash lands after paint and pushes the form 56.6px (R1 F4)",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 3.5,
   "depends_on": [
     "P12.R1"
   ],
   "created_at": "2026-09-04T02:32:53+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-04T10:44:34+09:00",
+  "completed_at": "2026-09-04T11:54:02+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Logout flash on /auth/login reserved pre-paint from a data-mj-auth-flash head stamp (seam's fourth use, head half): a display: contents slot held at the measured 40.59375px until the mount effect fills it and clearMirror releases; +56.594px push and CLS 0.01184@1280 / 0.04140@390 → 0px moved, CLS 0 in dev and production build; resting and filled pages AE=0 vs HEAD at both viewports; no server involvement",
   "validation": {
     "required": [],
     "last_run": null,

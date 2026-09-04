@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CraftPanel } from "@/components";
+import { clearMirror } from "@/components/chrome";
 import { ApiError, login, requestPasswordReset, signup } from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { readFlashOnce } from "@/lib/session";
@@ -89,6 +90,24 @@ import styles from "./Auth.module.css";
  * the first change of either field, by a submit, or by navigating away (the flash
  * channel already guarantees it shows once).
  *
+ * **It no longer lands after the page has painted (`P12.F5`).** Whether that band
+ * exists is a fact only the browser holds — `sessionStorage["mijual.auth.flash"]`,
+ * written by 로그아웃 on another surface — so it used to be *inserted* by this
+ * component's mount effect, +27 ms after first paint, pushing the form and the
+ * sample entry down **56.6 px** (`P12.R1` F4). The pre-hydration mirror
+ * (`components/chrome/PreHydration.tsx`) now reads that key in the `<head>` and
+ * stamps `data-mj-auth-flash="logout"` on `<html>` before the body is parsed, and
+ * `Auth.module.css` holds the band's exact height in an **empty slot** until this
+ * effect fills it. The line is therefore *filled into* a box that is already the
+ * right size instead of being inserted into a painted page — same copy, same
+ * style, same `role`, nothing moves.
+ *
+ * The channel itself is untouched: the `<head>` script only *reads* the key, and
+ * `readFlashOnce()` below is still the one consumer, still clearing at the same
+ * moment. `flashResolved` exists so the stamp is released after the commit that
+ * settles the band either way — a reservation left standing would become a
+ * permanent gap the moment the reader types and the band leaves.
+ *
  * ## What this panel refuses to do
  *
  * It renders no line for a code no round has signed (`authErrorKo` returns
@@ -111,14 +130,31 @@ export function AuthPanel() {
   const [pending, setPending] = useState(false);
   const [line, setLine] = useState<Line>(null);
   const [flash, setFlash] = useState(false);
+  const [flashResolved, setFlashResolved] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
 
   // "로그아웃되었습니다" — 1회 표시. The click happened on another surface
   // (`P5.S16`'s account menu); this reads the one-hop channel and clears it, so a
   // reload never shows it twice.
+  //
+  // `setFlash(true)` rather than `setFlash(read === "logout")` on purpose: Strict
+  // Mode runs this effect twice in `next dev`, and the second run reads a channel
+  // the first run already consumed — assigning the second answer would blank a
+  // band the reader is meant to see. (`P12.F5`; the shape predates it and is kept.)
   useEffect(() => {
     if (readFlashOnce() === "logout") setFlash(true);
+    setFlashResolved(true);
   }, []);
+
+  // The reservation is a **pre-hydration** device, so it is released as soon as
+  // this panel owns the answer — after the commit that renders the band, not
+  // inside the effect that reads the key (`P12.F4`'s rule). Both `setState`s above
+  // land in one commit, so by the time this runs the band is on screen if it is
+  // coming at all; dropping the stamp then is what gives the box back when the
+  // reader's first keystroke retires the band.
+  useEffect(() => {
+    if (flashResolved) clearMirror("auth-flash");
+  }, [flashResolved]);
 
   const signingUp = mode === "signup";
   const submitLabel = signingUp ? SIGNUP_KO : LOGIN_KO;
@@ -194,12 +230,21 @@ export function AuthPanel() {
       <AuthRail />
 
       <CraftPanel className={styles.panel}>
-        {/* 이전 행동의 영수증 — 제목 위 자기 밴드, 타이머 없음 (R12 finding 10). */}
-        {flash ? (
-          <p className={styles.flash} role="status">
-            {LOGOUT_DONE_KO}
-          </p>
-        ) : null}
+        {/* 이전 행동의 영수증 — 제목 위 자기 밴드, 타이머 없음 (R12 finding 10).
+            The band's **slot** (`P12.F5`): `display: contents`, so a filled slot
+            lays the `<p>` out as a direct `.panel` grid item exactly as an
+            unwrapped one did, and an empty slot with no stamp is not a grid item
+            at all and takes not even a gap — the login page of a reader who did
+            not just log out is byte-identical. An empty slot **under the stamp**
+            is the pre-hydration window, and `Auth.module.css` gives it the band's
+            measured height there. */}
+        <div className={styles.flashSlot}>
+          {flash ? (
+            <p className={styles.flash} role="status">
+              {LOGOUT_DONE_KO}
+            </p>
+          ) : null}
+        </div>
 
         <div className={styles.head}>
           <h1 className={styles.title}>{submitLabel}</h1>
