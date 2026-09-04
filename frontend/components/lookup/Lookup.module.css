@@ -1274,6 +1274,16 @@ html[data-mj-lookup-holding] .chainwrap[data-mj-foot="steady"] .prompt {
   color: var(--ink-2);
 }
 
+/* …but its **box** outlives it until the next submit (P12.F8, R1 F7). The
+   sentence used to unmount on that keystroke and everything below it jumped up
+   30.6px (the line's 18.6 + this rule's 2px margin + `.entry`'s 10px gap).
+   `visibility`, not `opacity`: a hidden element leaves the accessibility tree
+   and hit-testing exactly as an unmounted one does, so only the box remains. No
+   transition — a fade is motion the record never drew. */
+.noMatchStale {
+  visibility: hidden;
+}
+
 /* ---------------------------------------------------------------------------
    Provenance (R4 §6) — mono 10px, the round's own measurement.
    --------------------------------------------------------------------------- */

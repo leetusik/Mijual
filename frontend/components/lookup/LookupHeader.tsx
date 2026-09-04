@@ -57,9 +57,17 @@ export function LookupRail({ here = false }: { here?: boolean }) {
  *
  * R11's finding 9: the candidate panel faded in **over** a 「‘삼성’와 일치하는
  * 종목이 없습니다」 that was already about a query nobody was typing any more. The
- * rule is that the line lives exactly as long as the submitted query is what is
- * in the box — the first differing keystroke removes it, and the candidates open
- * into the space it leaves.
+ * rule is unchanged and still reads the same way: the **sentence** lives exactly
+ * as long as the submitted query is what is in the box, and the first differing
+ * keystroke takes its ink, its accessible presence and its hit target away
+ * (`.noMatchStale` is `visibility: hidden`, which leaves the AX tree and
+ * hit-testing exactly as an unmount would). What now outlives it is its **box**,
+ * until the next submit replaces or removes it — so the page under the sentence
+ * does not lift 30.6px on the reader's first keystroke (`P12.F8`, R1 F7). The
+ * candidates still open into the same place they always did: `ul.listbox` is
+ * `position: absolute` and overlays whatever is below the row, so 「into the space
+ * it leaves」 was never geometric. Typing the submitted text back makes the same
+ * sentence visible again in the same box.
  *
  * `SearchRow` is **not** touched to do that: its Enter rule, its candidate panel
  * and its stylesheet are R9/P7's and locked. React's `onInput` is the native
@@ -95,8 +103,15 @@ export function LookupHeader({ query, missed }: { query?: string; missed?: boole
         }}
       />
 
-      {missed && submitted !== "" && typedText === submitted ? (
-        <p className={styles.noMatch} role="status">
+      {missed && submitted !== "" ? (
+        <p
+          className={
+            typedText === submitted
+              ? styles.noMatch
+              : `${styles.noMatch} ${styles.noMatchStale}`
+          }
+          role="status"
+        >
           {noMatchKo(submitted)}
         </p>
       ) : null}
