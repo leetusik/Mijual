@@ -116,6 +116,27 @@ export function Portfolio({
     ensureSample();
   }, [mode]);
 
+  /**
+   * The **release** half of `P12.F10`'s pre-hydration hide.
+   *
+   * Until this runs, the rows this browser removed have no box because
+   * `SampleRules.tsx`'s generated CSS hides everything the `<head>` script
+   * stamped on `<html>` — which is what lets the hydrating render carry every
+   * served row (as it must: `useSample()`'s server snapshot is `null`) without a
+   * single pixel moving when the next render drops them.
+   *
+   * It may not run any earlier than this. `sample !== null` is the moment
+   * `useSyncExternalStore` has answered from the store rather than from the
+   * server snapshot, so the commit that filtered the lists has already landed and
+   * the hidden rows are gone from the DOM — releasing then moves nothing. And it
+   * may not run later than this either: 되돌리기 puts a removed issuer back into
+   * `local`, and a stamp still standing would keep the restored row invisible.
+   */
+  useEffect(() => {
+    if (mode !== "sample" || sample === null) return;
+    clearMirror("sample-removed");
+  }, [mode, sample]);
+
   // A row is shown unless this browser removed **that issuer**; an issuer the
   // browser has never seen renders on sight.
   const shown = useCallback(

@@ -137,7 +137,14 @@ export function Holdings({
           const next = row.rights.next;
 
           return (
-            <li key={row.corp_code} className={styles.holdingRow}>
+            // `data-corp` is the pre-hydration mirror's hook, not a style hook
+            // (`P12.F10`): in 샘플 모드 the server renders every served row and
+            // only the browser knows which issuers it removed, so a generated
+            // rule keyed on this attribute hides such a row before it paints and
+            // React's own filter then unmounts an element that had no box. It
+            // costs one attribute per row and does nothing in 계정 모드, where no
+            // rule is emitted at all.
+            <li key={row.corp_code} className={styles.holdingRow} data-corp={row.corp_code}>
               <div className={styles.holdingStock}>
                 <p className={styles.holdingName}>{row.corp_name ?? row.corp_code}</p>
                 {/* 종목코드, at the canon's `.phmeta` tier. The R13 cards omit it

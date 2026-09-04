@@ -3,14 +3,14 @@
   "phase_id": "P12",
   "name": "Anonymous 보유 종목 with an edited sample: a removed row drops after paint (CLS 0.052) — the seam's third use (from P12.F3's finding)",
   "kind": "fix",
-  "status": "todo",
+  "status": "done",
   "order": 3.45,
   "depends_on": [
     "P12.F3"
   ],
   "created_at": "2026-09-04T09:40:14+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-04T10:10:02+09:00",
+  "completed_at": "2026-09-04T10:43:55+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "The anonymous 보유 종목 sample surface no longer drops a removed issuer's row after paint — the seam's third use (data-mj-sample-removed head stamp, server-generated per-code and per-section rules in SampleRules.tsx, data-corp hooks, release once useSample answers): CLS 0.052 @1280 / 0.112 @390 / 0.161 when a section empties / 0.196 cold mobile → 0 movement; unedited and settled pages AE = 0",
   "validation": {
     "required": [],
     "last_run": null,

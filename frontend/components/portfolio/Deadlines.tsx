@@ -107,11 +107,16 @@ export function Deadlines({
   if (upcoming.length === 0 && past.length === 0) return null;
 
   return (
-    <div className={styles.deadlines}>
+    // `data-corp-group` is `P12.F10`'s hook (see `SampleRules.tsx`): in 샘플
+    // 모드 a browser that removed every issuer of a section — or of both — makes
+    // this component render `null`, so the generated rules hide the same
+    // containers before first paint instead of letting them unmount after it.
+    <div className={styles.deadlines} data-corp-group="deadlines">
       <p className={`mono ${styles.reference}`}>{referenceKo(reference)}</p>
 
       <Section
         title={UPCOMING_SECTION_KO}
+        group="upcoming"
         rows={upcoming}
         past={false}
         sharesOf={sharesOf}
@@ -122,6 +127,7 @@ export function Deadlines({
       />
       <Section
         title={PAST_SECTION_KO}
+        group="past"
         rows={past}
         past
         sharesOf={sharesOf}
@@ -136,6 +142,7 @@ export function Deadlines({
 
 function Section({
   title,
+  group,
   rows,
   past,
   sharesOf,
@@ -145,6 +152,10 @@ function Section({
   busy,
 }: {
   title: string;
+  /** `P12.F10`'s container hook — the section unmounts when every one of its
+   * rows belongs to an issuer this browser removed, so the pre-hydration rules
+   * need a name for it. */
+  group: "upcoming" | "past";
   rows: RightsRow[];
   past: boolean;
   sharesOf: (row: RightsRow) => number | null;
@@ -159,7 +170,7 @@ function Section({
   if (rows.length === 0) return null;
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} data-corp-group={group}>
       <h2 className={styles.eyebrow}>{`// ${title}`}</h2>
 
       <CraftPanel>
@@ -203,7 +214,8 @@ function DeadlineRow({
   const dated = countdown.dday !== null && countdown.days !== null;
 
   return (
-    <li className={styles.row}>
+    // `data-corp` — `P12.F10`, the same hook the holding rows carry.
+    <li className={styles.row} data-corp={row.corp_code}>
       <span className={styles.rowChip}>
         <RightsChip rightsType={row.rights_type} compact />
       </span>

@@ -51,6 +51,7 @@
  * | `data-mj-offer-seen` | `sessionStorage["mijual.convert.offer"]` | 전환 제안 has already been shown this session, so the server-rendered band must not paint (`P12.F3`, `components/auth/ConversionOffer.tsx`) |
  * | `data-mj-carry-rows` / `data-mj-carry-kind` (+ the `--mj-carry-rows` custom property) | `localStorage["mijual.portfolio.sample"]`, `sessionStorage["mijual.portfolio.migrate"]` / `["mijual.portfolio.carry"]` / `["mijual.lookup.holdings"]` | how many rows the 계정 이전 · 세션 이월 band will have, so its slot can be sized before it exists (`P12.F3`, page-level — it needs `/portfolio`'s own served composition beside it) |
  * | `data-mj-lookup-holding` | `sessionStorage["mijual.lookup.holdings"]` | this browser remembers a count for **this** stock, so ①'s 환산 row will draw its four-cell shape and its foot will lose the prompt — `Lookup.module.css` holds both at that geometry until the effect fills them (`P12.F4`, page-level: the memory is per issuer, so the script needs the page's own `corp_code`). Presence only; the count itself is never stamped, because no rule reads it |
+ * | `data-mj-sample-removed` | `localStorage["mijual.portfolio.sample"]` | the `corp_code`s this browser removed from its 샘플, space-separated, so the anonymous 보유 종목 surface can hide them **before first paint** (`P12.F10`). The server renders the composition it serves and only the browser knows which issuers the reader dropped, so the rows are hidden by CSS until React owns the list: `components/portfolio/SampleRules.tsx` emits one static rule per **served** code (`~=` matches one word of the attribute), the rows carry `data-corp`, and `Portfolio` releases the stamp once `useSample()` has answered — a 되돌리기 must be able to bring a row back. Digit strings only (a code that is not one is not stamped and not ruled: it simply behaves as it does today) |
  *
  * **Adding one** (`P12.F5`'s 로그아웃 flash): read
  * the key here if the fact is page-independent, or with {@link InlineScript} beside
@@ -78,15 +79,39 @@
  * `markSeen()`, which still writes it at the same moment it always did. */
 const OFFER_SEEN_KEY = "mijual.convert.offer";
 
+/** 샘플 포트폴리오's store — `lib/sample.ts`'s `SAMPLE_KEY`, spelled again here
+ * because that module is a client module and this one runs in the root layout's
+ * server render. The two spellings are one string and must stay one. */
+const SAMPLE_KEY = "mijual.portfolio.sample";
+
+/** The attribute the sample's removals are stamped as (`P12.F10`), named once so
+ * the head script and `components/portfolio/SampleRules.tsx`'s generated rules
+ * cannot drift apart. */
+export const SAMPLE_REMOVED_ATTR = "data-mj-sample-removed";
+
 /**
  * The `<head>` half of the mirror: the facts that need nothing from the page.
  *
  * Rendered **first** in `app/layout.tsx`'s `<head>`, so it runs before the body is
- * parsed and long before first paint. It is one `getItem` inside one `try`.
+ * parsed and long before first paint. Two `getItem`s inside one `try`, in that
+ * order: a denied storage or an unparseable sample costs the reader nothing that
+ * was already stamped.
+ *
+ * The sample's `removed` list is stamped as **space-separated digit strings**, so
+ * a static `[data-mj-sample-removed~="00102618"]` rule can match one entry of it.
+ * Anything that is not a digit string is dropped rather than stamped: the value
+ * is interpolated into a CSS selector on the other side of this seam, and a code
+ * that cannot be one simply keeps today's behaviour (its row drops at hydration).
  */
-const HEAD_SOURCE = `(function(){try{if(sessionStorage.getItem(${JSON.stringify(
-  OFFER_SEEN_KEY,
-)})!==null){document.documentElement.setAttribute("data-mj-offer-seen","");}}catch(e){}})();`;
+const HEAD_SOURCE =
+  `(function(){try{var h=document.documentElement;` +
+  `if(sessionStorage.getItem(${JSON.stringify(OFFER_SEEN_KEY)})!==null){` +
+  `h.setAttribute("data-mj-offer-seen","")}` +
+  `var raw=localStorage.getItem(${JSON.stringify(SAMPLE_KEY)});if(!raw)return;` +
+  `var st=JSON.parse(raw),rm=st&&Array.isArray(st.removed)?st.removed.filter(` +
+  `function(c){return typeof c==="string"&&/^[0-9]+$/.test(c)}):[];` +
+  `if(rm.length){h.setAttribute(${JSON.stringify(SAMPLE_REMOVED_ATTR)},rm.join(" "))}` +
+  `}catch(e){}})();`;
 
 export function PreHydrationMirror() {
   return <script dangerouslySetInnerHTML={{ __html: HEAD_SOURCE }} />;

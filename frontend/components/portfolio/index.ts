@@ -15,4 +15,7 @@
  * construction rather than by care.
  */
 export { Portfolio } from "./Portfolio";
+/** 샘플 모드's pre-hydration hide (`P12.F10`) — a server component, rendered by
+ * `app/portfolio/page.tsx` above the surface. */
+export { SampleRemovedRules } from "./SampleRules";
 export { NotificationsView } from "./NotificationsView";

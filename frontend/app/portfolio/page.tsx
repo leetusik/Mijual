@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Portfolio } from "@/components/portfolio";
+import { Portfolio, SampleRemovedRules } from "@/components/portfolio";
 import type { ResolvedStock } from "@/components/portfolio/AddHolding";
 import { ApiError, getPortfolio, getSamplePortfolio, getStock } from "@/lib/api";
 import { PORTFOLIO_TITLE_KO } from "@/lib/seo";
@@ -81,6 +81,9 @@ export default async function PortfolioPage({
     const [payload, auth] = await Promise.all([getSamplePortfolio(), readAuthState()]);
     return (
       <main className={`content ${styles.page}`}>
+        {/* Before the surface, so the parser holds the rules before it reaches
+            the rows they hide (`P12.F10`). */}
+        <SampleRemovedRules payload={payload} />
         <Portfolio
           payload={payload}
           mode="sample"
@@ -109,6 +112,7 @@ export default async function PortfolioPage({
             anonymous, so the 전환 제안 band's audience is known here with no extra
             read at all, and it is server-rendered rather than inserted 53 ms —
             2.2 s on a cold mobile load — after first paint (`P12.F3`). */}
+        <SampleRemovedRules payload={example} />
         <Portfolio payload={example} mode="sample" preselect={null} anonymous />
       </main>
     );
