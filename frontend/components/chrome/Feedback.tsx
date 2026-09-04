@@ -127,6 +127,24 @@ export function FeedbackDialog({
   const [retryable, setRetryable] = useState(true);
   const field = useRef<HTMLTextAreaElement>(null);
   const inflight = useRef<AbortController | null>(null);
+  /** 본문 높이 고정 (P12.F7). The three bodies — the form, 접수됨, 실패 — are
+   * genuinely different heights, and the panel is **bottom-anchored** in both its
+   * forms (`bottom: calc(100% + 10px)` on the desktop panel, `bottom: 0` on the
+   * ≤480 sheet), so a shorter body moves the dialog's *top* edge down: 75.45px at
+   * 1280 and 91.46px on the sheet, measured (P12.R1 F9). The remedy cannot be a
+   * constant: this height depends on the viewport **and** on a textarea the
+   * reader may have dragged taller. So the body's own rendered height is read at
+   * the moment 보내기 (or 다시 시도) is pressed and handed to every later body as a
+   * `min-height` — never a `height`, because a failed body carrying a long
+   * message may legitimately be taller and must be allowed to grow. The editing
+   * body carries no inline style at all, so the resting dialog is unchanged. */
+  const body = useRef<HTMLElement | null>(null);
+  const [pinnedHeight, setPinnedHeight] = useState<number | null>(null);
+  /** One callback ref for whichever body is mounted — they are mutually
+   * exclusive, and 다시 시도 must pin the *failed* body it was pressed in. */
+  const holdBody = useCallback((node: HTMLElement | null) => {
+    body.current = node;
+  }, []);
 
   const trimmed = message.trim();
   const sending = phase === "sending";
@@ -167,9 +185,14 @@ export function FeedbackDialog({
 
   const send = useCallback(
     (text: string) => {
+      // Read before anything changes, then set the pin and the phase in the same
+      // handler call: React commits them together, so no frame exists in which
+      // the phase has moved and the height has not.
+      const height = body.current?.getBoundingClientRect().height ?? null;
       const controller = new AbortController();
       inflight.current = controller;
       const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS);
+      if (height !== null) setPinnedHeight(height);
       setPhase("sending");
       // The AI 질문 tab handle if this browser already has one — never a new
       // identifier, and nothing at all for a reader who has not asked anything.
@@ -193,6 +216,11 @@ export function FeedbackDialog({
     },
     [channel],
   );
+
+  /** Only ever applied to a body that is *not* the editing form: the editing
+   * state renders no inline style, so it is byte-identical to what it was. */
+  const pinned =
+    phase !== "editing" && pinnedHeight !== null ? { minHeight: pinnedHeight } : undefined;
 
   const surface = [
     styles.surface,
@@ -229,7 +257,7 @@ export function FeedbackDialog({
         </div>
 
         {phase === "sent" ? (
-          <div className={styles.body}>
+          <div className={styles.body} style={pinned} ref={holdBody}>
             <p className={styles.notice}>{FEEDBACK_SENT_KO}</p>
             {/* 접수 번호 <mono request_id> inset 박스 — vocky's own handle, the one
                 number this surface shows, so it is mono like every other numeral. */}
@@ -245,7 +273,7 @@ export function FeedbackDialog({
             </div>
           </div>
         ) : phase === "failed" ? (
-          <div className={styles.body}>
+          <div className={styles.body} style={pinned} ref={holdBody}>
             <p className={styles.notice}>{FEEDBACK_FAILED_KO}</p>
             <p className={`${styles.inset} ${styles.kept}`}>{trimmed}</p>
             <p className={styles.fine}>{FEEDBACK_KEPT_KO}</p>
@@ -265,6 +293,8 @@ export function FeedbackDialog({
         ) : (
           <form
             className={styles.body}
+            style={pinned}
+            ref={holdBody}
             onSubmit={(event) => {
               event.preventDefault();
               if (trimmed && !sending) send(trimmed);

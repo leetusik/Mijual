@@ -221,6 +221,14 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-3);
+  /* 고정된 본문에서만 효과가 있다 (P12.F7). The actions row is already the last
+     child of the `.body` flex column, so an auto top margin absorbs exactly the
+     free space the body has — which is none at all in the editing state, whose
+     height is its content's. It matters only once a later body is pinned to the
+     height the form had (see `Feedback.tsx`): the buttons then sit at the bottom
+     of the panel, where the reader's cursor already was when they pressed 보내기,
+     instead of leaving 75–91px of empty panel beneath them. */
+  margin-top: auto;
 }
 
 /* The empty-input hint sits with the button it explains — 「오류 색 없음」, so it
