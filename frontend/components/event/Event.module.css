@@ -936,14 +936,40 @@ a.offer:hover {
   border: 1px solid var(--border-strong);
   padding-inline: 14px;
   min-height: 36px;
-  display: inline-flex;
+  /* P12.F6 (R1 F12) — 폭 예약, `Nav.module.css` §.link과 같은 방식: 보이는 라벨과
+     숨은 쌍둥이(`::after`)를 같은 그리드 칸에 겹쳐 둔다. 칸의 폭은 둘 중 넓은
+     쪽(= 쉬는 상태의 「정정 이력」)이므로 열고 닫아도 폭이 바뀌지 않는다.
+     열린 상태의 「접기 ×」는 그 칸 안에서 가운데 정렬된다. */
+  display: inline-grid;
+  grid-template-areas: "label";
   align-items: center;
-  gap: var(--space-2);
+  justify-items: center;
   white-space: nowrap;
   cursor: pointer;
   transition:
     background var(--dur-fast) var(--ease),
     color var(--dur-fast) var(--ease);
+}
+
+/* The visible half of the slot. The `gap` lives here rather than on the button so
+   the closed state renders the same box it always did. */
+.historyLabel {
+  grid-area: label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* 쌍둥이. `visibility: hidden`이라 보조기술과 히트 테스트에서 빠지고, 높이 0이라
+   칸 높이에는 기여하지 않는다 (Nav.module.css와 동일). 두 라벨의 굵기가 같으므로
+   `font-weight` 재지정은 없다. */
+.historyButton::after {
+  content: attr(data-label);
+  grid-area: label;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .historyButton:hover {
@@ -1347,6 +1373,8 @@ a.offer:hover {
   .historyButton {
     min-height: 44px;
     width: 100%;
+    /* The grid's single track stays max-content and is centred in the full-width
+       box — the same rendering `justify-content: center` gave the old flex row. */
     justify-content: center;
   }
 

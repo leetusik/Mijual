@@ -99,19 +99,29 @@ export function Corrections({ detail }: { detail: EventDetail }) {
             </>
           ) : null}
         </h2>
+        {/* P12.F6 (R1 F12): 「정정 이력」 and 「접기 ×」 are two labels in one slot, and
+            the box used to be 10.83px narrower while open. `data-label` carries the
+            wider resting label into a hidden `::after` twin that shares the button's
+            single grid cell (`Nav.module.css`'s technique, R18 §② 폭 예약), so the box
+            is as wide as the resting state in both. Same strings, same copy, same
+            `aria-expanded` / `aria-controls`; the twin is `visibility: hidden` at
+            height 0, so it is in no accessible name and no hit test. */}
         <button
           type="button"
           className={styles.historyButton}
+          data-label={CORRECTION_HISTORY_KO}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={toggle}
         >
-          {open ? COLLAPSE_KO : CORRECTION_HISTORY_KO}
-          {open ? (
-            <span aria-hidden="true" className={styles.historyMark}>
-              {CLOSE_GLYPH}
-            </span>
-          ) : null}
+          <span className={styles.historyLabel}>
+            {open ? COLLAPSE_KO : CORRECTION_HISTORY_KO}
+            {open ? (
+              <span aria-hidden="true" className={styles.historyMark}>
+                {CLOSE_GLYPH}
+              </span>
+            ) : null}
+          </span>
         </button>
       </div>
 
