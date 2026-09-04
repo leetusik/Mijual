@@ -110,3 +110,14 @@ state commands other than `python3 scripts/workflow.py validate`; `uv run` witho
 `git diff --stat` → `phase.md` and this slice's `result.md` only; `python3 scripts/workflow.py
 validate` passes; `make smoke-prod` 17/17; the R7 assertions identical before/after; the load-sweep
 and cold-cache tables.
+
+## Confirmation (orchestrator, 2026-09-04 15:09 KST)
+
+The operator pushed `main`: `a74c58a..004d936  main -> main` (their own `git push origin main`,
+run in this session). `git fetch origin && git rev-parse origin/main main HEAD` → all three
+`004d936`, which carries every P12 commit through `P12.F9` (`8b54422`) plus the S2 planning commit.
+The slice is cleared from `pending` back to `in_progress` on that push and dispatched now. Launch
+window: it is 15:09 KST — the next beat window is the 19:30 evening pipeline, so the launch must
+be **well before 19:15 KST**; if the executor cannot launch by then, it waits for the pipeline to
+finish (`succeeded` in the worker log, `inspect active` empty) and launches after, still inside
+today. Freeze opens 2026-09-07 11:00 KST.
