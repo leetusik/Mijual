@@ -5,9 +5,9 @@
 
 ## Pointer
 
-- Current phase: `none`
-- Current slice: `none`
-- Next slice: `none`
+- Current phase: `P13`
+- Current slice: `P13.DECOMP`
+- Next slice: `P13.REVIEW`
 - Waiting on operator: `none`
 - Open deferred jobs: `40`
 
@@ -20,6 +20,7 @@
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
 | [x] `P12` | `done` | `pass` | Flicker polish | `none` | `works/phases/active/P12` |
+| [ ] `P13` | `planned` | `pending` | Email verification at signup (6-digit code) | `P13.DECOMP` | `works/phases/active/P13` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -118,3 +119,10 @@
 | [x] `P12.F9` | `done` | Family C: metric-matched local fallback faces for IBM Plex Mono, the P4.F5 route applied to the mono face (R1 F5) | `fix` | `works/phases/active/P12/slices/P12.F9` |
 | [x] `P12.S2` | `done` | Release P12 to production — frontend-only deploy before the 2026-09-07 11:00 KST freeze | `implementation` | `works/phases/active/P12/slices/P12.S2` |
 | [x] `P12.REVIEW` | `done` | phase review | `review` | `works/phases/active/P12/slices/P12.REVIEW` |
+
+## Phase P13: Email verification at signup (6-digit code)
+
+| Slice | Status | Name | Kind | Path |
+|---|---|---|---|---|
+| [ ] `P13.DECOMP` | `todo` | decompose phase | `decomposition` | `works/phases/active/P13/slices/P13.DECOMP` |
+| [ ] `P13.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P13/slices/P13.REVIEW` |

@@ -61,10 +61,22 @@
       "slice_count": 16,
       "done_slice_count": 16,
       "consolidation": "pending"
+    },
+    {
+      "id": "P13",
+      "name": "Email verification at signup (6-digit code)",
+      "objective": "Registration requires proving control of the address: signup creates the account unverified, mails a single-use 6-digit code and opens no session; the auth panel switches to a code-entry state on the same surface, and the right code verifies the account and logs the reader in. Logging in with the correct password on an unverified account routes to the same code step with a 재전송 option. Existing production accounts are grandfathered as verified by the migration. No design round: the phase extends the signed R5/R12 auth vocabulary and the operator approves the exact Korean strings at the acceptance gate. The verification mail is proven live on production.",
+      "status": "planned",
+      "order": 6,
+      "path": "works/phases/active/P13",
+      "review_status": "pending",
+      "current_slice": "P13.DECOMP",
+      "slice_count": 2,
+      "done_slice_count": 0
     }
   ],
   "deferred_open_count": 40,
   "deferred_promoted_count": 6,
   "deferred_dropped_count": 3,
-  "last_rebuilt_at": "2026-09-05T23:36:45+09:00"
+  "last_rebuilt_at": "2026-09-05T23:47:33+09:00"
 }
