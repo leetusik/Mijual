@@ -776,7 +776,7 @@
       ]
     },
     "qa": {
-      "latest": "v0018_p12_the_flicker-polish_regression_block",
+      "latest": "v0019_p13_the_signup-verification_regression_block",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -925,6 +925,15 @@
           "source": "P12.REVIEW",
           "summary": "P12: the flicker-polish regression block",
           "previous": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block"
+        },
+        {
+          "id": "v0019_p13_the_signup-verification_regression_block",
+          "path": "docs/versions/qa/v0019_p13_the_signup-verification_regression_block.md",
+          "created_at": "2026-09-06T02:37:10+09:00",
+          "commit": "d56afe3ec4f06e124cfc5b74cee6fb10e2861fe0",
+          "source": "P13.REVIEW",
+          "summary": "P13: the signup-verification regression block",
+          "previous": "v0018_p12_the_flicker-polish_regression_block"
         }
       ]
     },
@@ -1039,5 +1048,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-09-04T17:07:51+09:00"
+  "last_rebuilt_at": "2026-09-06T02:37:57+09:00"
 }

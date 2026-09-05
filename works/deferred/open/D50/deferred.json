@@ -1,0 +1,11 @@
+{
+  "id": "D50",
+  "title": "/ops 독자 계정 table — mark or hide unverified accounts",
+  "status": "deferred",
+  "source": "P13.REVIEW",
+  "reason": "After P13 the /ops 독자 계정 table silently lists accounts that cannot log in (unverified signups) and nothing on the surface says so; every /ops change was excluded by P13's intent.",
+  "trigger": "The next /ops phase, or the first time the operator reads that table and cannot tell a pending signup from a real reader.",
+  "created_at": "2026-09-06T02:41:17+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}

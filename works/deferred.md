@@ -4,7 +4,7 @@
 
 ## Summary
 
-- Open: `40`
+- Open: `42`
 - Promoted: `6`
 - Dropped: `3`
 
@@ -49,6 +49,8 @@
 | `D47` | `deferred` | scrollbar-gutter: stable cannot be verified on macOS overlay scrollbars (R1 F14 / Q5) | P12.REVIEW | a Windows/Linux reader, a machine set to 'always show scroll bars', or a reader report of the page widening when a sheet opens | `works/deferred/open/D47` |
 | `D48` | `deferred` | 조회 revisit reflow on a 놓친 돈 stock (+140 px, CLS 0.01232, identical on HEAD) | P12.REVIEW | the next phase touching /stocks/{corp_code}, or a reader complaint about the breakdown jumping on revisit | `works/deferred/open/D48` |
 | `D49` | `deferred` | P12 walkthrough decisions D-H left unanswered at the gate clear (Q7+Q9, Q8, Q3, Q6, Q4) | P12.REVIEW | the operator answers any of D-H, or the next phase touching /ask, 의견 보내기, /auth/login, the board or the launcher | `works/deferred/open/D49` |
+| `D50` | `deferred` | /ops 독자 계정 table — mark or hide unverified accounts | P13.REVIEW | The next /ops phase, or the first time the operator reads that table and cannot tell a pending signup from a real reader. | `works/deferred/open/D50` |
+| `D51` | `deferred` | Janitor for long-dead unverified accounts and their spent code grants | P13.REVIEW | When the unverified count on production becomes noticeable, or the next backend housekeeping phase. | `works/deferred/open/D51` |
 | `D6` | `deferred` | R15 admin /ops polish round (surface 8) — dropped from P8 by operator | P8.S16 | Operator asks to polish 운영 관제 / revisit any Q59-Q65 item | `works/deferred/open/D6` |
 | `D8` | `deferred` | Strip the // eyebrow from the accessible name on 조회 and 보유 종목 (Q21) | P8.REVIEW | Each surface next round, or as one small cross-surface job before P4 | `works/deferred/open/D8` |
 | `D9` | `deferred` | Carry the ③ 반대의사 통지 procedure fields onto GET /stocks/{corp_code} (Q30b) | P8.REVIEW | When 조회 and 상세 disagreeing about the same filing becomes a reported problem | `works/deferred/open/D9` |
