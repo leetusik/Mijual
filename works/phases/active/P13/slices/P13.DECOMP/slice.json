@@ -3,12 +3,12 @@
   "phase_id": "P13",
   "name": "decompose phase",
   "kind": "decomposition",
-  "status": "todo",
+  "status": "done",
   "order": 0,
   "depends_on": [],
   "created_at": "2026-09-05T23:47:04+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-05T23:54:59+09:00",
+  "completed_at": "2026-09-06T00:00:57+09:00",
   "risk": "high",
   "source": {
     "type": "new_phase",
@@ -18,7 +18,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Cut P13 into three bare middle slices (S1 backend, S2 frontend, S3 release + live proof) and seeded phase.md with the NULL-means-verified column, the code grant's shape, the full API contract, the three-kind mail rule, the copy route and the release gates",
   "validation": {
     "required": [],
     "last_run": null,
