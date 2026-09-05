@@ -776,7 +776,7 @@
       ]
     },
     "qa": {
-      "latest": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block",
+      "latest": "v0018_p12_the_flicker-polish_regression_block",
       "current_path": "docs/current/qa.md",
       "versions": [
         {
@@ -916,6 +916,15 @@
           "source": "P4.REVIEW",
           "summary": "P4: the landing idle-cost lines join the P4 regression block",
           "previous": "v0016_p4_the_production_regression_block_joins_the_checklist_smoke_the_beacon_exception_cold-cache_cls_the_extract_ceiling_backups_and_the_wordmark_s_new_bytes"
+        },
+        {
+          "id": "v0018_p12_the_flicker-polish_regression_block",
+          "path": "docs/versions/qa/v0018_p12_the_flicker-polish_regression_block.md",
+          "created_at": "2026-09-04T17:03:04+09:00",
+          "commit": "58023f8e42fcc18cd06ffd2b0ca47a25b860f691",
+          "source": "P12.REVIEW",
+          "summary": "P12: the flicker-polish regression block",
+          "previous": "v0017_p4_the_landing_idle-cost_lines_join_the_p4_regression_block"
         }
       ]
     },
@@ -1030,5 +1039,5 @@
       ]
     }
   },
-  "last_rebuilt_at": "2026-09-03T21:53:28+09:00"
+  "last_rebuilt_at": "2026-09-04T17:07:51+09:00"
 }

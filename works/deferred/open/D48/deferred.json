@@ -1,0 +1,11 @@
+{
+  "id": "D48",
+  "title": "조회 revisit reflow on a 놓친 돈 stock (+140 px, CLS 0.01232, identical on HEAD)",
+  "status": "deferred",
+  "source": "P12.REVIEW",
+  "reason": "On a stock serving 놓친 돈 rows, a revisit with a remembered holding still reflows that section: the per-holding cells fill, the 계산 근거 band inserts and the mmhead prompt leaves, moving the breakdown 140.19 px once; P12.F4 neither caused nor cured it, and reserving it means measuring row heights that depend on served text nobody has measured",
+  "trigger": "the next phase touching /stocks/{corp_code}, or a reader complaint about the breakdown jumping on revisit",
+  "created_at": "2026-09-05T23:30:41+09:00",
+  "promoted_to": null,
+  "dropped_reason": null
+}
