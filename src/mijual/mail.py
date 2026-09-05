@@ -15,12 +15,19 @@ would be **inventing product copy**. :func:`render` is where a message becomes
 words, and every word it uses comes from :mod:`mijual.mailcopy`, which carries a
 provenance comment per string. Nothing in this module contains a Korean sentence.
 
-**Two kinds, and there will not quietly be a third.** :data:`PASSWORD_RESET` (the
-reset link) and :data:`DEADLINE` (마감 임박 알림). `security` states the policy as
-「Notifications: email only … **No marketing or digest mail, ever** — only the
-deadline notifications the user configured」, and the way that stays true is that
-a third kind would need a third renderer in :mod:`mijual.mailcopy`, in a diff, in
-a review.
+**Three kinds, deliberately — and the third one arrived exactly the way this
+paragraph said it would have to.** :data:`DEADLINE` (마감 임박 알림),
+:data:`PASSWORD_RESET` (the reset link) and, from ``P13``,
+:data:`SIGNUP_VERIFICATION` (the 6-digit 가입 인증번호). Until P13 this paragraph
+read「Two kinds, and there will not quietly be a third」; it is rewritten rather
+than quietly outgrown, because the guarantee was never the number — it was that a
+new kind costs a constant here, a branch in :func:`render`, and two renderers in
+:mod:`mijual.mailcopy`, all of it in a diff and in a review. `security` states
+the policy as 「Notifications: email only … **No marketing or digest mail, ever**
+— only the deadline notifications the user configured」, and all three kinds
+still satisfy it: every one of them is a mail the reader themselves set in motion
+(a deadline they configured, a reset they asked for, a 가입 they just pressed).
+There will not quietly be a fourth.
 
 **Which transport, and how it is chosen.** :func:`mailer_for` returns
 :class:`SmtpMailer` when ``SMTP_HOST`` is set and :class:`ConsoleMailer`
@@ -65,6 +72,7 @@ if TYPE_CHECKING:  # pragma: no cover - imported for types only
 __all__ = [
     "DEADLINE",
     "PASSWORD_RESET",
+    "SIGNUP_VERIFICATION",
     "ConsoleMailer",
     "MailError",
     "Mailer",
@@ -86,6 +94,11 @@ PASSWORD_RESET = "password_reset"
 #: ``price_state`` · ``rcept_no`` · ``event_url`` · ``settings_url``). **No key
 #: of it is a won amount and none is a sentence.**
 DEADLINE = "deadline"
+#: 가입 인증번호 — ``P13``'s signup gate. Its ``data``: ``code`` (six characters,
+#: **a string**, leading zeros intact) and ``expires_at``. The code travels here
+#: and nowhere else: it is never in an HTTP response body, which is what keeps
+#: the mailbox — rather than the network — the thing being proven.
+SIGNUP_VERIFICATION = "signup_verification"
 
 #: How long any SMTP conversation may hang before it is a failure rather than a
 #: wait. Bounded on purpose (the pattern is `hi2vi_web/src/lib/mailer.ts`'s):
@@ -146,6 +159,11 @@ def render(message: Message) -> Rendered:
         return Rendered(
             subject=mailcopy.password_reset_subject(message.data),
             text=mailcopy.password_reset_body(message.data),
+        )
+    if message.kind == SIGNUP_VERIFICATION:
+        return Rendered(
+            subject=mailcopy.signup_verification_subject(message.data),
+            text=mailcopy.signup_verification_body(message.data),
         )
     raise MailError(f"no mail template for kind {message.kind!r}")
 

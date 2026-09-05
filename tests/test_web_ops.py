@@ -9,6 +9,8 @@ links it, and a conversation port that invents rows it does not have.
 
 from __future__ import annotations
 
+import io
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -17,6 +19,7 @@ from sqlalchemy.pool import StaticPool
 
 from mijual.config import Settings
 from mijual.db.models import Base, Extraction, ExtractionCall, PipelineRun, utcnow
+from mijual.mail import ConsoleMailer
 from mijual.web.app import create_app
 from mijual.web.auth import OPS_COOKIE, SESSION_COOKIE
 from mijual.web.conversationstore import (
@@ -28,6 +31,7 @@ from mijual.web.conversationstore import (
 from mijual.web.csrf import CSRF_HEADER
 from mijual.web.deps import get_session, get_write_session
 from mijual.web.opsreads import open_decisions
+from test_web_auth import signup_and_verify
 
 OPS_ID, OPS_PASSWORD = "operator", "ops-password-1"
 
@@ -40,6 +44,8 @@ def client():
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine)
     session = factory()
+    # P13: a reader account now takes 가입 + 인증, and the code is printed here.
+    outbox = io.StringIO()
 
     app = create_app(
         Settings(
@@ -52,6 +58,7 @@ def client():
         # `P6.S1`'s real port over the same in-memory database — the panel is
         # exercised against what it will actually serve, not against a stub.
         conversations=DbConversations(factory),
+        mailer=ConsoleMailer(stream=outbox),
     )
     app.dependency_overrides[get_session] = lambda: session
 
@@ -61,6 +68,7 @@ def client():
 
     app.dependency_overrides[get_write_session] = _write
     with TestClient(app, headers={CSRF_HEADER: "1"}) as test_client:
+        test_client.outbox = outbox  # type: ignore[attr-defined]
         test_client.db = session  # type: ignore[attr-defined]
         yield test_client
     session.close()
@@ -104,7 +112,7 @@ def test_the_two_credentials_cannot_open_each_other_s_surface(client) -> None:
     assert client.get("/ops/session").json() == {"authenticated": False}
 
     # A reader account opens 내 포트폴리오 and nothing under /ops.
-    client.post("/auth/signup", json={"email": "reader@mijual.kr", "password": "portfolio-8"})
+    signup_and_verify(client, email="reader@mijual.kr", password="portfolio-8")
     assert client.get("/portfolio").status_code == 200
     assert client.get("/ops/overview").status_code == 401
     assert client.get("/ops/overview").json()["error"]["code"] == "ops_unauthenticated"
@@ -172,7 +180,7 @@ def test_the_conversation_port_serves_honest_zeros_and_no_join(client) -> None:
         assert body == {"count": 0, "rows": []}, path
         assert "next_cursor" not in body  # absent, never null
 
-    client.post("/auth/signup", json={"email": "reader@mijual.kr", "password": "portfolio-8"})
+    signup_and_verify(client, email="reader@mijual.kr", password="portfolio-8")
     users = client.get("/ops/users").json()
     account = users["accounts"]["rows"][0]
     assert account["email"] == "reader@mijual.kr"

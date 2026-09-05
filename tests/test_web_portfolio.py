@@ -9,6 +9,7 @@ inside coverage (the 놓친 돈 row the 챙긴 돈 mark re-labels).
 
 from __future__ import annotations
 
+import io
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
@@ -30,10 +31,12 @@ from mijual.db.models import (
     Snapshot,
 )
 from mijual.db.repository import ensure_corp, ensure_event, ensure_version
+from mijual.mail import ConsoleMailer
 from mijual.web.app import create_app
 from mijual.web.csrf import CSRF_HEADER
 from mijual.web.reads import SAMPLE_FALLBACK, load_sample_composition
 from mijual.web.deps import get_session, get_write_session
+from test_web_auth import signup_and_verify
 
 KEYANG, HANWHA, DAEDONG, SEGI = "00102618", "00162461", "00109310", "00133618"
 TOOLGEN = "00547510"
@@ -139,8 +142,14 @@ def client():
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine)()
     _corpus(session, today=today)
+    # P13: 가입 mails a code and opens no session, so this suite — whose subject is
+    # 내 포트폴리오, not the gate — needs somewhere to read the code from.
+    outbox = io.StringIO()
 
-    app = create_app(Settings(session_secret="test-session-secret"))
+    app = create_app(
+        Settings(session_secret="test-session-secret"),
+        mailer=ConsoleMailer(stream=outbox),
+    )
     app.dependency_overrides[get_session] = lambda: session
 
     def _write():
@@ -150,14 +159,20 @@ def client():
     app.dependency_overrides[get_write_session] = _write
     with TestClient(app, headers={CSRF_HEADER: "1"}) as test_client:
         test_client.today = today  # type: ignore[attr-defined]
+        test_client.outbox = outbox  # type: ignore[attr-defined]
         test_client.db = session  # type: ignore[attr-defined]
         yield test_client
     session.close()
 
 
 def _login(client, email="reader@mijual.kr"):
+    """가입 + 인증 — one logged-in reader. ``P13`` turned this into two calls.
+
+    The helper is ``test_web_auth``'s, imported rather than re-written, so the
+    next change to the gate is one edit and not three.
+    """
     client.cookies.clear()
-    client.post("/auth/signup", json={"email": email, "password": "portfolio-8"})
+    signup_and_verify(client, email=email, password="portfolio-8")
 
 
 def _add(client, corp_code, shares):

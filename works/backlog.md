@@ -6,8 +6,8 @@
 ## Pointer
 
 - Current phase: `P13`
-- Current slice: `P13.S1`
-- Next slice: `P13.S2`
+- Current slice: `P13.S2`
+- Next slice: `P13.S3`
 - Waiting on operator: `none`
 - Open deferred jobs: `40`
 
@@ -20,7 +20,7 @@
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
 | [x] `P12` | `done` | `pass` | Flicker polish | `none` | `works/phases/active/P12` |
-| [ ] `P13` | `planned` | `pending` | Email verification at signup (6-digit code) | `P13.S1` | `works/phases/active/P13` |
+| [ ] `P13` | `planned` | `pending` | Email verification at signup (6-digit code) | `P13.S2` | `works/phases/active/P13` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -125,7 +125,7 @@
 | Slice | Status | Name | Kind | Path |
 |---|---|---|---|---|
 | [x] `P13.DECOMP` | `done` | decompose phase | `decomposition` | `works/phases/active/P13/slices/P13.DECOMP` |
-| [ ] `P13.S1` | `todo` | Backend: unverified account state, the 6-digit code grant, the third mail kind, gated signup/login, verify + resend, tests | `implementation` | `works/phases/active/P13/slices/P13.S1` |
+| [x] `P13.S1` | `done` | Backend: unverified account state, the 6-digit code grant, the third mail kind, gated signup/login, verify + resend, tests | `implementation` | `works/phases/active/P13/slices/P13.S1` |
 | [ ] `P13.S2` | `todo` | Frontend: the code-entry state on the auth panel, the drafted Korean strings, real-browser verification | `implementation` | `works/phases/active/P13/slices/P13.S2` |
 | [ ] `P13.S3` | `todo` | Release to production and prove the verification mail live | `implementation` | `works/phases/active/P13/slices/P13.S3` |
 | [ ] `P13.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P13/slices/P13.REVIEW` |

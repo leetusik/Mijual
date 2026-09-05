@@ -49,8 +49,28 @@ the account; the ORM cascade takes the sessions and the reset grants, and the FK
 account alike, and the miss path burns a scrypt verification against a dummy hash
 so the two do not differ in timing either. A reset request answers identically
 whether or not the address exists (가입 여부 비노출) and prints its link
-**server-side only**. No error here carries Korean: the single body line a reader
-sees (불일치 / 중복 가입 / 8자 미만) is the client's, from the design's own copy.
+**server-side only**. ``P13``'s 가입 인증 adds two codes and no third answer to
+"who has an account": ``verification_code_invalid`` (the code was wrong, the
+grant is still live) and ``verification_code_expired`` (there is no live grant at
+all — expired, spent, never issued, or killed by the attempt cap). They are two
+codes rather than one because the panel must point at 재전송 for the second and
+must not for the first, and neither is reachable without the account's own
+password, so neither discloses anything. 재전송 and /auth/verify answer
+``invalid_credentials`` — the login code, byte for byte — to a wrong password and
+an unknown address alike, and signup answers the identical 201 whether the
+address was free or was held by an **unverified** account, so the gate discloses
+no more about who exists than P5 did. No error here carries Korean: the single
+body line a reader sees (불일치 / 중복 가입 / 8자 미만 / 인증번호) is the client's,
+from the design's own copy.
+
+**가입 is a hard gate, and the enforcement point is one function.**
+:func:`start_session` **raises** on an account whose
+:attr:`~mijual.db.models.Account.verification_pending_since` is not ``NULL``. It
+is unreachable through any route here — every caller clears the column first, or
+never reaches it — and that is the point: it is a structural backstop, so a route
+added later cannot mint a session for a mailbox nobody has proven. ``NULL`` means
+verified, which is also why every account that existed before P13 is verified
+without a migration.
 """
 
 from __future__ import annotations
@@ -61,7 +81,7 @@ import logging
 import re
 import secrets
 import unicodedata
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
 from fastapi import Depends, Request, Response
@@ -70,8 +90,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from mijual.config import Settings
-from mijual.db.models import Account, AuthSession, PasswordReset, utcnow
-from mijual.mail import PASSWORD_RESET, Mailer, Message
+from mijual.db.models import (
+    Account,
+    AuthSession,
+    EmailVerification,
+    PasswordReset,
+    utcnow,
+)
+from mijual.mail import PASSWORD_RESET, SIGNUP_VERIFICATION, Mailer, Message
 from mijual.web import clock, passwords
 from mijual.web.deps import DbSession, WriteSession
 from mijual.web.errors import ApiError
@@ -83,6 +109,9 @@ __all__ = [
     "ReadAccount",
     "SESSION_COOKIE",
     "SESSION_LIFETIME",
+    "VERIFICATION_LIFETIME",
+    "VERIFICATION_MAX_ATTEMPTS",
+    "VERIFICATION_RESEND_COOLDOWN",
     "WriteAccount",
     "account_payload",
     "authenticate",
@@ -93,13 +122,19 @@ __all__ = [
     "current_account",
     "delete_account",
     "end_session",
+    "issue_verification",
+    "live_verification",
+    "new_code",
     "new_token",
     "normalize_email",
     "request_reset",
+    "resend_verification",
     "revoke_sessions",
     "set_session_cookie",
     "start_session",
     "token_digest",
+    "verification_payload",
+    "verify_code",
 ]
 
 log = logging.getLogger(__name__)
@@ -119,6 +154,21 @@ RESET_LIFETIME = timedelta(hours=1)
 #: The frontend route the reset link points at (``P5.S15`` builds the page). The
 #: origin comes from ``MIJUAL_APP_BASE_URL``; only the path is fixed here.
 RESET_PATH = "/auth/reset"
+
+#: How long a 가입 인증번호 lives. Ten minutes, not the reset link's hour: the
+#: reader is sitting in front of the panel with the mail app one tap away, and a
+#: 6-digit secret is short enough that its window is part of its strength.
+VERIFICATION_LIFETIME = timedelta(minutes=10)
+#: Wrong codes one grant tolerates before it stops being live. A 6-digit code has
+#: 10^6 values, so five guesses is a 1-in-200,000 shot — and the sixth wrong entry
+#: does not answer "wrong", it answers "expired", which is the honest state: that
+#: code is dead and 재전송 is the way forward.
+VERIFICATION_MAX_ATTEMPTS = 5
+#: The floor between two mails to the same address. Without it, 재전송 (and
+#: re-signup on an unverified address) is a mail-bomb aimed at any mailbox, sent
+#: by this product, on somebody else's behalf. Measured from the most recent
+#: grant's ``created_at``.
+VERIFICATION_RESEND_COOLDOWN = timedelta(seconds=60)
 
 #: 256 bits of ``secrets`` randomness, URL-safe. Unguessable is the whole
 #: security of both a session cookie and a reset link.
@@ -229,6 +279,22 @@ def new_token() -> str:
     return secrets.token_urlsafe(_TOKEN_BYTES)
 
 
+def new_code() -> str:
+    """A 가입 인증번호: six digits, uniform over ``000000``–``999999``.
+
+    ``secrets``, not ``random`` — this is a credential, however short. It is a
+    **string** from here to the mail to the comparison, and it is formatted with
+    leading zeros deliberately: an integer would turn ``012345`` into ``12345``
+    somewhere between here and the panel, and the reader would type six
+    characters that could never match.
+
+    Its shortness is why :class:`~mijual.db.models.EmailVerification` carries an
+    attempt counter and this module a resend cooldown: unguessable-per-try is not
+    a property a six-digit number has on its own.
+    """
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
 # ---------------------------------------------------------------------------
 # accounts
 # ---------------------------------------------------------------------------
@@ -237,13 +303,54 @@ def account_by_email(db: Session, email: str) -> Account | None:
 
 
 def create_account(db: Session, *, email: str, password: str) -> Account:
-    """계정 만들기. Duplicate email → ``email_taken``, structurally, not by copy."""
+    """계정 만들기 — and after ``P13``, an **unverified** account with no session.
+
+    The row is created with :attr:`Account.verification_pending_since` set **in
+    this function body**, never as a column default: a default would make the
+    column unsafe for :func:`mijual.db.schema_sync.ensure_columns`, which is this
+    repo's whole schema-evolution path, and would also have rewritten every
+    existing row into "unverified" — the opposite of the grandfathering NULL
+    gives for free.
+
+    **An address held by an unverified account is re-taken, not refused.** Nobody
+    has proven that mailbox, so the address is not really *held*; refusing it with
+    ``email_taken`` would strand a reader who mistyped their password, closed the
+    tab, and came back — with an address they own and cannot use. So this branch:
+
+    * **replaces the password hash** with the one just typed. The reader may have
+      chosen a different password this time, and the one they typed must be the
+      one that works. It is safe precisely because the previous one was never
+      proven either — no session ever existed on this account, and
+      :func:`start_session` refuses to make one until the code lands.
+    * leaves the code issuing to the caller (:func:`issue_verification` with
+      ``force=True``), which supersedes the outstanding code under the cooldown.
+    * answers with the **identical** 201 shape the free-address branch does, so
+      signup still discloses nothing about who has an account.
+
+    A **verified** address is ``email_taken``, unchanged: that mailbox has been
+    proven, and letting a stranger overwrite its password hash would be an account
+    takeover with an extra step.
+    """
     address = _validated_email(email)
     secret = _validated_password(password)
-    if account_by_email(db, address) is not None:
-        raise ApiError("email_taken", "an account with this email exists", status_code=409)
+    existing = account_by_email(db, address)
+    if existing is not None:
+        if existing.verification_pending_since is None:
+            raise ApiError(
+                "email_taken", "an account with this email exists", status_code=409
+            )
+        existing.password_hash = passwords.hash_password(secret)
+        # A new signup restarts the clock on how long this address has been
+        # pending; the column doubles as that age.
+        existing.verification_pending_since = utcnow()
+        db.flush()
+        return existing
 
-    account = Account(email=address, password_hash=passwords.hash_password(secret))
+    account = Account(
+        email=address,
+        password_hash=passwords.hash_password(secret),
+        verification_pending_since=utcnow(),
+    )
     db.add(account)
     try:
         db.flush()
@@ -326,7 +433,20 @@ def delete_account(db: Session, account: Account) -> None:
 # sessions
 # ---------------------------------------------------------------------------
 def start_session(db: Session, account: Account, settings: Settings) -> str:
-    """Mint a session for ``account`` and return the raw token for the cookie."""
+    """Mint a session for ``account`` and return the raw token for the cookie.
+
+    **Refuses an unverified account**, and does so by raising rather than by
+    returning a code: no route can reach this state (login branches before it,
+    :func:`verify_code` and :func:`confirm_reset` clear the column first), so
+    reaching it is a *programming* error — a new route that forgot the gate — and
+    the loudest possible failure is the correct one. This is the single
+    enforcement point for ``P13``'s hard gate: nothing else has to remember it.
+    """
+    if account.verification_pending_since is not None:
+        raise RuntimeError(
+            "refusing to start a session for an unverified account "
+            f"(id={account.id}) — the 가입 인증 gate was bypassed"
+        )
     now = utcnow()
     # A login is a write already, so it is the cheapest honest place to drop this
     # account's dead rows. No background job, no growth without bound.
@@ -470,12 +590,237 @@ def confirm_reset(
 
     account = grant.account
     account.password_hash = passwords.hash_password(secret)
+    # A completed reset **is** proof of the mailbox — the token only ever arrived
+    # in it — so it verifies an account that never finished 가입 인증 (``P13``).
+    # Without this a reader who reset instead of verifying would be locked out by
+    # a gate they had already satisfied, and :func:`start_session` two lines below
+    # would refuse them.
+    account.verification_pending_since = None
     grant.used_at = utcnow()
     # Whoever was logged in before the password changed no longer is: a reset is
     # what a reader does when they suspect someone else has the old one.
     revoke_sessions(db, account)
     db.flush()
     return account
+
+
+# ---------------------------------------------------------------------------
+# 가입 인증 — the 6-digit code grant (P13)
+# ---------------------------------------------------------------------------
+def live_verification(db: Session, account: Account) -> EmailVerification | None:
+    """This account's usable code grant, or ``None``. **Looked up by account.**
+
+    Never by digest: a 6-digit code has 10^6 values, so two accounts can hold the
+    same digest under the same pepper, and a digest lookup would then verify the
+    wrong reader. The code is only meaningful *with* the address — which is why
+    :func:`verify_code` checks the password before it looks at the code at all.
+
+    "Live" is one predicate with three ways to be false, and every caller uses
+    this one: unspent (``used_at IS NULL``), unexpired, and under the attempt cap.
+    A row at the cap is dead exactly like an expired one — that is what makes
+    :data:`VERIFICATION_MAX_ATTEMPTS` a cap rather than a suggestion.
+    """
+    return db.scalars(
+        select(EmailVerification)
+        .where(
+            EmailVerification.account_id == account.id,
+            EmailVerification.used_at.is_(None),
+            EmailVerification.expires_at > utcnow(),
+            EmailVerification.attempts < VERIFICATION_MAX_ATTEMPTS,
+        )
+        .order_by(EmailVerification.created_at.desc())
+    ).first()
+
+
+def _stored_utc(moment: datetime | None) -> datetime | None:
+    """A timestamp as an **aware** UTC value, whichever database it came back from.
+
+    Postgres (the real target) returns ``DateTime(timezone=True)`` as aware;
+    SQLite — the test engine — returns the same column naive, and subtracting one
+    from :func:`~mijual.db.models.utcnow` is a ``TypeError`` rather than a wrong
+    answer. A naive stored value is read as UTC, the same convention
+    :func:`mijual.web.clock.to_kst` states for exactly this reason: naive
+    datetimes here come from the database, never from a wall clock.
+    """
+    if moment is None or moment.tzinfo is not None:
+        return moment
+    return moment.replace(tzinfo=timezone.utc)
+
+
+def _last_issued_at(db: Session, account: Account) -> datetime | None:
+    """When this account was last mailed a code — live or not. The cooldown's clock."""
+    return _stored_utc(
+        db.scalars(
+            select(EmailVerification.created_at)
+            .where(EmailVerification.account_id == account.id)
+            .order_by(EmailVerification.created_at.desc())
+        ).first()
+    )
+
+
+def issue_verification(
+    db: Session,
+    account: Account,
+    *,
+    settings: Settings,
+    mailer: Mailer,
+    force: bool,
+) -> tuple[bool, EmailVerification | None]:
+    """Make sure a code is out there, and say whether this call mailed one.
+
+    Returns ``(sent, grant)``: ``sent`` is whether a mail left the building, and
+    ``grant`` is the code that is currently valid — the fresh one, the live one
+    that was already out, or ``None`` when there is none and none may be issued
+    yet. Both callers-of-record answer ``expires_at`` from ``grant``.
+
+    ``force`` is the difference between the two ways a caller can want a code:
+
+    * ``force=False`` — 로그인 on an unverified account: *ensure* one exists. A
+      live code is left alone however old it is, so logging in seconds after 가입
+      does not send a second mail, and a reader returning an hour later (the code
+      long expired) gets a working one without having to find 재전송.
+    * ``force=True`` — 가입 on an unverified address, and 재전송: *replace* the
+      live one. Superseding is what keeps a mailbox from accumulating several
+      working keys to one account.
+
+    **The cooldown outranks ``force``.** Nothing here mails twice inside
+    :data:`VERIFICATION_RESEND_COOLDOWN` of the last mail, because the sender of
+    these mails is not necessarily their recipient: 재전송 and re-signup both take
+    an address, and an unthrottled one aims this product at any mailbox. Under the
+    cooldown the live code simply stands and ``sent`` is ``False`` — a state, not
+    an error.
+
+    The row holds a **digest**, and the code itself exists in exactly two places:
+    the local variable below, and the mail. It is never returned, logged, or put
+    in a response body — proving the mailbox is the entire point of the gate.
+    """
+    live = live_verification(db, account)
+    if live is not None and not force:
+        return False, live
+
+    last_issued = _last_issued_at(db, account)
+    if last_issued is not None and utcnow() - last_issued < VERIFICATION_RESEND_COOLDOWN:
+        # Too soon. The live code (if any) stands; if the cap or a spend killed it,
+        # `grant` is None and the caller answers a `verification` block with no
+        # `expires_at` — absent, never a stand-in for a code that does not exist.
+        return False, live
+
+    # Last issue wins: two live codes in one mailbox is two keys to one account.
+    db.execute(
+        delete(EmailVerification).where(
+            EmailVerification.account_id == account.id,
+            EmailVerification.used_at.is_(None),
+        )
+    )
+    code = new_code()
+    expires_at = utcnow() + VERIFICATION_LIFETIME
+    grant = EmailVerification(
+        account_id=account.id,
+        code_digest=token_digest(code, settings),
+        expires_at=expires_at,
+    )
+    db.add(grant)
+    db.flush()
+    mailer.send(
+        Message(
+            to=account.email,
+            kind=SIGNUP_VERIFICATION,
+            data={"code": code, "expires_at": clock.iso(expires_at)},
+        )
+    )
+    return True, grant
+
+
+def verification_payload(
+    email: str, grant: EmailVerification | None
+) -> dict[str, Any]:
+    """What a surface is told about a pending 인증: the address, and the deadline.
+
+    ``expires_at`` is **absent when there is no live grant** rather than ``null``
+    — the contract's rule for a fact that does not exist (`states-and-trust` §4),
+    and the panel reads its absence as "there is no code to type right now"
+    instead of rendering a countdown to nothing. The address is echoed back
+    **normalized**, because it is the one the mail actually went to and the panel
+    prints it in its intro line — it takes the address rather than the account so
+    that 재전송, which has already authenticated, need not look the row up again.
+    """
+    payload: dict[str, Any] = {"email": email}
+    if grant is not None:
+        payload["expires_at"] = clock.iso(grant.expires_at)
+    return payload
+
+
+def verify_code(
+    db: Session, *, email: str, password: str, code: str, settings: Settings
+) -> Account:
+    """인증. **Password first, then the code** — and the order is the security.
+
+    Checking the password through :func:`authenticate` (so a miss burns a hash and
+    answers ``invalid_credentials``, byte for byte as 로그인 does) means the one
+    who verifies is the one who chose the password. That closes the pending-signup
+    race: a second 가입 on an unverified address replaces the hash, so without this
+    check a stranger could sit on somebody's half-finished signup and wait for the
+    mailbox's owner to type the code they were mailed.
+
+    **An already-verified account with the right password is a login.** A correct
+    password proves everything the code was ever asked to prove, and inventing a
+    failure here would strand a reader who pressed 확인 twice, or who verified in
+    another tab.
+
+    Two failure codes, and the difference matters to the panel: a wrong code
+    against a live grant is ``verification_code_invalid`` (try again — the counter
+    moved), and **no live grant at all** is ``verification_code_expired`` (재전송
+    is the way forward). Expired, spent, never issued, and killed-by-this-very-
+    attempt are one code, because they are one state: there is nothing to type.
+
+    **Any wrong value costs an attempt, including one that is not six digits.** A
+    value that cannot be the code is simply not the code; exempting malformed
+    input would add a branch whose only observable effect is a cheaper guess, and
+    the panel gates an empty field before it ever posts.
+    """
+    account = authenticate(db, email=email, password=password)
+    if account.verification_pending_since is None:
+        return account
+
+    grant = live_verification(db, account)
+    if grant is None:
+        raise ApiError("verification_code_expired", "no live verification code")
+
+    submitted = (code or "").strip()
+    if not hmac.compare_digest(grant.code_digest, token_digest(submitted, settings)):
+        grant.attempts += 1
+        db.flush()
+        if grant.attempts >= VERIFICATION_MAX_ATTEMPTS:
+            # That increment just killed the grant, so the honest answer is the
+            # state the reader is now in, not the one they were in a moment ago.
+            raise ApiError("verification_code_expired", "no live verification code")
+        raise ApiError("verification_code_invalid", "verification code is wrong")
+
+    grant.used_at = utcnow()
+    account.verification_pending_since = None  # NULL means verified
+    db.flush()
+    return account
+
+
+def resend_verification(
+    db: Session, *, email: str, password: str, settings: Settings, mailer: Mailer
+) -> tuple[bool, EmailVerification | None]:
+    """재전송. Password required, so it cannot be pointed at a stranger's mailbox.
+
+    Returns ``(resent, grant)``. ``resent=False`` is a **state, not an error**:
+    the cooldown has not elapsed and the code already in the mailbox is still the
+    one to type. The panel has one honest line for that, and no timer.
+
+    An already-verified account answers ``(False, None)`` rather than 400: it is
+    the same reasoning as :func:`verify_code`'s already-verified branch, and the
+    caller who somehow got here has nothing to wait for.
+    """
+    account = authenticate(db, email=email, password=password)
+    if account.verification_pending_since is None:
+        return False, None
+    return issue_verification(
+        db, account, settings=settings, mailer=mailer, force=True
+    )
 
 
 # ---------------------------------------------------------------------------

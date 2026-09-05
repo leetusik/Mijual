@@ -1,18 +1,32 @@
-"""계정 만들기 · 로그인 · 로그아웃 · 세션 확인 · 재설정 · 계정 삭제.
+"""계정 만들기 · 가입 인증 · 로그인 · 로그아웃 · 세션 확인 · 재설정 · 계정 삭제.
 
 The transport half of :mod:`mijual.web.auth`, which holds every decision. The
 route map, so ``P5.S15``'s panel and ``P5.S10``'s client can hard-code it:
 
-===========================  ==============================================
-``POST /auth/signup``        email + password → account + session (201)
-``POST /auth/login``         → session. One failure code, never a field
-``POST /auth/logout``        immediate; the session row is deleted
-``GET  /auth/me``            who am I — ``{authenticated: bool, account?}``
-``POST /auth/reset/request`` always the same answer (가입 여부 비노출)
-``POST /auth/reset/confirm`` token + new password → new session
-``PATCH /auth/account``      수신 주소 변경 (``P5.S8``) — the email *is* the account
-``DELETE /auth/account``     the email is gone now, and the session with it
-===========================  ==============================================
+============================  =============================================
+``POST /auth/signup``         email + password → **unverified account, a
+                              mailed code, and no session** (201)
+``POST /auth/verify``         email + password + code → session
+``POST /auth/verify/resend``  a fresh code, under a cooldown
+``POST /auth/login``          → session, **or** ``verification_required``.
+                              One failure code, never a field
+``POST /auth/logout``         immediate; the session row is deleted
+``GET  /auth/me``             who am I — ``{authenticated: bool, account?}``
+``POST /auth/reset/request``  always the same answer (가입 여부 비노출)
+``POST /auth/reset/confirm``  token + new password → new session (and it
+                              **verifies**: the mailbox is proven)
+``PATCH /auth/account``       수신 주소 변경 (``P5.S8``) — the email *is* the account
+``DELETE /auth/account``      the email is gone now, and the session with it
+============================  =============================================
+
+**``P13`` made 가입 a hard gate, and the shape of that is two response shapes
+where there was one.** 계정 만들기 no longer logs anybody in — it answers
+``{"verification": {"email", "expires_at"?}}`` and sets no cookie — and 로그인 on
+an unverified account answers ``{"verification_required": true, "verification":
+{…}}`` with no cookie either, rather than 401: the password was right, and telling
+that reader "틀렸습니다" would be a lie. Both routes land the panel in the same
+code-entry state, which is why both carry the identical ``verification`` block.
+``expires_at`` is **absent** (never ``null``) when no live code exists.
 
 **Every route here writes except ``/auth/me``**, so every route here except
 ``/auth/me`` takes :data:`~mijual.web.deps.WriteSession` — the first committing
@@ -60,6 +74,24 @@ class EmailOnly(BaseModel):
     email: str = Field(max_length=320)
 
 
+class VerifyCode(BaseModel):
+    """가입 인증 input: the credentials **and** the code.
+
+    The password travels with the code on purpose (see
+    :func:`mijual.web.auth.verify_code`): it is what makes the reader who
+    verifies the reader who signed up. The panel holds both fields in state
+    across the transition into the code step, on both routes into it.
+
+    ``max_length`` is generous rather than exactly six: a length mismatch is not
+    a validation error with English ``fields``, it is simply a wrong code, and it
+    is answered with the same structural code every other wrong code gets.
+    """
+
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=1024)
+    code: str = Field(max_length=16)
+
+
 class ResetConfirm(BaseModel):
     token: str = Field(max_length=256)
     password: str = Field(max_length=1024)
@@ -73,18 +105,79 @@ def _mailer(request: Request) -> Mailer:
     return request.app.state.mailer
 
 
-@router.post("/auth/signup", status_code=201, summary="계정 만들기")
+@router.post("/auth/signup", status_code=201, summary="계정 만들기 (인증번호 발송)")
 def signup(
     request: Request,
-    response: Response,
     db: WriteSession,
     body: Annotated[Credentials, Body()],
 ) -> dict[str, Any]:
+    """Creates an **unverified** account, mails a code, and opens **no session**.
+
+    There is no ``Response`` parameter any more, which is the point: this route
+    cannot set a cookie because it has nothing to set one from. The account
+    exists, and it cannot be used until the code lands.
+
+    A free address and an address held by an unverified account produce the
+    **identical** body — see :func:`mijual.web.auth.create_account` — so 가입
+    still discloses nothing about who has an account. A **verified** address is
+    ``409 email_taken``, exactly as in P5.
+    """
     settings = _settings(request)
     account = auth.create_account(db, email=body.email, password=body.password)
+    _sent, grant = auth.issue_verification(
+        db, account, settings=settings, mailer=_mailer(request), force=True
+    )
+    return {"verification": auth.verification_payload(account.email, grant)}
+
+
+@router.post("/auth/verify", summary="가입 인증 (6자리 인증번호)")
+def verify(
+    request: Request,
+    response: Response,
+    db: WriteSession,
+    body: Annotated[VerifyCode, Body()],
+) -> dict[str, Any]:
+    """The code that was mailed → a verified account and a session.
+
+    Two failure codes, and the panel needs both: ``verification_code_invalid``
+    (wrong code, the one in the mailbox still works) and
+    ``verification_code_expired`` (there is nothing live to type — 재전송). A wrong
+    password is ``invalid_credentials``, the same answer 로그인 gives.
+    """
+    settings = _settings(request)
+    account = auth.verify_code(
+        db,
+        email=body.email,
+        password=body.password,
+        code=body.code,
+        settings=settings,
+    )
     token = auth.start_session(db, account, settings)
     auth.set_session_cookie(response, token, settings)
     return {"account": auth.account_payload(account)}
+
+
+@router.post("/auth/verify/resend", summary="인증번호 재전송 (쿨다운)")
+def verify_resend(
+    request: Request, db: WriteSession, body: Annotated[Credentials, Body()]
+) -> dict[str, Any]:
+    """재전송. ``{"resent": bool, "verification": {…}}`` — and ``false`` is not an error.
+
+    ``resent: false`` means the cooldown has not elapsed and the code already in
+    the mailbox is still the one to type. It is a state the panel has an honest
+    line for, so it is a 200 with a boolean rather than a 429 with a timer.
+    """
+    resent, grant = auth.resend_verification(
+        db,
+        email=body.email,
+        password=body.password,
+        settings=_settings(request),
+        mailer=_mailer(request),
+    )
+    # The address is the normalized one: `resend_verification` authenticated it,
+    # so this is the account's own spelling and the one the mail went to.
+    payload = auth.verification_payload(auth.normalize_email(body.email), grant)
+    return {"resent": resent, "verification": payload}
 
 
 @router.post("/auth/login", summary="로그인")
@@ -96,6 +189,19 @@ def login(
 ) -> dict[str, Any]:
     settings = _settings(request)
     account = auth.authenticate(db, email=body.email, password=body.password)
+    if account.verification_pending_since is not None:
+        # The password was right, so this is not a failure — it is the code step.
+        # A fresh code goes out only when none is live (and never inside the
+        # cooldown), so a reader who logs in seconds after 가입 gets no second
+        # mail and one who comes back tomorrow gets a working code without
+        # having to find 재전송.
+        _sent, grant = auth.issue_verification(
+            db, account, settings=settings, mailer=_mailer(request), force=False
+        )
+        return {
+            "verification_required": True,
+            "verification": auth.verification_payload(account.email, grant),
+        }
     token = auth.start_session(db, account, settings)
     auth.set_session_cookie(response, token, settings)
     return {"account": auth.account_payload(account)}
@@ -152,6 +258,10 @@ def reset_confirm(
     They just proved control of the mailbox and chose the password, so sending
     them back to the login panel to type it again would be ceremony. Every
     session that existed before this call is already gone.
+
+    ``P13``: the same reasoning **verifies** an account that never finished 가입
+    인증 — the token only ever arrived in that mailbox, so the gate has been
+    satisfied by another route. The shape of this response is unchanged.
     """
     settings = _settings(request)
     account = auth.confirm_reset(

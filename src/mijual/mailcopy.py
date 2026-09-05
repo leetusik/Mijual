@@ -7,7 +7,7 @@ module is a transcription with a citation per line, it is the *only* place in th
 backend that spells a sentence a reader will read, and a string with no citation
 does not belong in it.
 
-Two provenances appear below and they are not the same thing:
+Three provenances appear below and they are not the same thing:
 
 * **signed** — R5's build prompt (``docs/reference/design/rounds/05-account/
   output/build-prompt.md`` § 알림) and its round record § *Proposed copy → Notify*
@@ -19,6 +19,10 @@ Two provenances appear below and they are not the same thing:
   the operator **literally, at the P4 acceptance gate** — the route `intent.md`
   fixes for new Korean copy in this phase ("the phase drafts them; the operator
   approves the exact strings at the gate, not through a design round").
+* **drafted P13 — approved literally at the P13 gate** — the 가입 인증 mail. P13
+  adds a hard email-verification gate at 가입 and no design round with it, so its
+  strings take the same route ``P4.S2`` took: drafted here, listed verbatim in
+  the acceptance walkthrough, approved by the operator literally.
 
 **One re-signature, by operator decision.** R5's subject reads ``[미주알] …``.
 The 2026-09-02 operator answer to D23 (`intent.md` § *Clarifications Resolved*)
@@ -31,10 +35,15 @@ nowhere, including in the 보기 link's sentence.
   this module: no format string takes one, and the 발행가 line states a *state*
   (확정 / 확정 전 + 확정 예정일), never a figure. ②/③ carry no price line at all
   because neither type has a price fact to state.
-* **알림 외 메일 금지.** Two kinds exist — the deadline alert the reader
-  configured and the password reset they asked for. There is no third renderer
-  here, and adding a marketing or digest template would be visible as exactly
-  that: a new function in this file.
+* **알림 외 메일 금지. Three kinds exist, and the third was added in a diff.**
+  마감 알림 (the deadline alert the reader configured) · 비밀번호 재설정 (the reset
+  they asked for) · 가입 인증 (``P13``'s 6-digit code, which the reader asked for
+  by pressing 계정 만들기). Every one of the three is a mail a reader *initiated*;
+  none is sent to them because somebody decided they should hear from us. The
+  rule has not been loosened — what it forbids is a marketing or digest
+  template, and adding one would still be visible as exactly what it is: a new
+  function in this file, in a diff, in a review. The count in this sentence is
+  the guard, so it is written out rather than left implied.
 * **D-표기 and 마감명 are reused verbatim, never re-spelled.** ``dday`` is
   :attr:`mijual.calc.DDay.label` as the API served it (so 당일 reads ``D-DAY``,
   as the board does) and ``label_ko`` is
@@ -55,10 +64,13 @@ __all__ = [
     "DEADLINE_SUBJECT_TEMPLATE",
     "PRODUCT_NAME",
     "RESET_SUBJECT",
+    "SIGNUP_VERIFICATION_SUBJECT",
     "deadline_body",
     "deadline_subject",
     "password_reset_body",
     "password_reset_subject",
+    "signup_verification_body",
+    "signup_verification_subject",
 ]
 
 #: The product's name. Re-signed from 미주알 by operator decision (D23,
@@ -106,6 +118,22 @@ RESET_SUBJECT = "[{product}] 비밀번호 재설정"
 RESET_INTRO = "비밀번호 재설정 링크입니다. 아래 주소를 열어 새 비밀번호를 설정해 주세요."
 RESET_EXPIRY = "이 링크는 {expires_at}까지 사용할 수 있습니다."
 RESET_IGNORE = "요청하지 않으셨다면 이 메일을 무시해 주세요. 비밀번호는 그대로입니다."
+
+#: 가입 인증 메일 — **drafted P13 — approved literally at the P13 gate**, all four
+#: lines. No design round wrote them (`intent.md`: the phase extends the signed
+#: R5/R12 auth vocabulary and the operator approves the exact strings at the
+#: gate). Its four obligations are the reset mail's, one of them changed: say
+#: what it is, **carry the number itself** (there is no link in this mail — the
+#: reader types the code into the panel they already have open), say how long it
+#: lives, and tell somebody who did not ask that they may ignore it. The ignore
+#: line states what happens if they do nothing, and it is true: an unverified
+#: account cannot log in, and the address is re-takeable by a later 가입.
+SIGNUP_VERIFICATION_SUBJECT = "[{product}] 가입 인증번호"
+SIGNUP_VERIFICATION_INTRO = "가입 인증번호입니다. 아래 6자리 숫자를 입력해 주세요."
+SIGNUP_VERIFICATION_EXPIRY = "이 번호는 {expires_at}까지 사용할 수 있습니다."
+SIGNUP_VERIFICATION_IGNORE = (
+    "요청하지 않으셨다면 이 메일을 무시해 주세요. 인증하지 않으면 계정은 사용되지 않습니다."
+)
 
 _RULE = "—" * 24
 
@@ -204,6 +232,30 @@ def password_reset_body(data: Mapping[str, str]) -> str:
     if expires_at:
         lines.append(RESET_EXPIRY.format(expires_at=kst_stamp(expires_at)))
     lines.append(RESET_IGNORE)
+    return "\n".join(lines) + "\n"
+
+
+def signup_verification_subject(data: Mapping[str, str] | None = None) -> str:
+    return SIGNUP_VERIFICATION_SUBJECT.format(product=PRODUCT_NAME)
+
+
+def signup_verification_body(data: Mapping[str, str]) -> str:
+    """The 6-digit code on its own line, its validity in KST, and permission to ignore.
+
+    The code is given a line of its own with nothing else on it because that is
+    the line the reader copies or reads aloud to themselves while typing. It is a
+    **string** everywhere — ``mijual.web.auth.new_code`` keeps the leading zeros
+    — so it is never reformatted here, spaced, or grouped: 「012345」 must arrive
+    as the six characters the panel will compare.
+    """
+    lines = [SIGNUP_VERIFICATION_INTRO, ""]
+    code = _get(data, "code")
+    if code:
+        lines.extend([code, ""])
+    expires_at = _get(data, "expires_at")
+    if expires_at:
+        lines.append(SIGNUP_VERIFICATION_EXPIRY.format(expires_at=kst_stamp(expires_at)))
+    lines.append(SIGNUP_VERIFICATION_IGNORE)
     return "\n".join(lines) + "\n"
 
 

@@ -62,6 +62,7 @@ __all__ = [
     "ConversationTurn",
     "Corp",
     "CorrectionKind",
+    "EmailVerification",
     "Event",
     "Extraction",
     "ExtractionCall",
@@ -762,6 +763,20 @@ class Account(Base):
     Email is stored **normalized** (see :func:`mijual.web.auth.normalize_email`)
     and only in that form: the address a reader typed is not additionally kept,
     because two spellings of one identity are two things to leak.
+
+    **``P13`` added one column, deliberately, and it is account *state* — not
+    PII.** :attr:`verification_pending_since` says whether this account has ever
+    proven control of its own mailbox, and **NULL means verified**. It is a fact
+    about the account's own credential, in the same family as
+    ``password_hash``; it is not a name, not an identity, and not an activity
+    trail — it is written once at 가입 and cleared once at 인증, and no read ever
+    touches it. The must-stay-absent list above is unchanged by it.
+
+    That the column is nullable **with no default** is what makes P13's
+    grandfathering a property of the schema rather than a migration somebody
+    runs: :func:`mijual.db.schema_sync.ensure_columns` adds it as NULL to every
+    existing row, and NULL is verified. There is no backfill step because there
+    is nothing to back-fill.
     """
 
     __tablename__ = "account"
@@ -779,11 +794,22 @@ class Account(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
+    #: **NULL means verified.** Set to :func:`utcnow` **in the body of**
+    #: :func:`mijual.web.auth.create_account` — never as a column ``default``,
+    #: which :func:`mijual.db.schema_sync.ensure_columns` refuses — and cleared
+    #: back to ``NULL`` by 인증 and by a completed password reset (both prove the
+    #: mailbox). It doubles as the age of a pending signup; nothing sweeps on it.
+    verification_pending_since: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     sessions: Mapped[list["AuthSession"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
     resets: Mapped[list["PasswordReset"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+    verifications: Mapped[list["EmailVerification"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
     holdings: Mapped[list["Holding"]] = relationship(
@@ -878,6 +904,61 @@ class PasswordReset(Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<PasswordReset account={self.account_id} used={self.used_at is not None}>"
+
+
+class EmailVerification(Base):
+    """A single-use, expiring **6-digit** signup code, addressed by account.
+
+    ``P13``'s grant. It is :class:`PasswordReset` with three deliberate
+    differences, and each one follows from the secret being short:
+
+    * **No ``UniqueConstraint`` on ``code_digest``, and the lookup is by
+      ``account_id`` — never by digest.** A reset token is 256 bits and is
+      addressed *by itself*; a 6-digit code has 10^6 values, so two accounts can
+      legitimately hold the same digest under the same pepper. A unique
+      constraint would turn that collision into a 500 at 가입 time. The code is
+      only ever meaningful **with** the address, which is why
+      :func:`mijual.web.auth.verify_code` checks the password first.
+    * **An ``attempts`` counter.** A 6-digit code is guessable at scale in a way
+      a token is not, so a wrong code costs an attempt and a row at
+      :data:`mijual.web.auth.VERIFICATION_MAX_ATTEMPTS` is **not live** — the
+      same lookup predicate that rejects expired and spent rows. This is a
+      per-row counter, not cross-process login rate limiting.
+    * **A resend cooldown**, read from :attr:`created_at`
+      (:data:`mijual.web.auth.VERIFICATION_RESEND_COOLDOWN`). Without one,
+      재전송 — and re-signup on an unverified address — is a mail-bomb aimed at
+      any mailbox its owner never asked about.
+
+    Everything else is copied from :class:`PasswordReset` exactly: the row holds
+    a **digest, never the code** (keyed with ``MIJUAL_SESSION_SECRET`` through
+    :func:`mijual.web.auth.token_digest`, so rotating that secret kills every
+    outstanding code), ``expires_at`` bounds it, ``used_at`` makes it single-use,
+    and a fresh issue supersedes the unused rows rather than adding a second live
+    key.
+    """
+
+    __tablename__ = "email_verification"
+    __table_args__ = (Index("ix_email_verification_account", "account_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("account.id", ondelete="CASCADE"), nullable=False
+    )
+    #: The digest of the 6-digit code. **Not unique** — see the class docstring.
+    code_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: Wrong codes entered against this row. At the cap the row stops being live.
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    account: Mapped[Account] = relationship(back_populates="verifications")
+
+    def __repr__(self) -> str:  # pragma: no cover - never log the code or digest
+        return (
+            f"<EmailVerification account={self.account_id} "
+            f"used={self.used_at is not None} attempts={self.attempts}>"
+        )
 
 
 # ---------------------------------------------------------------------------
