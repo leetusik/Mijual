@@ -473,7 +473,6 @@ export function Portfolio({
         sharesOf={(row) => sharesFor(row.corp_code, row.shares)}
         claimedOf={claimedOf}
         onClaim={claim}
-        claimCaption={mode === "sample" ? "local" : "account"}
         busy={busy}
       />
 

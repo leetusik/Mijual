@@ -826,10 +826,6 @@ html[data-mj-carry-kind="session"] .carrySlot:empty {
   gap: 0 var(--space-5);
 }
 
-.claimCaption {
-  grid-column: 2 / -1;
-}
-
 .claimLabel {
   display: inline-flex;
   align-items: center;
@@ -871,6 +867,24 @@ html[data-mj-carry-kind="session"] .carrySlot:empty {
 }
 
 .detailLink:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* 종목 이름은 그 항목의 상세로 가는 링크다 — 보유 종목 행은 /stocks/{corp_code},
+   D-day 행은 /events/{rcept_no}. 이름의 서체·색은 그대로이고, hover 밑줄과 focus
+   ring만 더한다 (operator, 2026-09-06: no special design, just linked). */
+.nameLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.nameLink:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -1189,8 +1203,7 @@ html[data-mj-carry-kind="session"] .carrySlot:empty {
   .rowBody,
   .dependency,
   .lapsed,
-  .claim,
-  .claimCaption {
+  .claim {
     grid-column: 1 / -1;
   }
 

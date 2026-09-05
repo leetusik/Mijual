@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { CraftPanel, DDay, RightsChip, StateBadge } from "@/components";
 import { count } from "@/lib/format";
 import { parseShares } from "@/lib/holding";
+import { stockPath } from "@/lib/routes";
 import type { PortfolioHolding } from "@/lib/types";
 import {
   CANCEL_KO,
@@ -146,7 +148,11 @@ export function Holdings({
             // rule is emitted at all.
             <li key={row.corp_code} className={styles.holdingRow} data-corp={row.corp_code}>
               <div className={styles.holdingStock}>
-                <p className={styles.holdingName}>{row.corp_name ?? row.corp_code}</p>
+                <p className={styles.holdingName}>
+                  <Link className={styles.nameLink} href={stockPath(row.corp_code)}>
+                    {row.corp_name ?? row.corp_code}
+                  </Link>
+                </p>
                 {/* 종목코드, at the canon's `.phmeta` tier. The R13 cards omit it
                     because the design walk's payload did not carry one (Q46 = a);
                     a served value is not an absent one. */}

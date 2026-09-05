@@ -6,12 +6,10 @@ import { Conversion, Dilution } from "@/components/lookup";
 import { perHoldingCaption, perHoldingColumnKo } from "@/components/lookup/copy";
 import { count, won } from "@/lib/format";
 import { convert } from "@/lib/holding";
-import { stockPath } from "@/lib/routes";
+import { eventPath, stockPath } from "@/lib/routes";
 import type { RightsRow } from "@/lib/types";
 import {
   CLAIMED_LABEL_KO,
-  CLAIM_CAPTION_ACCOUNT_KO,
-  CLAIM_CAPTION_LOCAL_KO,
   CLAIM_CHECK_KO,
   MISSED_DETAIL_KO,
   MISSED_LABEL_KO,
@@ -88,7 +86,6 @@ export function Deadlines({
   sharesOf,
   claimedOf,
   onClaim,
-  claimCaption,
   busy,
 }: {
   reference: string;
@@ -98,7 +95,6 @@ export function Deadlines({
   /** `null` where the mark does not apply to this row. */
   claimedOf: (row: RightsRow) => boolean | null;
   onClaim: (row: RightsRow, claimed: boolean) => void;
-  claimCaption: "account" | "local";
   busy: boolean;
 }) {
   // No rows at all — a sample the reader has emptied, or an account with no
@@ -122,7 +118,6 @@ export function Deadlines({
         sharesOf={sharesOf}
         claimedOf={claimedOf}
         onClaim={onClaim}
-        claimCaption={claimCaption}
         busy={busy}
       />
       <Section
@@ -133,7 +128,6 @@ export function Deadlines({
         sharesOf={sharesOf}
         claimedOf={claimedOf}
         onClaim={onClaim}
-        claimCaption={claimCaption}
         busy={busy}
       />
     </div>
@@ -148,7 +142,6 @@ function Section({
   sharesOf,
   claimedOf,
   onClaim,
-  claimCaption,
   busy,
 }: {
   title: string;
@@ -161,7 +154,6 @@ function Section({
   sharesOf: (row: RightsRow) => number | null;
   claimedOf: (row: RightsRow) => boolean | null;
   onClaim: (row: RightsRow, claimed: boolean) => void;
-  claimCaption: "account" | "local";
   busy: boolean;
 }) {
   // A section with no rows states nothing: R5 signs no empty-section sentence,
@@ -183,7 +175,6 @@ function Section({
               shares={sharesOf(row)}
               claimed={claimedOf(row)}
               onClaim={onClaim}
-              claimCaption={claimCaption}
               busy={busy}
             />
           ))}
@@ -199,7 +190,6 @@ function DeadlineRow({
   shares,
   claimed,
   onClaim,
-  claimCaption,
   busy,
 }: {
   row: RightsRow;
@@ -207,7 +197,6 @@ function DeadlineRow({
   shares: number | null;
   claimed: boolean | null;
   onClaim: (row: RightsRow, claimed: boolean) => void;
-  claimCaption: "account" | "local";
   busy: boolean;
 }) {
   const countdown = row.countdown;
@@ -220,7 +209,15 @@ function DeadlineRow({
         <RightsChip rightsType={row.rights_type} compact />
       </span>
 
-      <p className={styles.rowName}>{row.corp_name ?? row.corp_code}</p>
+      <p className={styles.rowName}>
+        {row.rcept_no ? (
+          <Link className={styles.nameLink} href={eventPath(row.rcept_no)}>
+            {row.corp_name ?? row.corp_code}
+          </Link>
+        ) : (
+          row.corp_name ?? row.corp_code
+        )}
+      </p>
 
       <p className={styles.rowLabel}>{countdown.label_ko}</p>
 
@@ -281,7 +278,6 @@ function DeadlineRow({
           shares={shares}
           claimed={claimed}
           onClaim={onClaim}
-          claimCaption={claimCaption}
           busy={busy}
         />
       ) : null}
@@ -297,6 +293,10 @@ function DeadlineRow({
  * > **챙긴 돈 체크 (R5-8)**: 체크박스 "청약·매도로 챙겼습니다". 체크 → 라벨
  * > 놓친 돈 → 챙긴 돈, 금액 동일(「추정」 유지), alert → live, 캡션 "본인 표시 ·
  * > 계정에 저장". 사용자 주장 표시 — 공시 데이터와 혼동 금지(집계·통계에 미반영).
+ *
+ * The caption (「본인 표시 · 계정에 저장」 / 「본인 표시」) was **removed** on the
+ * operator's instruction (2026-09-06, standalone change); the check itself is
+ * unchanged.
  *
  * The amount is `lib/holding.ts`'s conversion of **this holding's** count against
  * the served 소멸 factors — the same call 조회's breakdown row makes, so the two
@@ -319,23 +319,18 @@ function DeadlineRow({
  *   (`.lapsedLine` `min-height`, 32px desktop / 44px ≤767). A conditional render
  *   that collapses a line is a flicker; the measurement this round asks for is a
  *   **0px** move on check.
- * - **The caption is not conditional** (finding 5). 본인 표시 is the checkbox's own
- *   rule about what the mark is, not a result of ticking it; rendering it only
- *   when checked moved 22.6px on every click.
  */
 function LapsedMoney({
   row,
   shares,
   claimed,
   onClaim,
-  claimCaption,
   busy,
 }: {
   row: RightsRow;
   shares: number | null;
   claimed: boolean | null;
   onClaim: (row: RightsRow, claimed: boolean) => void;
-  claimCaption: "account" | "local";
   busy: boolean;
 }) {
   const lapse = row.lapse;
@@ -395,25 +390,20 @@ function LapsedMoney({
           this browser addresses. The control line carries the checkbox and
           nothing else — Q-B moved the link up into the money line. */}
       {reportNo ? (
-        <>
-          <div className={styles.claim}>
-            <label className={styles.claimLabel}>
-              {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
-              <input
-                suppressHydrationWarning
-                type="checkbox"
-                className={styles.claimBox}
-                checked={checked}
-                disabled={busy}
-                onChange={(event) => onClaim(row, event.target.checked)}
-              />
-              {CLAIM_CHECK_KO}
-            </label>
-          </div>
-          <p className={`${styles.caption} ${styles.claimCaption}`}>
-            {claimCaption === "account" ? CLAIM_CAPTION_ACCOUNT_KO : CLAIM_CAPTION_LOCAL_KO}
-          </p>
-        </>
+        <div className={styles.claim}>
+          <label className={styles.claimLabel}>
+            {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
+            <input
+              suppressHydrationWarning
+              type="checkbox"
+              className={styles.claimBox}
+              checked={checked}
+              disabled={busy}
+              onChange={(event) => onClaim(row, event.target.checked)}
+            />
+            {CLAIM_CHECK_KO}
+          </label>
+        </div>
       ) : null}
     </>
   );
