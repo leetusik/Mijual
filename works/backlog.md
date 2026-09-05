@@ -6,9 +6,9 @@
 ## Pointer
 
 - Current phase: `P13`
-- Current slice: `P13.S3`
-- Next slice: `P13.REVIEW`
-- Waiting on operator: `P13.S3`
+- Current slice: `P13.REVIEW`
+- Next slice: `none`
+- Waiting on operator: `none`
 - Open deferred jobs: `40`
 
 ## Active Phases
@@ -20,7 +20,7 @@
 | [x] `P11` | `done` | `pass` | Ask agent polish: inline citations and feature cards | `none` | `works/phases/active/P11` |
 | [x] `P4` | `done` | `pass` | Ship & Deploy | `none` | `works/phases/active/P4` |
 | [x] `P12` | `done` | `pass` | Flicker polish | `none` | `works/phases/active/P12` |
-| [ ] `P13` | `planned` | `pending` | Email verification at signup (6-digit code) | `P13.S3` | `works/phases/active/P13` |
+| [ ] `P13` | `planned` | `pending` | Email verification at signup (6-digit code) | `P13.REVIEW` | `works/phases/active/P13` |
 
 ## Phase P9: Smart Mijual Assistant
 
@@ -128,5 +128,5 @@
 | [x] `P13.S1` | `done` | Backend: unverified account state, the 6-digit code grant, the third mail kind, gated signup/login, verify + resend, tests | `implementation` | `works/phases/active/P13/slices/P13.S1` |
 | [x] `P13.S2` | `done` | Frontend: the code-entry state on the auth panel, the drafted Korean strings, real-browser verification | `implementation` | `works/phases/active/P13/slices/P13.S2` |
 | [x] `P13.F1` | `done` | Fix: the wrong-code attempt increment must survive the ApiError rollback so the 5-attempt cap is real over HTTP; make the test fixture roll back like production | `fix` | `works/phases/active/P13/slices/P13.F1` |
-| [~] `P13.S3` | `pending` | Release to production and prove the verification mail live | `implementation` | `works/phases/active/P13/slices/P13.S3` |
+| [x] `P13.S3` | `done` | Release to production and prove the verification mail live | `implementation` | `works/phases/active/P13/slices/P13.S3` |
 | [ ] `P13.REVIEW` | `todo` | phase review | `review` | `works/phases/active/P13/slices/P13.REVIEW` |

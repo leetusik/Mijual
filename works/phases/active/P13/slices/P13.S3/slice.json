@@ -3,14 +3,14 @@
   "phase_id": "P13",
   "name": "Release to production and prove the verification mail live",
   "kind": "implementation",
-  "status": "pending",
+  "status": "done",
   "order": 3,
   "depends_on": [
     "P13.S2"
   ],
   "created_at": "2026-09-05T23:57:15+09:00",
   "started_at": "2026-09-06T00:53:54+09:00",
-  "completed_at": null,
+  "completed_at": "2026-09-06T02:04:56+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Released P13 to production at 1899111 (both images rebuilt, schema ok +1 columns, user tables 19→20, grandfathering measured 3 accounts / 0 pending before any write); a real signup answered 201 with no cookie and mailed a real 6-digit code over mail.privateemail.com:587; login-on-unverified, the uniform 401s, the wrong code and both sides of the resend cooldown proven live; the 인증번호 panel driven in Aside (u2) on the public origin at 1280/390; smoke-prod 17/17 before and after",
   "validation": {
     "required": [],
     "last_run": null,
