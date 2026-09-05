@@ -800,3 +800,9 @@
 {"ts": "2026-09-05T23:30:41+09:00", "type": "acceptance_opened", "phase": "P12"}
 {"ts": "2026-09-05T23:30:41+09:00", "type": "deferred_created", "deferred": "D47", "source": "P12.REVIEW"}
 {"ts": "2026-09-05T23:30:41+09:00", "type": "deferred_created", "deferred": "D48", "source": "P12.REVIEW"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "phase_status_changed", "phase": "P12", "old_status": "pending", "new_status": "in_progress"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "acceptance_cleared", "phase": "P12"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "deferred_created", "deferred": "D49", "source": "P12.REVIEW"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "slice_status_changed", "slice": "P12.REVIEW", "old_status": "in_progress", "new_status": "done"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "phase_reviewed", "phase": "P12", "verdict": "pass", "reviewer": "slice-executor-high"}
+{"ts": "2026-09-05T23:36:45+09:00", "type": "phase_consolidation_owed", "phase": "P12", "notes": 19}
