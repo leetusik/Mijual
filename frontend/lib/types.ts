@@ -197,6 +197,11 @@ export type BoardSummary = {
    * `corp_name`'s does, and the surface says 「N개 종목」 instead of a name when it
    * is more. Optional because it is `P8.S5`'s addition to an older contract. */
   next_lapse?: { date?: string; corp_name?: string; target?: string; tie_count?: number };
+  /** The issuer the search placeholder names as its 예 — chosen at request time
+   * the way the `/ask` start cards and the sample composition choose theirs
+   * (operator, 2026-09-06). Absent when the corpus offers no findable issuer;
+   * the field keeps its static example then. */
+  search_example?: { corp_code: string; corp_name: string };
   freshness?: Freshness;
 };
 

@@ -82,7 +82,11 @@ export default async function StocksPage({
   return (
     <main className={`content ${styles.page} ${styles.narrow}`}>
       <LookupRail />
-      <LookupHeader query={query === "" ? undefined : query} missed={query !== ""} />
+      <LookupHeader
+        query={query === "" ? undefined : query}
+        missed={query !== ""}
+        example={summary?.search_example?.corp_name}
+      />
       <WatchPanel summary={summary} />
       {/* The two coverage dates are served on `GET /stocks/{corp_code}` only, so
           with no stock this states the **boundary** without dating it rather than

@@ -51,6 +51,15 @@ export const HERO_SUB_KO = "종목명 하나로 놓친 권리와 진행 중인 �
  * both surfaces. R2 gives the input's colours and not its placeholder text. */
 export const SEARCH_PLACEHOLDER_KO = "종목명 또는 종목코드 — 예: 계양전기";
 
+/** The same placeholder with a **live** example — the issuer `/board/summary`'s
+ * `search_example` names today, chosen the way the `/ask` start cards and the
+ * sample composition choose theirs (operator, 2026-09-06: the fixed 계양전기 ages
+ * out of the corpus while the field keeps naming it). No example → the signed
+ * static string above, never an empty 「예:」. */
+export function searchPlaceholderKo(example?: string | null): string {
+  return example ? `종목명 또는 종목코드 — 예: ${example}` : SEARCH_PLACEHOLDER_KO;
+}
+
 /** R2 §Hero / §Cosmos: the solid `--live-solid` action beside the input. */
 export const SEARCH_SUBMIT_KO = "조회";
 

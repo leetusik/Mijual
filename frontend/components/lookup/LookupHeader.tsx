@@ -77,7 +77,16 @@ export function LookupRail({ here = false }: { here?: boolean }) {
  * The particle in that sentence is `copy.ts`'s `josa` — 와/과 by the query's
  * final consonant, 「와/과」 for anything not Hangul (R11 §7, finding 10).
  */
-export function LookupHeader({ query, missed }: { query?: string; missed?: boolean }) {
+export function LookupHeader({
+  query,
+  missed,
+  example,
+}: {
+  query?: string;
+  missed?: boolean;
+  /** The live 예 for the placeholder (`/board/summary` `search_example`). */
+  example?: string | null;
+}) {
   const submitted = query ?? "";
   const [typedText, setTypedText] = useState(submitted);
 
@@ -96,6 +105,7 @@ export function LookupHeader({ query, missed }: { query?: string; missed?: boole
         label={STOCKS_LABEL_KO}
         defaultValue={query}
         variant="surface"
+        example={example}
         classNames={{
           form: styles.entrysearch,
           input: `mono ${styles.input}`,

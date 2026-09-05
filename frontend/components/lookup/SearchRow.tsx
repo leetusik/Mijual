@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { suggestStocks } from "@/lib/api";
 import { ROUTES, stockPath } from "@/lib/routes";
 import type { StockSuggestion } from "@/lib/types";
-import { SEARCH_PLACEHOLDER_KO, SEARCH_SUBMIT_KO } from "@/components/landing/copy";
+import { SEARCH_SUBMIT_KO, searchPlaceholderKo } from "@/components/landing/copy";
 import styles from "./SearchRow.module.css";
 
 /** ~150 ms: long enough that a fast typist spends one request per word, short
@@ -85,6 +85,7 @@ export function SearchRow({
   defaultValue,
   variant,
   classNames,
+  example,
 }: {
   /** The surface's signed name — the input's label and the listbox's. */
   label: string;
@@ -93,6 +94,9 @@ export function SearchRow({
   /** Which console field this row sits in; only the candidate list's ink. */
   variant: "hero" | "surface";
   classNames: SearchRowClassNames;
+  /** The live issuer the placeholder names as its 예 (`/board/summary`
+   * `search_example`); absent → the static placeholder. */
+  example?: string | null;
 }) {
   const router = useRouter();
   const listboxId = useId();
@@ -224,7 +228,7 @@ export function SearchRow({
             setActive(-1);
           }}
           aria-label={label}
-          placeholder={SEARCH_PLACEHOLDER_KO}
+          placeholder={searchPlaceholderKo(example)}
           autoComplete="off"
           role="combobox"
           aria-expanded={shown}

@@ -209,6 +209,13 @@ class BoardSummary:
     #: stop naming different companies for the same date; deriving it here keeps
     #: the count and the name from ever being computed against different lists.
     next_lapse_tie_count: int | None = None
+    #: The issuer the search field's placeholder names as its 예 — chosen at
+    #: request time from the board's own reading, the `/ask` start cards' rule
+    #: applied to the placeholder (operator, 2026-09-06: a fixed 계양전기 ages out
+    #: of the corpus while the field keeps naming it). Both ``None`` when the
+    #: corpus offers no findable issuer; the surface keeps its static example.
+    search_example_corp_code: str | None = None
+    search_example_corp_name: str | None = None
     #: The absolute KST instant the browser ticks down to. ``None`` until the
     #: 소멸 instant is known — the *policy* for turning ``next_lapse_date`` into an
     #: instant belongs to the service (``P5.S3``'s settings), never to this layer.
@@ -244,6 +251,11 @@ class BoardSummary:
             if self.next_lapse_tie_count is not None:
                 payload["tie_count"] = self.next_lapse_tie_count
             out["next_lapse"] = payload
+        if self.search_example_corp_code and self.search_example_corp_name:
+            out["search_example"] = {
+                "corp_code": self.search_example_corp_code,
+                "corp_name": self.search_example_corp_name,
+            }
         if self.freshness is not None:
             out["freshness"] = self.freshness.payload()
         return out
@@ -263,6 +275,7 @@ def board_summary(
     next_lapse_date: date | str | None = None,
     next_lapse_corp_name: str | None = None,
     next_lapse_tie_count: int | None = None,
+    search_example: tuple[str, str] | None = None,
     countdown_target: datetime | None = None,
     now: datetime | None = None,
     stale_after_hours: int = DEFAULT_STALE_AFTER_HOURS,
@@ -328,6 +341,8 @@ def board_summary(
         next_lapse_date=iso_day(next_lapse_date),
         next_lapse_corp_name=next_lapse_corp_name,
         next_lapse_tie_count=next_lapse_tie_count,
+        search_example_corp_code=search_example[0] if search_example else None,
+        search_example_corp_name=search_example[1] if search_example else None,
         countdown_target=countdown_target,
         freshness=(
             freshness(as_of, now=now, stale_after_hours=stale_after_hours)

@@ -69,6 +69,7 @@ export function Hero({ summary }: { summary: BoardSummary }) {
         <SearchRow
           label={HERO_TITLE_KO}
           variant="hero"
+          example={summary.search_example?.corp_name}
           classNames={{ form: styles.search, input: styles.input, submit: styles.submit }}
         />
 

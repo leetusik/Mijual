@@ -423,6 +423,10 @@ def load_summary(
     are the same field read twice.
     """
     views = [view for view, _ in _board_views(session, today=today)]
+    by_corp: dict[str, list[EventView]] = {}
+    for view in views:
+        if view.state == "exposable":
+            by_corp.setdefault(view.corp_code, []).append(view)
     stored = list(session.scalars(select(PerformanceReport)).all())
     totals = lapse_totals([r.lapse for r in stored if isinstance(r.lapse, Mapping)])
     pending = _pending_lapses(session, today=today)
@@ -447,6 +451,7 @@ def load_summary(
         next_lapse_date=soonest[1],
         next_lapse_corp_name=soonest[2],
         next_lapse_tie_count=tie_count,
+        search_example=_search_example(session, by_corp),
         countdown_target=countdown_target(soonest[1], cutoff=cutoff),
         now=now,
         stale_after_hours=stale_after_hours,
@@ -1554,6 +1559,47 @@ def _dday_tier(days: int) -> int:
     if days > high:
         return 1
     return 2 if days >= 7 else 3
+
+
+def _search_example(
+    session: Session, by_corp: Mapping[str, list[EventView]]
+) -> tuple[str, str] | None:
+    """The issuer the search placeholder names as its 예 — 「예: 계양전기」, live.
+
+    The placeholder is R4's hero field on both search surfaces, and its example
+    was a fixed string. The operator applied the start cards' rule to it
+    (2026-09-06): an example that has aged out of the corpus is a search that
+    finds nothing, so the name is whoever the board shows **today** and the
+    search finds by exactly that name (:func:`_findable`). Preference: an ①
+    still counting down, the comfortable window first (:func:`_dday_tier`), then
+    any issuer on the board; ``corp_code`` last so equal candidates resolve the
+    same way on every request. ``None`` when nothing qualifies — the surface then
+    keeps its static example rather than printing an empty 「예:」.
+    """
+    ranked: list[tuple[tuple[int, int, str], str, str | None]] = []
+    for corp_code, views in by_corp.items():
+        shown = [view for view in views if board_bucket(view) is not None]
+        if not shown:
+            continue
+        ahead = [
+            view.countdown.days
+            for view in shown
+            if view.rights_type == "R1"
+            and view.countdown.days is not None
+            and view.countdown.days >= 0
+        ]
+        key = (
+            (0, min(_dday_tier(days) for days in ahead), corp_code)
+            if ahead
+            else (1, 0, corp_code)
+        )
+        ranked.append((key, corp_code, shown[0].identity.corp_name))
+
+    ranked.sort(key=lambda item: item[0])
+    for _, corp_code, corp_name in ranked[:_CARD_CANDIDATES]:
+        if _findable(session, corp_code, corp_name):
+            return corp_code, corp_name
+    return None
 
 
 def _calculate_card(
