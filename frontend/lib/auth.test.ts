@@ -14,6 +14,13 @@
  * **R12 (2026-08-24)** closed two of the three recorded gaps: `invalid_email` and
  * `invalid_reset_token` now have signed Korean, so they move from the second case
  * to the first. `csrf_required` and a transport failure stay unmapped by design.
+ *
+ * **P13 (2026-09-06)** adds the mailbox gate's two codes for the same reason the
+ * file exists: an unmapped code renders **no line**, so a panel that met a wrong
+ * 인증번호 with nothing mapped would answer it in silence — and silence is the one
+ * failure a browser sweep can watch and still misread as "no error". The two are
+ * separate lines on purpose (불일치 = try again · 만료·시도 초과 = ask for a new
+ * number), which is what the third assertion pins.
  */
 
 import assert from "node:assert/strict";
@@ -24,6 +31,8 @@ import {
   ERR_INVALID_EMAIL_KO,
   ERR_PASSWORD_TOO_SHORT_KO,
   ERR_RESET_TOKEN_KO,
+  ERR_VERIFICATION_CODE_EXPIRED_KO,
+  ERR_VERIFICATION_CODE_INVALID_KO,
   authErrorKo,
 } from "../components/auth/copy.ts";
 
@@ -38,6 +47,14 @@ test("the five signed lines, each from the code the API actually sends", () => {
   // and an expired or already-spent reset link (which used to answer nothing).
   assert.equal(authErrorKo("invalid_email"), ERR_INVALID_EMAIL_KO);
   assert.equal(authErrorKo("invalid_reset_token"), ERR_RESET_TOKEN_KO);
+});
+
+test("P13's two: a wrong 인증번호 and a dead one are different answers", () => {
+  assert.equal(authErrorKo("verification_code_invalid"), ERR_VERIFICATION_CODE_INVALID_KO);
+  assert.equal(authErrorKo("verification_code_expired"), ERR_VERIFICATION_CODE_EXPIRED_KO);
+  // Not one line wearing two codes: the second reader is the one who must press
+  // 재전송, and only the second line says so.
+  assert.notEqual(ERR_VERIFICATION_CODE_INVALID_KO, ERR_VERIFICATION_CODE_EXPIRED_KO);
 });
 
 test("every other code renders no line — an unsigned failure is never given words", () => {

@@ -46,6 +46,29 @@
  * `account/r12-parts.jsx`): the field rule 「8자 이상」 and three lines that fill
  * **recorded blanks** — a submit that used to answer nothing (empty fields,
  * a malformed address) and an expired reset link that used to answer nothing.
+ *
+ * ## P13 (2026-09-06) — the 인증번호 state's strings, **drafted, not signed**
+ *
+ * The mailbox gate adds a third mode to the panel and **no round has signed a
+ * single word of it**: `intent.md` routes P13's copy the way `mailcopy.py` routed
+ * `drafted P4.S2` — every new string is written inside the R5/R12 vocabulary,
+ * cited **`drafted P13 — approved literally at the P13 gate`**, and listed
+ * verbatim in the acceptance walkthrough for the operator to approve *literally*.
+ * Nothing below is a signed sentence until that happens.
+ *
+ * Drafting inside the vocabulary means the state borrows rather than invents
+ * wherever it can: its way-back label is the origin mode's **own name** (the 전환
+ * 링크's rule, so no constant), its 재전송 label composes two nouns exactly as
+ * `RESET_LINK_KO` composes 비밀번호 + 재설정, its 재전송됨 line is `RESET_SENT_KO`'s
+ * sentence about a different mail, its 불일치 line takes
+ * `ERR_INVALID_CREDENTIALS_KO`'s 「…일치하지 않습니다」, and its dead-code line
+ * takes `ERR_RESET_TOKEN_KO`'s shape **including its refusal to say which of the
+ * two things happened**. Five new lines and one re-draft are all it costs.
+ *
+ * `SIGNUP_INTRO_KO` is the re-draft, and it is not a polish: 「만들어지면 바로
+ * 로그인됩니다」 became **false** the moment the gate landed (`P13.S1` — 가입 opens
+ * no session at all). A signed string is changed here only because the product
+ * stopped doing what it said, and it goes to the operator with the rest.
  */
 
 // ---------------------------------------------------------------------------
@@ -60,10 +83,19 @@ export const SIGNUP_KO = "계정 만들기";
 
 /** result.md §Proposed copy, Auth — the body line under each mode's title:
  * "가입한 이메일과 비밀번호로 로그인합니다." · "이메일과 비밀번호만으로 만듭니다 —
- * 만들어지면 바로 로그인됩니다." */
+ * 만들어지면 바로 로그인됩니다."
+ *
+ * ⚠ **`SIGNUP_INTRO_KO` is re-drafted by P13** (`drafted P13 — approved literally
+ * at the P13 gate`). R5's second clause promised the one thing the mailbox gate
+ * removes — 가입 now creates the account, mails a 6자리 인증번호 and opens **no**
+ * session (`P13.S1`) — so the sentence would be false on the screen that makes
+ * the promise. The first clause is R5's and is untouched: 이메일과 비밀번호만으로
+ * 만듭니다 is still exactly what the panel collects (the code proves the address,
+ * it is not a third thing to remember). Only the promise after the em dash is
+ * replaced, by what actually happens next, in the same one-sentence register. */
 export const LOGIN_INTRO_KO = "가입한 이메일과 비밀번호로 로그인합니다.";
 export const SIGNUP_INTRO_KO =
-  "이메일과 비밀번호만으로 만듭니다 — 만들어지면 바로 로그인됩니다.";
+  "이메일과 비밀번호만으로 만듭니다 — 인증번호를 메일로 보내 드립니다.";
 
 /** The two field labels. R5-1 (개정) names exactly what the panel collects —
  * "가입/로그인 = **이메일+비밀번호**" — so these are the round's own nouns for its
@@ -132,6 +164,100 @@ export const ERR_INVALID_EMAIL_KO = "이메일 주소 형식이 올바르지 않
 export const ERR_RESET_TOKEN_KO =
   "이 재설정 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청해 주세요.";
 
+// ---------------------------------------------------------------------------
+// 가입 인증 — the panel's third mode (P13). Every string here is
+// **drafted P13 — approved literally at the P13 gate**.
+// ---------------------------------------------------------------------------
+
+/** The state's title. The two R5 modes title themselves with their own submit
+ * verb, and this one cannot: 확인 is the verb, and a panel titled 「확인」 says
+ * nothing about what is being confirmed. So the title names **what is happening**
+ * — the address is being proven — while the field below names the thing typed
+ * (인증번호) and the button names the act (확인). Three words, no overlap. */
+export const VERIFY_KO = "이메일 인증";
+
+/** The state's one body line, and the only place the reader's address is drawn
+ * on this panel.
+ *
+ * It prints the **normalized** address the API returned rather than the string
+ * that was typed (`P13.S1`: `verification.email` is always present), so a reader
+ * who typed `  Reader@X.KR ` sees the mailbox the mail actually went to. 「주소로」
+ * carries the address instead of a bare 조사, which is what keeps the sentence
+ * grammatical after an address ending in any letter at all.
+ *
+ * The window is stated as **10분** and never as a clock: `VERIFICATION_LIFETIME`
+ * is 10 minutes and the *mail* carries the exact KST instant
+ * (`mijual.mailcopy.SIGNUP_VERIFICATION_EXPIRY`), so the panel states the rule
+ * and the mail states the deadline. A live countdown here would be a timer this
+ * surface has no round for — and `expires_at` can be absent from the response
+ * entirely, so a countdown could not even be drawn honestly. */
+export const VERIFY_INTRO_TEMPLATE_KO =
+  "{email} 주소로 6자리 인증번호를 보냈습니다 — 10분 안에 입력해 주세요.";
+
+/** The template above with the address in it. A formatter rather than a
+ * concatenation at the call site: the sentence stays in this file whole, which is
+ * the rule that lets the walkthrough quote it and the operator approve it. */
+export function verifyIntroKo(email: string): string {
+  return VERIFY_INTRO_TEMPLATE_KO.replace("{email}", email);
+}
+
+/** The field label. The mail calls it 인증번호 and so does this — one label for
+ * one thing, which is `mailcopy.py`'s third hard rule read across the two
+ * surfaces (「같은 라벨의 두 번째 표기 금지」). */
+export const VERIFY_CODE_LABEL_KO = "인증번호";
+
+/** The submit verb. It is not a mode name — 이메일 인증 is a *step inside* 가입 or
+ * 로그인, not a third thing a reader chooses — so the button says what pressing it
+ * does. While the request is in flight it carries `PENDING_KO`, unchanged. */
+export const VERIFY_SUBMIT_KO = "확인";
+
+/** The 재전송 control, composed from two nouns exactly as `RESET_LINK_KO` composes
+ * 비밀번호 + 재설정 (this module's header, note 1) rather than written as a
+ * sentence. The way back beside it needs no constant at all: it wears the origin
+ * mode's own name, which is the 전환 링크's rule. */
+export const RESEND_KO = "인증번호 재전송";
+
+/** 재전송됨 — a 알림, so the panel renders it soft (`--ink-2`). It is
+ * `RESET_SENT_KO`'s sentence about the other mail, kept parallel on purpose: two
+ * mails, one grammar, and the reader is pointed at the mailbox either way. */
+export const VERIFY_RESENT_KO = "인증번호를 다시 보냈습니다 — 메일함을 확인해 주세요.";
+
+/** `resent: false` — the 60-second cooldown, which is a **state and not an
+ * error** (`P13.S1`), so this is soft too. It says the one thing the reader needs
+ * (the number already in the mailbox still works) and deliberately **no timer**:
+ * a countdown would turn a non-event into something to watch, and the cooldown is
+ * 60 seconds — shorter than reading the sentence twice. */
+export const VERIFY_CODE_STILL_VALID_KO =
+  "조금 전 보낸 인증번호가 아직 유효합니다 — 메일함을 확인해 주세요.";
+
+/** The line for an empty or short 인증번호, answered **before any request**
+ * (R12's own gating grammar — 빈 입력 answers in the slot, not in the browser's
+ * English). Unlike 이메일, 빈 입력 and 형식 오류 are **not** two different facts
+ * here: there is exactly one shape, six digits, and neither an empty field nor
+ * three digits is it. One fact, one line — and it states the rule rather than
+ * scolding the input.
+ *
+ * The server would answer a malformed value too, with `verification_code_invalid`
+ * and **at the cost of one of the five attempts** (`P13.S1`): the client gate
+ * exists so a slip of the finger never spends a guess. */
+export const ERR_CODE_FORMAT_KO = "인증번호 6자리를 입력해 주세요.";
+
+/** `verification_code_invalid` — a wrong number against a live grant. It takes
+ * `ERR_INVALID_CREDENTIALS_KO`'s 「…일치하지 않습니다」 because it is the same kind
+ * of answer, and it says nothing about how many attempts are left: the count is
+ * the grant's business, and announcing it would tell a guesser how much room they
+ * have. 오류, so `--ink-1`. */
+export const ERR_VERIFICATION_CODE_INVALID_KO = "인증번호가 일치하지 않습니다.";
+
+/** `verification_code_expired` — 만료, 이미 사용됨, or the fifth wrong attempt
+ * that killed the grant. Like `ERR_RESET_TOKEN_KO` it **does not say which**: the
+ * grant's state stays unexposed, which is the same rule the 가입 여부 비노출
+ * answer keeps, and it matters more here because the alternative announces that a
+ * guesser has been counted. What it does instead is point at the control that
+ * fixes every one of the three causes, by that control's own label. */
+export const ERR_VERIFICATION_CODE_EXPIRED_KO =
+  "이 인증번호는 더 이상 사용할 수 없습니다 — 인증번호 재전송을 눌러 새 번호를 받아 주세요.";
+
 /**
  * `mijual.web` structural code → the signed body line, and **nothing else**.
  *
@@ -148,6 +274,13 @@ export const ERR_RESET_TOKEN_KO =
  * `invalid_reset_token` used to be reachable with no line at all; it now has one,
  * and the reset page additionally offers the way back to where a fresh link is
  * requested.
+ *
+ * **P13 adds the two the gate created**, and it had to: an unmapped code renders
+ * **no line at all**, so a panel meeting `verification_code_invalid` with nothing
+ * mapped would answer a wrong 인증번호 with silence — the exact failure R12 found
+ * on `invalid_email`. The two are structurally different answers and never one
+ * line: 불일치 means *try again*, 만료·시도 초과 means *ask for a new number*, and
+ * the panel draws the 재전송 affordance for the second reader.
  *
  * **Two stay unmapped, by design.** `csrf_required` is held off by `lib/api.ts`
  * setting the header on every mutation — a reader who meets it is in a state no
@@ -167,6 +300,10 @@ export function authErrorKo(code: string): string | null {
       return ERR_INVALID_EMAIL_KO;
     case "invalid_reset_token":
       return ERR_RESET_TOKEN_KO;
+    case "verification_code_invalid":
+      return ERR_VERIFICATION_CODE_INVALID_KO;
+    case "verification_code_expired":
+      return ERR_VERIFICATION_CODE_EXPIRED_KO;
     default:
       return null;
   }

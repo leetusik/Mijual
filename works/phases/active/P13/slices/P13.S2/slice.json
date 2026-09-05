@@ -3,14 +3,14 @@
   "phase_id": "P13",
   "name": "Frontend: the code-entry state on the auth panel, the drafted Korean strings, real-browser verification",
   "kind": "implementation",
-  "status": "todo",
+  "status": "done",
   "order": 2,
   "depends_on": [
     "P13.S1"
   ],
   "created_at": "2026-09-05T23:57:15+09:00",
-  "started_at": null,
-  "completed_at": null,
+  "started_at": "2026-09-06T00:19:08+09:00",
+  "completed_at": "2026-09-06T00:44:36+09:00",
   "risk": "high",
   "source": {
     "type": "manual",
@@ -20,7 +20,7 @@
     "plan": "plan.md",
     "result": "result.md"
   },
-  "outcome": null,
+  "outcome": "Auth panel gained its 인증번호 state — 계정 만들기 and 로그인 on an unverified account land on the same panel, the mailed code verifies and lands on 보유 종목, ten drafted Korean strings plus the re-drafted 계정 만들기 intro cited for literal approval at the gate; verified in Aside (u2) on dev and the local production build at 1280/390, which agreed on every measured value; found S1's 5-attempt cap inert over HTTP (the increment is rolled back with the error) — proposed P13.F1",
   "validation": {
     "required": [],
     "last_run": null,

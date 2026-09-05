@@ -4,11 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CraftPanel } from "@/components";
 import { clearMirror } from "@/components/chrome";
-import { ApiError, login, requestPasswordReset, signup } from "@/lib/api";
+import {
+  ApiError,
+  login,
+  requestPasswordReset,
+  resendVerification,
+  signup,
+  verifySignup,
+} from "@/lib/api";
 import { ROUTES } from "@/lib/routes";
 import { readFlashOnce } from "@/lib/session";
 import {
   EMAIL_LABEL_KO,
+  ERR_CODE_FORMAT_KO,
   ERR_FIELDS_REQUIRED_KO,
   ERR_INVALID_EMAIL_KO,
   ERR_PASSWORD_TOO_SHORT_KO,
@@ -19,18 +27,26 @@ import {
   PASSWORD_LABEL_KO,
   PASSWORD_RULE_KO,
   PENDING_KO,
+  RESEND_KO,
   RESET_LINK_KO,
   RESET_SENT_KO,
   SIGNUP_INTRO_KO,
   SIGNUP_KO,
+  VERIFY_CODE_LABEL_KO,
+  VERIFY_CODE_STILL_VALID_KO,
+  VERIFY_KO,
+  VERIFY_RESENT_KO,
+  VERIFY_SUBMIT_KO,
   authErrorKo,
+  verifyIntroKo,
 } from "./copy";
 import { AuthRail } from "./AuthRail";
 import { SampleEntry } from "./SampleEntry";
 import styles from "./Auth.module.css";
 
 /**
- * 로그인 / 계정 만들기 — **one panel, two modes** (R5-1, re-cut by **R12**).
+ * 로그인 / 계정 만들기 — **one panel, two modes** (R5-1, re-cut by **R12**), plus
+ * the 이메일 인증 state both of them can end in (**P13**).
  *
  * > 이메일+비밀번호 (개정). 로그인/계정 만들기는 한 패널 + 전환 링크; 비밀번호 8자
  * > 이상(다른 규칙 없음); 재설정 = 이메일 링크(가입 여부 비노출). 저장 PII =
@@ -108,6 +124,52 @@ import styles from "./Auth.module.css";
  * settles the band either way — a reservation left standing would become a
  * permanent gap the moment the reader types and the band leaves.
  *
+ * ## P13: 이메일 인증 is a third mode, not a fourth page
+ *
+ * The mailbox gate gave 가입 an ending it did not have: `POST /auth/signup` now
+ * creates the account, mails a 6자리 인증번호 and **opens no session at all**
+ * (`P13.S1`), so the reader is one number short of being logged in. 로그인 with the
+ * correct password on an unverified account answers the identical `verification`
+ * block instead of a cookie, so **both** ways in end in the same place — which is
+ * why this is one state and not two.
+ *
+ * **It is a state of this panel, not a route.** There is no `/auth/verify` page,
+ * no modal and no overlay: the reader is mid-가입 on the surface they started on,
+ * and navigating would put a URL in their history that answers nothing when
+ * reloaded (the state is held in this component and nowhere else — a reload
+ * legitimately returns to 로그인, from which the correct password brings the code
+ * step straight back). R5-1's own rule stands: 로그인됨 is 보유 종목, and only a
+ * *session* is worth a navigation.
+ *
+ * **What the state is made of.** The title 이메일 인증; one body line naming the
+ * **normalized** address the API returned and the 10분 window; one field
+ * (`inputMode="numeric"`, `autoComplete="one-time-code"`, `maxLength=6`, and a
+ * **string** value so 「012345」 survives — the code keeps its leading zeros from
+ * `new_code` all the way to this comparison); the submit 확인, which swaps to
+ * `PENDING_KO` and disables exactly as the other two modes do; and the quiet row
+ * carrying 인증번호 재전송 beside the way back, whose label is the origin mode's
+ * own name. The line slot below the form is the same one slot, with the same two
+ * weights: 불일치 and 만료·시도 초과 are 오류, 재전송됨 and 「아직 유효합니다」 are
+ * 알림, and `--alert` still never appears on this layer.
+ *
+ * **The password travels with the code**, which is why `email` and `password`
+ * stay in state through the transition instead of being cleared. `POST
+ * /auth/verify` checks the password **first** and only then the code (`P13.S1`),
+ * and that ordering is load-bearing: 가입 on an address that is still unverified
+ * *replaces* the stored password hash, so without it a stranger could sit on a
+ * half-finished signup and be logged in by the code the mailbox's owner types.
+ * The one who verifies is the one who chose the password. It also means
+ * `invalid_credentials` is reachable from this state — the panel answers it with
+ * the round's own 불일치 line, since `authErrorKo` maps it already.
+ *
+ * **Two live behaviours the state is built around** (`P13.S1`): the **fifth**
+ * wrong number answers `verification_code_expired`, not `..._invalid`, because
+ * the attempt that reaches the cap kills the grant — so that reader is pointed at
+ * 재전송; and `resent: false` is the 60-second cooldown rather than a failure, so
+ * it takes a 알림 line saying the number already mailed still works, with no timer
+ * drawn for it. A malformed code costs one of the five attempts on the server,
+ * which is why an empty or short value is answered **here**, before any request.
+ *
  * ## What this panel refuses to do
  *
  * It renders no line for a code no round has signed (`authErrorKo` returns
@@ -122,16 +184,27 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type Line = { text: string; soft: boolean } | null;
 
+/** The 6자리 인증번호, stated once. The server's own shape (`new_code`: six
+ * digits, leading zeros kept), checked here only so a slip never spends one of
+ * the five attempts. */
+const CODE_RE = /^[0-9]{6}$/;
+
 export function AuthPanel() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "verify">("login");
+  /** Where the reader entered 이메일 인증 from — 가입, or 로그인 on an account
+   * that never finished one. The state itself is identical either way; the origin
+   * only decides which mode the way back returns to and which intro they left. */
+  const [origin, setOrigin] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [pending, setPending] = useState(false);
   const [line, setLine] = useState<Line>(null);
   const [flash, setFlash] = useState(false);
   const [flashResolved, setFlashResolved] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  const codeRef = useRef<HTMLInputElement>(null);
 
   // "로그아웃되었습니다" — 1회 표시. The click happened on another surface
   // (`P5.S16`'s account menu); this reads the one-hop channel and clears it, so a
@@ -157,7 +230,18 @@ export function AuthPanel() {
   }, [flashResolved]);
 
   const signingUp = mode === "signup";
-  const submitLabel = signingUp ? SIGNUP_KO : LOGIN_KO;
+  const verifying = mode === "verify";
+  const modeLabel = signingUp ? SIGNUP_KO : LOGIN_KO;
+  const title = verifying ? VERIFY_KO : modeLabel;
+  const submitLabel = verifying ? VERIFY_SUBMIT_KO : modeLabel;
+
+  // The one field of the 인증 state takes the caret, because it is the only thing
+  // the reader can do here and they arrived by pressing a button elsewhere on the
+  // panel. Focusing on the *transition* rather than in each handler keeps the two
+  // routes in (가입, 로그인) from having to remember it separately.
+  useEffect(() => {
+    if (mode === "verify") codeRef.current?.focus();
+  }, [mode]);
 
   /** Every entry into the slot goes through here, and every one of them also
    * retires the logout band: the reader has acted since. */
@@ -166,8 +250,33 @@ export function AuthPanel() {
     setLine(text === null ? null : { text, soft });
   }
 
+  /** 로그인됨 = 보유 종목. `refresh()` re-runs the server components that read the
+   * session, so the chrome and any gated page see the new cookie. All three ways
+   * to a session — 로그인, and 확인 from either origin — land here, and the origin
+   * is not carried (R12 Q-B). `pending` is deliberately left standing: the button
+   * stays disabled until the navigation happens. */
+  function landSignedIn() {
+    router.push(ROUTES.portfolio);
+    router.refresh();
+  }
+
+  /** Enter 이메일 인증. The address becomes the **normalized** one the API just
+   * returned (never the string that was typed), the password stays — `/auth/verify`
+   * checks it before the code — and the number field starts empty. */
+  function enterVerify(from: "login" | "signup", verifiedEmail: string) {
+    setOrigin(from);
+    setEmail(verifiedEmail);
+    setCode("");
+    setMode("verify");
+    say(null);
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (verifying) {
+      await submitCode();
+      return;
+    }
 
     // The round's order, before any request leaves (R12 §2).
     if (email.trim() === "" || password === "") {
@@ -188,20 +297,71 @@ export function AuthPanel() {
     say(null);
     setPending(true);
     try {
-      if (signingUp) {
-        await signup(email, password);
-      } else {
-        await login(email, password);
+      const result = signingUp ? await signup(email, password) : await login(email, password);
+      // Which answer arrived is a question about the **key**, never the status:
+      // 가입 is a 201 and an unverified 로그인 a plain 200, and both carry the
+      // 인증 block instead of an account (`P13.S1`).
+      if ("verification" in result) {
+        enterVerify(signingUp ? "signup" : "login", result.verification.email);
+        setPending(false);
+        return;
       }
-      // 로그인됨 = 보유 종목. `refresh()` re-runs the server components that read
-      // the session, so the chrome and any gated page see the new cookie. Every
-      // login lands here, and the origin is not carried (R12 Q-B).
-      router.push(ROUTES.portfolio);
-      router.refresh();
+      landSignedIn();
     } catch (failure) {
       say(failure instanceof ApiError ? authErrorKo(failure.code) : null);
       setPending(false);
     }
+  }
+
+  /** 확인 — the 인증 state's own submit. */
+  async function submitCode() {
+    // Six digits or nothing, answered before the request: on the server a
+    // malformed value is simply a wrong code and costs one of the five attempts
+    // (`P13.S1`), so a slip of the finger must not reach it.
+    if (!CODE_RE.test(code.trim())) {
+      say(ERR_CODE_FORMAT_KO);
+      return;
+    }
+
+    say(null);
+    setPending(true);
+    try {
+      await verifySignup(email, password, code.trim());
+      // 확인 opens the session itself (`/auth/verify` sets the cookie), so this is
+      // the same landing 로그인 has and not a return to the panel.
+      landSignedIn();
+    } catch (failure) {
+      // `invalid_credentials` is reachable here — a second 가입 elsewhere replaces
+      // an unverified account's password hash — and `authErrorKo` already answers
+      // it with the round's 불일치 line.
+      say(failure instanceof ApiError ? authErrorKo(failure.code) : null);
+      setPending(false);
+    }
+  }
+
+  /** 인증번호 재전송. `resent: false` is the 60-second cooldown and not a failure,
+   * so both answers are 알림 (soft): either a new number is on its way, or the one
+   * already mailed is still the one to type. No timer is drawn for it. */
+  async function onResend() {
+    say(null);
+    setPending(true);
+    try {
+      const { resent } = await resendVerification(email, password);
+      setPending(false);
+      say(resent ? VERIFY_RESENT_KO : VERIFY_CODE_STILL_VALID_KO, true);
+    } catch (failure) {
+      say(failure instanceof ApiError ? authErrorKo(failure.code) : null);
+      setPending(false);
+    }
+  }
+
+  /** The way back out of 인증, to the mode the reader came from. The two fields
+   * are kept — the account exists and the password is the one that was just
+   * accepted, so re-typing either would be ceremony — and the line is cleared,
+   * because it answered a submit on a form that is no longer on screen. */
+  function leaveVerify() {
+    setMode(origin);
+    say(null);
   }
 
   async function onReset() {
@@ -247,56 +407,91 @@ export function AuthPanel() {
         </div>
 
         <div className={styles.head}>
-          <h1 className={styles.title}>{submitLabel}</h1>
-          <p className={styles.intro}>{signingUp ? SIGNUP_INTRO_KO : LOGIN_INTRO_KO}</p>
+          <h1 className={styles.title}>{title}</h1>
+          {/* 인증 상태의 본문 한 줄은 API가 돌려준 **정규화된** 주소를 말한다 (P13). */}
+          <p className={styles.intro}>
+            {verifying ? verifyIntroKo(email) : signingUp ? SIGNUP_INTRO_KO : LOGIN_INTRO_KO}
+          </p>
         </div>
 
         {/* noValidate: the browser says nothing, the slot below says it in Korean. */}
         {/* Stamped by extensions before hydration — see `SearchRow.tsx`. */}
         <form className={styles.form} noValidate onSubmit={onSubmit} suppressHydrationWarning>
-          <div className={styles.field}>
-            <div className={styles.labelRow}>
-              <label className={styles.label} htmlFor="auth-email">
-                {EMAIL_LABEL_KO}
-              </label>
+          {verifying ? (
+            /* 인증 상태는 필드 하나다 — 주소도 비밀번호도 이미 있고, 다시 묻는
+               것은 방금 한 일을 되묻는 것이다 (`ResetConfirmPanel`의 같은 판단).
+               `type="text"` + `inputMode="numeric"`: number 필드는 스피너와
+               스크롤 증감을 달고 오고 앞자리 0을 지우는데, 코드는 셈하는 값이
+               아니라 여섯 글자다. */
+            <div className={styles.field}>
+              <div className={styles.labelRow}>
+                <label className={styles.label} htmlFor="auth-code">
+                  {VERIFY_CODE_LABEL_KO}
+                </label>
+              </div>
+              <input
+                suppressHydrationWarning
+                id="auth-code"
+                ref={codeRef}
+                className={`${styles.input} ${styles.code}`}
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={code}
+                onChange={(event) => {
+                  setCode(event.target.value);
+                  say(null);
+                }}
+              />
             </div>
-            <input
-              suppressHydrationWarning
-              id="auth-email"
-              ref={emailRef}
-              className={styles.input}
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                say(null);
-              }}
-            />
-          </div>
+          ) : (
+            <>
+              <div className={styles.field}>
+                <div className={styles.labelRow}>
+                  <label className={styles.label} htmlFor="auth-email">
+                    {EMAIL_LABEL_KO}
+                  </label>
+                </div>
+                <input
+                  suppressHydrationWarning
+                  id="auth-email"
+                  ref={emailRef}
+                  className={styles.input}
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    say(null);
+                  }}
+                />
+              </div>
 
-          <div className={styles.field}>
-            <div className={styles.labelRow}>
-              <label className={styles.label} htmlFor="auth-password">
-                {PASSWORD_LABEL_KO}
-              </label>
-              {/* 규칙을 앞에 (R12 Q-C) — 계정 만들기에만. 로그인에서 길이는 규칙이
-                  아니라 틀린 비밀번호다. */}
-              {signingUp ? <span className={styles.rule}>{PASSWORD_RULE_KO}</span> : null}
-            </div>
-            <input
-              suppressHydrationWarning
-              id="auth-password"
-              className={styles.input}
-              type="password"
-              autoComplete={signingUp ? "new-password" : "current-password"}
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                say(null);
-              }}
-            />
-          </div>
+              <div className={styles.field}>
+                <div className={styles.labelRow}>
+                  <label className={styles.label} htmlFor="auth-password">
+                    {PASSWORD_LABEL_KO}
+                  </label>
+                  {/* 규칙을 앞에 (R12 Q-C) — 계정 만들기에만. 로그인에서 길이는 규칙이
+                      아니라 틀린 비밀번호다. */}
+                  {signingUp ? <span className={styles.rule}>{PASSWORD_RULE_KO}</span> : null}
+                </div>
+                <input
+                  suppressHydrationWarning
+                  id="auth-password"
+                  className={styles.input}
+                  type="password"
+                  autoComplete={signingUp ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    say(null);
+                  }}
+                />
+              </div>
+            </>
+          )}
 
           <button className={styles.submit} type="submit" disabled={pending}>
             {pending ? PENDING_KO : submitLabel}
@@ -314,32 +509,60 @@ export function AuthPanel() {
         ) : null}
 
         <div className={styles.quietRow}>
-          {/* The 전환 링크: its label is the other mode's own name, so switching
-              needs no copy of its own. */}
-          <button
-            className={styles.quiet}
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              setMode(signingUp ? "login" : "signup");
-              say(null);
-            }}
-          >
-            {signingUp ? LOGIN_KO : SIGNUP_KO}
-          </button>
+          {verifying ? (
+            <>
+              {/* 인증번호 재전송 — 쿨다운 안이면 「아직 유효합니다」로 답한다. */}
+              <button
+                className={styles.quiet}
+                type="button"
+                disabled={pending}
+                onClick={onResend}
+              >
+                {RESEND_KO}
+              </button>
 
-          {/* 재설정 is a 로그인 affordance: there is nothing to reset from the
-              계정 만들기 side. Alive without an address — pressing it then points
-              at the field it needs (R12 finding 1). */}
-          {signingUp ? null : (
-            <button
-              className={styles.quiet}
-              type="button"
-              disabled={pending}
-              onClick={onReset}
-            >
-              {RESET_LINK_KO}
-            </button>
+              {/* The way back wears the origin mode's **own name**, which is the
+                  전환 링크's rule applied to a return instead of a switch — so the
+                  state needs no 취소 copy of its own. */}
+              <button
+                className={styles.quiet}
+                type="button"
+                disabled={pending}
+                onClick={leaveVerify}
+              >
+                {origin === "signup" ? SIGNUP_KO : LOGIN_KO}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* The 전환 링크: its label is the other mode's own name, so switching
+                  needs no copy of its own. */}
+              <button
+                className={styles.quiet}
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  setMode(signingUp ? "login" : "signup");
+                  say(null);
+                }}
+              >
+                {signingUp ? LOGIN_KO : SIGNUP_KO}
+              </button>
+
+              {/* 재설정 is a 로그인 affordance: there is nothing to reset from the
+                  계정 만들기 side. Alive without an address — pressing it then points
+                  at the field it needs (R12 finding 1). */}
+              {signingUp ? null : (
+                <button
+                  className={styles.quiet}
+                  type="button"
+                  disabled={pending}
+                  onClick={onReset}
+                >
+                  {RESET_LINK_KO}
+                </button>
+              )}
+            </>
           )}
         </div>
       </CraftPanel>

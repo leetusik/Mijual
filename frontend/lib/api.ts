@@ -52,6 +52,7 @@ import type {
   StockLookup,
   StockPage,
   StockSuggestions,
+  Verification,
 } from "./types";
 
 /** The client-side base. Same origin by default; `next.config.ts` proxies it. */
@@ -202,11 +203,59 @@ export const suggestStocks = (query: string, init?: RequestInitLike) =>
 // 계정 (P5.S7)
 // ---------------------------------------------------------------------------
 
-export const signup = (email: string, password: string) =>
-  request<{ account: Account }>("/auth/signup", { method: "POST", json: { email, password } });
+/**
+ * What 가입/로그인 answer since the **P13** mailbox gate: either a session, or the
+ * 인증번호 step.
+ *
+ * The two arms are told apart by their **key, never by the status** — both are
+ * `200`/`201`, and `verification_required` rides along only on 로그인 (`P13.S1`).
+ * A caller narrows with `"verification" in result`, which is also why the arms
+ * share no field: a `verification` block means no cookie was set and the reader
+ * is one code away from a session.
+ */
+export type AuthResult =
+  | { account: Account }
+  | { verification_required?: true; verification: Verification };
 
+/**
+ * 가입. **Opens no session and sets no cookie** since `P13.S1` — it answers `201`
+ * with the `verification` block alone, and the code travels only through the
+ * mailer. The union is `AuthResult` so one caller-side branch serves both routes
+ * into the 인증번호 step; the `account` arm is simply never returned here.
+ */
+export const signup = (email: string, password: string) =>
+  request<AuthResult>("/auth/signup", { method: "POST", json: { email, password } });
+
+/** 로그인. A correct password on a **verified** account is the P5 shape (session +
+ * cookie); on an **unverified** one it is `{verification_required, verification}`
+ * with no cookie, and the panel routes to the same 인증번호 state 가입 lands in.
+ * A wrong password and an unknown address stay one `invalid_credentials`. */
 export const login = (email: string, password: string) =>
-  request<{ account: Account }>("/auth/login", { method: "POST", json: { email, password } });
+  request<AuthResult>("/auth/login", { method: "POST", json: { email, password } });
+
+/** 인증번호 확인 — **password first, then the code** (`P13.S1`): the one who
+ * verifies is the one who chose the password, which is why the panel carries both
+ * into the state. Success is 로그인's own shape, cookie included, so the caller's
+ * existing success path is reusable as-is. Failures: `verification_code_invalid`
+ * (wrong code, grant still live) · `verification_code_expired` (expired, spent,
+ * or killed by the fifth wrong attempt) · `invalid_credentials` (wrong password).
+ * A correct password on an **already verified** account is treated as a login. */
+export const verifySignup = (email: string, password: string, code: string) =>
+  request<{ account: Account }>("/auth/verify", {
+    method: "POST",
+    json: { email, password, code },
+  });
+
+/** 인증번호 재전송. `resent: false` is the **60-second cooldown, not an error** —
+ * the code already mailed is still the one to type — so the panel answers it with
+ * a 알림 line rather than an 오류 one. A wrong password answers
+ * `invalid_credentials`, byte-identical with 로그인, so this cannot be pointed at
+ * a stranger's mailbox. */
+export const resendVerification = (email: string, password: string) =>
+  request<{ resent: boolean; verification: Verification }>("/auth/verify/resend", {
+    method: "POST",
+    json: { email, password },
+  });
 
 export const logout = () => request<AuthState>("/auth/logout", { method: "POST" });
 

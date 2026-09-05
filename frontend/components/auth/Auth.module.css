@@ -207,6 +207,13 @@ html[data-mj-auth-flash="logout"] .flashSlot:empty {
   color: var(--ink-1);
 }
 
+/* 인증번호 필드 (P13) — **한 줄만**. 여섯 자리는 세로로 줄 맞은 숫자여야 훑어
+   읽을 때 자리를 잃지 않는다. 폭도 높이도 여백도 건드리지 않으므로 이 필드는 다른
+   두 모드의 필드와 기하학적으로 동일하다. */
+.code {
+  font-variant-numeric: tabular-nums;
+}
+
 .input::placeholder {
   color: var(--ink-3);
 }

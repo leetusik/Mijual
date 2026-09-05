@@ -387,6 +387,19 @@ export type StockSuggestions = { query: string; candidates: StockSuggestion[] };
 
 export type Account = { email: string; created_at: string | null };
 
+/**
+ * The block every route that leaves a reader at the 인증번호 step hands back
+ * (`P13.S1`): `POST /auth/signup`, `POST /auth/login` on an unverified account,
+ * and `POST /auth/verify/resend`.
+ *
+ * `email` is the **normalized** address — the panel prints that one rather than
+ * what the reader typed. `expires_at` is **optional and never `null`**: the API
+ * omits the key when no live code exists (the attempt cap or a spend killed the
+ * grant while the 60-second cooldown forbids a new one), so a reader of this type
+ * must treat its absence as ordinary rather than as an error.
+ */
+export type Verification = { email: string; expires_at?: string };
+
 export type AuthState =
   | { authenticated: false }
   | { authenticated: true; account: Account };
