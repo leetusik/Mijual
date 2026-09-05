@@ -777,6 +777,26 @@ def verify_code(
     value that cannot be the code is simply not the code; exempting malformed
     input would add a branch whose only observable effect is a cheaper guess, and
     the panel gates an empty field before it ever posts.
+
+    **The one place this service layer commits, and why (``P13.F1``).** The wrong-
+    code branch calls ``db.commit()`` before it raises, because the failed attempt
+    is the write of record and it must outlive the error it causes.
+    :func:`~mijual.web.deps.get_write_session` rolls back on **any** exception,
+    which is exactly right for every other 4xx here — a rejected 가입 must leave no
+    half-written account behind — and exactly wrong for a counter that exists to
+    make failures expensive: without the commit the increment dies with its own
+    400 and :data:`VERIFICATION_MAX_ATTEMPTS` never bites, so a 6-digit code is
+    guessable without limit for its whole 10-minute life (measured over HTTP in
+    ``P13.S2``: eight consecutive wrong codes, the row still ``attempts = 0``). It
+    is the same reason a failed-login counter anywhere must persist through the
+    401 it produces. After the raise, the dependency's ``rollback()`` and
+    ``close()`` run against a **fresh** transaction holding nothing, so they are
+    harmless — the commit ends the transaction the increment was in.
+
+    Nothing else is riding along on that commit: the route does no other write
+    before this call, and the only write :func:`authenticate` can leave pending is
+    a password-hash upgrade on a **correct** password, which is a write that
+    deserves to survive anyway.
     """
     account = authenticate(db, email=email, password=password)
     if account.verification_pending_since is None:
@@ -790,7 +810,13 @@ def verify_code(
     if not hmac.compare_digest(grant.code_digest, token_digest(submitted, settings)):
         grant.attempts += 1
         db.flush()
-        if grant.attempts >= VERIFICATION_MAX_ATTEMPTS:
+        # Read the counter **before** the commit: the test factory expires
+        # instances on commit, so comparing afterwards would reload the row for
+        # no reason (and, in the fixture's one-session world, at a moment the
+        # value is no longer in the identity map).
+        reached_cap = grant.attempts >= VERIFICATION_MAX_ATTEMPTS
+        db.commit()
+        if reached_cap:
             # That increment just killed the grant, so the honest answer is the
             # state the reader is now in, not the one they were in a moment ago.
             raise ApiError("verification_code_expired", "no live verification code")

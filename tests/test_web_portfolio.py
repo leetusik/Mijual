@@ -153,8 +153,16 @@ def client():
     app.dependency_overrides[get_session] = lambda: session
 
     def _write():
-        yield session
-        session.commit()
+        # Mirrors :func:`get_write_session` — commit on a normal return, roll
+        # back on any exception (``P13.F1``). These tests sign up and verify
+        # through the shared helper, so a fixture more forgiving than the runtime
+        # would let a broken write path pass here too.
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
 
     app.dependency_overrides[get_write_session] = _write
     with TestClient(app, headers={CSRF_HEADER: "1"}) as test_client:

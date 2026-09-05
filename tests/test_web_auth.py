@@ -56,9 +56,19 @@ def client():
     )
     app.dependency_overrides[get_session] = lambda: session
 
-    def _write():  # the write path really does commit
-        yield session
-        session.commit()
+    def _write():
+        # Mirrors :func:`get_write_session`: commit on a normal return, **roll
+        # back on any exception** — including an ``ApiError`` a handler raises
+        # deliberately. A fixture that only ever committed was more forgiving
+        # than the runtime, and it hid ``P13.F1``'s bug (the wrong-code attempt
+        # counter died with the 400 it caused) behind a passing test. No
+        # ``close()``: one long-lived session serves the whole test.
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
 
     app.dependency_overrides[get_write_session] = _write
     with TestClient(app, headers={CSRF_HEADER: "1"}) as test_client:
